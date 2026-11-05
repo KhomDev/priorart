@@ -25,7 +25,7 @@ fails if the README has drifted from it.
 <!-- BEGIN:example -->
 
 ```text
-viability-gate 0.4.3  —  finding.md
+viability-gate 0.4.4  —  finding.md
 
   OUTCOME   KILL
             A hard blocker fired. Do not submit as written.
@@ -522,9 +522,11 @@ Patterns are case-insensitive regexes unless the pattern itself says otherwise.
 
 - [bounty-economics](https://github.com/KhomDev/bounty-economics) - the payout floors and
   exclusion clauses that make Gates 1 and 2 mechanical
+- [realism-gate](https://github.com/KhomDev/realism-gate) - the next gate after the PoC is
+  written: a static checker for Foundry tests that shows only what the harness made true
 
 Pin to a tag, not to `main`:
-[viability-gate v0.4.3](https://github.com/KhomDev/viability-gate/tree/v0.4.3).
+[viability-gate v0.4.4](https://github.com/KhomDev/viability-gate/tree/v0.4.4).
 
 ## License
 

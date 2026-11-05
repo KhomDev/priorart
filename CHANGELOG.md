@@ -9,6 +9,24 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-11-05
+
+A maintenance release. The catalog, the scoring and the CLI output are unchanged.
+
+### Fixed
+
+- `docs/calibration.md`'s dated note still said the dataset had grown to 111 rows
+  (rejection-taxonomy v0.4.0). It now says 113 rows (v0.5.0), 16 rows added since
+  the 97-row study. The recall figures themselves are unchanged and still refer to
+  the original 97 rows.
+
+### Changed
+
+- `serde_json` 1.0.151 → 1.0.154 (supersedes Dependabot PR #4).
+- CI runs with a read-only `GITHUB_TOKEN` (`permissions: contents: read`).
+- README "Related" links the new sibling repository,
+  [realism-gate](https://github.com/KhomDev/realism-gate).
+
 ## [0.4.3] - 2026-10-28
 
 ### Changed
@@ -250,6 +268,10 @@ The tree itself is unchanged except for the two fixes recorded here.
 - The rule catalog and gate definitions as data, embedded in the binary.
 - The fixture suite: one positive and one negative case per anti-pattern.
 
-[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.4.4...HEAD
+[0.4.4]: https://github.com/KhomDev/viability-gate/compare/v0.4.3...v0.4.4
+[0.4.3]: https://github.com/KhomDev/viability-gate/compare/v0.4.2...v0.4.3
+[0.4.2]: https://github.com/KhomDev/viability-gate/compare/v0.4.1...v0.4.2
+[0.4.1]: https://github.com/KhomDev/viability-gate/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/KhomDev/viability-gate/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/KhomDev/viability-gate/releases/tag/v0.3.0
