@@ -25,7 +25,7 @@ fails if the README has drifted from it.
 <!-- BEGIN:example -->
 
 ```text
-viability-gate 0.4.4  —  finding.md
+viability-gate 0.5.0  —  finding.md
 
   OUTCOME   KILL
             A hard blocker fired. Do not submit as written.
@@ -41,7 +41,7 @@ viability-gate 0.4.4  —  finding.md
              (docs/rules/P2.md; evidence: in-sample; origin rows: 3)
 
   PASS  P1, P6, P12, P13, P3, P5, P11, P20, P7, P16, P18, P21, P22, P15, P4, P9, P8, P10, P14, P17, P19
-  SKIP  G1 (no ledger supplied)   G2 (no ledger supplied)   G3 (no scope tree supplied)   G4 (no prior-audit surface supplied)   G5 (no test suite supplied)   G6 (fork status unknown)   G7 (no own-history log supplied)   D1 (D1 is a corpus match)
+  SKIP  G1 (no ledger supplied)   G2 (no ledger supplied)   G3 (no scope tree supplied)   G4 (no prior-audit surface supplied)   G5 (no test suite supplied)   G6 (fork status unknown)   G7 (no own-history log supplied)   D1 (no known-issues corpus supplied)
 
   Gates:  G1 ?   G2 ?   G3 ?   G4 ?   G5 ?   G6 ?   G7 ?   D1 ?
 
@@ -58,13 +58,13 @@ viability-gate 0.4.4  —  finding.md
 Note three things about that output:
 
 1. **Every gate reports `?`, not a pass.** Nothing but the finding was supplied, so none of them
-   could run. Unknown is not pass: a gate you could not run is a gate you have not run. Note that
-   `D1` is always `?` under `vg check` — it is driven by `--known-issues`, not by the target
-   inputs — which is why a bare `vg check` can never return `CLEAR`.
+   could run. Unknown is not pass: a gate you could not run is a gate you have not run, which is
+   why a bare `vg check` returns `INCOMPLETE` at best. Supply the inputs (including
+   `--known-issues`, which drives `D1`) and `CLEAR` becomes reachable.
 2. **Every fire shows the matched snippet and the sentence it came from**, so you can argue with it.
 3. **Gates do NOT subtract from the score.** The score is 100 minus the fired rules' weights, and
-   nothing else. The previous README claimed `0%` for a finding that trips P2 (40) and P19 (50),
-   which computes to 10. That example was simply stale; this one is generated.
+   nothing else. A gate that *fails* holds the finding (`HOLD`); a gate that could not run makes
+   the outcome `INCOMPLETE`.
 
 ## Measured (in-sample)
 
@@ -72,13 +72,16 @@ I calibrated this against my own rejection log: **59 of 97 logged rejections** m
 original finding text at high confidence, then scored on whether the tool flagged the same gate
 the program actually closed it on.
 
-> **Dated note (2026-10-28).** This recall study was measured on the **original 97** logged
-> rejections. The published dataset has since grown to **113 rows** (rejection-taxonomy v0.5.0),
-> and the recall study has **not** been re-run against the 16 added rows. Every `59/97`, `14/59`,
-> `45/59`, `48/59` and related figure in this section and in
-> [docs/calibration.md](docs/calibration.md) is therefore the original in-sample measurement,
-> unchanged. Only the reachable-automation counts under [Related](#related) track the current
-> 113-row dataset.
+> **Dated note (2026-11-06): these numbers describe an older catalog.** This recall study was
+> measured on the **original 97** logged rejections, with the catalog as it stood when the figures
+> were first published in 0.2.0 (2026-10-09). The dataset has since grown to **113 rows**, and the
+> catalog has changed since: 0.3.0 reworked several rules, and 0.5.0 changed P2, P3, P12, P13, P15,
+> P17, P19 and P21 and the sentence and heading parser. The study has **not** been re-run. Every
+> `59/97`, `14/59`, `45/59`, `48/59` and related figure in this section and in
+> [docs/calibration.md](docs/calibration.md) is the original in-sample measurement of that older
+> catalog; **the recall of the current catalog is unmeasured**. The source finding texts are
+> private, so the study cannot be re-run from this repository. Only the reachable-automation
+> counts under [Related](#related) track the current 113-row dataset.
 
 | Scoring | Result |
 |---|---:|
@@ -128,24 +131,27 @@ with a stated test, not a demonstrated fix.**
 
 Run these against a *target and program*, before hunting.
 
-| Gate | Question | What it needs | Evidence |
-|---|---|---|---|
-| **G1 - Severity floor** | Is there a payout tier at the severity I can reach? | program reward table | 5 rows |
-| **G2 - Exclusions** | Does a written exclusion clause cover my bug class? | program scope text | 20 rows |
-| **G3 - Scope tree** | Is the root cause inside the scoped files? | scope file list | 4 rows |
-| **G4 - Prior audits** | Is this surface already closed? | prior-audit links/PDFs | 7 rows |
-| **G5 - Test intent** | Does the project's own test suite assert this is intended? | target test suite | 1 row |
-| **G6 - Fork novelty** | Is this a fork whose behaviour is documented upstream? | target provenance | **none** |
-| **G7 - Own history** | Have I already submitted this bug family? | your own log | 12 rows |
+| Gate | Question | What it needs | What it does with a finding | Evidence |
+|---|---|---|---|---|
+| **G1 - Severity floor** | Is there a payout tier at the severity I can reach? | `--ledger` | compares `--severity` (or a `Severity:` line) with the floor | 5 rows |
+| **G2 - Exclusions** | Does a written exclusion clause cover my bug class? | `--ledger` | runs every exclusion `pattern` over the finding's claim sections | 20 rows |
+| **G3 - Scope tree** | Is the root cause inside the scoped files? | `--scope` | traces the file paths and file names the finding cites into the scope | 4 rows |
+| **G4 - Prior audits** | Is this surface already closed? | `--prior-audits` (+ ledger) | compares the finding with the ledger's prior-audit known issues | 7 rows |
+| **G5 - Test intent** | Does the project's own test suite assert this is intended? | `--tests` | looks for intent markers only in tests that name the finding's identifiers | 1 row |
+| **G6 - Fork novelty** | Is this a fork whose behaviour is documented upstream? | `--fork-of` | — | **none** |
+| **G7 - Own history** | Have I already submitted this bug family? | `--log` | containment of each logged family's words in the finding | 12 rows |
+| **D1 - Known issues** | Is this already in the program's known-issues list? | `--known-issues` | runs the corpus patterns over the finding | 41 rows |
 
-Plus **D1 - known-issues / duplicate**, implemented by `--known-issues` because its input is a
-corpus rather than a check over the target.
+`vg check` always has a finding. `vg gates` has one when you pass `--finding`; without it, G1-G4
+check only that their input is complete and well-formed, and their detail line says so. A ledger
+holding several programs needs `--program <id>`.
 
-**Which gates have supporting data.** G1-G5 and G7 are derived from rows in my own rejection log;
-the counts above are those rows. **G6 has no supporting rows at all** - my log contains no rejection
-attributed to fork provenance. It is kept because the failure mode is real and the check is cheap,
-but it is a judgement, not a measurement, and `vg gates` prints the evidence class next to every
-gate. Every count here is **in-sample**.
+**Which gates have supporting data.** G1-G5, G7 and D1 are derived from rows in my own rejection
+log; the counts above are those rows in rejection-taxonomy v0.5.1, and `scripts/check_readme.py`
+recomputes them. **G6 has no supporting rows at all** - my log contains no rejection attributed to
+fork provenance. It is kept because the failure mode is real and the check is cheap, but it is a
+judgement, not a measurement, and `vg gates` prints the evidence class next to every gate. Every
+count here is **in-sample**, and none is a measure of how well the gate detects anything.
 
 ### The anti-pattern catalog
 
@@ -154,25 +160,25 @@ Run these against a *draft finding*, before submitting. The full list is generat
 
 | ID | Anti-pattern | Verdict |
 |---|---|---|
-| P1 | Admitted non-exploit | hard (note on a bare hedge) |
+| P1 | Admitted non-exploit | hard (a bare "hypothetical" does not fire) |
 | P2 | Privileged-role-gated against a program exclusion | hard |
-| P3 | Front-run-only or operator-delay dependency | hard |
+| P3 | Front-run-only or operator-delay dependency | hard (not on a missing slippage or deadline check) |
 | P4 | Defective PoC | **warn** (hard only when the report says the PoC is not the real thing) |
 | P5 | Out-of-scope file primitive | hard (ignores PoC-section paths) |
 | P6 | Theoretical future-upgrade framing filed at Critical | hard |
-| P7 | Best-practice critique | soft |
-| P8 | Self-contradiction | soft |
-| P9 | Wrong line numbers or unverified paths | hard |
+| P7 | Best-practice or convention critique | soft |
+| P8 | Self-contradicting severity or impact sections | soft |
+| P9 | Wrong line numbers or unverified paths | hard (matches admissions that line numbers were fixed; it cannot check paths) |
 | P10 | Hypothetical TVL-scaling tables | warn |
 | P11 | Testnet-only finding at Critical tier | hard |
 | P12 | Panic or revert without persisted impact | soft |
-| P13 | "Inconsistent state" without a quantified delta | soft |
-| P14 | Triager-simulation table in the report | hard |
-| P15 | Intended behaviour asserted in the project's own tests | hard (note on bare "documented behaviour") |
+| P13 | "Inconsistent state" without a quantified fund-flow delta | soft |
+| P14 | Triager-simulation table embedded in the report | hard |
+| P15 | Intended behaviour asserted in the project's own test suite | **warn** on a bare "documented behaviour"; hard on an intent phrase |
 | P16 | Severity mismatch with the program payout floor | hard |
-| P17 | No attacker-win scenario | soft |
+| P17 | No attacker-win scenario | soft (not on a permanent freeze of funds) |
 | P18 | Known characteristic documented in a prior audit | hard |
-| P19 | Headline impact contradicted by PoC evidence | hard, **structural** |
+| P19 | Headline impact contradicted by PoC evidence (SPAM line) | hard, **structural** |
 | P20 | Requires a cooperating party | soft |
 | P21 | Realistic-configuration mismatch | soft |
 | P22 | Primitive-vs-product confusion | soft |
@@ -182,9 +188,18 @@ There are **22 entries, P1-P22**. The rule loader is the authority; this table i
 
 ### How a rule fires
 
-A document is split into **sections** at markdown headings and each section into **sentences**.
+A document is split into **sections** at markdown headings (`#` to `######` plus a space; lines
+inside fenced code blocks never start a section) and each section into **sentences**. A `.`, `!`
+or `?` ends a sentence only when whitespace or the end of the text follows it, so `Vault.sol`,
+`1.5`, `assert!(` and `e.g.` stay whole. A heading's kind is decided by whole words: *proof of
+concept*, *PoC*, *exploit*, *reproduce*, *steps* or *test* make a proof section, *recommendation*,
+*mitigation* or *fix* a recommendation, and *impact*, *severity*, *summary* or *description* a
+claim.
+
 A pattern is evaluated sentence by sentence, and a match is discarded when a negation cue appears
-within the **6 tokens immediately before it** (`no`, `not`, `never`, `without`, `n't`, ...).
+within the **6 tokens immediately before it** (`no`, `not`, `never`, `without`, `missing`,
+`lacks`, `n't`, ...). Typographic apostrophes are folded first, so "doesn’t" negates like
+"doesn't". Every pattern is case-insensitive unless it wraps a part in `(?-i:...)`.
 
 That window is why *"the prior audit missed this path"* no longer trips P18, and *"the
 implementation contradicts the documented behaviour"* no longer trips P15 - those are the strongest
@@ -208,10 +223,13 @@ One decision rule, applied in this order:
 | # | Condition | Outcome |
 |---|---|---|
 | 1 | any fired rule is `hard` | **KILL** |
-| 2 | any fired rule is `soft`, or the score is under the threshold | **HOLD** |
+| 2 | any fired rule is `soft`, any gate **failed**, or the score is under the threshold | **HOLD** |
 | 3 | any fired rule is `warn` | **NOTE** |
 | 4 | any gate is `?` | **INCOMPLETE** |
 | 5 | otherwise | **CLEAR** |
+
+A failed gate outranks an unknown one: a gate that ran and found a problem is worse news than a
+gate that could not run. Before 0.5.0 a failed gate did not change the outcome at all.
 
 **There is no `SUBMIT`.** The tool cannot tell you to submit: it has no positive evidence, only the
 absence of a blocker it knows how to look for. An earlier README said *"The tool never says 'submit'.
@@ -230,6 +248,11 @@ It was previously called "estimated payout odds", which claimed far more than it
 subtract from it - a gate that did not run produces `INCOMPLETE` instead, which is more honest than
 inventing a number for it. `--min-score` remains available as an optional CI threshold.
 
+### JSON shape
+
+`vg check --json` prints one report object for one finding and an **array** of report objects
+for several. `vg gates --json` prints an array of gate objects.
+
 ### Removed JSON fields
 
 0.2.0 carried the pre-0.2.0 field names for one minor version, as announced. 0.3.0 removes them,
@@ -246,11 +269,15 @@ along with the `deprecated_fields` list that named them:
 # scaffold the inputs a new target needs (start here)
 vg init my-target/
 
-# score a draft finding
+# score a draft finding (or several)
 vg check finding.md
 
 # run the pre-hunt gates against a target + your private program ledger
 vg gates --ledger my-ledger.yaml --scope scope.txt --log my-target/history.yaml
+
+# ... and test them against a specific draft, for one program in a multi-program ledger
+vg gates --ledger my-ledger.yaml --program my-program --scope scope.txt \
+         --known-issues my-known-issues.yaml --finding draft.md --severity high
 
 # machine-readable, for CI or an agent pipeline
 vg check finding.md --json
@@ -287,7 +314,9 @@ known_issues:
 ```
 
 A match is a **hard fail** with rule id `KI:<id>`, because a known issue is Not Applicable rather
-than Informational - a materially worse outcome than an unpaid finding.
+than Informational - a materially worse outcome than an unpaid finding. The corpus also drives gate
+`D1`: unknown without a corpus, fail on a match or on an unusable entry, pass otherwise. Patterns
+use Rust `regex` syntax and are case-insensitive: no lookaround, no backreferences.
 
 **This is a known-issue matcher, not a duplicate catcher.** It can only see what you transcribed,
 so **it cannot catch a concurrent duplicate** - a concurrent duplicate is, by definition, not in any
@@ -311,9 +340,19 @@ vg log check draft.md
 ```
 
 The log is a local YAML file (`.vg-history.yaml` by default) that is **gitignored and never
-uploaded** - the tool has no network code. Matching is deterministic token overlap (Jaccard over
-lowercased tokens of 4+ characters, threshold **0.18**); there is no model and no randomness. With
-no log supplied, **G7 reports `?`** rather than passing.
+uploaded** - the tool has no network code. Matching is deterministic **containment**: the share of
+a logged family label's words (lowercased, 3+ letters, stop words and a plural `s` dropped) that
+appear in the draft. A draft is a probable repeat at **0.60 or more, with at least two shared
+words** (one, for a one-word label). There is no model and no randomness. Write the family label
+in the words you would use in a report.
+
+Before 0.5.0 this was Jaccard over the whole document, which a short label can never reach on a
+real finding: a 300-word draft and a 5-word label share at most 5/300.
+
+With no log supplied, **G7 reports `?`**. An empty log passes, because there is nothing to repeat.
+`vg log add` validates `--outcome` and `--date`, quotes every value, appends to an existing file
+without dropping its comments, and writes through a temporary file, so the log is never left
+half-written.
 
 ### `vg init` - start here
 
@@ -338,7 +377,10 @@ vg bench --rejected rejected/ --accepted accepted/ --labels labels.csv
 
 Reports, per rule, the fire rate on the rejected set, the fire rate on the accepted set, and the
 **false-KILL rate on the accepted set**. That last number is the one that matters and the one this
-tool has never been able to measure: **the author's log contains no paid findings.**
+tool has never been able to measure: **the author's log contains no paid findings.** A rate over an
+empty set prints `n/a`, not `0.0%`. A `--labels` CSV (`filename,label`, label `rejected` or
+`accepted`) decides which set a file belongs to, overriding its directory, and the report says
+which files it moved.
 
 A tiny synthetic fixture set ships in [examples/bench/](examples/bench/) so the harness runs end to
 end in CI. It proves the harness works; it measures nothing about the world. The columns are
@@ -351,9 +393,13 @@ documented in [docs/bench.md](docs/bench.md).
 | Input | What it is | Where it lives |
 |---|---|---|
 | `--ledger` | Your transcription of a program's payout tier and exclusion clauses | Your machine. Schema in [bounty-economics](https://github.com/KhomDev/bounty-economics). |
-| `--scope` | The in-scope file list from the program's scope page | Your machine |
+| `--scope` | The in-scope file list (paths, `dir/` prefixes or globs) | Your machine |
 | `--prior-audits` | Links or local copies of the prior-audit surface | Your machine |
+| `--tests` | The target's test suite (sorted, VCS and build directories skipped, 4 MB cap) | Your machine |
+| `--known-issues` | The program's known-issues corpus | Your machine |
 | `--log` | Your own submission history | Your machine |
+
+A path you name that does not exist is an error, not a silent `?`.
 
 Nothing is uploaded, cached, or reported anywhere.
 
@@ -391,7 +437,8 @@ Read these before trusting a `CLEAR`.
 2. **It can be gamed by wording.** Because it is a text matcher, rewording a finding changes the
    outcome. That cuts both ways: it can be talked out of a true positive, and it cannot detect a
    finding that is simply well written.
-3. **In-sample.** The rules were derived from the same 97 rejections they were measured against.
+3. **In-sample, and of an older catalog.** The rules were derived from the same 97 rejections
+   they were measured against, and the measurement predates the rule changes in 0.3.0 and 0.5.0.
    See [docs/calibration.md](docs/calibration.md).
 4. **The false-positive rate is unmeasured.** The author's log has no paid findings, so there is no
    control set. The tool fired on 48 of 59 rejected findings (81%); how often it fires on *accepted*
@@ -408,6 +455,9 @@ Read these before trusting a `CLEAR`.
    published bucket totals are listed under [Related](#related).
 7. **The gate mapping is a judgement**, and the log's gate column is post-hoc and self-assessed.
 8. **A HOLD is advice.** The researcher still has to act on it.
+9. **The gates are heuristics too.** G2 is only as good as your exclusion patterns, G3 only sees
+   the file paths and file names your finding cites, G5 ties markers to tests by identifier name,
+   and G7 by shared words. A pass from any of them is the absence of a match, not a proof.
 
 ## Install
 
@@ -450,7 +500,11 @@ The suite is the mechanism that keeps the catalog honest:
 - **Every reproduced defect has a regression fixture** holding the exact counterexample text, so a
   fix cannot silently revert. The integration test drives the **real engine**, not a
   re-implementation of it.
-- The catalog must contain exactly 22 rules and the gate set exactly 7.
+- **`tests/cli.rs` drives the real binaries** the way this README does: every documented command,
+  the outcomes (including that `CLEAR` is reachable), and each defect that lived in the command
+  line rather than the engine.
+- The catalog must contain exactly 22 rules, and the gate file exactly 7 gates plus D1.
+- **No pattern may rely on case** outside a `(?-i:...)` group (`check_tripwires.py`, check E).
 - **No shipped rule may name a target, a platform or a private path.** Ecosystem tokens live in
   [rules/packs/](rules/packs/) instead, balanced across EVM/Solidity, Move, Rust/Solana, Cairo,
   Cosmos/Go, TON, Vyper and Polkadot/Substrate, so that a rule's presence reveals nothing about which
@@ -465,22 +519,26 @@ Rules live in [rules/anti-patterns.yaml](rules/anti-patterns.yaml) and
 [rules/gates.yaml](rules/gates.yaml). They are data, not code. A rule is:
 
 ```yaml
+# abridged from rules/anti-patterns.yaml
 - id: P17
   title: No attacker-win scenario
   group: E
   verdict: soft
   weight: 30
-  any_of: ["no (fund loss|attacker profit|extraction)"]
-  none_of: ["attacker (profits?|gains?) \\d"]
-  fix: "Identify the beneficiary and quantify the loss, or downgrade."
+  any_of: ["no (fund loss|attacker profit|attacker win|extraction)", "griefing", ...]
+  none_of: ["attacker (profits?|gains?|extracts?) \\d", ...]
+  fix: Identify the specific financial beneficiary and quantify the loss, or ...
   doc: docs/rules/P17.md
-  origin_rows: 6
+  origin_rows: 14
   evidence: in_sample
   fp_rate: null
 ```
 
-`any_of` needs one match; `all_of` needs every match; `none_of` suppresses the rule entirely.
-Patterns are case-insensitive regexes unless the pattern itself says otherwise.
+`any_of` needs one match; `all_of` needs every match; `none_of` suppresses the rule, across the
+whole document by default or only in the matching sentence with `none_of_scope: sentence`.
+`escalate_on` raises the verdict (to `escalate_to`, default hard) and `downgrade_on` drops a weak
+match. Patterns are case-insensitive regexes unless a part is wrapped in `(?-i:...)`. An unknown
+key, section kind or structural matcher is a load error, not a silently ignored typo.
 
 ## Related
 
@@ -512,12 +570,15 @@ Patterns are case-insensitive regexes unless the pattern itself says otherwise.
   catalog maps onto them: `P7_best_practice`, `P12_no_persisted_impact` and
   `P18_design_tradeoff`. The private log recorded those findings under the root-cause column
   rather than the gate column, so a rule firing on one of them cannot be scored against a gate
-  token. Said plainly: **the catalog automates 72 of 113 rejections (63.7%), not 69.0%.** The 69.0%
-  figure counts D1, which no pattern over a draft finding can find.
+  token. Said plainly: **the catalog can reach 72 of 113 rejections (63.7%)**, and the other 41 are
+  the D1 bucket, which no pattern over a draft finding can find. "Can reach" means a rule maps to
+  that bucket; it is not a recall figure.
 
   ```bash
-  # reproduce the reachable total
-  python scripts/check_readme.py
+  # reproduce the reachable total and every origin_rows, against the pinned taxonomy tag
+  git clone --branch "$(python scripts/check_readme.py --print-pinned-tag)" \
+      https://github.com/KhomDev/rejection-taxonomy ../rejection-taxonomy
+  python scripts/check_readme.py --require-dataset
   ```
 
 - [bounty-economics](https://github.com/KhomDev/bounty-economics) - the payout floors and
@@ -526,7 +587,7 @@ Patterns are case-insensitive regexes unless the pattern itself says otherwise.
   written: a static checker for Foundry tests that shows only what the harness made true
 
 Pin to a tag, not to `main`:
-[viability-gate v0.4.4](https://github.com/KhomDev/viability-gate/tree/v0.4.4).
+[viability-gate v0.5.0](https://github.com/KhomDev/viability-gate/tree/v0.5.0).
 
 ## License
 

@@ -9,15 +9,17 @@ name: release
 on:
   push:
     tags: ["v*"]
-  workflow_dispatch:
 
+# Least privilege. The default token is read-only; each job asks for exactly
+# what it needs. The build job runs dependency build scripts, so it must never
+# hold a token that can push tags or edit releases.
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
+  # Pinned so a release is built by a known compiler. Bump deliberately.
+  RUST_TOOLCHAIN: "1.98.0"
 
 jobs:
   # Refuse to build a release whose tag does not match the crate version, or
@@ -46,21 +48,27 @@ jobs:
           echo "tag $tag matches Cargo.toml version $version"
 
       - name: Install toolchain
-        run: rustup toolchain install stable --profile minimal --component clippy,rustfmt
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component clippy,rustfmt
+          rustup default "$RUST_TOOLCHAIN"
 
       - name: Format check
         run: cargo fmt --all -- --check
 
       - name: Clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --locked --all-targets --all-features -- -D warnings
 
       - name: Test
-        run: cargo test --release
+        run: cargo test --locked --release
 
   build:
     name: build (${{ matrix.target }})
     needs: verify
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     strategy:
       fail-fast: false
       matrix:
@@ -85,7 +93,10 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Install toolchain
-        run: rustup toolchain install stable --profile minimal --target ${{ matrix.target }}
+        shell: bash
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --target ${{ matrix.target }}
+          rustup default "$RUST_TOOLCHAIN"
 
       - name: Install the cross linker
         if: matrix.cross
@@ -148,6 +159,10 @@ jobs:
     name: publish the release
     needs: [verify, build]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v7
 
@@ -173,8 +188,14 @@ jobs:
           echo "--- SHA256SUMS ---"
           cat SHA256SUMS
 
+      - name: Attest the merged checksum file
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: dist/SHA256SUMS
+
       - name: Create the release
-        uses: softprops/action-gh-release@v3
+        # Third-party action that holds the write token: pinned to a commit.
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3
         with:
           files: |
             dist/*.tar.gz

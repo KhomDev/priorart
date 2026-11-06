@@ -38,23 +38,56 @@ pub struct RuleStat {
 }
 
 impl RuleStat {
-    pub fn rejected_rate(&self) -> f64 {
+    /// None when the rejected set is empty: a rate over nothing is unmeasured.
+    pub fn rejected_rate(&self) -> Option<f64> {
         rate(self.rejected_fires, self.rejected_total)
     }
-    pub fn accepted_rate(&self) -> f64 {
+    pub fn accepted_rate(&self) -> Option<f64> {
         rate(self.accepted_fires, self.accepted_total)
     }
-    pub fn false_kill_rate(&self) -> f64 {
+    pub fn false_kill_rate(&self) -> Option<f64> {
         rate(self.accepted_hard_kills, self.accepted_total)
     }
 }
 
-fn rate(n: usize, d: usize) -> f64 {
-    if d == 0 {
-        0.0
-    } else {
-        n as f64 / d as f64
+fn rate(n: usize, d: usize) -> Option<f64> {
+    (d > 0).then(|| n as f64 / d as f64)
+}
+
+fn pct(r: Option<f64>, width: usize) -> String {
+    match r {
+        Some(v) => format!("{:>w$.1}%", 100.0 * v, w = width - 1),
+        None => format!("{:>width$}", "n/a"),
     }
+}
+
+/// Read a `filename,label` CSV. Labels are `rejected` or `accepted`.
+fn read_labels(path: &Path) -> Result<BTreeMap<String, bool>, String> {
+    let text = std::fs::read_to_string(path)
+        .map_err(|e| format!("cannot read {}: {e}", path.display()))?;
+    let mut out = BTreeMap::new();
+    for (n, line) in text.lines().enumerate() {
+        let line = line.trim();
+        if line.is_empty() || (n == 0 && line.to_lowercase().starts_with("filename")) {
+            continue;
+        }
+        let mut parts = line.splitn(2, ',');
+        let name = parts.next().unwrap_or("").trim().trim_matches('"');
+        let label = parts.next().unwrap_or("").trim().trim_matches('"');
+        let accepted = match label.to_lowercase().as_str() {
+            "accepted" | "paid" => true,
+            "rejected" => false,
+            other => {
+                return Err(format!(
+                    "{}:{}: label {other:?} is not 'rejected' or 'accepted'",
+                    path.display(),
+                    n + 1
+                ))
+            }
+        };
+        out.insert(name.replace('\\', "/"), accepted);
+    }
+    Ok(out)
 }
 
 #[derive(Debug, Serialize, Default)]
@@ -77,32 +110,63 @@ pub fn run(
     accepted: &[(String, String)],
     labels: Option<&Path>,
 ) -> Result<BenchReport, String> {
-    let mut report = BenchReport {
-        rejected_total: rejected.len(),
-        accepted_total: accepted.len(),
-        labelled: false,
-        ..Default::default()
-    };
+    let mut report = BenchReport::default();
 
+    // Each finding's set: its label when a labels CSV names it, otherwise the
+    // directory it sits in.
+    let mut rejected_set: Vec<&(String, String)> = rejected.iter().collect();
+    let mut accepted_set: Vec<&(String, String)> = accepted.iter().collect();
     if let Some(path) = labels {
-        let text = std::fs::read_to_string(path)
-            .map_err(|e| format!("cannot read {}: {e}", path.display()))?;
-        let mut known = 0usize;
-        for line in text.lines().skip(1) {
-            if line.trim().is_empty() {
-                continue;
-            }
-            let mut parts = line.split(',');
-            let name = parts.next().unwrap_or("").trim();
-            if rejected.iter().any(|(n, _)| n == name) || accepted.iter().any(|(n, _)| n == name) {
-                known += 1;
+        let labels = read_labels(path)?;
+        let mut used = 0usize;
+        let mut moved = Vec::new();
+        let mut unlabelled = 0usize;
+        let all: Vec<(&(String, String), bool)> = rejected
+            .iter()
+            .map(|f| (f, false))
+            .chain(accepted.iter().map(|f| (f, true)))
+            .collect();
+        rejected_set.clear();
+        accepted_set.clear();
+        for (f, in_accepted_dir) in all {
+            let base = f.0.rsplit('/').next().unwrap_or(&f.0);
+            let label = labels.get(&f.0).or_else(|| labels.get(base)).copied();
+            let is_accepted = match label {
+                Some(l) => {
+                    used += 1;
+                    if l != in_accepted_dir {
+                        moved.push(f.0.clone());
+                    }
+                    l
+                }
+                None => {
+                    unlabelled += 1;
+                    in_accepted_dir
+                }
+            };
+            if is_accepted {
+                accepted_set.push(f);
+            } else {
+                rejected_set.push(f);
             }
         }
         report.labelled = true;
         report.notes.push(format!(
-            "labels CSV supplied: {known} label row(s) matched a finding filename"
+            "labels CSV supplied: {used} finding(s) labelled, {unlabelled} unlabelled (kept \
+             in their directory's set), {} label row(s) name no finding",
+            labels.len().saturating_sub(used)
         ));
+        if !moved.is_empty() {
+            report.notes.push(format!(
+                "the label overrides the directory for: {}",
+                moved.join(", ")
+            ));
+        }
     }
+    let rejected: Vec<(String, String)> = rejected_set.into_iter().cloned().collect();
+    let accepted: Vec<(String, String)> = accepted_set.into_iter().cloned().collect();
+    report.rejected_total = rejected.len();
+    report.accepted_total = accepted.len();
 
     let mut stats: BTreeMap<String, RuleStat> = BTreeMap::new();
     for cr in rules {
@@ -118,7 +182,7 @@ pub fn run(
         );
     }
 
-    for (_, text) in rejected {
+    for (_, text) in &rejected {
         let (findings, _) = crate::engine::evaluate(rules, text);
         let mut any_hard = false;
         for f in &findings {
@@ -134,7 +198,7 @@ pub fn run(
         }
     }
 
-    for (_, text) in accepted {
+    for (_, text) in &accepted {
         let (findings, _) = crate::engine::evaluate(rules, text);
         let mut any_hard = false;
         for f in &findings {
@@ -198,12 +262,12 @@ pub fn to_text(report: &BenchReport) -> String {
     ));
     for s in &report.per_rule {
         out.push_str(&format!(
-            "  {:<5} {:<6} {:>11.1}% {:>11.1}% {:>13.1}%\n",
+            "  {:<5} {:<6} {} {} {}\n",
             s.rule,
             s.verdict,
-            100.0 * s.rejected_rate(),
-            100.0 * s.accepted_rate(),
-            100.0 * s.false_kill_rate(),
+            pct(s.rejected_rate(), 12),
+            pct(s.accepted_rate(), 12),
+            pct(s.false_kill_rate(), 14),
         ));
     }
     out.push('\n');

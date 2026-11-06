@@ -4,9 +4,12 @@ use serde::{Deserialize, Serialize};
 
 // ---------------------------------------------------------------- rules
 
+/// The only catalog / gate-file format version this build understands.
+pub const CATALOG_VERSION: u32 = 1;
+
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RuleFile {
-    #[allow(dead_code)]
     pub version: u32,
     pub rules: Vec<Rule>,
 }
@@ -31,7 +34,69 @@ impl Evidence {
     }
 }
 
+/// Where a `none_of` match suppresses a rule.
+#[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum NoneOfScope {
+    /// A match anywhere in the document suppresses the rule.
+    #[default]
+    Document,
+    /// Only a match in the same sentence as the `any_of` hit suppresses it.
+    Sentence,
+}
+
+impl NoneOfScope {
+    pub fn label(self) -> &'static str {
+        match self {
+            NoneOfScope::Document => "document",
+            NoneOfScope::Sentence => "sentence",
+        }
+    }
+}
+
+/// The kind of a markdown section, decided from its heading.
+#[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum SectionKind {
+    /// Proof of concept, reproduction steps, tests.
+    Poc,
+    /// Title, summary, description, impact, severity.
+    Claim,
+    /// Recommendation, mitigation, remediation, fix.
+    Recommendation,
+    /// Anything else.
+    Other,
+}
+
+impl SectionKind {
+    pub fn label(self) -> &'static str {
+        match self {
+            SectionKind::Poc => "poc",
+            SectionKind::Claim => "claim",
+            SectionKind::Recommendation => "recommendation",
+            SectionKind::Other => "other",
+        }
+    }
+}
+
+/// Hand-written structural matchers a rule can dispatch to.
+#[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum Structural {
+    /// P19: the headline claims a loss that the proof section contradicts.
+    P19HeadlineVsProof,
+}
+
+impl Structural {
+    pub fn label(self) -> &'static str {
+        match self {
+            Structural::P19HeadlineVsProof => "p19_headline_vs_proof",
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct Rule {
     pub id: String,
     pub title: String,
@@ -58,22 +123,17 @@ pub struct Rule {
     /// Dispatch a rule to a hand-written structural matcher, e.g.
     /// `p19_headline_vs_proof`. Structural rules ignore any_of/all_of.
     #[serde(default)]
-    pub structural: Option<String>,
+    pub structural: Option<Structural>,
     /// `document` (default) applies none_of to the whole text; `sentence`
     /// applies it only to the sentence that produced the any_of match.
-    #[serde(default = "default_scope")]
-    pub none_of_scope: String,
-    /// Section kinds to skip when matching: `poc`, `claim`, `other`.
     #[serde(default)]
-    pub ignore_sections: Vec<String>,
+    pub none_of_scope: NoneOfScope,
+    /// Section kinds to skip when matching: `poc`, `claim`,
+    /// `recommendation`, `other`.
+    #[serde(default)]
+    pub ignore_sections: Vec<SectionKind>,
     pub fix: String,
     /// Public documentation for this rule, e.g. `docs/rules/P19.md`.
-    ///
-    /// This replaces the old `doctrine` field. That field named a path inside
-    /// the author's private workspace, which was both a leak and useless to a
-    /// reader who does not have that workspace. `doctrine` is still accepted as
-    /// a deserialisation alias for one minor version, but nothing writes it.
-    #[serde(alias = "doctrine")]
     pub doc: String,
     /// How many rows of the author's log this rule was derived from. 0 means
     /// "not measured", not "zero rows".
@@ -97,10 +157,6 @@ pub struct Rule {
 
 fn default_true() -> bool {
     true
-}
-
-fn default_scope() -> String {
-    "document".to_string()
 }
 
 #[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -137,13 +193,14 @@ impl Verdict {
 pub enum Outcome {
     /// At least one hard rule fired.
     Kill,
-    /// At least one soft rule fired, or the score is under the threshold.
+    /// At least one soft rule fired, a gate failed, or the score is under the
+    /// threshold.
     Hold,
     /// Only warnings fired.
     Note,
-    /// No hard rule fired, and at least one gate could not be run.
+    /// Nothing fired and no gate failed, but at least one gate could not run.
     Incomplete,
-    /// No hard rule fired, no soft rule fired, and every gate ran.
+    /// Nothing fired, no gate failed, and every gate ran.
     Clear,
 }
 
@@ -163,7 +220,7 @@ impl Outcome {
         match self {
             Outcome::Kill => "A hard blocker fired. Do not submit as written.",
             Outcome::Hold => {
-                "A soft blocker fired, or the score is below threshold. Hold in notes."
+                "A soft blocker fired, a gate failed, or the score is below threshold. Hold in notes."
             }
             Outcome::Note => "Only notes fired. This is not a clearance - read them.",
             Outcome::Incomplete => {
@@ -175,13 +232,14 @@ impl Outcome {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct GateFile {
-    #[allow(dead_code)]
     pub version: u32,
     pub gates: Vec<Gate>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct Gate {
     pub id: String,
     pub title: String,
@@ -197,17 +255,14 @@ pub struct Gate {
     /// How many log rows support this gate. 0 = not measured.
     #[serde(default)]
     pub origin_rows: u32,
-    /// For a gate that is implemented by a flag rather than by this command,
-    /// e.g. `--known-issues` for D1.
+    /// The flag that supplies this gate's input when it is a corpus rather than
+    /// a target-side input, e.g. `--known-issues` for D1. Informational only.
     #[serde(default)]
     pub implemented_by: Option<String>,
-    /// False for a declared-but-not-dispatched gate. Defaults to true, so every
-    /// existing gate keeps its behaviour.
-    #[serde(default = "default_true")]
-    pub run_by_gates_command: bool,
 }
 
 #[derive(Debug, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct GateCheck {
     pub name: String,
     pub test: String,
@@ -218,6 +273,10 @@ pub struct GateCheck {
 
 /// The researcher's own private transcription of a program's terms.
 /// Never bundled with the tool; always supplied at runtime.
+///
+/// Deliberately NOT `deny_unknown_fields`: the ledger schema is owned by
+/// bounty-economics, whose contract is that new fields are additive and an
+/// older reader ignores them.
 #[derive(Debug, Deserialize)]
 pub struct LedgerEntry {
     pub id: String,
@@ -272,6 +331,7 @@ pub struct PriorAudit {
 /// see issues the user already transcribed, so it cannot catch a concurrent
 /// duplicate, which by definition is not in any corpus yet.
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct KnownIssue {
     pub id: String,
     pub summary: String,
@@ -287,9 +347,10 @@ pub struct KnownIssue {
 /// One entry in the researcher's own submission log.
 ///
 /// This is the only input that can catch the author's own repeats. In the source
-/// log behind this tool, 12 of 97 rows repeat a family already present, so a
+/// log behind this tool, 12 of 113 rows repeat a family already present, so a
 /// local history beats any regex over a finding's prose.
 #[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct LogEntry {
     /// The bug family label, as the researcher writes it. Free text by design:
     /// this file is local, gitignored, and never leaves the machine.
@@ -310,7 +371,8 @@ pub struct Finding {
     pub group: String,
     pub verdict: Verdict,
     pub weight: u32,
-    /// The matched snippets, each with its containing sentence.
+    /// The matched snippets. `matched_sentences[i]` is the sentence that
+    /// `evidence[i]` came from.
     pub evidence: Vec<String>,
     /// The sentence each snippet was found in, so the user can argue with it.
     pub matched_sentences: Vec<String>,

@@ -1,12 +1,21 @@
 # Calibration — viability-gate against 97 logged rejections
 
-> **Dated note (2026-10-21, counts updated 2026-11-05).** Every number in this document was measured on the **original 97**
-> logged rejections — the in-sample corpus the 22 anti-patterns were derived from. The published
-> rejection dataset has since grown to **113 rows** (rejection-taxonomy v0.5.0). This recall study
-> has **not** been re-run against the 16 added rows and these figures are left exactly as measured;
-> the `59/97`, `14/59` (23.7%), `45/59` (76.3%), 52-point-gap and `48/59` (81%) numbers all refer
-> to the original 97-row log. Only the reachable-automation counts in the repository README track
-> the 113-row dataset.
+> **Dated note (2026-10-21, updated 2026-11-06).** Every number in this document was measured on
+> the **original 97** logged rejections — the in-sample corpus the 22 anti-patterns were derived
+> from — **with the catalog as it stood when the figures were first published in 0.2.0
+> (2026-10-09)**. Two things have changed since, and the study has not been re-run for either:
+>
+> - the published rejection dataset has grown to **113 rows** (rejection-taxonomy v0.5.1);
+> - **the catalog has changed.** 0.3.0 reworked several rules, and 0.5.0 changed P2, P3, P12,
+>   P13, P15, P17, P19 and P21 and the sentence and heading parser, after an audit reproduced
+>   valid findings that the older catalog hard-killed.
+>
+> So the `59/97`, `14/59` (23.7%), `45/59` (76.3%), 52-point-gap and `48/59` (81%) numbers describe
+> an older catalog on the original 97-row log, left exactly as measured. **The recall of the
+> current catalog is unmeasured.** The original finding texts are private, so this study cannot
+> be re-run from the repository; `tools/calibrate/calibrate.py` and its synthetic fixture show
+> the method, not the result. Only the reachable-automation counts in the README track the
+> 113-row dataset.
 
 **Read this first: the measurement below is in-sample.** The 22 anti-patterns were
 derived from the patterns in this same log, so the tool was built knowing these

@@ -1,5 +1,5 @@
 //! vg — score a draft audit finding against 22 documented rejection anti-patterns
-//! and 7 pre-hunt gates.
+//! and 7 pre-hunt gates plus the D1 known-issues gate.
 //!
 //! Offline, deterministic, no API key. Ships rules, not data: no program names, no
 //! chains, no reward tables. Every target-specific input arrives at runtime.
@@ -7,7 +7,7 @@
 use crate::{bench, engine, init, model, render};
 
 use clap::{CommandFactory, FromArgMatches, Parser, Subcommand};
-use engine::CompiledRule;
+use engine::{CompiledRule, GateInputs, Severity};
 use model::*;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -27,6 +27,22 @@ known blocker was found by this tool.";
 
 /// Default path for the local own-history log. Gitignored by design.
 pub const DEFAULT_LOG: &str = ".vg-history.yaml";
+
+/// Total bytes `--tests` reads from a directory.
+const TEST_BUDGET: usize = 4_000_000;
+
+/// Directories `--tests` never descends into: VCS metadata and build output.
+const SKIP_DIRS: [&str; 9] = [
+    ".git",
+    ".hg",
+    ".svn",
+    "node_modules",
+    "target",
+    "out",
+    "cache",
+    "dist",
+    "build",
+];
 
 #[derive(Parser)]
 #[command(
@@ -51,77 +67,83 @@ struct Cli {
     command: Command,
 }
 
+/// Target and program inputs shared by `check` and `gates`.
+#[derive(clap::Args, Clone, Default)]
+struct TargetArgs {
+    /// Your private program ledger (enables G1, G2 and part of G4)
+    #[arg(long)]
+    ledger: Option<PathBuf>,
+
+    /// The ledger entry to use when the ledger holds more than one program
+    #[arg(long, value_name = "ID")]
+    program: Option<String>,
+
+    /// The severity of your thesis: critical, high, medium or low. Defaults to a
+    /// "Severity:" line in the finding. G1 compares it with the payout floor.
+    #[arg(long)]
+    severity: Option<String>,
+
+    /// In-scope file list, one path, directory/ or glob per line
+    #[arg(long)]
+    scope: Option<PathBuf>,
+
+    /// Prior-audit references, one per line
+    #[arg(long)]
+    prior_audits: Option<PathBuf>,
+
+    /// Path to the target's test suite (a directory or file)
+    #[arg(long)]
+    tests: Option<PathBuf>,
+
+    /// Upstream project this target forks, or "none"
+    #[arg(long)]
+    fork_of: Option<String>,
+
+    /// Known-issues corpus for this program (YAML). Drives gate D1. This is a
+    /// KNOWN-ISSUE MATCHER: it can only see what you transcribed, so it cannot
+    /// catch a concurrent duplicate.
+    #[arg(long)]
+    known_issues: Option<PathBuf>,
+
+    /// Your own submission history (YAML). Enables gate G7, which flags
+    /// probable repeats of a family you already submitted.
+    #[arg(long)]
+    log: Option<PathBuf>,
+}
+
 #[derive(Subcommand)]
 enum Command {
-    /// Score a draft finding against the anti-pattern catalog
+    /// Score one or more draft findings against the anti-pattern catalog
     Check {
-        /// Path to the finding (markdown). Use - for stdin.
-        finding: String,
+        /// Path(s) to the finding (markdown). Use - for stdin.
+        #[arg(required = true, num_args = 1..)]
+        findings: Vec<String>,
 
-        /// Machine-readable output
+        /// Machine-readable output (an object for one finding, an array for several)
         #[arg(long)]
         json: bool,
 
         /// Score threshold below which the outcome is HOLD (default 50).
         /// The score is an uncalibrated heuristic, not a probability.
-        #[arg(long, default_value_t = 50)]
+        #[arg(long, default_value_t = 50, value_parser = clap::value_parser!(u32).range(0..=100))]
         min_score: u32,
 
         /// One row per rule, table format
         #[arg(long)]
         table: bool,
 
-        /// Exit non-zero when the outcome is KILL
+        /// Exit non-zero when any outcome is KILL
         #[arg(long)]
         fail_on_kill: bool,
 
-        /// Your private program ledger (enables the pre-hunt gates)
-        #[arg(long)]
-        ledger: Option<PathBuf>,
-
-        /// In-scope file list, one path per line
-        #[arg(long)]
-        scope: Option<PathBuf>,
-
-        /// Prior-audit references, one per line
-        #[arg(long)]
-        prior_audits: Option<PathBuf>,
-
-        /// Path to the target's test suite (a directory or file)
-        #[arg(long)]
-        tests: Option<PathBuf>,
-
-        /// Upstream project this target forks, or "none"
-        #[arg(long)]
-        fork_of: Option<String>,
-
-        /// Known-issues corpus for this program (YAML). This is a KNOWN-ISSUE
-        /// MATCHER: it can only see what you transcribed, so it cannot catch a
-        /// concurrent duplicate.
-        #[arg(long)]
-        known_issues: Option<PathBuf>,
-
-        /// Your own submission history (YAML). Enables gate G7, which flags
-        /// probable repeats of a family you already submitted.
-        #[arg(long)]
-        log: Option<PathBuf>,
+        #[command(flatten)]
+        target: TargetArgs,
     },
 
     /// Run only the pre-hunt gates
     Gates {
-        #[arg(long)]
-        ledger: Option<PathBuf>,
-        #[arg(long)]
-        scope: Option<PathBuf>,
-        #[arg(long)]
-        prior_audits: Option<PathBuf>,
-        #[arg(long)]
-        tests: Option<PathBuf>,
-        #[arg(long)]
-        fork_of: Option<String>,
-        #[arg(long)]
-        log: Option<PathBuf>,
-        /// A draft finding to compare against the own-history log (G7)
+        /// A draft finding to test the gates against. Without one, G1-G5 check
+        /// only that their input is complete and well-formed.
         #[arg(long)]
         finding: Option<PathBuf>,
         #[arg(long)]
@@ -129,6 +151,8 @@ enum Command {
         /// Show each gate's individual checks
         #[arg(long)]
         verbose: bool,
+        #[command(flatten)]
+        target: TargetArgs,
     },
 
     /// Explain one anti-pattern, with its detection patterns
@@ -161,7 +185,8 @@ enum Command {
         /// Directory of findings that were accepted or paid
         #[arg(long)]
         accepted: Option<PathBuf>,
-        /// CSV of labels: filename,label
+        /// CSV of labels, `filename,label` with label `rejected` or `accepted`.
+        /// A label overrides the directory a file sits in.
         #[arg(long)]
         labels: Option<PathBuf>,
         /// Emit machine-readable output
@@ -183,7 +208,7 @@ enum LogAction {
         /// A free-text note
         #[arg(long)]
         note: Option<String>,
-        /// ISO date. Defaults to today.
+        /// ISO date (YYYY-MM-DD). Defaults to today.
         #[arg(long)]
         date: Option<String>,
         /// The log file (default: .vg-history.yaml)
@@ -212,10 +237,15 @@ pub fn main_entry_named(name: &'static str) -> ExitCode {
     match run(cli) {
         Ok(code) => code,
         Err(msg) => {
-            eprintln!("{name}: {msg}");
+            eprintln!("{name}: {}", render::sanitize(&msg));
             ExitCode::from(2)
         }
     }
+}
+
+/// Print text that may carry user-supplied strings, without control characters.
+fn emit(s: &str) {
+    print!("{}", render::sanitize(s));
 }
 
 fn load_rules(dir: Option<&Path>) -> Result<(Vec<CompiledRule>, Vec<Gate>), String> {
@@ -237,6 +267,17 @@ fn load_rules(dir: Option<&Path>) -> Result<(Vec<CompiledRule>, Vec<Gate>), Stri
         serde_saphyr::from_str(&ap_text).map_err(|e| format!("anti-patterns.yaml: {e}"))?;
     let gates: GateFile =
         serde_saphyr::from_str(&gate_text).map_err(|e| format!("gates.yaml: {e}"))?;
+    for (file, version) in [
+        ("anti-patterns.yaml", parsed.version),
+        ("gates.yaml", gates.version),
+    ] {
+        if version != CATALOG_VERSION {
+            return Err(format!(
+                "{file}: version {version} is not supported (this build reads version \
+                 {CATALOG_VERSION})"
+            ));
+        }
+    }
 
     let compiled = parsed
         .rules
@@ -264,14 +305,21 @@ fn read_text(path: &str) -> Result<String, String> {
 /// Strip a UTF-8 BOM. Windows editors add one, and it corrupts the first
 /// evidence line in the report.
 fn strip_bom(s: String) -> String {
-    s.trim_start_matches('\u{feff}').to_string()
+    match s.strip_prefix('\u{feff}') {
+        Some(rest) => rest.to_string(),
+        None => s,
+    }
+}
+
+fn read_file(p: &Path) -> Result<String, String> {
+    std::fs::read_to_string(p)
+        .map(strip_bom)
+        .map_err(|e| format!("cannot read {}: {e}", p.display()))
 }
 
 fn read_lines(path: &Option<PathBuf>) -> Result<Option<Vec<String>>, String> {
     let Some(p) = path else { return Ok(None) };
-    let text =
-        std::fs::read_to_string(p).map_err(|e| format!("cannot read {}: {e}", p.display()))?;
-    let text = strip_bom(text);
+    let text = read_file(p)?;
     Ok(Some(
         text.lines()
             .map(str::trim)
@@ -283,29 +331,22 @@ fn read_lines(path: &Option<PathBuf>) -> Result<Option<Vec<String>>, String> {
 
 fn read_ledger(path: &Option<PathBuf>) -> Result<Option<Vec<LedgerEntry>>, String> {
     let Some(p) = path else { return Ok(None) };
-    let text =
-        std::fs::read_to_string(p).map_err(|e| format!("cannot read {}: {e}", p.display()))?;
-    let text = strip_bom(text);
+    let text = read_file(p)?;
     let entries: Vec<LedgerEntry> =
         serde_saphyr::from_str(&text).map_err(|e| format!("{}: {e}", p.display()))?;
     Ok(Some(entries))
 }
 
-/// Load a known-issues corpus.
-///
-/// Accepts either a bare list or a mapping with a known_issues: key, so both
-/// shapes work. This is a KNOWN-ISSUE MATCHER: it can only see what the user
-/// transcribed, so it cannot catch a concurrent duplicate.
+/// Load a known-issues corpus: a bare list, or a mapping with a known_issues:
+/// key.
 fn read_known_issues(path: &Option<PathBuf>) -> Result<Option<Vec<KnownIssue>>, String> {
     let Some(p) = path else { return Ok(None) };
-    let text =
-        std::fs::read_to_string(p).map_err(|e| format!("cannot read {}: {e}", p.display()))?;
-    let text = strip_bom(text);
-
+    let text = read_file(p)?;
     if let Ok(list) = serde_saphyr::from_str::<Vec<KnownIssue>>(&text) {
         return Ok(Some(list));
     }
     #[derive(serde::Deserialize)]
+    #[serde(deny_unknown_fields)]
     struct Wrapper {
         known_issues: Vec<KnownIssue>,
     }
@@ -313,77 +354,154 @@ fn read_known_issues(path: &Option<PathBuf>) -> Result<Option<Vec<KnownIssue>>, 
     Ok(Some(w.known_issues))
 }
 
-/// Read the researcher's own submission history.
-///
-/// Accepts a bare list or a mapping with a submissions: key. An absent file means
-/// G7 reports Unknown, which is the fail-closed behaviour we want.
+/// Read the researcher's own submission history: a bare list, or a mapping
+/// with a submissions: key. A path you named that does not exist is an error,
+/// not a silent "unknown".
 fn read_log(path: &Option<PathBuf>) -> Result<Option<Vec<LogEntry>>, String> {
     let Some(p) = path else { return Ok(None) };
     if !p.exists() {
-        return Ok(None);
-    }
-    let text =
-        std::fs::read_to_string(p).map_err(|e| format!("cannot read {}: {e}", p.display()))?;
-    let text = strip_bom(text);
-    if let Ok(list) = serde_saphyr::from_str::<Vec<LogEntry>>(&text) {
-        return Ok(Some(list));
-    }
-    #[derive(serde::Deserialize)]
-    struct Wrapper {
-        submissions: Vec<LogEntry>,
-    }
-    let w: Wrapper = serde_saphyr::from_str(&text).map_err(|e| format!("{}: {e}", p.display()))?;
-    Ok(Some(w.submissions))
-}
-
-/// Read a test suite: a single file, or every file under a directory.
-fn read_tests(path: &Option<PathBuf>) -> Result<Option<String>, String> {
-    let Some(p) = path else { return Ok(None) };
-    if p.is_file() {
-        return Ok(Some(
-            std::fs::read_to_string(p).map_err(|e| format!("cannot read {}: {e}", p.display()))?,
+        return Err(format!(
+            "no history log at {}. Run 'vg log add ...' to create one",
+            p.display()
         ));
     }
-    let mut combined = String::new();
-    let mut stack = vec![p.clone()];
-    let mut budget = 4_000_000usize; // cap total bytes read
+    let text = read_file(p)?;
+    init::parse_log(&text)
+        .map(Some)
+        .map_err(|e| format!("{}: {e}", p.display()))
+}
+
+/// Read a test suite: a single file, or every UTF-8 file under a directory.
+///
+/// Deterministic: files are read in sorted path order, VCS and build
+/// directories are skipped, symbolic links are not followed, and the total is
+/// capped at TEST_BUDGET bytes, cut on a character boundary.
+fn read_tests(path: &Option<PathBuf>) -> Result<Option<Vec<(String, String)>>, String> {
+    let Some(root) = path else { return Ok(None) };
+    if root.is_file() {
+        return Ok(Some(vec![(root.display().to_string(), read_file(root)?)]));
+    }
+    if !root.is_dir() {
+        return Err(format!(
+            "--tests {}: not a file or directory",
+            root.display()
+        ));
+    }
+    let mut files: Vec<PathBuf> = Vec::new();
+    let mut stack = vec![root.clone()];
     while let Some(dir) = stack.pop() {
-        let rd = match std::fs::read_dir(&dir) {
-            Ok(rd) => rd,
-            Err(_) => continue,
+        let Ok(rd) = std::fs::read_dir(&dir) else {
+            continue;
         };
         for entry in rd.flatten() {
-            let path = entry.path();
-            if path.is_dir() {
-                stack.push(path);
-            } else if let Ok(text) = std::fs::read_to_string(&path) {
-                let take = text.len().min(budget);
-                combined.push_str(&text[..take]);
-                combined.push('\n');
-                budget = budget.saturating_sub(take);
-                if budget == 0 {
-                    break;
+            let Ok(meta) = std::fs::symlink_metadata(entry.path()) else {
+                continue;
+            };
+            let name = entry.file_name().to_string_lossy().to_string();
+            if meta.file_type().is_symlink() {
+                continue;
+            } else if meta.is_dir() {
+                if !SKIP_DIRS.contains(&name.as_str()) {
+                    stack.push(entry.path());
                 }
+            } else if meta.is_file() {
+                files.push(entry.path());
             }
         }
     }
-    Ok(Some(combined))
+    files.sort();
+    let mut out = Vec::new();
+    let mut budget = TEST_BUDGET;
+    for f in files {
+        if budget == 0 {
+            break;
+        }
+        let Ok(text) = std::fs::read_to_string(&f) else {
+            continue;
+        };
+        let mut cut = text.len().min(budget);
+        while !text.is_char_boundary(cut) {
+            cut -= 1;
+        }
+        budget -= cut;
+        let rel = f
+            .strip_prefix(root)
+            .unwrap_or(&f)
+            .to_string_lossy()
+            .replace('\\', "/");
+        out.push((rel, text[..cut].to_string()));
+    }
+    Ok(Some(out))
 }
 
-#[allow(clippy::too_many_arguments)]
+/// Everything read from the target arguments, owned.
+struct Target {
+    ledger: Option<Vec<LedgerEntry>>,
+    program: Option<String>,
+    severity: Option<Severity>,
+    scope: Option<Vec<String>>,
+    prior: Option<Vec<String>>,
+    tests: Option<Vec<(String, String)>>,
+    fork_of: Option<String>,
+    known: Option<Vec<KnownIssue>>,
+    log: Option<Vec<LogEntry>>,
+}
+
+impl Target {
+    fn read(a: &TargetArgs) -> Result<Self, String> {
+        let ledger = read_ledger(&a.ledger)?;
+        if let Some(id) = &a.program {
+            match &ledger {
+                None => return Err("--program needs --ledger".into()),
+                Some(entries) if !entries.iter().any(|e| &e.id == id) => {
+                    return Err(format!("no program {id:?} in the ledger"));
+                }
+                Some(_) => {}
+            }
+        }
+        let severity =
+            match &a.severity {
+                None => None,
+                Some(s) => Some(Severity::parse(s).ok_or_else(|| {
+                    format!("--severity {s:?}: use critical, high, medium or low")
+                })?),
+            };
+        Ok(Self {
+            ledger,
+            program: a.program.clone(),
+            severity,
+            scope: read_lines(&a.scope)?,
+            prior: read_lines(&a.prior_audits)?,
+            tests: read_tests(&a.tests)?,
+            fork_of: a.fork_of.clone(),
+            known: read_known_issues(&a.known_issues)?,
+            log: read_log(&a.log)?,
+        })
+    }
+
+    fn inputs<'a>(&'a self, finding: Option<&'a str>) -> GateInputs<'a> {
+        GateInputs {
+            ledger: self.ledger.as_deref(),
+            program: self.program.as_deref(),
+            severity: self.severity,
+            scope: self.scope.as_deref(),
+            prior_audits: self.prior.as_deref(),
+            tests: self.tests.as_deref(),
+            fork_of: self.fork_of.as_deref(),
+            own_log: self.log.as_deref(),
+            known_issues: self.known.as_deref(),
+            finding,
+        }
+    }
+}
+
 fn build_report(
     subject: String,
     text: &str,
     rules: &[CompiledRule],
     gates: &[Gate],
     threshold: u32,
-    ledger: Option<&[LedgerEntry]>,
-    scope: Option<&[String]>,
-    prior: Option<&[String]>,
-    tests: Option<&str>,
-    fork_of: Option<&str>,
-    known: Option<&[KnownIssue]>,
-    own_log: Option<&[LogEntry]>,
+    target: &Target,
 ) -> Report {
     let (mut findings, passed) = engine::evaluate(rules, text);
 
@@ -391,7 +509,7 @@ fn build_report(
     // a known issue is a hard fail: it makes the finding Not Applicable rather
     // than merely unpaid.
     let mut ki_warnings: Vec<String> = Vec::new();
-    if let Some(issues) = known {
+    if let Some(issues) = &target.known {
         let (ki_findings, warnings) = engine::match_known_issues(issues, text);
         ki_warnings = warnings;
         findings.extend(ki_findings);
@@ -408,21 +526,8 @@ fn build_report(
             .then(b.weight.cmp(&a.weight))
     });
 
-    let gate_outcomes = engine::evaluate_gates(
-        gates,
-        ledger,
-        scope,
-        prior,
-        tests,
-        fork_of,
-        own_log,
-        Some(text),
-    );
-    let gates_unknown = gate_outcomes
-        .iter()
-        .any(|g| g.status == GateStatus::Unknown);
-
-    let (outcome, viability_score) = engine::outcome(&findings, gates_unknown, threshold);
+    let gate_outcomes = engine::evaluate_gates(gates, &target.inputs(Some(text)));
+    let (outcome, viability_score) = engine::outcome(&findings, &gate_outcomes, threshold);
     Report {
         tool: "viability-gate".into(),
         version: VERSION.into(),
@@ -439,12 +544,12 @@ fn build_report(
 }
 
 fn run(cli: Cli) -> Result<ExitCode, String> {
-    // init and log write local files and need no rules, so they run before the
-    // catalog is loaded - a user who has not yet read the docs should not hit a
-    // load error on their first command.
+    // init and log add write local files and need no rules, so they run before
+    // the catalog is loaded - a user who has not yet read the docs should not hit
+    // a load error on their first command.
     match &cli.command {
-        Command::Init { dir, force } => return Ok(init::run(dir, *force)),
-        Command::Log { action } => return Ok(run_log(action)),
+        Command::Init { dir, force } => return init::run(dir, *force),
+        Command::Log { action } => return run_log(action, cli.rules.as_deref()),
         _ => {}
     }
 
@@ -455,7 +560,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
 
         Command::Rules => {
             let plain: Vec<Rule> = rules.into_iter().map(|c| c.rule).collect();
-            print!("{}", render::rules_list(&plain));
+            emit(&render::rules_list(&plain));
             println!(
                 "\n  {} rules. Run 'vg explain <ID>' for detection patterns.",
                 plain.len()
@@ -467,7 +572,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             let want = id.to_uppercase();
             match rules.iter().find(|c| c.rule.id.to_uppercase() == want) {
                 Some(c) => {
-                    print!("{}", render::explain(&c.rule));
+                    emit(&render::explain(&c.rule));
                     Ok(ExitCode::SUCCESS)
                 }
                 None => Err(format!("no rule {id:?}. Run 'vg rules' for the catalog.")),
@@ -494,49 +599,32 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             if json {
                 println!("{}", bench::to_json(&report));
             } else {
-                print!("{}", bench::to_text(&report));
+                emit(&bench::to_text(&report));
             }
             Ok(ExitCode::SUCCESS)
         }
 
         Command::Gates {
-            ledger,
-            scope,
-            prior_audits,
-            tests,
-            fork_of,
-            log,
             finding,
             json,
             verbose,
+            target,
         } => {
-            let l = read_ledger(&ledger)?;
-            let s = read_lines(&scope)?;
-            let p = read_lines(&prior_audits)?;
-            let t = read_tests(&tests)?;
-            let history = read_log(&log)?;
+            let target = Target::read(&target)?;
             let finding_text = match &finding {
                 Some(path) => Some(read_text(&path.display().to_string())?),
                 None => None,
             };
-            let outcomes = engine::evaluate_gates(
-                &gates,
-                l.as_deref(),
-                s.as_deref(),
-                p.as_deref(),
-                t.as_deref(),
-                fork_of.as_deref(),
-                history.as_deref(),
-                finding_text.as_deref(),
-            );
+            let outcomes = engine::evaluate_gates(&gates, &target.inputs(finding_text.as_deref()));
             if json {
                 println!(
                     "{}",
-                    serde_json::to_string_pretty(&outcomes).unwrap_or_default()
+                    serde_json::to_string_pretty(&outcomes)
+                        .map_err(|e| format!("cannot serialise the gates: {e}"))?
                 );
             } else {
                 println!("pre-hunt gates\n");
-                print!("{}", render::gates_text(&outcomes, verbose));
+                emit(&render::gates_text(&outcomes, verbose));
                 let unknown = outcomes
                     .iter()
                     .filter(|o| o.status == GateStatus::Unknown)
@@ -548,9 +636,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
                     );
                 }
             }
-            let failed = outcomes
-                .iter()
-                .any(|o| !o.status.is_pass() && o.status == GateStatus::Fail);
+            let failed = outcomes.iter().any(|o| o.status == GateStatus::Fail);
             Ok(if failed {
                 ExitCode::from(1)
             } else {
@@ -559,70 +645,58 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
         }
 
         Command::Check {
-            finding,
+            findings,
             json,
             min_score,
             table,
             fail_on_kill,
-            ledger,
-            scope,
-            prior_audits,
-            tests,
-            fork_of,
-            known_issues,
-            log,
+            target,
         } => {
-            let text = read_text(&finding)?;
-            if text.trim().is_empty() {
-                return Err(format!("{finding} is empty"));
+            if findings.iter().filter(|f| f.as_str() == "-").count() > 1 {
+                return Err("stdin (-) can be read only once".into());
             }
-            let l = read_ledger(&ledger)?;
-            let s = read_lines(&scope)?;
-            let p = read_lines(&prior_audits)?;
-            let t = read_tests(&tests)?;
-            let ki = read_known_issues(&known_issues)?;
-            let history = read_log(&log)?;
-
-            let report = build_report(
-                finding.clone(),
-                &text,
-                &rules,
-                &gates,
-                min_score,
-                l.as_deref(),
-                s.as_deref(),
-                p.as_deref(),
-                t.as_deref(),
-                fork_of.as_deref(),
-                ki.as_deref(),
-                history.as_deref(),
-            );
+            let target = Target::read(&target)?;
+            let mut reports = Vec::new();
+            for finding in &findings {
+                let text = read_text(finding)?;
+                if text.trim().is_empty() {
+                    return Err(format!("{finding} is empty"));
+                }
+                reports.push(build_report(
+                    finding.clone(),
+                    &text,
+                    &rules,
+                    &gates,
+                    min_score,
+                    &target,
+                ));
+            }
 
             if json {
-                println!("{}", render::json(&report));
-            } else if table {
-                println!("{:<5} {:<6} {:<4} TITLE", "STATE", "RULE", "WT");
-                for f in &report.findings {
-                    println!(
-                        "{:<5} {:<6} {:<4} {}",
-                        f.verdict.label(),
-                        f.rule,
-                        f.weight,
-                        f.title
-                    );
-                }
+                let out = if reports.len() == 1 {
+                    serde_json::to_string_pretty(&reports[0])
+                } else {
+                    serde_json::to_string_pretty(&reports)
+                };
                 println!(
-                    "\noutcome {}  viability_score {} (uncalibrated heuristic)  threshold {}",
-                    report.outcome.word(),
-                    report.viability_score,
-                    report.threshold
+                    "{}",
+                    out.map_err(|e| format!("cannot serialise the report: {e}"))?
                 );
             } else {
-                print!("{}", render::text(&report));
+                for (i, report) in reports.iter().enumerate() {
+                    if i > 0 {
+                        println!();
+                    }
+                    if table {
+                        emit(&render::table(report));
+                    } else {
+                        emit(&render::text(report));
+                    }
+                }
             }
 
-            let is_kill = report.outcome == Outcome::Kill;
-            Ok(if fail_on_kill && is_kill {
+            let any_kill = reports.iter().any(|r| r.outcome == Outcome::Kill);
+            Ok(if fail_on_kill && any_kill {
                 ExitCode::from(1)
             } else {
                 ExitCode::SUCCESS
@@ -631,8 +705,8 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
     }
 }
 
-/// Read every markdown file under a directory, sorted by path so the benchmark
-/// is deterministic.
+/// Read every markdown file under a directory, keyed by its path relative to
+/// that directory and sorted, so the benchmark is deterministic.
 fn read_findings_dir(dir: &Path) -> Result<Vec<(String, String)>, String> {
     let mut out: Vec<(String, String)> = Vec::new();
     let mut stack = vec![dir.to_path_buf()];
@@ -644,13 +718,11 @@ fn read_findings_dir(dir: &Path) -> Result<Vec<(String, String)>, String> {
                 stack.push(path);
             } else if path.extension().and_then(|e| e.to_str()) == Some("md") {
                 let name = path
-                    .file_name()
-                    .and_then(|n| n.to_str())
-                    .unwrap_or_default()
-                    .to_string();
-                let text = std::fs::read_to_string(&path)
-                    .map_err(|e| format!("cannot read {}: {e}", path.display()))?;
-                out.push((name, text));
+                    .strip_prefix(dir)
+                    .unwrap_or(&path)
+                    .to_string_lossy()
+                    .replace('\\', "/");
+                out.push((name, read_file(&path)?));
             }
         }
     }
@@ -662,7 +734,7 @@ fn log_path(file: &Option<PathBuf>) -> PathBuf {
     file.clone().unwrap_or_else(|| PathBuf::from(DEFAULT_LOG))
 }
 
-fn run_log(action: &LogAction) -> ExitCode {
+fn run_log(action: &LogAction, rules_dir: Option<&Path>) -> Result<ExitCode, String> {
     match action {
         LogAction::Add {
             family,
@@ -672,74 +744,35 @@ fn run_log(action: &LogAction) -> ExitCode {
             file,
         } => {
             let path = log_path(file);
-            match init::log_add(&path, family, outcome, note.as_deref(), date.as_deref()) {
-                Ok(()) => {
-                    println!("recorded {family:?} in {}", path.display());
-                    println!(
-                        "\n  This file is LOCAL and gitignored. It contains your own bug \
-                         families and must never be published."
-                    );
-                    ExitCode::SUCCESS
-                }
-                Err(e) => {
-                    eprintln!("vg: {e}");
-                    ExitCode::from(2)
-                }
-            }
+            init::log_add(&path, family, outcome, note.as_deref(), date.as_deref())?;
+            emit(&format!("recorded {family:?} in {}\n", path.display()));
+            println!(
+                "\n  This file is LOCAL and gitignored. It contains your own bug \
+                 families and must never be published."
+            );
+            Ok(ExitCode::SUCCESS)
         }
         LogAction::Check { finding, file } => {
             let path = log_path(file);
-            if !path.exists() {
-                eprintln!(
-                    "vg: no history log at {}. Run 'vg log add ...' first.",
-                    path.display()
-                );
-                return ExitCode::from(1);
-            }
-            let (_rules, gates) = match load_rules(None) {
-                Ok(v) => v,
-                Err(e) => {
-                    eprintln!("vg: {e}");
-                    return ExitCode::from(2);
-                }
+            let (_rules, gates) = load_rules(rules_dir)?;
+            let text = read_text(&finding.display().to_string())?;
+            let history = read_log(&Some(path))?;
+            let inputs = GateInputs {
+                own_log: history.as_deref(),
+                finding: Some(&text),
+                ..Default::default()
             };
-            let text = match read_text(&finding.display().to_string()) {
-                Ok(t) => t,
-                Err(e) => {
-                    eprintln!("vg: {e}");
-                    return ExitCode::from(2);
-                }
-            };
-            let history = match read_log(&Some(path.clone())) {
-                Ok(h) => h,
-                Err(e) => {
-                    eprintln!("vg: {e}");
-                    return ExitCode::from(2);
-                }
-            };
-            let outcomes = engine::evaluate_gates(
-                &gates,
-                None,
-                None,
-                None,
-                None,
-                None,
-                history.as_deref(),
-                Some(&text),
-            );
+            let outcomes = engine::evaluate_gates(&gates, &inputs);
             match outcomes.iter().find(|o| o.gate == "G7") {
                 Some(o) if o.status == GateStatus::Fail => {
-                    println!("REPEAT  {}", o.detail);
-                    ExitCode::from(1)
+                    emit(&format!("REPEAT  {}\n", o.detail));
+                    Ok(ExitCode::from(1))
                 }
                 Some(o) => {
-                    println!("OK      {}", o.detail);
-                    ExitCode::SUCCESS
+                    emit(&format!("OK      {}\n", o.detail));
+                    Ok(ExitCode::SUCCESS)
                 }
-                None => {
-                    println!("no G7 gate is defined in the catalog");
-                    ExitCode::SUCCESS
-                }
+                None => Err("no G7 gate is defined in the catalog".into()),
             }
         }
     }

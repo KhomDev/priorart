@@ -45,11 +45,13 @@ socket is a security issue.
 
 ## Reporting
 
-**Contact details are a stop gate and have not been set.** The repository owner
-must add an address here before this policy is usable; until then, open a GitHub
-security advisory on the repository, which is private to maintainers.
+Report privately through GitHub: open the repository's **Security** tab and choose
+**Report a vulnerability**
+(<https://github.com/KhomDev/viability-gate/security/advisories/new>). The report
+is visible only to the maintainer until an advisory is published.
 
-Do not open a public issue for a disclosure report.
+Do not open a public issue for a disclosure report: a public issue republishes the
+text you are reporting.
 
 ## What to include
 

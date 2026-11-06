@@ -22,7 +22,7 @@ these pages are generated from it and cannot drift from it.
 | [`P18`](P18.md) | Known characteristic documented in a prior audit | C | `hard` | 40 |
 | [`P21`](P21.md) | Realistic-configuration mismatch | C | `soft` | 30 |
 | [`P22`](P22.md) | Primitive-vs-product confusion | C | `soft` | 25 |
-| [`P15`](P15.md) | Intended behaviour asserted in the project's own test suite | D | `hard` | 40 |
+| [`P15`](P15.md) | Intended behaviour asserted in the project's own test suite | D | `warn` | 40 |
 | [`P4`](P4.md) | Defective PoC | E | `warn` | 40 |
 | [`P9`](P9.md) | Wrong line numbers or unverified paths | E | `hard` | 35 |
 | [`P8`](P8.md) | Self-contradicting severity or impact sections | E | `soft` | 30 |

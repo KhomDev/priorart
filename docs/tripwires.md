@@ -72,3 +72,14 @@ ships inside the binary — because the literal rule cannot be satisfied by a re
 whose own test fixtures must name the tokens they test. If the fixtures are ever
 relocated into `rules/packs/`, the surface list at the top of
 `scripts/check_tripwires.py` can be widened to the whole repository in one line.
+
+## E. Case classes
+
+Every catalog pattern is compiled case-insensitive (`(?i)` is prefixed by the
+engine). A character class such as `[A-Z]` therefore also matches lower case,
+unless it sits inside a `(?-i:...)` group that switches the flag off. P13's ticker
+suppression (`\d ?[A-Z]{2,6}`) shipped that way and matched "2 of", which turned
+the rule off on almost every real finding until 0.5.0.
+
+The check strips every `(?-i:...)` group from each pattern in
+`rules/anti-patterns.yaml` and fails if an `[A-Z` class remains.
