@@ -24,6 +24,10 @@ Four checks, all of which fail closed:
                        re-saved through cp1252 is invisible in a diff and wrong in
                        every renderer.
 
+  E. CASE CLASSES      Every catalog pattern is compiled case-insensitive, so an
+                       [A-Z] class must sit inside a (?-i:...) group or it also
+                       matches lower case.
+
 Run:  python scripts/check_tripwires.py
       python scripts/check_tripwires.py --json
 
@@ -318,6 +322,57 @@ def self_test() -> list[str]:
 # --------------------------------------------------------------------- main
 
 
+PATTERN_FIELDS = ("any_of", "all_of", "none_of", "escalate_on", "downgrade_on")
+
+
+def _strip_case_sensitive_groups(pattern: str) -> str:
+    """Remove every (?-i:...) group, honouring nested and escaped parentheses."""
+    out: list[str] = []
+    i = 0
+    while i < len(pattern):
+        if pattern.startswith("(?-i:", i):
+            depth = 0
+            while i < len(pattern):
+                c = pattern[i]
+                if c == "\\":
+                    i += 2
+                    continue
+                if c == "(":
+                    depth += 1
+                elif c == ")":
+                    depth -= 1
+                    if depth == 0:
+                        i += 1
+                        break
+                i += 1
+            continue
+        out.append(pattern[i])
+        i += 1
+    return "".join(out)
+
+
+def check_case_classes() -> list[str]:
+    """E. CASE CLASSES: every pattern is compiled case-insensitive, so an [A-Z]
+    class outside a (?-i:...) group matches lower case too. That silently
+    turned P13's ticker suppression into "any short word"."""
+    try:
+        import yaml
+    except ImportError:
+        return ["PyYAML is required for the case-class check (pip install pyyaml)"]
+    catalog = yaml.safe_load((REPO_ROOT / "rules" / "anti-patterns.yaml").read_text(encoding="utf-8"))
+    problems: list[str] = []
+    for rule in catalog.get("rules", []):
+        for field in PATTERN_FIELDS:
+            for pattern in rule.get(field) or []:
+                if re.search(r"\[[^\]]*A-Z", _strip_case_sensitive_groups(pattern)):
+                    problems.append(
+                        f"{rule['id']}.{field}: {pattern!r} has an [A-Z] class outside "
+                        f"(?-i:...); under the catalog's case-insensitive flag it also "
+                        f"matches lower case"
+                    )
+    return problems
+
+
 def _private_strings() -> list[str]:
     # Assembled from fragments on purpose: this file must not contain the
     # literals it forbids, or it would be its own first violation.
@@ -355,6 +410,7 @@ def main(argv: list[str] | None = None) -> int:
         "pack_balance": pack_problems + check_pack_balance(packs),
         "token_confinement": check_token_confinement(packs),
         "encoding": check_encoding(files),
+        "case_classes": check_case_classes(),
     }
     total = sum(len(v) for v in results.values())
     if args.json:
@@ -367,6 +423,7 @@ def main(argv: list[str] | None = None) -> int:
         "pack_balance": "B. pack balance",
         "token_confinement": "C. token confinement",
         "encoding": "D. encoding",
+        "case_classes": "E. case classes",
     }
     for key, problems in results.items():
         if problems:

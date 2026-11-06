@@ -30,23 +30,19 @@ rules:
       report's own admission ("not currently exploitable", "no current attack
       path") and on conditional framing ("if the protocol were to upgrade"). A
       report that describes a live exploit in plain language will not match.
-      A bare hedge is not an admission, so the rule separates the two: only the
-      forms that explicitly say no impact exists today raise it to a hard fail.
+      A bare hedge is not an admission: the word "hypothetical" on its own does
+      not fire the rule at all.
     escape_hatches: >-
       None - there is no suppression list, because no positive signal turns an
-      admitted non-exploit into an exploit. What the rule has instead is an
-      ESCALATION list: the explicit admissions raise it to a hard fail, while a
-      bare hedge such as "hypothetical" leaves it as a note. The word
-      "hypothetical" alone used to be a hard fail, which is the single most
-      common word in a report that is merely being careful.
+      admitted non-exploit into an exploit. The rule's precision comes from
+      what it does not list: "hypothetical" alone used to be a hard fail, and
+      it is the single most common word in a report that is merely being
+      careful.
     false_positives:
       - A report that quotes the *program's* denial and then refutes it. The
         quoted denial matches, and the refutation does not suppress the rule.
-      - Security-review language that is conditional by convention, such as
-        "if an attacker could control the input", where the precondition is
-        stated as a hypothetical but is in fact reachable. It fires as a note
-        rather than a hard fail, which is the intended behaviour and still a
-        prompt to check the wording.
+      - Conditional framing ("if the protocol were to upgrade") used about a
+        change that is scheduled and public rather than speculative.
       - A finding about a live issue that mentions a hypothetical as a secondary
         observation.
     examples:
@@ -57,11 +53,15 @@ rules:
         "An unprivileged attacker drains the vault in a single transaction; the
         PoC below asserts the balance delta."
     changelog:
+      - date: 2026-11-06
+        note: >-
+          Documentation corrected: earlier pages said a bare hedge fires as a
+          note. It never did - "hypothetical" alone does not fire, as the
+          regression fixture asserts - and the no-op escalation list is removed.
       - date: 2026-10-10
         note: >-
-          Split the hard fail from the hedge. A bare "hypothetical" is the most
-          common word in a report that is merely being careful, so it now fires
-          as a note; only the explicit admissions escalate to a hard fail.
+          A bare "hypothetical" no longer fires: it is the most common word in a
+          report that is merely being careful.
       - date: 2026-10-08
         note: "Introduced with the first catalog commit."
 
@@ -110,8 +110,9 @@ rules:
     false_positives:
       - A panic inside a callback where the caller's state has already been
         committed. The word "revert" is present and the mutation is real.
-      - A report that says "read-only" about one path while the exploit uses
-        another path in the same contract.
+      - A report that calls one function or call "read-only" while the exploit
+        uses another path in the same contract. A bare "read-only" no longer
+        fires, so read-only reentrancy is not caught.
       - Gas-only or liveness-only findings that are nevertheless in scope for a
         program that pays for denial of service.
     examples:
@@ -122,6 +123,10 @@ rules:
         "The panic skips the fee accrual, permanently under-crediting the next
         depositor."
     changelog:
+      - date: 2026-11-06
+        note: >-
+          "read-only" must now name a function, call or view. The bare phrase
+          matched "read-only reentrancy", a real high-severity class.
       - date: 2026-10-10
         note: >-
           The abort signal no longer names an ecosystem's expected-failure test
@@ -145,10 +150,10 @@ rules:
       Five suppression patterns, all numeric and all ecosystem-neutral: a
       "loss/delta/difference of <number>" phrase, a dollar figure, a number with
       a generic unit (tokens, base units, wei, shares), a precise decimal
-      figure, or a number followed by a ticker-shaped symbol. Any one of them
-      means the delta was quantified, which is the evidence the rule is asking
-      for. They name no chain and no token, because naming one would leak which
-      ecosystems the author works on.
+      figure, or a number followed by an UPPER-CASE ticker-shaped symbol. Any
+      one of them means the delta was quantified, which is the evidence the rule
+      is asking for. They name no chain and no token, because naming one would
+      leak which ecosystems the author works on.
     false_positives:
       - A finding that quantifies the delta in a table the suppression patterns
         do not recognise (for example a percentage with no unit).
@@ -162,6 +167,11 @@ rules:
       does_not_fire: >-
         "The accounting drift lets the attacker extract 8.925300 USDC per cycle."
     changelog:
+      - date: 2026-11-06
+        note: >-
+          The ticker suppression now requires upper case. Under the catalog's
+          case-insensitive flag it matched any number followed by a short word
+          ("2 of"), so the rule was suppressed on almost every real finding.
       - date: 2026-10-10
         note: >-
           Suppression patterns made ecosystem-neutral: a number with a generic
@@ -181,12 +191,15 @@ rules:
       the impact — a severe impact reached only by an admin is still
       privileged-role-gated.
     escape_hatches: >-
-      Four suppression patterns, all of which are evidence that an unprivileged
-      path exists: demonstrated unprivileged escalation, "any user can
-      trigger", "permissionless", or "without any privileged role". They are
-      scoped to the SENTENCE, not the document: a "permissionless" in an
-      unrelated sentence must not switch the rule off, because the escape hatch
-      has to apply to the same sentence that named the privileged role.
+      Suppression patterns that are evidence an unprivileged path exists:
+      demonstrated unprivileged escalation, "any user can trigger",
+      "permissionless", "without any privileged role", a MISSING access check,
+      and a user-held owner or approved operator (the owner of a token or
+      position is not a privileged role). They are scoped to the SENTENCE, not
+      the document: a "permissionless" in an unrelated sentence must not switch
+      the rule off. The engine's negation window also treats "missing",
+      "lacks" and "without" as cues, so "missing the onlyOwner modifier" -
+      a missing-access-control finding - does not fire.
     false_positives:
       - The unknowing-admin case — a reasonable admin action with a non-obvious
         destructive second-order effect. The report mentions the admin and is
@@ -200,6 +213,11 @@ rules:
       does_not_fire: >-
         "Any caller can invoke this; unprivileged escalation is demonstrated."
     changelog:
+      - date: 2026-11-06
+        note: >-
+          "missing the onlyOwner modifier" - the opposite signal, an
+          unprivileged path - was hard-killed. "missing" is now a negation cue,
+          and a user-held token owner or approved operator suppresses the rule.
       - date: 2026-10-10
         note: >-
           Suppression is now sentence-scoped and requires evidence that an
@@ -217,9 +235,12 @@ rules:
       Signals are timing words: front-run, mempool, sandwich, race against,
       "before the operator calls".
     escape_hatches: >-
-      Three suppression patterns, all atomicity: an atomic single-transaction
-      path, a flash loan, or "same transaction". Atomicity removes the race,
-      which is the whole reason the exclusion applied.
+      Two kinds of suppression. Atomicity - an atomic single-transaction path,
+      a flash loan, or "same transaction" - removes the race, which is the whole
+      reason the exclusion applied. A missing slippage or deadline check
+      ("slippage", a minimum-amount-out, "deadline") is a code defect that a
+      sandwich merely exploits, and programs pay it, so it suppresses the rule
+      too.
     false_positives:
       - A finding that is atomic but describes the atomic path in a way the
         patterns do not phrase as one transaction.
@@ -233,6 +254,10 @@ rules:
       does_not_fire: >-
         "The attack is atomic in one transaction via a flash loan."
     changelog:
+      - date: 2026-11-06
+        note: >-
+          A missing-slippage finding was hard-killed as front-run-only. Slippage,
+          minimum-amount-out and deadline wording now suppress the rule.
       - date: 2026-10-08
         note: "Introduced with the first catalog commit."
 
@@ -451,6 +476,11 @@ rules:
       does_not_fire: >-
         "Measured at the deployed configuration with representative bounds."
     changelog:
+      - date: 2026-11-06
+        note: >-
+          Removed "no misconfiguration" and "under the deployed configuration"
+          as signals. They are what this rule's fix asks a report to say, so the
+          rule was holding findings for following its own advice.
       - date: 2026-09-28
         note: "Added after the realism post-mortems, together with P22."
 
@@ -498,17 +528,17 @@ rules:
       Applicable rather than Informational — a materially worse outcome — because
       it means the reporter did not read the tests.
     signals_note: >-
-      Signals are intent phrases: by design, intended behaviour, "the test
-      asserts this", documented behaviour. The last two are the strongest.
+      A bare "documented behaviour" fires as a NOTE: it is a claim about the
+      docs, not proof of intent. The intent phrases - by design, intended
+      behaviour, should preserve, "the test asserts this", the project's own
+      test - escalate the rule to a hard fail.
     escape_hatches: >-
-      Six suppression patterns, and they are the STRONGEST forms of the
-      argument: "contradicts the documented behaviour", "violates the
-      documented", "diverges from the documented", and their variants. A report
-      that says the implementation contradicts the documented behaviour is
-      arguing the docs are wrong, not hiding behind them, and the old rule
-      hard-failed it. A bare "documented behaviour" now fires as a NOTE; it
-      escalates to a hard fail only when the report points at the project's own
-      test asserting the behaviour.
+      Suppression patterns that are the STRONGEST forms of the argument: the
+      behaviour "contradicts / violates / diverges from / is inconsistent with"
+      the documented behaviour, or "breaks / is contrary to / deviates from /
+      bypasses" the intended or designed behaviour. A report that says the
+      implementation departs from intent is making the finding's case, not
+      admitting it is intended, and the old rule hard-failed it.
     false_positives:
       - A report that says "by design" about a *different* component than the
         one it is reporting.
@@ -521,6 +551,12 @@ rules:
       does_not_fire: >-
         "No test covers this path; the branch is unreachable from any test."
     changelog:
+      - date: 2026-11-06
+        note: >-
+          The note mode the docs described now exists: the base verdict is warn
+          and a bare "documented behaviour" fires as a note. "breaks / contrary
+          to the intended behaviour" - the finding's own argument - no longer
+          hard-kills the report.
       - date: 2026-10-10
         note: >-
           Suppression added for the strongest forms of the argument: a report
@@ -692,12 +728,13 @@ rules:
       Signals are no-beneficiary phrases and self-harm shapes: "no fund loss",
       "self-harm", "griefing", "denial of service", "no financial beneficiary".
     escape_hatches: >-
-      Three suppression patterns, all of which quantify an attacker gain: "the
-      attacker profits <n>", "net gain of <n>", or "a third party loses". A
-      number attached to a beneficiary is the evidence that makes it a finding.
+      Suppression patterns that quantify an attacker gain - "the attacker profits
+      <n>", "net gain of <n>", "a third party loses" - or that name a PERMANENT
+      freeze or lock of funds, which programs pay as an impact class in its own
+      right even when nobody profits.
     false_positives:
       - A griefing finding that is nevertheless payable, where the program pays
-        for availability loss.
+        for temporary availability loss.
       - A finding where the attacker's gain is a governance or positional
         advantage that cannot be written as a number.
       - A report that describes the absence of attacker profit in a *secondary*
@@ -709,6 +746,11 @@ rules:
         "The attacker profits 8.9253 USDC and a third party loses their
         deposit."
     changelog:
+      - date: 2026-11-06
+        note: >-
+          A permanent freeze or lock of funds now suppresses the rule; it is a
+          paid impact class even with no attacker profit. origin_rows re-derived
+          against the 113-row dataset (6 -> 14).
       - date: 2026-10-08
         note: "Introduced with the first catalog commit."
 
@@ -718,17 +760,19 @@ rules:
       only an aborted call. This is the SPAM boundary: the punishment is worse
       than rejection, so the rule carries the heaviest weight in the catalog.
     signals_note: >-
-      This rule is STRUCTURAL, not a phrase match: it needs a headline loss
-      claim, a proof section that shows only a revert, panic or expected
-      failure, and no assertion that anything persisted. All three together are
-      the contradiction. A report titled with permanent loss whose PoC
-      demonstrates stranded funds does not match, and a report that honestly
+      This rule is STRUCTURAL, not a phrase match. It needs a loss claim before
+      the first proof section ("total value locked" is not one), a proof
+      section - a heading with PoC, proof of concept, reproduce, exploit, steps
+      or test as a whole word - that shows a revert, panic or expected failure
+      and no positive state change (no drain, profit, theft or balance
+      movement), and no assertion that anything persisted. Recommendation and
+      mitigation sections are never read as proof. A report that honestly
       describes a revert-based freeze does not hard-fail - the claim and the
       evidence disagree, so it fires as a note for a human to look at.
     escape_hatches: >-
-      None, but the conjunction is narrow: a report titled with permanent loss
-      whose proof demonstrates persisted stranded funds does not match, and one
-      that asserts the persisted state explicitly suppresses the rule outright.
+      None, but the conjunction is narrow: a proof that shows the drain, or the
+      stranded balance, does not match at all, and one that asserts persisted
+      state in the claim or proof drops the rule to a note.
     false_positives:
       - A report titled with permanent loss where the PoC demonstrates a
         persisted state change and *also* mentions a revert on a secondary path.
@@ -744,6 +788,13 @@ rules:
         "Titled 'permanent fund lock'; the body shows the stranded balance after
         the call returns."
     changelog:
+      - date: 2026-11-06
+        note: >-
+          Four matcher defects fixed: "total value locked" read as a loss
+          claim; every section after the PoC (including the Recommendation) was
+          read as proof; one "storage" anywhere in the document downgraded the
+          rule; and "epoch", "latest" or "contest" in a heading made it a proof
+          section. The proof must now also show no positive state change.
       - date: 2026-10-10
         note: >-
           Replaced co-occurrence with a structural matcher. The rule now needs a

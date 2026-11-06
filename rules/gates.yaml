@@ -12,10 +12,22 @@
 #   question    - what the gate asks
 #   needs       - the input required to run it (CLI flag in brackets)
 #   blocks      - what a failure prevents
-#   weight      - how much a failure would subtract if weights were applied
+#   weight      - relative importance, shown by `vg gates --verbose`. Gates do
+#                 NOT subtract from the viability score: a failed gate makes the
+#                 outcome HOLD, an unknown one makes it INCOMPLETE.
 #   evidence    - in_sample | none. Whether the author's log has rows behind it.
-#   origin_rows - how many rows. 0 = not measured.
-#   checks      - optional mechanical checks applied to the supplied input
+#   origin_rows - how many rows of rejection-taxonomy v0.5.1 (113 rows), in the
+#                 column named in the comment above each gate. 0 = not measured.
+#   implemented_by - optional; the flag that supplies a corpus-type input
+#   checks      - the mechanical checks applied to the supplied input
+#
+# WITH AND WITHOUT A FINDING: given a draft finding (`vg check`, or `vg gates
+# --finding`), G1 compares the finding's severity with the floor, G2 runs the
+# exclusion patterns over it, G3 traces its cited paths into the scope, G4
+# compares it with prior-audit known issues, G5 ties test-suite intent markers
+# to the code it names, G7 compares it with your history and D1 with the
+# known-issues corpus. Without one, G1-G4 check only that their input is
+# complete and well-formed, and their detail line says so.
 #
 # GATE VOCABULARY (the ids are shared with rejection-taxonomy; no id may mean two
 # things across the two repositories):
@@ -29,10 +41,10 @@
 #   G7  own history
 #   D1  known-issues / duplicate
 #
-# D1 is implemented by --known-issues rather than as a gate object, because its
-# input is a corpus rather than a check over the target. The id is still declared
-# below (with a null input contract) so the vocabulary is complete and
-# rejection-taxonomy can assert that the two repositories agree on it.
+# D1's input is a corpus (--known-issues) rather than a property of the target,
+# but it runs like every other gate: unknown without a corpus, fail on a match.
+# Declaring it here also keeps the vocabulary complete, so rejection-taxonomy can
+# assert that the two repositories agree on it.
 #
 # HONESTY NOTE ON EVIDENCE: the counts below are rows of the author's own
 # rejection log that the gate is derived from. They are NOT a validated detection
@@ -50,8 +62,15 @@ gates:
       expected value of zero, however correct it is.
     weight: 40
     evidence: in_sample
+    # earliest_gate = G1_severity_floor
     origin_rows: 5
     checks:
+      - name: program_selected
+        test: the ledger holds one program, or --program names one
+        fail: "the ledger holds several programs - gate reports unknown until --program picks one"
+      - name: floor_cited
+        test: source_url and a real, non-future YYYY-MM-DD retrieved date
+        fail: "an uncited or misdated floor is a guess"
       - name: floor_declared
         test: ledger entry must declare tier_shape
         fail: "tier_shape is missing - the floor has not been transcribed"
@@ -66,9 +85,13 @@ gates:
           tier_shape is 'unknown'. This is NOT permissive - it means the page has
           not been read. Hunting an untranscribed program is an unhedged bet.
       - name: floor_reachable
-        test: if tier_shape is critical_only or high_and_above, a Critical/High thesis is required
+        test: >-
+          the thesis severity (--severity, or a "Severity:" line in the finding) is
+          at or above the floor; on a critical_only or high_and_above program with
+          no stated severity the gate reports unknown
         fail: >-
-          tier_shape is narrow. Confirm your thesis can reach it before hunting.
+          the finding's severity is below the floor. A correct finding one tier
+          below the floor pays nothing.
 
   - id: G2
     title: Exclusion clauses
@@ -79,6 +102,7 @@ gates:
       source data, privileged-role exclusions were the largest single sub-cause.
     weight: 35
     evidence: in_sample
+    # earliest_gate = G2_exclusion_clause
     origin_rows: 20
     checks:
       - name: exclusions_present
@@ -88,8 +112,18 @@ gates:
         test: every exclusion must carry a verbatim clause string
         fail: "an exclusion clause is missing its verbatim text"
       - name: patterns_compile
-        test: every exclusion pattern must be a valid regex
+        test: >-
+          every exclusion pattern must compile as a Rust regex (case-insensitive;
+          no lookaround, no backreferences)
         fail: "an exclusion pattern is not a valid regex"
+      - name: no_clause_matches
+        test: >-
+          with a finding, no exclusion pattern matches its claim sections
+          (sentence by sentence, negation-aware; the PoC and recommendation are
+          not read)
+        fail: >-
+          an exclusion clause matches the finding. Read the clause in full: a match
+          is a prompt to check, not an automatic reject.
 
   - id: G3
     title: Scope tree
@@ -100,6 +134,7 @@ gates:
       deploy script, a test utility, an off-chain component.
     weight: 30
     evidence: in_sample
+    # earliest_gate = G3_scope_tree
     origin_rows: 4
     checks:
       - name: scope_supplied
@@ -108,6 +143,12 @@ gates:
       - name: scope_nonempty
         test: the scope list must contain at least one entry
         fail: "the scope list is empty"
+      - name: root_cause_traced
+        test: >-
+          with a finding, at least one file path or file stem it cites outside
+          the PoC is in the scope list (exact path, path suffix, directory/ or
+          glob). A finding that cites nothing reports unknown.
+        fail: "the finding cites only paths outside the scope list"
 
   - id: G4
     title: Prior audits
@@ -118,6 +159,7 @@ gates:
       naming a file is not the same as covering your function.
     weight: 30
     evidence: in_sample
+    # earliest_gate = G4_prior_audit
     origin_rows: 7
     checks:
       - name: audits_supplied
@@ -128,6 +170,11 @@ gates:
         fail: >-
           a prior audit is recorded without a 'covers' list. Read the finding, not
           the table of contents.
+      - name: no_known_issue_resembles
+        test: >-
+          with a finding, no prior_audits[].known_issues entry has most of its
+          words in the finding (the same containment test as G7)
+        fail: "the finding resembles a prior-audit known issue"
 
   - id: G5
     title: Test-suite intent
@@ -138,16 +185,20 @@ gates:
       Applicable, not Informational - a materially worse outcome.
     weight: 25
     evidence: in_sample
+    # earliest_gate = G5_test_intent
     origin_rows: 1
     checks:
       - name: tests_supplied
         test: a test-suite path must be provided
         fail: "no test suite supplied - gate reports unknown, not pass"
       - name: intent_markers
-        test: grep the suite for intent markers
+        test: >-
+          whole-word intent markers ("by design", "intended", "should preserve",
+          ...) in test files that name a code identifier from the finding. Without
+          a finding, any marker makes the gate unknown and lists where it is.
         fail: >-
-          the test suite contains intent markers ("by design", "should preserve",
-          "intended"). Read the test before submitting.
+          a test that exercises the finding's code asserts the behaviour is
+          intended. Read the test before submitting.
 
   - id: G6
     title: Fork novelty
@@ -166,6 +217,9 @@ gates:
       - name: fork_declared
         test: whether the target is a fork must be stated
         fail: "fork status unknown - gate reports unknown, not pass"
+      - name: fork_named
+        test: --fork-of none (any case) passes; any other value names an upstream
+        fail: "the target forks an upstream - check whether the behaviour is documented there"
 
   - id: G7
     title: Own submission history
@@ -177,6 +231,7 @@ gates:
       your own history rather than in the report.
     weight: 30
     evidence: in_sample
+    # repeat_of_own = true
     origin_rows: 12
     checks:
       - name: log_supplied
@@ -184,27 +239,20 @@ gates:
         fail: >-
           no own-history log supplied. Gate reports unknown, not pass. Run
           'vg init' to scaffold one, or 'vg log add' to record a submission.
-      - name: log_nonempty
-        test: the log must contain at least one submission
-        fail: "the own-history log is empty - nothing to compare against"
       - name: no_probable_repeat
         test: >-
-          deterministic token-overlap (Jaccard >= 0.18) between the draft and any
-          logged family
+          deterministic containment: the share of a logged family label's words
+          (3+ letters, minus stop words) that appear in the draft is at least
+          0.60, with at least two shared words. An empty log passes: there is
+          nothing to repeat.
         fail: >-
           probable repeat of an earlier family. Read the earlier outcome before
           submitting.
 
-  # D1 is not run by `vg gates`. It is a corpus match driven by
-  # --known-issues, and it is declared here so that the gate vocabulary in this
-  # repository and the earliest_gate vocabulary in rejection-taxonomy are the
-  # same set of ids. A consumer can assert that agreement mechanically.
-  #
-  # WHY IT IS NOT A GATE OBJECT: a gate answers a question about the TARGET from
-  # an input you supply about the target. D1 answers a question about your
-  # FINDING against a corpus you transcribed, so its "input" is the finding
-  # itself and its check is the matcher. Modelling it as a gate would mean
-  # inventing a target-side input it does not have.
+  # D1 is a corpus match driven by --known-issues, run by both `vg check` and
+  # `vg gates`. It is unknown without a corpus, and with one it fails on a
+  # match or on an unusable entry. The id is shared with the earliest_gate
+  # vocabulary in rejection-taxonomy, so a consumer can assert agreement.
   #
   # HONEST STATUS: an untested mechanism. Recall was 11-14% at 40-50% cross-fire
   # in the author's own test, and it CANNOT catch a concurrent duplicate, which
@@ -219,12 +267,11 @@ gates:
       own prose can find, because the signal lives in an external corpus.
     weight: 0
     implemented_by: "--known-issues"
-    run_by_gates_command: false
-    # 34 rows recorded D1 as the earliest catchable gate, the largest bucket in
-    # the log. That is a count of rejections, NOT a measure of this matcher: the
+    # earliest_gate = D1_duplicate_check: 41 rows, the largest bucket in the
+    # log. That is a count of rejections, NOT a measure of this matcher: the
     # matcher itself is unvalidated.
     evidence: in_sample
-    origin_rows: 34
+    origin_rows: 41
     checks:
       - name: corpus_supplied
         test: a known-issues corpus must be supplied

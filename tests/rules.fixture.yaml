@@ -130,6 +130,94 @@ cases:
     regression: "# Finding\n\n## Severity rationale\n\nThe attacker extracts the full balance in one transaction.\n"
     regression_expect: silent
 
+  # ------------------------------------------------- 0.5.0 audit regressions
+  #
+  # Each regression below is a counterexample reproduced with the 0.4.4 binary
+  # during the 2026-11-06 audit. The text is synthetic.
+
+  - rule: P2
+    fires: "Only the owner can rotate the oracle, which changes every price."
+    suppressed: "The setFee function is missing the onlyOwner modifier, so any caller can set the fee."
+    # REPRODUCED: "missing the onlyOwner modifier" - a missing-access-control
+    # finding, the opposite signal - was hard-killed.
+    regression: "The `setFee` function is missing the onlyOwner modifier, so any caller can set the fee to 100% and take the protocol fees."
+    regression_expect: silent
+
+  - rule: P2
+    fires: "The operator can pause withdrawals indefinitely."
+    suppressed: "The token owner can transfer the position before the snapshot."
+    # REPRODUCED: a user-held "owner" read as a privileged role.
+    regression: "Any approved operator can move the NFT, and the position owner can exit before the snapshot."
+    regression_expect: silent
+
+  - rule: P3
+    fires: "The attacker front-runs the oracle update in the mempool."
+    suppressed: "swapExactIn passes amountOutMin = 0, so a searcher can sandwich every user swap."
+    # REPRODUCED: a missing-slippage finding was hard-killed as front-run-only.
+    regression: "# Missing slippage check in swap allows sandwich attacks\n\nThe router call has no slippage bound, so a searcher can sandwich every user swap.\n"
+    regression_expect: silent
+
+  - rule: P3
+    fires: "Before the operator acts, a bot can front-run the call."
+    suppressed: "This path does not front-run anything."
+    # REPRODUCED: a typographic apostrophe defeated the negation window.
+    regression: "This path doesn’t front-run anything; the attack is a single call."
+    regression_expect: silent
+
+  - rule: P12
+    fires: "The transaction reverts and the function is a read-only view."
+    suppressed: "The revert leaves the fee unaccrued in storage, so the next depositor is under-credited."
+    # REPRODUCED: "read-only reentrancy" - a real high-severity class - matched
+    # the bare phrase "read-only".
+    regression: "This is a read-only reentrancy: the view returns a stale price during the callback, and the lending market reads it. A later call may revert."
+    regression_expect: silent
+
+  - rule: P13
+    fires: "The accounting drift leaves the vault in an inconsistent state."
+    suppressed: "The accounting drift is a discrepancy of 1,250 USDC per epoch."
+    # REPRODUCED: the ticker pattern matched any short word under the
+    # case-insensitive flag, so "2 of" suppressed the rule.
+    regression: "After a partial liquidation the protocol enters an inconsistent state. In 2 of the tested paths this happens."
+    regression_expect: fires
+
+  - rule: P15
+    fires: "This is the documented behaviour of the pool."
+    suppressed: "Contrary to the intended behaviour, withdraw charges the fee twice."
+    # REPRODUCED: "breaks / contrary to the intended behaviour" - the finding's
+    # own argument - was hard-killed.
+    regression: "Fee accrual breaks the intended behaviour of withdraw: the attacker profits 500 USDC per call."
+    regression_expect: silent
+
+  - rule: P15
+    fires: "The test asserts this behaviour, by design."
+    suppressed: "No test covers this branch."
+    # A bare "documented behaviour" is a NOTE, not a kill.
+    regression: "As the documented behaviour says, the pool rounds down."
+    regression_expect: fires
+    regression_verdict: warn
+
+  - rule: P17
+    fires: "This is a denial of service with no attacker profit."
+    suppressed: "Griefing permanently freezes user deposits in the vault."
+    # Permanent freezing of funds is a paid impact class in its own right.
+    regression: "The DoS leaves funds permanently locked in the escrow contract."
+    regression_expect: silent
+
+  - rule: P19
+    fires: "# Complete loss of collateral\n\n## Proof of concept\n\nThe liquidation call reverts.\n"
+    suppressed: "# Complete loss of collateral\n\n## Proof of concept\n\nThe attacker drains 4,000 USDC of collateral.\n"
+    # REPRODUCED: "total value locked" in the title read as a loss claim, and a
+    # Recommendation saying "should revert" read as the proof.
+    regression: "# Rounding bug lets attacker steal part of the total value locked\n\n## Summary\n\nThe attacker drains 1,200 USDC per call.\n\n## Proof of concept\n\nThe attacker's balance increases by 1,200 USDC.\n\n## Recommendation\n\nThe function should revert when shares round to zero.\n"
+    regression_expect: silent
+
+  - rule: P21
+    fires: "This only bites if the admin sets the cap to zero."
+    suppressed: "Measured at the deployed configuration with representative bounds."
+    # REPRODUCED: the rule fired on the very phrases its own fix asks for.
+    regression: "The attack requires no misconfiguration and works under the deployed configuration."
+    regression_expect: silent
+
   - rule: P10
     fires: "| TVL | Attacker Profit |\n| 10M | 50K |\nThis extrapolates to every pool at scale this would be catastrophic."
     suppressed: "The PoC demonstrated a 5.03 unit profit on a 100 unit deposit."

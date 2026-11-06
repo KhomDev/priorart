@@ -120,8 +120,9 @@ Working notes for one program. Keep this private.
 
 ## Gate status
 
-Run `vg gates --ledger ledger.yaml --scope scope.txt --known-issues known-issues.yaml`
-and paste the result here, so the next session does not re-derive it.
+Run `vg gates --ledger ledger.yaml --scope scope.txt --known-issues known-issues.yaml --log history.yaml`
+and paste the result here, so the next session does not re-derive it. Add
+`--finding draft.md` to test the gates against a specific draft.
 
 ```
 (paste `vg gates` output)
@@ -148,8 +149,10 @@ pub const HISTORY_TEMPLATE: &str = r#"# Your submission history — LOCAL. Never
 #
 # Gate G7 compares a draft finding against this list and reports a probable
 # repeat. It exists because a text pattern cannot see your own earlier
-# submissions: in the source log behind this tool, 12 of 97 rejections repeat a
-# family that was already present.
+# submissions: in the source log behind this tool, 12 of 113 rejections repeat a
+# family that was already present. A draft is a probable repeat when it contains
+# most of a family label's words, so write the label in the words you would use
+# in a report.
 #
 # Add one entry per submission. The family label is yours — write it the way you
 # would describe the mechanism to yourself.
@@ -164,7 +167,7 @@ submissions: []
 #   - family: "stale cached exchange rate"
 #     outcome: rejected          # paid | rejected | duplicate | oos | informational | pending
 #     note: "closed as a known design tradeoff"
-#     date: 2026-10-01
+#     date: "2026-10-01"
 "#;
 
 const FILES: &[(&str, &str)] = &[
@@ -175,11 +178,8 @@ const FILES: &[(&str, &str)] = &[
     ("NOTES.md", README_TEMPLATE),
 ];
 
-pub fn run(dir: &Path, force: bool) -> ExitCode {
-    if let Err(e) = std::fs::create_dir_all(dir) {
-        eprintln!("vg: cannot create {}: {e}", dir.display());
-        return ExitCode::from(2);
-    }
+pub fn run(dir: &Path, force: bool) -> Result<ExitCode, String> {
+    std::fs::create_dir_all(dir).map_err(|e| format!("cannot create {}: {e}", dir.display()))?;
 
     let mut written = Vec::new();
     let mut skipped = Vec::new();
@@ -190,10 +190,7 @@ pub fn run(dir: &Path, force: bool) -> ExitCode {
             skipped.push(name.to_string());
             continue;
         }
-        if let Err(e) = std::fs::write(&path, body) {
-            eprintln!("vg: cannot write {}: {e}", path.display());
-            return ExitCode::from(2);
-        }
+        std::fs::write(&path, body).map_err(|e| format!("cannot write {}: {e}", path.display()))?;
         written.push(name.to_string());
     }
 
@@ -214,20 +211,34 @@ pub fn run(dir: &Path, force: bool) -> ExitCode {
          4. Extract known issues and prior-audit findings into known-issues.yaml.\n  \
          5. Run:\n       \
             vg gates --ledger {d}/ledger.yaml --scope {d}/scope.txt \\\n         \
-                     --known-issues {d}/known-issues.yaml\n\n  \
+                     --known-issues {d}/known-issues.yaml --log {d}/history.yaml\n  \
+            and, once you have a draft, add --finding draft.md.\n\n  \
          The scaffold is INTENDED to fail validation until you fill it in — an\n  \
          empty source_url is an uncited floor, and an uncited floor is a guess.\n\n  \
          Unknown is not pass: a gate whose input you did not supply reports '?',\n  \
          never a tick. A gate you could not run is a gate you have not run.",
         d = dir.display()
     );
-    ExitCode::SUCCESS
+    Ok(ExitCode::SUCCESS)
 }
+
+/// The outcomes `vg log add` accepts.
+pub const OUTCOMES: [&str; 6] = [
+    "paid",
+    "rejected",
+    "duplicate",
+    "oos",
+    "informational",
+    "pending",
+];
 
 /// Append one submission to the local history log.
 ///
-/// The file is plain YAML and is created on first use. It is never written
-/// anywhere else, and the tool has no network code at all.
+/// The file is plain YAML and is created on first use. An existing file is
+/// appended to, so its comments survive; the result is re-parsed before it is
+/// written, and written through a temporary file and a rename, so a failure
+/// never leaves a half-written log. It is never written anywhere else, and the
+/// tool has no network code at all.
 pub fn log_add(
     path: &Path,
     family: &str,
@@ -235,44 +246,116 @@ pub fn log_add(
     note: Option<&str>,
     date: Option<&str>,
 ) -> Result<(), String> {
-    let mut entries: Vec<crate::model::LogEntry> = if path.exists() {
-        let text = std::fs::read_to_string(path)
-            .map_err(|e| format!("cannot read {}: {e}", path.display()))?;
-        parse_log(&text)?
-    } else {
-        Vec::new()
+    if family.trim().is_empty() {
+        return Err("--family must not be empty".into());
+    }
+    if !OUTCOMES.contains(&outcome) {
+        return Err(format!(
+            "--outcome {outcome:?}: use one of {}",
+            OUTCOMES.join(", ")
+        ));
+    }
+    let date = match date {
+        Some(d) if crate::engine::parse_iso_date(d).is_none() => {
+            return Err(format!("--date {d:?}: use YYYY-MM-DD"));
+        }
+        Some(d) => d.to_string(),
+        None => today_iso(),
     };
-
-    let today = date.map(|d| d.to_string()).unwrap_or_else(today_iso);
-    entries.push(crate::model::LogEntry {
+    let entry = crate::model::LogEntry {
         family: family.to_string(),
         outcome: outcome.to_string(),
         note: note.map(|n| n.to_string()),
-        date: Some(today),
-    });
+        date: Some(date),
+    };
 
+    let existing = if path.exists() {
+        Some(
+            std::fs::read_to_string(path)
+                .map_err(|e| format!("cannot read {}: {e}", path.display()))?,
+        )
+    } else {
+        None
+    };
+
+    let body = match &existing {
+        Some(text) => {
+            let before = parse_log(text).map_err(|e| format!("{}: {e}", path.display()))?;
+            let appended = append_entry(text, &entry);
+            match appended {
+                Some(t) if parse_log(&t).is_ok_and(|v| v.len() == before.len() + 1) => t,
+                // The file's shape does not allow a plain append (an inline
+                // `submissions: []`, a flow list): rewrite it from the parse.
+                _ => {
+                    let mut all = before;
+                    all.push(entry.clone());
+                    render_log(&all)
+                }
+            }
+        }
+        None => render_log(std::slice::from_ref(&entry)),
+    };
+    let check = parse_log(&body)?;
+    if check.last().map(|e| &e.family) != Some(&entry.family) {
+        return Err("internal error: the new entry did not round-trip".into());
+    }
+
+    let tmp = path.with_extension("yaml.tmp");
+    std::fs::write(&tmp, &body).map_err(|e| format!("cannot write {}: {e}", tmp.display()))?;
+    std::fs::rename(&tmp, path).map_err(|e| {
+        let _ = std::fs::remove_file(&tmp);
+        format!("cannot replace {}: {e}", path.display())
+    })
+}
+
+fn entry_lines(e: &crate::model::LogEntry, indent: &str) -> String {
+    let mut s = format!("{indent}- family: {}\n", yaml_quote(&e.family));
+    s.push_str(&format!("{indent}  outcome: {}\n", yaml_quote(&e.outcome)));
+    if let Some(n) = &e.note {
+        s.push_str(&format!("{indent}  note: {}\n", yaml_quote(n)));
+    }
+    if let Some(d) = &e.date {
+        s.push_str(&format!("{indent}  date: {}\n", yaml_quote(d)));
+    }
+    s
+}
+
+/// Append an entry to an existing log's block list, or None when the file has
+/// no block list to append to.
+fn append_entry(text: &str, e: &crate::model::LogEntry) -> Option<String> {
+    // The indentation of the existing list items: "  - " under submissions:,
+    // "- " for a bare list.
+    let indent = text.lines().rev().find_map(|l| {
+        let t = l.trim_start();
+        t.starts_with("- ")
+            .then(|| l[..l.len() - t.len()].to_string())
+    })?;
+    let mut out = text.to_string();
+    if !out.ends_with('\n') {
+        out.push('\n');
+    }
+    out.push_str(&entry_lines(e, &indent));
+    Some(out)
+}
+
+fn render_log(entries: &[crate::model::LogEntry]) -> String {
     let mut body = String::from(
         "# Your submission history - LOCAL. Never publish this file.\n\
          # Written by 'vg log add'. Gate G7 reads it.\n\nsubmissions:\n",
     );
-    for e in &entries {
-        body.push_str(&format!("  - family: {}\n", yaml_quote(&e.family)));
-        body.push_str(&format!("    outcome: {}\n", yaml_quote(&e.outcome)));
-        if let Some(n) = &e.note {
-            body.push_str(&format!("    note: {}\n", yaml_quote(n)));
-        }
-        if let Some(d) = &e.date {
-            body.push_str(&format!("    date: {}\n", yaml_quote(d)));
-        }
+    for e in entries {
+        body.push_str(&entry_lines(e, "  "));
     }
-    std::fs::write(path, body).map_err(|e| format!("cannot write {}: {e}", path.display()))
+    body
 }
 
-fn parse_log(text: &str) -> Result<Vec<crate::model::LogEntry>, String> {
+/// Parse a history log: a bare list, or a mapping with a submissions: key.
+pub fn parse_log(text: &str) -> Result<Vec<crate::model::LogEntry>, String> {
     if let Ok(list) = serde_saphyr::from_str::<Vec<crate::model::LogEntry>>(text) {
         return Ok(list);
     }
     #[derive(serde::Deserialize)]
+    #[serde(deny_unknown_fields)]
     struct Wrapper {
         #[serde(default)]
         submissions: Vec<crate::model::LogEntry>,
@@ -281,17 +364,25 @@ fn parse_log(text: &str) -> Result<Vec<crate::model::LogEntry>, String> {
     Ok(w.submissions)
 }
 
-/// Quote a YAML scalar if it contains anything that would need it.
+/// Quote a YAML scalar as a double-quoted string, always. A bare scalar can
+/// silently change type (`null`, `true`, `1e3`, `~`) or break the document
+/// (`- x`, `#x`, `: x`), and every one of those is a plausible family label.
 fn yaml_quote(s: &str) -> String {
-    let needs = s.is_empty()
-        || s.chars().any(|c| {
-            !(c.is_alphanumeric() || c == ' ' || c == '-' || c == '_' || c == '.' || c == '/')
-        });
-    if needs {
-        format!("\"{}\"", s.replace('\\', "\\\\").replace('"', "\\\""))
-    } else {
-        s.to_string()
+    let mut out = String::with_capacity(s.len() + 2);
+    out.push('"');
+    for c in s.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if c.is_control() => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
     }
+    out.push('"');
+    out
 }
 
 /// Today as YYYY-MM-DD, from the Unix epoch, without a date library.
@@ -462,11 +553,86 @@ mod tests {
     }
 
     #[test]
-    fn yaml_quote_escapes_and_quotes_when_needed() {
-        assert_eq!(yaml_quote("plain words here"), "plain words here");
+    fn yaml_quote_always_quotes_and_escapes() {
+        assert_eq!(yaml_quote("plain words here"), "\"plain words here\"");
         assert_eq!(yaml_quote("has: colon"), "\"has: colon\"");
         assert_eq!(yaml_quote("has \"quote\""), "\"has \\\"quote\\\"\"");
         assert_eq!(yaml_quote(""), "\"\"");
+        assert_eq!(yaml_quote("a\nb"), "\"a\\nb\"");
+    }
+
+    fn temp_dir(tag: &str) -> std::path::PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "vg-init-{tag}-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or(0)
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn hostile_family_labels_round_trip() {
+        let dir = temp_dir("hostile");
+        let path = dir.join("history.yaml");
+        let labels = [
+            "null",
+            "true",
+            "~",
+            "1e3",
+            "- dash",
+            "#hash",
+            ": colon",
+            "multi\nline",
+        ];
+        for l in labels {
+            log_add(&path, l, "rejected", None, Some("2026-10-10")).expect(l);
+        }
+        let entries = parse_log(&std::fs::read_to_string(&path).unwrap()).expect("parse");
+        let got: Vec<&str> = entries.iter().map(|e| e.family.as_str()).collect();
+        assert_eq!(got, labels);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn appending_keeps_the_users_comments() {
+        let dir = temp_dir("append");
+        let path = dir.join("history.yaml");
+        std::fs::write(
+            &path,
+            "# my own note about this log\nsubmissions:\n  - family: \"first\"\n    outcome: paid\n",
+        )
+        .unwrap();
+        log_add(&path, "second", "rejected", None, Some("2026-10-11")).unwrap();
+        let text = std::fs::read_to_string(&path).unwrap();
+        assert!(text.contains("# my own note about this log"), "{text}");
+        assert_eq!(parse_log(&text).unwrap().len(), 2);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn the_scaffolded_empty_log_accepts_an_entry() {
+        let dir = temp_dir("scaffold");
+        let path = dir.join("history.yaml");
+        std::fs::write(&path, HISTORY_TEMPLATE).unwrap();
+        log_add(&path, "first family", "pending", None, None).unwrap();
+        let entries = parse_log(&std::fs::read_to_string(&path).unwrap()).unwrap();
+        assert_eq!(entries.len(), 1);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn log_add_validates_outcome_and_date() {
+        let dir = temp_dir("validate");
+        let path = dir.join("history.yaml");
+        assert!(log_add(&path, "f", "won", None, None).is_err());
+        assert!(log_add(&path, "f", "paid", None, Some("2026-02-30")).is_err());
+        assert!(log_add(&path, " ", "paid", None, None).is_err());
+        assert!(!path.exists(), "a rejected add must not create the file");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]
@@ -481,9 +647,7 @@ mod tests {
 
     #[test]
     fn log_round_trips_through_the_parser() {
-        let dir = std::env::temp_dir().join("vg-log-roundtrip");
-        let _ = std::fs::remove_dir_all(&dir);
-        std::fs::create_dir_all(&dir).unwrap();
+        let dir = temp_dir("roundtrip");
         let path = dir.join("history.yaml");
         log_add(
             &path,

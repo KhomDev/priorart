@@ -28,11 +28,11 @@ pub fn text(report: &Report) -> String {
                 Verdict::Warn => "NOTE",
             };
             out.push_str(&format!("  {marker}  {:<4} {}\n", f.rule, f.title));
-            for e in &f.evidence {
+            for (i, e) in f.evidence.iter().enumerate() {
                 out.push_str(&format!("             ↳ matched: {e}\n"));
-            }
-            for s in &f.matched_sentences {
-                out.push_str(&format!("             ↳ in sentence: {s}\n"));
+                if let Some(s) = f.matched_sentences.get(i) {
+                    out.push_str(&format!("             ↳ in sentence: {s}\n"));
+                }
             }
             for line in wrap(&f.fix, 74) {
                 out.push_str(&format!("             → {line}\n"));
@@ -98,6 +98,36 @@ pub fn text(report: &Report) -> String {
         out.push_str(&format!("  {line}\n"));
     }
     out
+}
+
+/// One row per fired rule, then the outcome line.
+pub fn table(report: &Report) -> String {
+    let mut out = format!("{:<5} {:<6} {:<4} TITLE\n", "STATE", "RULE", "WT");
+    for f in &report.findings {
+        out.push_str(&format!(
+            "{:<5} {:<6} {:<4} {}\n",
+            f.verdict.label(),
+            f.rule,
+            f.weight,
+            f.title
+        ));
+    }
+    out.push_str(&format!(
+        "\n{}: outcome {}  viability_score {} (uncalibrated heuristic)  threshold {}\n",
+        report.subject,
+        report.outcome.word(),
+        report.viability_score,
+        report.threshold
+    ));
+    out
+}
+
+/// Remove control characters other than newline and tab, so text that came
+/// from a finding, a corpus or a log cannot drive the terminal.
+pub fn sanitize(s: &str) -> String {
+    s.chars()
+        .filter(|c| !c.is_control() || *c == '\n' || *c == '\t')
+        .collect()
 }
 
 pub fn gates_text(outcomes: &[GateOutcome], verbose: bool) -> String {
@@ -223,8 +253,8 @@ pub fn explain(rule: &Rule) -> String {
         rule.last_validated.as_deref().unwrap_or("never")
     ));
     out.push_str("  detection\n");
-    if let Some(kind) = rule.structural.as_deref() {
-        out.push_str(&format!("    structural matcher: {kind}\n"));
+    if let Some(kind) = rule.structural {
+        out.push_str(&format!("    structural matcher: {}\n", kind.label()));
     }
     if !rule.any_of.is_empty() {
         for p in &rule.any_of {
@@ -240,7 +270,10 @@ pub fn explain(rule: &Rule) -> String {
         for p in &rule.none_of {
             out.push_str(&format!("    suppressed by: {p}\n"));
         }
-        out.push_str(&format!("    suppression scope: {}\n", rule.none_of_scope));
+        out.push_str(&format!(
+            "    suppression scope: {}\n",
+            rule.none_of_scope.label()
+        ));
     }
     if !rule.escalate_on.is_empty() {
         for p in &rule.escalate_on {
@@ -253,10 +286,8 @@ pub fn explain(rule: &Rule) -> String {
         }
     }
     if !rule.ignore_sections.is_empty() {
-        out.push_str(&format!(
-            "    ignores sections: {}\n",
-            rule.ignore_sections.join(", ")
-        ));
+        let kinds: Vec<&str> = rule.ignore_sections.iter().map(|k| k.label()).collect();
+        out.push_str(&format!("    ignores sections: {}\n", kinds.join(", ")));
     }
     out.push_str(&format!(
         "    negation window: {}\n",
@@ -284,6 +315,11 @@ mod tests {
     fn wrap_handles_long_word() {
         let lines = wrap("supercalifragilistic", 5);
         assert_eq!(lines.len(), 1);
+    }
+
+    #[test]
+    fn sanitize_drops_escape_sequences_but_keeps_newlines() {
+        assert_eq!(sanitize("a\u{1b}[2Jb\nc\td"), "a[2Jb\nc\td");
     }
 
     #[test]

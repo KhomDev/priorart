@@ -9,6 +9,134 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-06
+
+The audit release. A 2026-11-06 audit ran the 0.4.4 binary against crafted findings and found
+that the outcome rule could never reach `CLEAR`, that four gates never looked at the finding, and
+that several rules hard-killed standard valid findings. Every counterexample it reproduced is now a
+regression fixture (`tests/rules.fixture.yaml`) or an end-to-end test (`tests/cli.rs`).
+
+**Outcomes change in this release.** Expect different results from 0.4.x on the same input.
+
+### Changed - outcomes and gates
+
+- **`CLEAR` is reachable.** D1 was hard-wired to `?`, so no input could produce `CLEAR`. D1 now
+  runs from `--known-issues`: unknown without a corpus, fail on a match or an unusable entry,
+  pass otherwise. `vg gates` accepts `--known-issues` too.
+- **A failed gate holds the finding.** It used to have no effect on the outcome, while an
+  unknown gate made it `INCOMPLETE`, so a failure counted for less than missing input. The
+  decision rule is now KILL → HOLD (soft rule, failed gate, or score below threshold) → NOTE →
+  INCOMPLETE → CLEAR.
+- **G1-G5 compare their input with the finding** (in `vg check`, or `vg gates --finding`):
+  - G1 compares the thesis severity (`--severity`, or a `Severity:` line) with the floor. A
+    narrow floor with no stated severity reports unknown instead of failing. A missing
+    `floor_status`, an invalid date and a future `retrieved` date now fail, as gates.yaml said.
+  - G2 runs each exclusion `pattern` over the finding's claim sections. It used to check only
+    that the clauses were well-formed.
+  - G3 traces the paths and file names the finding cites into the scope list (exact path, path
+    suffix, `dir/` prefix or glob). It used to pass whenever the scope list was non-empty.
+  - G4 compares the finding with the ledger's prior-audit `known_issues` and reports which cited
+    paths a prior audit covers.
+  - G5 looks for whole-word intent markers only in tests that name an identifier from the
+    finding, and reports `file:line`. "unintended" no longer matches "intended".
+
+  Without a finding, G1-G4 still check only that their input is complete, and say so.
+- **G7 uses containment instead of Jaccard.** Jaccard between a whole finding and a short family
+  label can never reach the old 0.18 threshold, so the README's own example family went
+  undetected on a realistic draft. A draft is now a probable repeat when it holds at least 60% of
+  a family label's words, with at least two of them in common. An empty log passes.
+- **`--program <id>`** selects one entry of a multi-program ledger. Without it, a ledger with
+  several programs makes G1, G2 and G4 unknown instead of pooling every program.
+- G6 accepts `none` / `no` in any case.
+
+### Fixed - rules (each a reproduced false KILL or HOLD, or a dead rule)
+
+- **P2** hard-killed "missing the onlyOwner modifier" - a missing-access-control finding.
+  `missing` is now a negation cue, and a user-held token owner or approved operator suppresses
+  the rule.
+- **P3** hard-killed missing-slippage findings ("sandwich"). Slippage, minimum-amount-out and
+  deadline wording now suppress it.
+- **P12** matched "read-only reentrancy". "read-only" must now name a function, call or view.
+- **P13** was effectively dead: under the catalog's case-insensitive flag its ticker
+  suppression matched any number followed by a short word ("2 of"). The ticker is now
+  `(?-i:...)`, and `check_tripwires.py` check E fails on any `[A-Z]` class outside one.
+- **P15** hard-killed "breaks / contrary to the intended behaviour", the finding's own
+  argument. The note mode the docs described now exists: a bare "documented behaviour" is a
+  NOTE, an intent phrase escalates to hard.
+- **P17** no longer holds a finding that names a permanent freeze of funds, a paid impact class.
+- **P19** treated "total value locked" as a loss claim, read every section after the PoC
+  (including the Recommendation) as proof, let one "storage" anywhere downgrade it, and read
+  "epoch" or "latest" in a heading as a PoC section. It now needs a failure in a proof section
+  and no positive state change there.
+- **P21** held findings for saying "requires no misconfiguration" or "under the deployed
+  configuration" - what its own fix asks for. Both patterns are removed.
+- **P1** documentation claimed a bare hedge fires as a note; it never did. The docs are
+  corrected and the no-op escalation list removed.
+- **P4**: `Stub*` was listed and then dropped by the downgrade list, a dead alternative; removed.
+
+### Fixed - parser and engine
+
+- Lines inside fenced code blocks no longer start a section, and a heading needs `#` plus a
+  space, so `# comment` in a shell block, `#[test]` and `#hashtag` are not headings.
+- Headings are classified by whole word (`epoch` is not `poc`; `latest`, `contest` and
+  `attestation` are not `test`). Recommendation and mitigation sections are their own kind.
+- A '.', '!' or '?' ends a sentence only before whitespace or the end of the text, so
+  `Vault.sol`, `assert!(x >= 0)` and `e.g.` stay whole. P4's `assert!(...)` pattern could never
+  match before.
+- Typographic apostrophes are folded before negation, so "doesn’t front-run" is negated.
+- A rule's strong (`escalate_on`) hits are shown first and respect `ignore_sections` and
+  sentence-scoped `none_of`.
+
+### Fixed - command line and inputs
+
+- `vg check` accepts several findings (the README's `vg check findings/*.md` example used to be
+  a usage error). JSON is an object for one finding and an array for several; `--fail-on-kill`
+  fails on any KILL. `--min-score` is limited to 0-100.
+- `vg init` printed, and NOTES.md suggested, `vg gates --known-issues`, which did not exist.
+- `--tests` crashed (`cli.rs:361`) when the 4 MB budget fell inside a multi-byte character. It now
+  reads files in sorted order, skips VCS and build directories, does not follow symbolic links,
+  and stops the whole walk at the budget.
+- `vg log add --family null` (or `true`, `~`, `1e3`, ...) wrote an unquoted scalar that broke the
+  log for every later read. Every value is now double-quoted; `--outcome` and `--date` are
+  validated; an existing log is appended to, keeping its comments; the write goes through a
+  temporary file and a rename.
+- A `--log` path that does not exist is an error, not a silent `?`. `--program` must name a
+  ledger entry, and `--severity` must be a severity.
+- `vg log check` honours `--rules`, and every error is prefixed with the binary's own name.
+- Rule, gate, known-issue and log files reject unknown keys, so a typo such as `none_off:` is a
+  load error instead of a silently over-firing rule. `none_of_scope`, `ignore_sections` and
+  `structural` are closed sets. The catalog `version` is checked. The ledger stays lenient,
+  because its schema is owned by bounty-economics and new fields are additive.
+- The deprecated `doctrine` alias for `doc` is removed (announced for one minor version in
+  0.2.0). The unused `run_by_gates_command` gate field is removed.
+- Text from a finding, corpus or log is stripped of control characters before it is printed, so
+  it cannot drive the terminal.
+- `vg bench --labels` now decides which set each file belongs to (it used to only count rows),
+  and a rate over an empty set prints `n/a` instead of `0.0%`.
+- Scores sum in 64 bits, so an extreme weight cannot wrap.
+
+### Fixed - documentation and provenance
+
+- `origin_rows` re-derived against rejection-taxonomy v0.5.1 (113 rows): P17 6 → 14, D1 34 → 41.
+  `scripts/check_readme.py` now recomputes every rule's and gate's `origin_rows` from the dataset,
+  checks the README catalog titles against the catalog, and pins the taxonomy tag
+  (`PINNED_TAXONOMY_TAG`) instead of following its latest release.
+- The README's "not 69.0%" sentence is removed: 72 reachable rows plus 41 D1 rows is all 113, so
+  the figure it rebutted could not have counted D1.
+- README and `docs/calibration.md` say which catalog the recall study measured (the 0.2.0-era
+  catalog) and that the current catalog's recall is unmeasured.
+- README catalog titles match the catalog; the rule example is the real P17.
+
+### Security and CI
+
+- `release.yml` grants write permissions per job instead of to every job, and pins third-party
+  actions to commit SHAs. The merged `SHA256SUMS` is attested too.
+- CI pins the Rust toolchain, runs tests with `--locked`, and runs `check_readme.py
+  --require-dataset` against the pinned taxonomy tag.
+- `.gitattributes` started with a UTF-8 byte-order mark, so its first line (`* text=auto
+  eol=lf`) matched no file and Windows checkouts got CRLF, which broke the README example
+  check there. The mark is removed.
+
 ## [0.4.4] - 2026-11-05
 
 A maintenance release. The catalog, the scoring and the CLI output are unchanged.
@@ -268,7 +396,8 @@ The tree itself is unchanged except for the two fixes recorded here.
 - The rule catalog and gate definitions as data, embedded in the binary.
 - The fixture suite: one positive and one negative case per anti-pattern.
 
-[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.4.4...HEAD
+[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/KhomDev/viability-gate/compare/v0.4.4...v0.5.0
 [0.4.4]: https://github.com/KhomDev/viability-gate/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/KhomDev/viability-gate/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/KhomDev/viability-gate/compare/v0.4.1...v0.4.2

@@ -40,16 +40,20 @@
 #
 # HOW EVERY origin_rows VALUE HERE IS DERIVED - no value is an estimate, and no
 # value is invented. Each one is a count over the public rejection dataset in the
-# sibling repository rejection-taxonomy (data/rejections.csv, 97 rows), using the
+# sibling repository rejection-taxonomy, at the tag pinned in
+# scripts/check_readme.py (v0.5.1: data/rejections.csv, 113 rows), using the
 # rule's own token in a published column:
 #
-#   earliest_gate      the rule has its own gate token in the log
-#   root_cause_class   the rule maps to exactly one published root-cause class
-#   bug_family         the rule maps to exactly one published bug family
+#   P2   root_cause_class = oos_privileged_role     P15  earliest_gate = G5_test_intent
+#   P5   earliest_gate    = G3_scope_tree           P16  earliest_gate = P16_below_floor
+#   P7   root_cause_class = best_practice           P17  earliest_gate = P17_no_attacker_win
+#   P12  bug_family       = panic                   P18  root_cause_class = prior_audit_known
+#   P19  earliest_gate    = P19_headline_mismatch   P20  earliest_gate = P20_cooperating_party
 #
-# Reproduce the whole table with:
+# scripts/check_readme.py recomputes every one of these from the pinned dataset
+# and fails CI on drift. Reproduce them by hand with:
 #
-#   cd rejection-taxonomy
+#   cd rejection-taxonomy && git checkout v0.5.1
 #   python -c "import csv,collections; \
 #     rows=list(csv.DictReader(open('data/rejections.csv',encoding='utf-8'))); \
 #     print(collections.Counter(r['earliest_gate'] for r in rows)); \
@@ -60,6 +64,10 @@
 # not a claim that the rule is unfounded - it is the honest statement that the
 # public record does not carry a row count for it, and this file will not
 # manufacture one. The published bucket totals are cited in README.md.
+#
+# Every pattern is compiled case-INSENSITIVE. A pattern that depends on case
+# (a ticker, a type name) must wrap that part in (?-i:...);
+# scripts/check_tripwires.py fails on an [A-Z] class outside one.
 
 version: 1
 
@@ -77,12 +85,8 @@ rules:
       - "if the protocol (were to |)(upgrade|change|migrate)"
       - "no (current|present) (exploit|attack) path"
     # "hypothetical" alone is a hedge, not an admission. It is the single most
-    # common word in a report that is merely being careful, so it must not kill
-    # the submission on its own. It still fires, as a note, so the writer sees it.
-    escalate_on:
-      - "(no|not|never) (current|present|real) (exploit|attack|impact) path"
-      - "not currently (exploitable|reachable|an issue)"
-    escalate_to: hard
+    # common word in a report that is merely being careful, so it is not a
+    # signal at all: a bare "hypothetical" does not fire this rule.
     fix: >-
       File at the severity matching the CURRENT state. If no exploit path exists
       today, the finding is theoretical: hold it in notes.
@@ -125,7 +129,9 @@ rules:
       - "(revert|panic|abort|assert(ion)? fail|div(ision)? by zero)"
     any_of:
       - "direct fund loss:? *(none|no)"
-      - "read[- ]only"
+      # "read-only" alone also matches "read-only reentrancy", a real
+      # high-severity class, so the phrase must name a function or call.
+      - "read[- ]only (function|call|method|view|path|entry ?point)"
       - "view function"
       - "no (state|storage) (change|mutation)"
       - "the (transaction|call) (reverts|aborts|panics)"
@@ -160,7 +166,9 @@ rules:
       - "\\$\\d"
       - "\\b\\d+(\\.\\d+)? ?(tokens?|base units?|units?|wei|gwei|shares?)\\b"
       - "\\b\\d+\\.\\d{2,}\\b"
-      - "\\b\\d[\\d,]* ?[A-Z]{2,6}\\b"
+      # The ticker must be UPPER-case. Under the catalog's case-insensitive flag
+      # a bare [A-Z]{2,6} matched any short word, so "2 of" suppressed the rule.
+      - "\\b\\d[\\d,]* ?(?-i:[A-Z]{2,6})\\b"
     fix: >-
       Quantify exactly what changes, in token units or value, between the healthy
       and the exploited state. Sub-cent or cosmetic -> Informational at most.
@@ -176,8 +184,11 @@ rules:
     group: B
     verdict: hard
     weight: 40
+    # A finding that the privileged check is MISSING ("missing the onlyOwner
+    # modifier") is the opposite signal - an unprivileged path - and the engine's
+    # negation window treats "missing", "lacks" and "without" as cues.
     any_of:
-      - "only(owner|admin|operator|guardian|governor)"
+      - "\\bonly(owner|admin|operator|guardian|governor)"
       # Prose forms. The old pattern missed "only the owner" entirely, because
       # the identifier had to be glued to the word "only".
       - "only (the |an? )?(owner|admin|operator|guardian|governor|curator|manager)"
@@ -197,6 +208,11 @@ rules:
       - "any (user|caller|attacker) can (trigger|call|invoke|reach)"
       - "permissionless"
       - "without (any )?(privileged|elevated|admin) (role|access|capability)"
+      # A user-held "owner" or "operator" is not a privileged role: the owner of
+      # a token or position, or an operator the user approved.
+      - "\\b(token|nft|position|share|lp|deposit|account|vault share) owners?\\b"
+      - "\\bapproved operators?\\b"
+      - "(missing|lacks?|lacking|no|without) (an? |the )?(access control|access check|role check|auth(ori[sz]ation)? check)"
     fix: >-
       Check whether an unprivileged attacker can trigger the bug without role
       compromise. If not: hold. The one escape is UNKNOWING admin harm - a
@@ -223,6 +239,13 @@ rules:
       - "atomic(ally)? (in )?(one|a single) transaction"
       - "flash ?loan"
       - "same transaction"
+      # A missing slippage or deadline check is a code defect that a sandwich
+      # merely exploits; programs and contests pay it. The front-run exclusion
+      # is about attacks that need nothing but ordering.
+      - "slippage"
+      - "min(imum)?[ _-]?(amount)?[ _-]?out"
+      - "amount_?out_?min"
+      - "\\bdeadline\\b"
     fix: >-
       Find an atomic trigger path (flash loan, multicall, composed legos) or hold.
       The front-run exclusion stops applying once the attack fits in one tx.
@@ -372,13 +395,13 @@ rules:
     group: C
     verdict: soft
     weight: 30
+    # "requires no misconfiguration" and "under the deployed configuration" are
+    # what this rule's own fix asks a report to say, so they are not signals.
     any_of:
       - "at the documented (configuration|stablecoin|setting)"
-      - "no misconfiguration"
       - "not how (it|the protocol) is (run|deployed|configured)"
       - "assuming (the |a )?(non[- ]standard|unusual|non[- ]default) config"
       - "if the (operator|maker|admin) (chooses|sets|ships)"
-      - "under the deployed configuration"
     fix: >-
       Name at least one bound representative of the deployed configuration. If no
       bound is representative, the headline cannot set severity.
@@ -421,16 +444,16 @@ rules:
   - id: P15
     title: Intended behaviour asserted in the project's own test suite
     group: D
-    verdict: hard
+    # Base verdict is a NOTE: a bare "documented behaviour" is a claim about the
+    # docs, not proof of intent. Every strong form below escalates to hard.
+    verdict: warn
     weight: 40
     any_of:
-      - "by design"
-      - "intended (behaviou?r|design)"
-      - "should preserve"
-      - "expected to survive"
-      - "not penalised"
-      - "(test|spec) (asserts|asserting|validates) (this|the behaviou?r)"
+      - "documented behaviou?r"
     none_of:
+      # Calling the behaviour a DEPARTURE from intent is the finding's argument,
+      # not an admission.
+      - "(breaks?|broke|contrary to|violates?|deviates? from|against|undermines?|bypass(es)?) (the )?(intended|documented|designed)"
       # These are the STRONGEST forms of the finding, and the old rule killed
       # them: "the implementation contradicts the documented behaviour" matched
       # the bare phrase "documented behaviour" and hard-failed.
@@ -440,9 +463,12 @@ rules:
       - "inconsistent with (the )?documented"
       - "not (the )?documented behaviou?r"
       - "documented behaviou?r (is|says|states) .{0,30}(but|however|yet)"
-    # A bare "documented behaviour" is a claim about the docs, not proof of
-    # intent. It fires as a NOTE so the writer sees it, without killing the report.
     escalate_on:
+      - "by design"
+      - "intended (behaviou?r|design)"
+      - "should preserve"
+      - "expected to survive"
+      - "not penali[sz]ed"
       - "(test|spec) (asserts|asserting|validates) (this|the behaviou?r)"
       - "asserted (as )?(intended|by design)"
       - "the (project|team)('s)? own test"
@@ -468,13 +494,13 @@ rules:
     any_of:
       - "assert!\\(\\s*\\w+\\s*>=\\s*0\\s*\\)"
       - "assert\\(\\s*\\w+\\s*>=\\s*0\\s*\\)"
-      - "(?-i:\\b(Mock|Simulator|Fake|Stub)[A-Z]\\w*)"
+      # Stub* is ordinary scaffolding and is not listed.
+      - "(?-i:\\b(Mock|Simulator|Fake)[A-Z]\\w*)"
       - "imports? a (mock|simulator)"
     # Ordinary PoC scaffolding. A match here is dropped: naming a mock token is
     # not evidence that the PoC is defective.
     downgrade_on:
       - "(?-i:\\bMock(ERC20|Token|Vault|Router|Pair|Factory)\\b)"
-      - "(?-i:\\bStub[A-Z]\\w*\\b)"
     escalate_on:
       - "instead of the real (contract|implementation|deployment)"
       - "simulates? the (contract|protocol|behaviou?r)"
@@ -589,11 +615,15 @@ rules:
       - "attacker (profits?|gains?|extracts?) \\d"
       - "net (profit|gain) of \\d"
       - "a third party (loses|is harmed)"
+      # Permanent freezing of user funds is a paid impact class in its own
+      # right, even with no attacker profit.
+      - "permanent(ly)? (freez|frozen|lock|stuck|strand)\\w*"
+      - "(funds?|assets?|deposits?|tokens?) (are|is|become|remain)s? permanently (frozen|locked|stuck|stranded)"
     fix: >-
       Identify the specific financial beneficiary and quantify the loss, or
       downgrade to Informational with "no demonstrated fund-loss path".
     doc: docs/rules/P17.md
-    origin_rows: 6
+    origin_rows: 14
     evidence: in_sample
     last_validated: "2026-10-10"
     fp_rate: null
@@ -601,12 +631,14 @@ rules:
   - id: P19
     title: Headline impact contradicted by PoC evidence (SPAM line)
     group: E
-    # STRUCTURAL, not co-occurrence. See engine::structural_match. The rule
-    # requires: a headline loss claim, a proof section that shows only a
-    # revert/panic/expected failure, and no assertion of persisted state. A
-    # revert-based freeze described honestly in all three parts does not fire
-    # hard; it fires as a note, because the claim and the evidence disagree and a
-    # human should look.
+    # STRUCTURAL, not co-occurrence. See engine::p19. The rule requires: a loss
+    # claim before the first proof section ("total value locked" is not one), a
+    # proof section that shows a revert/panic/expected failure and no positive
+    # state change (no drain, profit or balance movement), and no assertion of
+    # persisted state in the claim or proof. A revert-based freeze described
+    # honestly does not fire hard; it fires as a note, because the claim and the
+    # evidence disagree and a human should look. Recommendation sections are
+    # never read as proof.
     structural: p19_headline_vs_proof
     verdict: hard
     weight: 50
