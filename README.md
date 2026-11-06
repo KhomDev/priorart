@@ -147,7 +147,7 @@ check only that their input is complete and well-formed, and their detail line s
 holding several programs needs `--program <id>`.
 
 **Which gates have supporting data.** G1-G5, G7 and D1 are derived from rows in my own rejection
-log; the counts above are those rows in rejection-taxonomy v0.5.1, and `scripts/check_readme.py`
+log; the counts above are those rows in rejection-taxonomy v0.6.0, and `scripts/check_readme.py`
 recomputes them. **G6 has no supporting rows at all** - my log contains no rejection attributed to
 fork provenance. It is kept because the failure mode is real and the check is cheap, but it is a
 judgement, not a measurement, and `vg gates` prints the evidence class next to every gate. Every

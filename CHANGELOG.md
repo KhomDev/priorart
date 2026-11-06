@@ -9,6 +9,14 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+### Changed
+
+- The pinned rejection-taxonomy tag is now `v0.6.0` (was `v0.5.1`). rejection-taxonomy
+  reset its history on 2026-11-06, so the `v0.5.1` tag no longer exists and the README check
+  could not check it out. Every `origin_rows` count and every gate count in the README is
+  unchanged: 0.6.0 moved only `preventable_by`, `duplicate_source` and two family-level
+  classes, none of which this repository reads.
+
 ## [0.5.0] - 2026-11-06
 
 The audit release. A 2026-11-06 audit ran the 0.4.4 binary against crafted findings and found
