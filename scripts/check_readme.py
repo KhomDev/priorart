@@ -57,7 +57,7 @@ GATES = REPO_ROOT / "rules" / "gates.yaml"
 # The ONE place the rejection-taxonomy version is pinned. CI checks out this tag;
 # every row count in the README and the catalog is recomputed against it. Bump
 # it deliberately, in a release, never by resolving "latest".
-PINNED_TAXONOMY_TAG = "v0.5.1"
+PINNED_TAXONOMY_TAG = "v0.6.0"
 
 # How each catalog entry's origin_rows is derived: (column, value). Rules and
 # gates without an entry here carry origin_rows 0 / evidence none.

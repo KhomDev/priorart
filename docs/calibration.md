@@ -5,7 +5,7 @@
 > from — **with the catalog as it stood when the figures were first published in 0.2.0
 > (2026-10-09)**. Two things have changed since, and the study has not been re-run for either:
 >
-> - the published rejection dataset has grown to **113 rows** (rejection-taxonomy v0.5.1);
+> - the published rejection dataset has grown to **113 rows** (rejection-taxonomy v0.6.0);
 > - **the catalog has changed.** 0.3.0 reworked several rules, and 0.5.0 changed P2, P3, P12,
 >   P13, P15, P17, P19 and P21 and the sentence and heading parser, after an audit reproduced
 >   valid findings that the older catalog hard-killed.
