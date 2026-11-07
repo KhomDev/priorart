@@ -57,9 +57,8 @@ A single crate (no Cargo workspace) with one library and two binaries:
   serde-saphyr 2.0.0, serde_json 1.0.154. `cargo tree --edges normal` resolves
   49 packages ([docs/no-network.md](docs/no-network.md) line 38).
 - Release profile is `opt-level = 3`, `lto = true`, `codegen-units = 1`,
-  `strip = true` ([Cargo.toml](Cargo.toml) lines 24-28) - a deliberately slow
-  build: the release build alone takes on the order of ten minutes under LTO
-  with one codegen unit.
+  `strip = true` ([Cargo.toml](Cargo.toml) lines 24-28) - a deliberately
+  slow build configuration: full LTO with a single codegen unit.
 - Rule files are embedded with `include_str!` at [src/cli.rs](src/cli.rs) lines
   17-18, so the installed binary needs no data directory; `--rules DIR` overrides.
 
@@ -230,10 +229,13 @@ Gates do not deduct from the score - a failed gate holds the finding and
 an unknown one makes the outcome INCOMPLETE (comment, lines 615-617).
 
 "CLEAR is reachable" is pinned end to end by [tests/cli.rs](tests/cli.rs) line
-183 (`clear_is_reachable_when_every_gate_runs_and_passes`): the same finding
-run with no inputs is INCOMPLETE, and with a full input set - ledger, scope,
-prior audits, tests, fork-of, log and known-issues corpus - all eight gates run,
-pass, and the outcome is CLEAR. Before 0.5.0 D1 was hard-wired to Unknown, so no
+183 (`clear_is_reachable_when_every_gate_runs_and_passes`): with a full input
+set - ledger, scope, prior audits, tests, fork-of, log and known-issues corpus -
+all eight gates run, pass, and the outcome is CLEAR. The complementary case - a
+finding with no gate inputs is INCOMPLETE, never CLEAR - is pinned by
+`unknown_gate_with_no_findings_is_incomplete_not_clear`
+([src/engine.rs](src/engine.rs) line 2114) and stated in the README
+([README.md](README.md) lines 60-63). Before 0.5.0 D1 was hard-wired to Unknown, so no
 input could reach CLEAR ([CHANGELOG.md](CHANGELOG.md), 0.5.0).
 
 ### 4.5 Severity and dates
@@ -278,7 +280,11 @@ trailing plural `s`.
 `vg check --known-issues`. A match becomes a `Finding` with verdict Hard,
 weight 60 (line 1766) and rule id `KI:<id>` (line 1763). It reports warnings for
 duplicate corpus ids, entries with no patterns, and invalid regexes instead of
-silently passing ([tests/cli.rs](tests/cli.rs) line 465 pins all three).
+silently passing - pinned by the engine unit tests
+`known_issue_without_patterns_warns_rather_than_silently_passing` and
+`known_issue_invalid_regex_and_duplicate_ids_warn` ([src/engine.rs](src/engine.rs)
+lines 2559 and 2568); the D1 gate itself fails on an unusable entry
+(`d1_runs_when_a_corpus_is_supplied`, line 2465).
 
 ## 6 The rule catalog
 
