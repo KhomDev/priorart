@@ -121,9 +121,20 @@ def read_text(path: Path) -> str | None:
 # --------------------------------------------------------------------- check A
 
 
+# The vendored snapshots' own denylist checkers name the prefixes in order to
+# search for them. Skipping those two files is the same allowance they give
+# themselves. Every other file in the snapshot is still scanned.
+DENYLIST_CHECKERS = {
+    Path("data/rejection-taxonomy/scripts/check_hygiene.py"),
+    Path("data/bounty-economics/scripts/check_hygiene.py"),
+}
+
+
 def check_private_strings(files: list[Path]) -> list[str]:
     problems: list[str] = []
     for path in files:
+        if path in DENYLIST_CHECKERS:
+            continue
         text = read_text(path)
         if text is None:
             continue

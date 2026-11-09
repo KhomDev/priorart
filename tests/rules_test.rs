@@ -55,12 +55,52 @@ fn find<'a>(rules: &'a [CompiledRule], id: &str) -> Option<&'a CompiledRule> {
     rules.iter().find(|c| c.rule.id == id)
 }
 
+/// CMP-04 was closed Informative as a duplicate of a published contest issue.
+/// The 0.5.0 binary held it because P7 matched "rather than a best-practice
+/// observation" and P18 did not match "same root cause as accepted ... issue
+/// M-1". The fixture is the report text with no personal email in it.
 #[test]
-fn catalog_has_22_rules() {
+fn cmp04_prior_audit_admission_kills_and_the_negated_phrase_does_not() {
+    let text = include_str!("fixtures/cmp-04-report.md");
+    assert!(
+        !text
+            .split_whitespace()
+            .any(|w| w.contains('@') && w.contains('.') && !w.contains("mysten")),
+        "the fixture must not carry an email address"
+    );
+    let rules = compiled();
+    let (findings, _) = viability_gate::engine::evaluate(&rules, text);
+    assert!(
+        findings.iter().all(|f| f.rule != "P7"),
+        "P7 fired on a negated phrase: {:?}",
+        findings
+            .iter()
+            .find(|f| f.rule == "P7")
+            .map(|f| &f.matched_sentences)
+    );
+    let p18 = findings
+        .iter()
+        .find(|f| f.rule == "P18")
+        .expect("P18 should fire on the prior-issue admission");
+    assert_eq!(p18.verdict, Verdict::Hard);
+    let blob = format!(
+        "{} {}",
+        p18.evidence.join(" "),
+        p18.matched_sentences.join(" ")
+    );
+    let low = blob.to_lowercase();
+    assert!(
+        low.contains("root cause") || low.contains("m-1") || low.contains("previously"),
+        "P18 evidence did not quote the admission: {blob}"
+    );
+}
+
+#[test]
+fn catalog_has_p1_through_p26() {
     let (rules, _) = load();
-    assert_eq!(rules.len(), 22, "expected P1..P22");
+    assert_eq!(rules.len(), 26, "expected P1..P26");
     let ids: BTreeSet<&str> = rules.iter().map(|r| r.rule.id.as_str()).collect();
-    for n in 1..=22 {
+    for n in 1..=26 {
         let id = format!("P{n}");
         assert!(ids.contains(id.as_str()), "missing rule {id}");
     }

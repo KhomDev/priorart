@@ -289,11 +289,11 @@ lines 2559 and 2568); the D1 gate itself fails on an unusable entry
 ## 6 The rule catalog
 
 [rules/anti-patterns.yaml](rules/anti-patterns.yaml) is 653 lines of data, not
-code. It carries exactly **22 rules, P1-P22** - asserted by
+code. It carries exactly **26 rules, P1-P26** - asserted by
 `catalog_has_22_rules` ([tests/rules_test.rs](tests/rules_test.rs) line 59) and
 `every_rule_explains_and_the_catalog_lists` ([tests/cli.rs](tests/cli.rs) line
-319, which drives `vg explain` for P1..P22 and asserts the rules list prints
-"22 rules"). Header comments (lines 1-70) document the schema, the origin_rows
+319, which drives `vg explain` for P1..P26 and asserts the rules list prints
+"26 rules"). Header comments (lines 1-70) document the schema, the origin_rows
 derivation and the case-insensitivity rule. Summing the pattern lists gives 158
 individual patterns across the 22 rules; 10 rules carry `evidence: in_sample`
 and 12 carry `origin_rows: 0` with `evidence: none`.
@@ -475,9 +475,9 @@ concurrent duplicate.
   [scripts/check_readme.py](scripts/check_readme.py) recomputes every
   `origin_rows`, every automation-table row and the reachable total from the
   dataset at the pinned tag and fails CI on drift. The tag is pinned in ONE
-  place, `PINNED_TAXONOMY_TAG` (line 60, currently "v0.6.0"); the dataset is
-  read from `$VG_TAXONOMY_CSV` or `../rejection-taxonomy/data/rejections.csv`
-  (`dataset_path`, lines 137-141).
+  place, `PINNED_TAXONOMY_TAG` (currently "v0.6.0"); the dataset is the vendored
+  snapshot `data/rejection-taxonomy/data/rejections.csv`, or `$VG_TAXONOMY_CSV`
+  when that is set. `data/rejection-taxonomy/SOURCE.md` records the same tag.
 
 ## 10 Tests
 
@@ -531,7 +531,7 @@ read-only token (lines 8-9).
 | cargo-audit | ubuntu | installs cargo-audit, runs `cargo audit` |
 | no network code | ubuntu | three steps: the resolved dependency graph carries none of the denylisted network crates (cargo tree + grep, and a Cargo.toml grep); no socket or request code in src/ (grep for TcpStream, UdpSocket, std::net, the HTTP clients); the release binary mentions no HTTP client name (grep of the built vg) |
 | tripwires | ubuntu | `python scripts/check_tripwires.py` and `--self-test` (11 boundary fixtures) |
-| generated docs are current | ubuntu | reads the pinned taxonomy tag, checks out KhomDev/rejection-taxonomy at it into `../rejection-taxonomy`, `gen_rule_docs.py --check`, `check_readme.py --require-dataset`, `regen-readme-examples.sh --check` against a release build |
+| generated docs are current | ubuntu | `gen_rule_docs.py --check`, `check_readme.py --require-dataset` against the vendored `data/rejection-taxonomy` snapshot, `regen-readme-examples.sh --check` against a release build |
 | calibration fixture | ubuntu | builds release, calibrate.py `--dry-run`, calibrate.py scored against `--expect examples/calibration/expected.json` (fails if a rule change moves strict/lenient/miss/per_gate), and `vg bench` over the bench fixture |
 | shipped rules name no target | ubuntu | greps rules/ for platform and forge-host names; only this project's own repositories are allowed as provenance |
 

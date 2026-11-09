@@ -51,8 +51,9 @@ matchable to its finding text to be scored at all, and matchability correlates
 with how much prose the row's description carries — which is not independent of
 which gate closed it. The 59-row subset's gate mix may therefore differ from the
 97-row mix, and this document does not know by how much. The full log's gate mix
-is published in
-[rejection-taxonomy](https://github.com/KhomDev/rejection-taxonomy) (`data/summary.json`);
+is published in the vendored snapshot
+[`data/rejection-taxonomy/data/summary.json`](../data/rejection-taxonomy/data/summary.json)
+(source: [rejection-taxonomy](https://github.com/KhomDev/rejection-taxonomy) v0.6.0);
 the matched subset's mix is not published, so the two cannot be compared here.
 
 ## Result

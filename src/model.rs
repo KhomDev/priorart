@@ -85,12 +85,24 @@ impl SectionKind {
 pub enum Structural {
     /// P19: the headline claims a loss that the proof section contradicts.
     P19HeadlineVsProof,
+    /// P23: the report does not say who the attacker is.
+    P23Attacker,
+    /// P24: preconditions or the victim's action are missing or thin.
+    P24Preconditions,
+    /// P25: impact is missing or not quantified.
+    P25Impact,
+    /// P26: the program's own severity rule is not quoted.
+    P26SeverityRule,
 }
 
 impl Structural {
     pub fn label(self) -> &'static str {
         match self {
             Structural::P19HeadlineVsProof => "p19_headline_vs_proof",
+            Structural::P23Attacker => "p23_attacker",
+            Structural::P24Preconditions => "p24_preconditions",
+            Structural::P25Impact => "p25_impact",
+            Structural::P26SeverityRule => "p26_severity_rule",
         }
     }
 }
@@ -340,6 +352,214 @@ pub struct KnownIssue {
     pub patterns: Vec<String>,
     #[serde(default)]
     pub source: Option<String>,
+}
+
+// ---------------------------------------------------------------- prior-finding index
+
+/// One prior finding in a local index.
+///
+/// Built by `vg import prior` or loaded from a directory of markdown. The
+/// quotes are short excerpts, not the whole document. An index of someone
+/// else's reports is still their text: keep it local.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct IndexedFinding {
+    pub id: String,
+    #[serde(default)]
+    pub source: String,
+    #[serde(default)]
+    pub title: String,
+    #[serde(default)]
+    pub identifiers: Vec<String>,
+    #[serde(default)]
+    pub root_causes: Vec<String>,
+    #[serde(default)]
+    pub quotes: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct IndexFile {
+    pub version: u32,
+    pub entries: Vec<IndexedFinding>,
+}
+
+/// Optional manifest beside a draft. Fields the author fills in so the claim
+/// checks (P23-P26) can see what the prose did not say. Empty strings count
+/// as missing. `impact_usd: 0` does not count as a quantified impact.
+#[derive(Debug, Clone, Deserialize, Default)]
+#[serde(deny_unknown_fields)]
+pub struct FindingManifest {
+    #[serde(default)]
+    pub attacker: Option<String>,
+    #[serde(default)]
+    pub victim: Option<String>,
+    #[serde(default)]
+    pub preconditions: Option<ManifestPreconditions>,
+    #[serde(default)]
+    pub impact_usd: Option<f64>,
+    #[serde(default)]
+    pub severity_rule_quoted: Option<String>,
+    #[serde(default)]
+    pub prior_audit_check: Option<String>,
+    #[serde(default)]
+    pub duplicate_check: Option<String>,
+    #[serde(default)]
+    pub status: Option<String>,
+}
+
+/// A precondition list, written as one string or as a list.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum ManifestPreconditions {
+    One(String),
+    Many(Vec<String>),
+}
+
+impl ManifestPreconditions {
+    pub fn is_blank(&self) -> bool {
+        match self {
+            ManifestPreconditions::One(s) => s.trim().is_empty(),
+            ManifestPreconditions::Many(v) => v.iter().all(|s| s.trim().is_empty()),
+        }
+    }
+}
+
+impl FindingManifest {
+    pub fn filled(s: &Option<String>) -> bool {
+        s.as_deref().is_some_and(|v| !v.trim().is_empty())
+    }
+
+    /// Which claim-check ids this manifest answers. It does not suppress P18
+    /// or an index hit: a sentence that says "I checked" is not a check.
+    pub fn suppresses(&self, rule: &str) -> bool {
+        match rule {
+            "P23" => Self::filled(&self.attacker),
+            "P24" => {
+                Self::filled(&self.victim)
+                    && self.preconditions.as_ref().is_some_and(|p| !p.is_blank())
+            }
+            "P25" => self.impact_usd.is_some_and(|n| n > 0.0),
+            "P26" => Self::filled(&self.severity_rule_quoted),
+            _ => false,
+        }
+    }
+}
+
+/// Status values `finding.yaml` may record. Anything else is a typo, and a
+/// typo must not be stored as if it were a disposition.
+pub const MANIFEST_STATUSES: [&str; 9] = [
+    "draft",
+    "held",
+    "submitted",
+    "paid",
+    "rejected",
+    "duplicate",
+    "informative",
+    "oos",
+    "wontfix",
+];
+
+// ---------------------------------------------------------------- engagement manifest
+
+/// An engagement file (`audit.yaml`) of the kind a hunt keeps beside a target.
+///
+/// This is not the bounty-economics ledger. `vg import audit` transcribes the
+/// fields below into a ledger, a scope list, and a known-issues file. Unknown
+/// keys are ignored: real engagement files grow extra fields, and dropping the
+/// file for a key this version does not read would make import useless.
+#[derive(Debug, Deserialize)]
+pub struct Engagement {
+    #[serde(default)]
+    pub version: Option<u32>,
+    pub id: String,
+    #[serde(default)]
+    pub program: Option<String>,
+    #[serde(default)]
+    pub platform: Option<String>,
+    /// Lowest severity the program pays: critical, high, medium, low, or none.
+    #[serde(default)]
+    pub severity_floor: Option<String>,
+    #[serde(default)]
+    pub floor_status: Option<String>,
+    #[serde(default)]
+    pub tier_shape: Option<String>,
+    #[serde(default)]
+    pub source_url: Option<String>,
+    #[serde(default)]
+    pub retrieved: Option<String>,
+    #[serde(default)]
+    pub exclusion_clauses: Vec<EngagementClause>,
+    #[serde(default)]
+    pub known_issues: Vec<EngagementIssue>,
+    #[serde(default)]
+    pub scope: Vec<String>,
+    #[serde(default)]
+    pub severity_rules: Vec<EngagementSeverityRule>,
+    #[serde(default)]
+    pub prior_audits: Vec<PriorAudit>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct EngagementClause {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub class: Option<String>,
+    /// The clause, verbatim. `clause` is accepted as an alias.
+    #[serde(default)]
+    pub text: Option<String>,
+    #[serde(default)]
+    pub clause: Option<String>,
+    /// Optional regex. Import does not invent one.
+    #[serde(default)]
+    pub pattern: Option<String>,
+}
+
+impl EngagementClause {
+    pub fn body(&self) -> String {
+        self.text
+            .as_deref()
+            .or(self.clause.as_deref())
+            .unwrap_or("")
+            .trim()
+            .to_string()
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct EngagementIssue {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub summary: Option<String>,
+    #[serde(default)]
+    pub text: Option<String>,
+    #[serde(default)]
+    pub source: Option<String>,
+    #[serde(default)]
+    pub patterns: Vec<String>,
+    #[serde(default)]
+    pub identifiers: Vec<String>,
+}
+
+impl EngagementIssue {
+    pub fn body(&self) -> String {
+        self.summary
+            .as_deref()
+            .or(self.text.as_deref())
+            .unwrap_or("")
+            .trim()
+            .to_string()
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct EngagementSeverityRule {
+    #[serde(default)]
+    pub tier: Option<String>,
+    #[serde(default)]
+    pub text: Option<String>,
 }
 
 // ---------------------------------------------------------------- own history

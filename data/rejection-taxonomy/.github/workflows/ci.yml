@@ -1,0 +1,135 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Actions are pinned to commit SHAs (Dependabot keeps them current); Python tools
+# are pinned in pyproject.toml's `dev` extra, so a new ruff release cannot turn
+# this red on its own.
+
+jobs:
+  test:
+    name: test (${{ matrix.os }}, ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        include:
+          # A stock Windows checkout is how the CRLF defect shipped in 0.5.1.
+          - os: windows-latest
+            python-version: "3.12"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the pinned tools
+        run: python -m pip install --quiet ".[dev]"
+
+      - name: Line endings are LF after checkout
+        shell: bash
+        run: |
+          if git ls-files --eol | grep -E 'w/(crlf|mixed)'; then
+            echo "files checked out with CRLF - .gitattributes is not being applied"; exit 1
+          fi
+
+      - name: Lint
+        run: python -m ruff check .
+
+      - name: Tests
+        run: python -m pytest
+
+      # Encoding (including byte-order marks) and private paths. The tripwire and
+      # history scans need private inputs CI does not have; they SKIP here and the
+      # maintainer runs them before every release.
+      - name: Repo hygiene
+        run: python scripts/check_hygiene.py --no-history
+
+      - name: Links resolve, including same-file fragment links
+        run: python scripts/check_links.py
+
+      - name: Markdown renders; README pin, CITATION.cff and CHANGELOG agree on the version
+        run: python scripts/check_markdown.py
+
+      - name: The published data validates, with every invariant
+        run: python scripts/build_public_export.py --check --out data/
+
+      - name: Generated numbers are current
+        run: python scripts/stats.py --check
+
+      - name: Query tool smoke test
+        shell: bash
+        run: |
+          python scripts/query.py > /dev/null
+          python scripts/query.py --triage duplicate --json > /dev/null
+          python scripts/query.py --preventable-by public_record --json > /dev/null
+          python scripts/query.py --repeats --json > /dev/null
+          if python scripts/query.py --triage not-a-value 2> /dev/null; then
+            echo "an unknown filter value must be an error"; exit 1
+          fi
+
+  build:
+    # The full public build, on the synthetic fixture, in both modes. The real
+    # build needs the private classifier's output; this proves the code path.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --quiet ".[dev]"
+      - name: Full build on the fixture, then --check the result
+        run: |
+          set -e
+          out="$RUNNER_TEMP/rt"
+          python scripts/build_public_export.py --classified tests/fixtures/classified.example.csv \
+            --provenance tests/fixtures/provenance.example.json --out "$out"
+          python scripts/build_public_export.py --check --out "$out"
+      - name: --aggregates-only publishes no per-row file
+        run: |
+          set -e
+          out="$RUNNER_TEMP/rt"
+          python scripts/build_public_export.py --classified tests/fixtures/classified.example.csv \
+            --provenance tests/fixtures/provenance.example.json --out "$out" --aggregates-only
+          test -f "$out/summary.json"
+          test ! -e "$out/rejections.csv"
+          test ! -e "$out/rejections.json"
+
+  vocabulary:
+    # Every id shared with viability-gate must mean the same thing there. The
+    # viability-gate version is pinned in scripts/check_vocabulary.py, so a new
+    # viability-gate release cannot turn this red retroactively.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --quiet ".[dev]"
+      - name: Read the pinned viability-gate tag
+        id: pin
+        run: echo "tag=$(python scripts/check_vocabulary.py --print-pinned-tag)" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: KhomDev/viability-gate
+          ref: ${{ steps.pin.outputs.tag }}
+          path: _viability-gate
+          persist-credentials: false
+      - name: Shared ids agree with viability-gate
+        run: python scripts/check_vocabulary.py --viability-gate _viability-gate --require

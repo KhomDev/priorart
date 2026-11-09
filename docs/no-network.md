@@ -103,6 +103,9 @@ manifest change. It is not the primary evidence; the dependency graph is.
 - **It says nothing about the `vg bench` and `calibrate` fixtures.** The
   Python harness in `tools/calibrate/` runs a subprocess (`vg`) and reads local
   files; it opens no socket either, and it is not shipped in the binary.
+- **`eval/run.py fetch` does use the network.** It downloads public contest
+  issues so the benchmark can be re-run. It is not linked into `vg`, and `vg`
+  never calls it. `eval/run.py score` only runs the local binary.
 
 ## Reproduce it
 

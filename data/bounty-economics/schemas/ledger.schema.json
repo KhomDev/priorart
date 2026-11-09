@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/KhomDev/bounty-economics/schemas/v1/ledger.schema.json",
+  "title": "Private program ledger (schema v1)",
+  "description": "A researcher's own transcription of bug-bounty program terms. PRIVATE by design: entries name real programs, so this file is never published. The repository ships the schema, not the data. The top level is a LIST of entries; the version lives in $id and, optionally, in each entry's schema_version. The version matrix (bounty-economics schema version <-> viability-gate ledger version) is documented in README.md.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "tier_shape", "source_url", "retrieved"],
+    "properties": {
+      "schema_version": {
+        "type": "integer",
+        "const": 1,
+        "description": "Ledger format version this entry is written against. Optional; absent means 1. A validator that does not implement the pinned version must reject the entry rather than mis-read it."
+      },
+      "id": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9._-]*$",
+        "description": "Your own slug for the program. Stable across rounds."
+      },
+      "tier_shape": {
+        "type": "string",
+        "enum": [
+          "critical_only",
+          "high_and_above",
+          "medium_and_above",
+          "low_and_above",
+          "unknown"
+        ],
+        "description": "Which severities the program pays. 'unknown' means the reward table has not been transcribed and MUST NOT be read as permissive. A page that SAYS NOTHING about a floor is also 'unknown', with floor_status: unstated - no floor statement is not evidence that Low pays. A page that EXPLICITLY states 'SEVERITY FLOOR: NONE' or 'any' is 'low_and_above' with floor_status: documented: the program has stated something, and since informational findings are acknowledged rather than paid, Low is the lowest tier that pays. There is deliberately no 'any' value."
+      },
+      "floor_status": {
+        "type": "string",
+        "enum": ["documented", "unstated", "conflicting"],
+        "description": "Whether the floor was READ. 'documented' = the reward table was read and its lowest paying tier recorded, or the page explicitly states 'SEVERITY FLOOR: NONE / any' (record low_and_above). 'unstated' = the page says nothing about a floor; this is not evidence that Low pays, it is evidence the page has not been read, so tier_shape stays 'unknown'. 'conflicting' = the program's own materials disagree about the floor; tier_shape stays 'unknown' and both readings go in 'conflicts'. Strongly recommended: the validator warns when it is absent."
+      },
+      "floor_severity": {
+        "type": ["string", "null"],
+        "enum": ["critical", "high", "medium", "low", null],
+        "description": "Lowest severity with a non-zero reward, and only when floor_status is 'documented'. Null when the floor is unstated or the shape is unknown. 'informational' is not a valid floor: no program pays it in practice."
+      },
+      "source_url": {
+        "type": "string",
+        "format": "uri",
+        "minLength": 1,
+        "description": "The live rewards/scope page this was read from. Required: an uncited entry is rejected."
+      },
+      "retrieved": {
+        "type": "string",
+        "format": "date",
+        "description": "ISO date the page was read. Required, because program terms change without notice."
+      },
+      "conflicts": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Disagreements found in the program's own materials, e.g. a scope table labelling an asset Critical while the rewards table pays it at High. The rewards table governs; record the conflict rather than resolving it silently."
+      },
+      "exclusions": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["class", "clause"],
+          "properties": {
+            "class": {
+              "type": "string",
+              "enum": [
+                "privileged_role",
+                "human_error",
+                "admin_input",
+                "dos_no_extraction",
+                "front_run_only",
+                "best_practice",
+                "design_issue",
+                "off_chain",
+                "third_party",
+                "user_input",
+                "known_issue",
+                "testing_limits",
+                "non_standard_token",
+                "scope_boundary"
+              ]
+            },
+            "clause": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Verbatim from the program's scope page."
+            },
+            "pattern": {
+              "type": "string",
+              "description": "Case-insensitive regex to test against your own finding description. A match is a prompt to check, not an automatic reject."
+            }
+          }
+        }
+      },
+      "prior_audits": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["firm"],
+          "properties": {
+            "firm": { "type": "string" },
+            "url": { "type": "string" },
+            "covers": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Files and functions covered. A report naming a file is not the same as covering your function."
+            },
+            "known_issues": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "The program's own known-issues list, verbatim."
+            }
+          }
+        }
+      },
+      "post_audit_delta": {
+        "type": "string",
+        "description": "What changed after the last audit. The richest surface, and the least likely to be a duplicate."
+      },
+      "notes": { "type": "string" }
+    }
+  }
+}

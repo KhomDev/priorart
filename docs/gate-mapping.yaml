@@ -11,7 +11,7 @@
 #   private rejection log and is not reproducible. This file is the public
 #   restatement of that mapping, authored from (a) the semantics of each rule in
 #   rules/anti-patterns.yaml and (b) the public gate vocabulary documented in
-#   rejection-taxonomy/data/SCHEMA.md. It is a JUDGEMENT, not a re-derivation:
+#   data/rejection-taxonomy/data/SCHEMA.md. It is a JUDGEMENT, not a re-derivation:
 #   it has not been validated against the private dataset, and it cannot be,
 #   because the dataset is not published.
 #
@@ -83,6 +83,10 @@ rules:
   P20: [P20_cooperating_party]    # a second party must act
   P21: [REALISM]                  # configuration mismatch
   P22: [REALISM]                  # primitive with no deployed consumer
+  P23: []                         # report-quality: attacker profile. Weight 0.
+  P24: []                         # report-quality: preconditions and victim action. Weight 0.
+  P25: []                         # report-quality: quantified impact. Weight 0.
+  P26: []                         # report-quality: quoted severity rule. Weight 0.
 
 # Why each mapping is what it is. Empty lists are deliberate.
 notes:

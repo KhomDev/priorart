@@ -4,7 +4,7 @@
 //! Offline, deterministic, no API key. Ships rules, not data: no program names, no
 //! chains, no reward tables. Every target-specific input arrives at runtime.
 
-use crate::{bench, engine, init, model, render};
+use crate::{bench, engine, import, init, model, render};
 
 use clap::{CommandFactory, FromArgMatches, Parser, Subcommand};
 use engine::{CompiledRule, GateInputs, Severity};
@@ -105,6 +105,12 @@ struct TargetArgs {
     #[arg(long)]
     known_issues: Option<PathBuf>,
 
+    /// Prior-finding index (index.yaml from `vg import`, or a directory of
+    /// markdown). D1 ranks the draft against it by code identifiers, not by
+    /// word overlap.
+    #[arg(long)]
+    index: Option<PathBuf>,
+
     /// Your own submission history (YAML). Enables gate G7, which flags
     /// probable repeats of a family you already submitted.
     #[arg(long)]
@@ -177,6 +183,25 @@ enum Command {
         action: LogAction,
     },
 
+    /// Transcribe local hunt inputs into the ledger, scope, and known-issues
+    /// files the gates read. Offline: nothing is fetched.
+    Import {
+        #[command(subcommand)]
+        action: ImportAction,
+    },
+
+    /// Rank a draft against a local index of prior findings
+    Match {
+        /// The draft finding
+        finding: PathBuf,
+        /// index.yaml, or a directory of markdown / text
+        #[arg(long)]
+        index: PathBuf,
+        /// Emit machine-readable output
+        #[arg(long)]
+        json: bool,
+    },
+
     /// Measure the catalog against a labelled set of findings
     Bench {
         /// Directory of findings that were rejected
@@ -192,6 +217,44 @@ enum Command {
         /// Emit machine-readable output
         #[arg(long)]
         json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum ImportAction {
+    /// An engagement file (audit.yaml): exclusion_clauses, known_issues,
+    /// severity_floor, scope
+    Audit {
+        /// The engagement file
+        file: PathBuf,
+        /// Directory to write ledger.yaml, scope.txt, known-issues.yaml, index.yaml
+        #[arg(long)]
+        out: PathBuf,
+        /// Overwrite existing files
+        #[arg(long)]
+        force: bool,
+    },
+    /// A program page saved locally as HTML or markdown
+    Program {
+        /// The saved page
+        file: PathBuf,
+        /// Directory to write into
+        #[arg(long)]
+        out: PathBuf,
+        /// Overwrite existing files
+        #[arg(long)]
+        force: bool,
+    },
+    /// Prior-audit reports (markdown, text, or PDF) into an index
+    Prior {
+        /// A file or a directory
+        path: PathBuf,
+        /// Directory to write index.yaml into
+        #[arg(long)]
+        out: PathBuf,
+        /// Overwrite existing files
+        #[arg(long)]
+        force: bool,
     },
 }
 
@@ -444,6 +507,7 @@ struct Target {
     tests: Option<Vec<(String, String)>>,
     fork_of: Option<String>,
     known: Option<Vec<KnownIssue>>,
+    index: Option<Vec<IndexedFinding>>,
     log: Option<Vec<LogEntry>>,
 }
 
@@ -475,6 +539,7 @@ impl Target {
             tests: read_tests(&a.tests)?,
             fork_of: a.fork_of.clone(),
             known: read_known_issues(&a.known_issues)?,
+            index: read_index(&a.index)?,
             log: read_log(&a.log)?,
         })
     }
@@ -490,6 +555,7 @@ impl Target {
             fork_of: self.fork_of.as_deref(),
             own_log: self.log.as_deref(),
             known_issues: self.known.as_deref(),
+            index: self.index.as_deref(),
             finding,
         }
     }
@@ -502,13 +568,77 @@ fn build_report(
     gates: &[Gate],
     threshold: u32,
     target: &Target,
+    manifest: Option<&FindingManifest>,
 ) -> Report {
-    let (mut findings, passed) = engine::evaluate(rules, text);
+    let (mut findings, mut passed) = engine::evaluate(rules, text);
+
+    let mut ki_warnings: Vec<String> = Vec::new();
+    if let Some(m) = manifest {
+        let mut kept = Vec::new();
+        for f in findings {
+            if m.suppresses(&f.rule) {
+                ki_warnings.push(format!(
+                    "{} answered by the finding manifest; the note is suppressed",
+                    f.rule
+                ));
+                passed.push(f.rule);
+            } else {
+                kept.push(f);
+            }
+        }
+        findings = kept;
+        if !FindingManifest::filled(&m.prior_audit_check) {
+            ki_warnings.push(
+                "manifest records no prior-audit check. A blank field is not a check.".into(),
+            );
+        }
+        if !FindingManifest::filled(&m.duplicate_check) {
+            ki_warnings
+                .push("manifest records no duplicate check. A blank field is not a check.".into());
+        }
+        if let Some(status) = m.status.as_deref() {
+            ki_warnings.push(format!(
+                "manifest status: {status}. The tool does not treat that as an outcome."
+            ));
+        }
+        if m.impact_usd.is_some_and(|n| n == 0.0) {
+            ki_warnings.push(
+                "manifest impact_usd is 0, so it does not satisfy a quantified impact".into(),
+            );
+        }
+    }
+
+    if let Some(index) = &target.index {
+        for row in crate::index::rank(text, index)
+            .into_iter()
+            .filter(|r| r.fails)
+        {
+            let ids = row.shared_identifiers.join(", ");
+            findings.push(Finding {
+                rule: format!("DUP:{}", crate::engine::collapse(&row.finding.id)),
+                title: format!("Identifier overlap {:.2} with a prior finding", row.score),
+                group: "K".into(),
+                verdict: Verdict::Soft,
+                weight: 0,
+                evidence: vec![format!("score {:.2}; shared identifiers: {ids}", row.score)],
+                matched_sentences: if row.quotes.is_empty() {
+                    vec![crate::engine::collapse(&row.finding.title)]
+                } else {
+                    row.quotes.clone()
+                },
+                fix: "Read the quoted lines. The score is an uncalibrated overlap of code \
+                      identifiers, not a decision that the bugs are the same."
+                    .into(),
+                doc: "docs/duplicate-matching.md".into(),
+                evidence_kind: Evidence::None,
+                origin_rows: 0,
+            });
+        }
+    }
 
     // Known-issue matches are merged in before the outcome is computed, because
     // a known issue is a hard fail: it makes the finding Not Applicable rather
     // than merely unpaid.
-    let mut ki_warnings: Vec<String> = Vec::new();
     if let Some(issues) = &target.known {
         let (ki_findings, warnings) = engine::match_known_issues(issues, text);
         ki_warnings = warnings;
@@ -550,13 +680,22 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
     match &cli.command {
         Command::Init { dir, force } => return init::run(dir, *force),
         Command::Log { action } => return run_log(action, cli.rules.as_deref()),
+        Command::Import { action } => return run_import(action),
+        Command::Match {
+            finding,
+            index,
+            json,
+        } => return run_match(finding, index, *json),
         _ => {}
     }
 
     let (rules, gates) = load_rules(cli.rules.as_deref())?;
 
     match cli.command {
-        Command::Init { .. } | Command::Log { .. } => unreachable!("handled above"),
+        Command::Init { .. }
+        | Command::Log { .. }
+        | Command::Import { .. }
+        | Command::Match { .. } => unreachable!("handled above"),
 
         Command::Rules => {
             let plain: Vec<Rule> = rules.into_iter().map(|c| c.rule).collect();
@@ -662,6 +801,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
                 if text.trim().is_empty() {
                     return Err(format!("{finding} is empty"));
                 }
+                let manifest = load_manifest(finding)?;
                 reports.push(build_report(
                     finding.clone(),
                     &text,
@@ -669,6 +809,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
                     &gates,
                     min_score,
                     &target,
+                    manifest.as_ref(),
                 ));
             }
 
@@ -728,6 +869,214 @@ fn read_findings_dir(dir: &Path) -> Result<Vec<(String, String)>, String> {
     }
     out.sort_by(|a, b| a.0.cmp(&b.0));
     Ok(out)
+}
+
+/// How many markdown files `--index <dir>` will read before refusing.
+const INDEX_FILE_CAP: usize = 2_000;
+
+fn read_index(path: &Option<PathBuf>) -> Result<Option<Vec<IndexedFinding>>, String> {
+    let Some(p) = path else {
+        return Ok(None);
+    };
+    if !p.exists() {
+        return Err(format!("no index at {}", p.display()));
+    }
+    if p.is_dir() {
+        return Ok(Some(index_directory(p)?));
+    }
+    let text = read_file(p)?;
+    if let Ok(file) = serde_saphyr::from_str::<IndexFile>(&text) {
+        if file.version != 1 {
+            return Err(format!(
+                "{}: index version {} is not supported (this build reads version 1)",
+                p.display(),
+                file.version
+            ));
+        }
+        return Ok(Some(file.entries));
+    }
+    let ext = p.extension().and_then(|e| e.to_str()).unwrap_or("");
+    if ext.eq_ignore_ascii_case("md")
+        || ext.eq_ignore_ascii_case("txt")
+        || ext.eq_ignore_ascii_case("markdown")
+    {
+        let id = p
+            .file_name()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_else(|| "prior".into());
+        return Ok(Some(vec![crate::index::index_document(&id, &id, &text)]));
+    }
+    Err(format!(
+        "{}: not an index.yaml (version/entries) and not markdown",
+        p.display()
+    ))
+}
+
+fn index_directory(dir: &Path) -> Result<Vec<IndexedFinding>, String> {
+    let mut files = Vec::new();
+    let mut stack = vec![dir.to_path_buf()];
+    while let Some(d) = stack.pop() {
+        let rd = std::fs::read_dir(&d).map_err(|e| format!("cannot read {}: {e}", d.display()))?;
+        for entry in rd.flatten() {
+            let path = entry.path();
+            let name = entry.file_name().to_string_lossy().to_string();
+            if name.starts_with('.') || name == "node_modules" || name == "target" {
+                continue;
+            }
+            let Ok(meta) = std::fs::symlink_metadata(&path) else {
+                continue;
+            };
+            if meta.file_type().is_symlink() {
+                continue;
+            } else if meta.is_dir() {
+                stack.push(path);
+            } else if matches!(
+                path.extension()
+                    .and_then(|e| e.to_str())
+                    .map(|e| e.to_ascii_lowercase())
+                    .as_deref(),
+                Some("md" | "txt" | "markdown")
+            ) {
+                files.push(path);
+            }
+        }
+    }
+    files.sort();
+    if files.len() > INDEX_FILE_CAP {
+        return Err(format!(
+            "{} has {} markdown files; --index reads at most {INDEX_FILE_CAP}. Point it at a narrower directory or build an index with `vg import prior`.",
+            dir.display(),
+            files.len()
+        ));
+    }
+    let mut out = Vec::new();
+    for f in files {
+        let text = read_file(&f)?;
+        let id = f
+            .strip_prefix(dir)
+            .unwrap_or(&f)
+            .to_string_lossy()
+            .replace('\\', "/");
+        out.push(crate::index::index_document(&id, &id, &text));
+    }
+    Ok(out)
+}
+
+/// `<stem>.finding.yaml` wins over a directory-level `finding.yaml`.
+fn load_manifest(finding: &str) -> Result<Option<FindingManifest>, String> {
+    if finding == "-" {
+        return Ok(None);
+    }
+    let path = Path::new(finding);
+    let mut candidates = Vec::new();
+    if let (Some(parent), Some(stem)) = (path.parent(), path.file_stem()) {
+        let mut per = parent.join(stem);
+        per.set_extension("finding.yaml");
+        candidates.push(per);
+        candidates.push(parent.join("finding.yaml"));
+    }
+    for c in candidates {
+        if !c.exists() {
+            continue;
+        }
+        let text = read_file(&c)?;
+        let manifest: FindingManifest =
+            serde_saphyr::from_str(&text).map_err(|e| format!("{}: {e}", c.display()))?;
+        if let Some(status) = manifest.status.as_deref() {
+            if !MANIFEST_STATUSES.contains(&status) {
+                return Err(format!(
+                    "{}: status {status:?} is not one of {}",
+                    c.display(),
+                    MANIFEST_STATUSES.join(", ")
+                ));
+            }
+        }
+        return Ok(Some(manifest));
+    }
+    Ok(None)
+}
+
+fn run_import(action: &ImportAction) -> Result<ExitCode, String> {
+    match action {
+        ImportAction::Audit { file, out, force } => {
+            import::run(import::Kind::Audit, file, out, *force)
+        }
+        ImportAction::Program { file, out, force } => {
+            import::run(import::Kind::Program, file, out, *force)
+        }
+        ImportAction::Prior { path, out, force } => {
+            import::run(import::Kind::Prior, path, out, *force)
+        }
+    }
+}
+
+fn run_match(finding: &Path, index: &Path, json: bool) -> Result<ExitCode, String> {
+    let text = read_text(&finding.display().to_string())?;
+    let rows = read_index(&Some(index.to_path_buf()))?.unwrap_or_default();
+    let ranked = crate::index::rank(&text, &rows);
+    if json {
+        let payload: Vec<serde_json::Value> = ranked
+            .iter()
+            .map(|r| {
+                serde_json::json!({
+                    "id": r.finding.id,
+                    "source": r.finding.source,
+                    "title": r.finding.title,
+                    "score": (r.score * 1000.0).round() / 1000.0,
+                    "fails": r.fails,
+                    "shared_identifiers": r.shared_identifiers,
+                    "shared_roots": r.shared_roots,
+                    "quotes": r.quotes,
+                })
+            })
+            .collect();
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&payload)
+                .map_err(|e| format!("cannot serialise the matches: {e}"))?
+        );
+    } else {
+        println!("viability-gate {VERSION}  —  {}\n", finding.display());
+        println!("  index     {} prior finding(s)", rows.len());
+        println!(
+            "  threshold fail at score >= {:.2} with >= {} shared code identifiers",
+            crate::index::FAIL_SCORE,
+            crate::index::MIN_SHARED_IDENTIFIERS
+        );
+        println!("            uncalibrated. Word overlap is not scored.\n");
+        if ranked.is_empty() {
+            println!("  no prior finding shares two code identifiers with this draft.");
+        }
+        for (i, row) in ranked.iter().enumerate() {
+            let mark = if row.fails { "FAIL" } else { "near" };
+            println!(
+                "  {n:>2}  {score:.2}  {mark}  {id}",
+                n = i + 1,
+                score = row.score,
+                id = row.finding.id
+            );
+            println!(
+                "      shared identifiers: {}",
+                if row.shared_identifiers.is_empty() {
+                    "(none)".into()
+                } else {
+                    row.shared_identifiers.join(", ")
+                }
+            );
+            if !row.shared_roots.is_empty() {
+                println!("      shared root-cause: {}", row.shared_roots.join(", "));
+            }
+            for q in &row.quotes {
+                println!("      quote: {q}");
+            }
+        }
+    }
+    let failed = ranked.iter().any(|r| r.fails);
+    Ok(if failed {
+        ExitCode::from(1)
+    } else {
+        ExitCode::SUCCESS
+    })
 }
 
 fn log_path(file: &Option<PathBuf>) -> PathBuf {

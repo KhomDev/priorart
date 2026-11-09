@@ -1,0 +1,143 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: python -m pip install --quiet -r requirements-ci.txt
+
+      - name: Tests
+        # -rs prints the reason for every skip, so a skipped cross-repo assertion
+        # is visible rather than invisible.
+        run: python -m pytest tests/ -q -rs
+
+      - name: Ruff
+        run: python -m ruff check .
+
+      - name: Shipped examples validate
+        run: python scripts/validate.py examples/*.yaml
+
+      - name: Taxonomy prints
+        run: python scripts/validate.py --taxonomy
+
+      - name: Taxonomy prints as JSON
+        run: python scripts/validate.py --taxonomy --format json > /dev/null
+
+      # The taxonomies must stay generic. A clause quoted from a specific program,
+      # a platform name, or a link to a third-party repository is a disclosure.
+      #
+      # This step used to grep for 'github.com/' anywhere in data/*.yaml and
+      # schemas/*.json, which flagged the schema's OWN $id - the project's
+      # canonical URL - and made the build red. The check now bans third-party
+      # platforms and any repository that is not ours, and permits our own $id.
+      # The logic lives in scripts/check_generic.py so the test suite runs the
+      # same check CI does.
+      - name: Assert no program data
+        run: python scripts/check_generic.py
+
+      # Every relative link in every document must resolve.
+      - name: Links resolve
+        run: python scripts/check_links.py
+
+      # Mangled code fences, and a README pin that differs from the version.
+      - name: Markdown renders and any pinned tag is the version
+        run: python scripts/check_markdown.py
+
+      # check_generic.py guards the shipped DATA. This guards the whole
+      # repository, including prose and scripts, against mojibake, an identity
+      # token, and a path from the author's private workspace.
+      - name: Repo hygiene
+        # --no-history on purpose. The history scan reports the findings that are
+        # already in PUBLISHED history, which is a decision for the repository
+        # owner (a rewrite), not something a CI job can or should fix. Run it
+        # locally without the flag to see the current state.
+        run: python scripts/check_hygiene.py --no-history
+
+      # A real ledger must fail on a placeholder host. This proves the check works
+      # in the direction that matters: a copied-and-not-edited template.
+      - name: Placeholder host must fail outside example mode
+        run: |
+          set -e
+          cat > /tmp/real-ledger.yaml <<'YAML'
+          - id: my-real-program
+            tier_shape: critical_only
+            floor_status: documented
+            floor_severity: critical
+            source_url: https://example.invalid/rewards
+            retrieved: "2026-10-01"
+          YAML
+          if python scripts/validate.py /tmp/real-ledger.yaml; then
+            echo "::error::a placeholder host was accepted in a real ledger"
+            exit 1
+          fi
+          echo "placeholder host correctly rejected"
+
+      # A plain (non-editable) install into a clean venv, run from OUTSIDE the
+      # checkout: the taxonomies and the schema must ship inside the package.
+      # Before 0.5.0 only an editable install worked.
+      - name: Wheel installs into a clean venv and runs
+        run: |
+          set -e
+          python -m venv /tmp/wheel-venv
+          /tmp/wheel-venv/bin/python -m pip install --quiet .
+          ledger="$PWD/examples/ledger.example.yaml"
+          cd /tmp
+          /tmp/wheel-venv/bin/bounty-econ-validate --taxonomy > /dev/null
+          /tmp/wheel-venv/bin/bounty-econ-validate "$ledger" --format json > /dev/null
+          if ls /tmp/wheel-venv/lib/python*/site-packages/validate.py 2>/dev/null; then
+            echo "::error::the package installed a top-level module called validate"
+            exit 1
+          fi
+
+  compat:
+    # The cross-repo contract: vg init output must satisfy this repo's schema, and
+    # a ledger this repo accepts must be readable by vg. It is checked at the tag
+    # pinned in tests/test_compat_viability_gate.py.
+    #
+    # The clone carries every tag, so the pin stays in exactly one place: the test
+    # archives PINNED_VG_TAG out of it. BE_COMPAT_REQUIRED turns a missing clone,
+    # tag or toolchain into a red build rather than a silent skip. A real
+    # divergence also turns this job red, which is the point.
+    runs-on: ubuntu-latest
+    env:
+      # Every skip reason (no sibling, no pinned tag, no cargo) fails instead.
+      BE_COMPAT_REQUIRED: "1"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --quiet -r requirements-ci.txt
+
+      - name: Fetch viability-gate with its tags
+        run: |
+          git clone --quiet --filter=blob:none \
+            https://github.com/KhomDev/viability-gate.git \
+            "$GITHUB_WORKSPACE/../viability-gate"
+
+      # Rust is preinstalled on the GitHub-hosted ubuntu runner; if cargo is
+      # missing, BE_COMPAT_REQUIRED makes the job fail.
+      - name: Cross-repo compatibility
+        run: python -m pytest tests/test_compat_viability_gate.py -q -rs

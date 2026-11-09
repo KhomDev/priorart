@@ -40,8 +40,8 @@ trap 'rm -f "$TMP" "$NEW"' EXIT
   echo
   echo '```text'
   # The subject path is normalised so the block is identical on every machine.
-  "$BIN" check examples/readme/pause-panic.md \
-    | sed -e "s#examples/readme/pause-panic.md#finding.md#"
+  "$BIN" check tests/fixtures/cmp-04-report.md \
+    | sed -e "s#tests/fixtures/cmp-04-report.md#cmp-04.md#"
   echo '```'
   echo
   echo "$END"

@@ -215,35 +215,9 @@ jobs:
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup default "$RUST_TOOLCHAIN"
 
-      # check_readme.py recomputes the README's automation table, its reachable
-      # total and every rule's and gate's origin_rows from the rejection-taxonomy
-      # dataset. The tag is PINNED in scripts/check_readme.py (one place), so a
-      # new taxonomy release cannot turn this repository red retroactively; the
-      # bump is a deliberate change there.
-      - name: Read the pinned rejection-taxonomy tag
-        id: taxo
-        shell: bash
-        run: |
-          set -eu
-          tag=$(python scripts/check_readme.py --print-pinned-tag)
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          echo "pinned rejection-taxonomy tag: $tag"
-
-      - name: Check out the published rejection-taxonomy at that tag
-        uses: actions/checkout@v7
-        with:
-          repository: KhomDev/rejection-taxonomy
-          ref: ${{ steps.taxo.outputs.tag }}
-          path: _rejection-taxonomy
-
-      - name: Place the dataset where check_readme.py expects it
-        shell: bash
-        run: |
-          set -eu
-          rm -rf ../rejection-taxonomy
-          mv _rejection-taxonomy ../rejection-taxonomy
-          test -f ../rejection-taxonomy/data/rejections.csv
-
+      # The rejection log is vendored at data/rejection-taxonomy (tag recorded
+      # in SOURCE.md and PINNED_TAXONOMY_TAG). check_readme.py reads that copy.
+      # A new release of the source repository does not move this checkout.
       - name: Rule pages match the catalog
         run: python scripts/gen_rule_docs.py --check
 

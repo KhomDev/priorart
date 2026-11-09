@@ -94,6 +94,39 @@ cases:
     regression: "The prior audit missed this path entirely; it did not cover this module."
     regression_expect: silent
 
+  - rule: P18
+    fires: "This is the same root cause as accepted contest issue M-1."
+    suppressed: "Issue M-1 in this report is our own numbering, and no prior audit covers it."
+    # REPRODUCED 2026-11-09: "same root cause as accepted ... issue M-1" and
+    # "audit accepted as <name> issue M-1" did not fire. A denial in a different
+    # sentence must not hide the admission. A bare issue id still must not fire.
+    regression: "No prior audit covers the token module. This is the same root cause as accepted contest issue M-1."
+    regression_expect: fires
+
+  - rule: P7
+    fires: "This deviation from best practice should be fixed."
+    suppressed: "The comparison lets the attacker extract funds after expiry."
+    # REPRODUCED 2026-11-09: "rather than a best-practice observation" held a
+    # report. The phrase is a denial of that class.
+    regression: "The code differs from the description rather than a best-practice observation."
+    regression_expect: silent
+
+  - rule: P23
+    fires: "The vault accounting is wrong and deposits can be lost with no caller described anywhere in the text."
+    suppressed: "An unprivileged attacker calls withdraw and drains the vault of 4 tokens."
+
+  - rule: P24
+    fires: "An unprivileged attacker drains the vault. Impact: 4 tokens are stolen."
+    suppressed: "Preconditions: the vault holds funds. An unprivileged attacker drains it. The victim depositor must withdraw during the window. Impact: 4 tokens."
+
+  - rule: P25
+    fires: "An unprivileged attacker drains the vault. Preconditions: funds are deposited. The victim depositor must withdraw. Impact: loss of funds, with no figure."
+    suppressed: "An unprivileged attacker drains 4 tokens. Preconditions: the vault holds funds. The victim depositor must withdraw. The program rule says \"High: direct theft of user funds\"."
+
+  - rule: P26
+    fires: "An unprivileged attacker drains 4 tokens. Preconditions: the vault holds funds. The victim depositor must withdraw. Suggested severity: High."
+    suppressed: "An unprivileged attacker drains 4 tokens. Preconditions: the vault holds funds. The victim depositor must withdraw. Severity rule: \"High: direct theft of user funds from the protocol\"."
+
   - rule: P21
     fires: "At the documented configuration the margin is negative, so assume a non-default config."
     suppressed: "Measured at the deployed configuration with representative bounds."

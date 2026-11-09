@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this dataset, please cite it as below."
+title: "Bug-bounty rejection taxonomy: 113 logged submissions classified by triage outcome and earliest catchable gate"
+abstract: >-
+  A personal log of 113 rejected bug-bounty submissions, each classified by the
+  triage outcome, the earliest gate that could have caught it before submission,
+  the root-cause class, and what could have prevented it. 63 of 113 (55.8%) could
+  have been stopped from the public record (the program's pages, its published
+  audits and known issues, or its test suite); 9 more only by the author's own
+  submission log. Rejections only: there is no positive class. The dataset
+  carries no target dimension: no protocol, chain, ecosystem, date or severity is
+  published.
+type: dataset
+authors:
+  - alias: KhomDev
+    name: KhomDev
+version: "0.6.0"
+date-released: 2026-11-06
+license: CC-BY-4.0
+repository-code: https://github.com/KhomDev/rejection-taxonomy
+keywords:
+  - bug bounty
+  - smart contract security
+  - triage
+  - duplicate detection
+  - vulnerability disclosure
+  - security economics
+identifiers:
+  - type: url
+    value: https://github.com/KhomDev/rejection-taxonomy
+references:
+  - type: software
+    title: "viability-gate: pre-submission viability checks for audit findings"
+    authors:
+      - alias: KhomDev
+    url: https://github.com/KhomDev/viability-gate
+  - type: software
+    title: "bounty-economics: payout-tier and exclusion-clause taxonomies"
+    authors:
+      - alias: KhomDev
+    url: https://github.com/KhomDev/bounty-economics

@@ -1,0 +1,81 @@
+# Pinned public contest repositories the eval downloads from.
+#
+# The script reads issue labels and bodies at these repositories. It does not
+# vendor the bodies. Re-running `eval/run.py fetch` against this list rebuilds
+# eval/dataset.manifest.yaml. The committed manifest is the set that was scored;
+# a later edit of an issue body changes its sha256 and the fetch will say so.
+#
+# Selection, applied in the script:
+#   accepted    Sherlock: High or Medium, and Reward, and not Duplicate, and not Invalid.
+#               Code4rena: "selected for report", and a High or Med risk label,
+#               and not a duplicate-N label, and not "downgraded by judge",
+#               and not invalid / unsatisfactory / out of scope.
+#   invalid     Sherlock label Invalid. Code4rena label invalid, or out of scope.
+#               "unsatisfactory" is not used: it is a quality label and it
+#               swamps the invalid set.
+#   wontfix     Sherlock label "Won't Fix".
+#   informative Sherlock label Low/Info, and not Reward.
+#   qa          Code4rena label "QA (Quality Assurance)", and not selected for report.
+#
+# Caps keep the run bounded. Ordering is repository name, then issue number,
+# so the capped set does not depend on API order.
+
+# Per platform, so one platform's contests do not fill the cap.
+accepted_per_kind:
+  sherlock: 110
+  code4rena: 110
+per_class_cap:
+  invalid: 80
+  wontfix: 40
+  informative: 60
+  qa: 60
+
+repos:
+  - name: sherlock-audit/2023-02-gmx-judging
+    kind: sherlock
+  - name: sherlock-audit/2023-03-notional-judging
+    kind: sherlock
+  - name: sherlock-audit/2023-06-tokemak-judging
+    kind: sherlock
+  - name: sherlock-audit/2023-07-kyber-swap-judging
+    kind: sherlock
+  - name: sherlock-audit/2024-02-mento-judging
+    kind: sherlock
+  - name: sherlock-audit/2024-02-tapioca-judging
+    kind: sherlock
+  - name: sherlock-audit/2024-04-interest-rate-model-judging
+    kind: sherlock
+  - name: sherlock-audit/2024-06-makerdao-endgame-judging
+    kind: sherlock
+  - name: sherlock-audit/2024-07-exactly-stacking-contracts-judging
+    kind: sherlock
+  - name: sherlock-audit/2024-08-cork-protocol-judging
+    kind: sherlock
+  - name: sherlock-audit/2024-08-sentiment-v2-judging
+    kind: sherlock
+  - name: sherlock-audit/2024-10-axion-judging
+    kind: sherlock
+  - name: sherlock-audit/2024-11-oku-judging
+    kind: sherlock
+  - name: sherlock-audit/2024-12-babylon-judging
+    kind: sherlock
+  - name: sherlock-audit/2025-06-notional-exponent-judging
+    kind: sherlock
+  - name: sherlock-audit/2025-07-malda-judging
+    kind: sherlock
+  - name: code-423n4/2023-07-tapioca-findings
+    kind: code4rena
+  - name: code-423n4/2023-10-nextgen-findings
+    kind: code4rena
+  - name: code-423n4/2024-01-curves-findings
+    kind: code4rena
+  - name: code-423n4/2024-03-taiko-findings
+    kind: code4rena
+  - name: code-423n4/2024-04-renzo-findings
+    kind: code4rena
+  - name: code-423n4/2024-05-munchables-findings
+    kind: code4rena
+  - name: code-423n4/2024-06-vultisig-findings
+    kind: code4rena
+  - name: code-423n4/2024-07-optimism-findings
+    kind: code4rena

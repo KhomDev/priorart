@@ -21,7 +21,9 @@ pub const LEDGER_TEMPLATE: &str = r#"# Program ledger — YOUR transcription of 
 # is worse than a missing entry, because you will act on it. `vg` warns on an
 # uncited floor for exactly this reason.
 #
-# Docs: https://github.com/KhomDev/bounty-economics
+# Schema (vendored): data/bounty-economics/schemas/ledger.schema.json
+# Snapshot of https://github.com/KhomDev/bounty-economics v0.5.0 (MIT).
+# Clause classes: data/bounty-economics/data/clause-classes.yaml
 
 - id: REPLACE-ME                 # your slug for the program
   tier_shape: unknown            # critical_only | high_and_above | medium_and_above
@@ -367,7 +369,7 @@ pub fn parse_log(text: &str) -> Result<Vec<crate::model::LogEntry>, String> {
 /// Quote a YAML scalar as a double-quoted string, always. A bare scalar can
 /// silently change type (`null`, `true`, `1e3`, `~`) or break the document
 /// (`- x`, `#x`, `: x`), and every one of those is a plausible family label.
-fn yaml_quote(s: &str) -> String {
+pub(crate) fn yaml_quote(s: &str) -> String {
     let mut out = String::with_capacity(s.len() + 2);
     out.push('"');
     for c in s.chars() {

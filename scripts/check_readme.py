@@ -28,7 +28,8 @@ What it checks:
 Run: python scripts/check_readme.py
      python scripts/check_readme.py --require-dataset   # CI: a missing dataset fails
      python scripts/check_readme.py --print-pinned-tag  # for the CI checkout step
-The dataset is read from $VG_TAXONOMY_CSV, else ../rejection-taxonomy/data/rejections.csv.
+The dataset is read from $VG_TAXONOMY_CSV, else
+data/rejection-taxonomy/data/rejections.csv (the vendored v0.6.0 snapshot).
 Exit code 0 = in sync, 1 = drift, 2 = could not run.
 """
 
@@ -54,10 +55,11 @@ CALIBRATION = REPO_ROOT / "docs" / "calibration.md"
 CATALOG = REPO_ROOT / "rules" / "anti-patterns.yaml"
 GATES = REPO_ROOT / "rules" / "gates.yaml"
 
-# The ONE place the rejection-taxonomy version is pinned. CI checks out this tag;
-# every row count in the README and the catalog is recomputed against it. Bump
-# it deliberately, in a release, never by resolving "latest".
+# The rejection-taxonomy snapshot vendored at data/rejection-taxonomy/.
+# SOURCE.md records the same tag. Bump both together, from a tag, never from
+# whatever main is on the source repository.
 PINNED_TAXONOMY_TAG = "v0.6.0"
+TAXONOMY_ROOT = REPO_ROOT / "data" / "rejection-taxonomy"
 
 # How each catalog entry's origin_rows is derived: (column, value). Rules and
 # gates without an entry here carry origin_rows 0 / evidence none.
@@ -102,7 +104,7 @@ BANNED = (
      "G7 uses containment, not Jaccard, since 0.5.0"),
 )
 
-REQUIRED_SECTIONS = ("Known limitations",)
+REQUIRED_SECTIONS = ("Limits",)
 
 # Links the README must carry, each with the reason it is checked. A doc that is
 # written and never linked is a doc nobody reads.
@@ -138,7 +140,7 @@ def dataset_path() -> Path:
     env = os.environ.get("VG_TAXONOMY_CSV")
     if env:
         return Path(env)
-    return REPO_ROOT.parent / "rejection-taxonomy" / "data" / "rejections.csv"
+    return TAXONOMY_ROOT / "data" / "rejections.csv"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -162,6 +164,16 @@ def main(argv: list[str] | None = None) -> int:
 
     readme = README.read_text(encoding="utf-8")
     rules = load_rules()
+
+    source_note = TAXONOMY_ROOT / "SOURCE.md"
+    if not source_note.is_file():
+        problems.append("data/rejection-taxonomy/SOURCE.md is missing")
+    else:
+        note = source_note.read_text(encoding="utf-8")
+        if f"tag | {PINNED_TAXONOMY_TAG}" not in note and f"tag: {PINNED_TAXONOMY_TAG}" not in note:
+            problems.append(
+                "data/rejection-taxonomy/SOURCE.md does not record tag " + PINNED_TAXONOMY_TAG
+            )
     ids = [r["id"] for r in rules]
 
     # 1. every rule id is reachable from the README

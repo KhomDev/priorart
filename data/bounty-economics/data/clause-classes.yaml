@@ -1,0 +1,165 @@
+# Exclusion clause classes — the closed vocabulary for `exclusions[].class`.
+#
+# Almost every program's scope page carries a list of out-of-scope categories.
+# They are worded differently everywhere and mean one of about fourteen things.
+# Classifying them turns prose into something you can test a finding against.
+#
+# This file is DATA, and it is deliberately generic: only the clause CLASSES, in
+# industry-standard wording that appears in almost identical form across programs. No
+# clause is quoted from any specific program, and no program is named.
+#
+# `suggested_pattern` is a starting regex for your own ledger. Treat a match as a
+# prompt to check, not an automatic reject — over-trusting a regex manufactures
+# false negatives, which is its own expensive failure mode.
+
+version: 1
+
+classes:
+  - id: privileged_role
+    kills: Anything requiring an admin, owner, operator or capability to act.
+    typical_wording:
+      - "attacks requiring access to privileged addresses"
+      - "issues requiring privileged role access"
+      - "centralization risks"
+    escape: >-
+      The clause reads broader than it is. A finding that REQUIRES an admin to
+      act maliciously is out of scope; a finding where a REASONABLE admin action
+      has a non-obvious destructive second-order effect may be in scope. The
+      admin is not misbehaving — the code is. Check which one you have.
+    suggested_pattern: "(owner|admin|operator|guardian|governor|capability|role)\\b"
+
+  - id: human_error
+    kills: Admin mistakes, including unknowing admin harm.
+    typical_wording:
+      - "human-based errors and rogue privileged users"
+      - "issues arising from administrator error"
+    escape: >-
+      This is the clause that closes the privileged-role escape hatch, so read it
+      carefully. The distinction that survives: a reasonable action with a
+      non-obvious destructive effect is a code defect, not a human error. If the
+      action is obviously dangerous to a competent admin, it is human error.
+    suggested_pattern: "(human (error|mistake)|rogue (admin|user)|operator error)"
+
+  - id: admin_input
+    kills: Findings whose root cause is an unvalidated parameter supplied by a trusted role.
+    typical_wording:
+      - "issues requiring admin input validation"
+      - "parameter misconfiguration by the protocol team"
+    escape: >-
+      Ask whether the bad value is reachable by a non-privileged actor, or whether
+      a reasonable value produces the bad outcome. The second is a code defect.
+    suggested_pattern: "(admin|owner|governance) (input|parameter|config)"
+
+  - id: dos_no_extraction
+    kills: Freezes, griefing and liveness attacks that do not transfer funds.
+    typical_wording:
+      - "DoS conditions that lock functionality without enabling direct fund extraction"
+      - "denial of service without loss of funds"
+    escape: >-
+      The highest-yield framing change available: restate the same root cause with
+      a fund-extraction consequence. If the DoS can be composed into a loss, it is
+      a different finding.
+    suggested_pattern: "(dos|denial of service|freeze|frozen|lock|liveness|grief)"
+
+  - id: front_run_only
+    kills: Attacks that need to win a mempool ordering race.
+    typical_wording:
+      - "vulnerabilities that can be exploited through front-running only"
+    escape: >-
+      Real and narrow. If the attack is ATOMIC — flash loan, multicall, composed
+      legos, all in one transaction — the front-run exclusion stops applying.
+      Reframe around the atomic path or hold.
+    suggested_pattern: "(front[- ]?run|mempool|sandwich|ordering race)"
+
+  - id: best_practice
+    kills: Style, gas and convention deviations.
+    typical_wording:
+      - "best-practice critiques"
+      - "optimisation or code-style suggestions"
+    escape: >-
+      Demonstrate fund loss attributable to the specific deviation. Absent a loss
+      path, the deviation is a note, not a finding.
+    suggested_pattern: "(best practice|convention|style|optimis|optimiz|gas (saving|efficiency))"
+
+  - id: design_issue
+    kills: Intentional tradeoffs you disagree with.
+    typical_wording:
+      - "design issues that are not necessarily a security risk"
+      - "known design trade-offs"
+    escape: >-
+      The sharpest heuristic available: write your suggested fix first. If the fix
+      would delete the design decision the protocol deliberately made, you found a
+      tradeoff, not a bug.
+    suggested_pattern: "(design (issue|choice|trade)|by design|intended behaviou?r)"
+
+  - id: off_chain
+    kills: Root causes in node logic, relayers, signers, backends or infrastructure.
+    typical_wording:
+      - "off-chain components are out of scope"
+      - "issues in the node implementation"
+    escape: >-
+      Trace the ROOT CAUSE, not the impact site. If the root cause is off-chain,
+      the finding is out of scope regardless of where the loss lands.
+    suggested_pattern: "(off-?chain|relayer|backend|indexer|node (logic|software))"
+
+  - id: third_party
+    kills: Issues in oracles, bridges, and other external dependencies.
+    typical_wording:
+      - "issues in external dependencies or third-party services"
+      - "vulnerabilities in integrated protocols"
+    escape: >-
+      Ask whether the protocol's own handling of the dependency is the defect —
+      an unchecked return, a stale read, a missing bounds check on a value the
+      dependency supplies.
+    suggested_pattern: "(third[- ]party|external (dependency|protocol|oracle))"
+
+  - id: user_input
+    kills: Findings whose precondition is the victim's own input construction.
+    typical_wording:
+      - "issues arising from user input construction"
+      - "self-inflicted scenarios"
+    escape: >-
+      Name a third party who did not choose the action. If the only harmed party
+      is the one who constructed the input, the finding has no attacker.
+    suggested_pattern: "(user (input|error)|self[- ]inflicted|malformed input)"
+
+  - id: known_issue
+    kills: Anything in the prior-audit surface or the program's own known-issues list.
+    typical_wording:
+      - "previously reported or acknowledged issues"
+      - "issues listed in the known issues section"
+    escape: >-
+      None, and this is the one clause worth treating as absolute. Read the known
+      issues section and the prior audit findings — not the titles, the findings.
+    suggested_pattern: "(known issue|previously reported|already (known|acknowledged))"
+
+  - id: testing_limits
+    kills: Proofs that require live-network execution.
+    typical_wording:
+      - "testing on mainnet or public testnet is prohibited"
+      - "no denial-of-service testing"
+    escape: >-
+      Not really an escape — it is a constraint on HOW you prove the finding.
+      Build the proof on a fork or a local deployment instead.
+    suggested_pattern: "(mainnet|public testnet|denial[- ]of[- ]service) testing"
+
+  - id: non_standard_token
+    kills: Token-integration findings involving fee-on-transfer, rebasing or unusual tokens.
+    typical_wording:
+      - "issues related to fee-on-transfer or rebasing tokens"
+      - "non-standard token behaviour"
+    escape: >-
+      Check whether the token is explicitly listed as supported. If the README
+      lists it, the assumption is in scope. If not, the finding is usually
+      invalidated on sight.
+    suggested_pattern: "(fee[- ]on[- ]transfer|rebasing|non[- ]standard token)"
+
+  - id: scope_boundary
+    kills: Root causes outside the named in-scope file tree.
+    typical_wording:
+      - "only contracts under sources/ are in scope"
+      - "the scope is limited to the listed files"
+    escape: >-
+      Trace the root cause to a file. Not the impact site — the root cause. A real
+      bug whose root cause is in a deploy script or a test utility is out of scope.
+    suggested_pattern: "(in[- ]scope|out of scope) (files?|contracts?|tree|directories)"

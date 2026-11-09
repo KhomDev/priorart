@@ -245,7 +245,10 @@ pub fn explain(rule: &Rule) -> String {
         "  fp_rate   {}\n",
         match rule.fp_rate {
             Some(r) => format!("{r}"),
-            None => "UNMEASURED - no accepted/paid control set exists yet".to_string(),
+            None => {
+                "not stored on the rule; see docs/benchmark.md. The in-sample log has no paid findings"
+                    .to_string()
+            }
         }
     ));
     out.push_str(&format!(
