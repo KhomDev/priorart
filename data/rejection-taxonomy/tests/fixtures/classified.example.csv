@@ -1,0 +1,15 @@
+id,family,bug_family,mechanism_class,triage_class,earliest_gate,root_cause_class,dup_signal
+R-001,R-001,accounting,accounting_order_of_operations,duplicate,D1_duplicate_check,duplicate_known_family,known_issue
+R-002,R-002,oracle,oracle_bounds_or_staleness,out_of_scope,G2_exclusion_clause,oos_exclusion_clause,none
+R-003,R-003,fees,fee_base_or_ordering,below_payout_floor,G1_severity_floor,below_severity_floor,none
+R-004,R-004,liveness,liveness_block,informational,P17_no_attacker_win,no_attacker_win,none
+R-005,R-004,liveness,liveness_block,duplicate,D1_duplicate_check,duplicate_known_family,unknown
+R-006,R-006,replay,replay_scope,duplicate,D1_duplicate_check,duplicate_known_family,concurrent_submission
+R-007,R-007,panic,panic_without_persisted_impact,spam,P19_headline_mismatch,spam_fabricated_impact,none
+R-008,R-008,rewards,reward_dilution,duplicate,design_review,intentional_design,known_issue
+R-009,R-009,input_validation,parameter_bound_missing,out_of_scope,D1_duplicate_check,other,known_issue
+R-010,R-010,config,config_dependent,intentional_design,UNCLASSIFIED,other,none
+R-011,R-004,liveness,liveness_block,out_of_scope,G3_scope_tree,oos_scope_boundary,none
+R-012,R-012,state_machine,unused_state_flag,duplicate,D1_duplicate_check,duplicate_known_family,unknown
+R-013,R-013,access_control,role_asymmetry,intentional_design,REALISM,intentional_design,none
+R-014,R-014,signature_binding,signature_context_binding,duplicate,D1_duplicate_check,duplicate_known_family,own_prior

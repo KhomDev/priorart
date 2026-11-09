@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bounty-economics"
+version = "0.5.0"
+description = "Payout-tier and exclusion-clause taxonomies for bug-bounty programs, plus a validator for your own private ledger"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = ["pyyaml>=6", "jsonschema>=4.18"]
+keywords = ["bug-bounty", "security", "taxonomy", "ledger", "json-schema"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Information Technology",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+]
+
+# The validator lives in scripts/validate.py, which the README and CI invoke as
+# a path. Installed, scripts/ becomes the package `bounty_economics` and the
+# taxonomies and schema ship inside it as package data, so the console script
+# works from a wheel, not only from an editable checkout. Nothing is installed
+# as a top-level module: a module called `validate` would collide with other
+# packages' modules of the same name.
+[project.scripts]
+bounty-econ-validate = "bounty_economics.validate:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://github.com/KhomDev/bounty-economics"
+Changelog = "https://github.com/KhomDev/bounty-economics/blob/main/CHANGELOG.md"
+Issues = "https://github.com/KhomDev/bounty-economics/issues"
+
+[tool.setuptools]
+packages = ["bounty_economics", "bounty_economics.data", "bounty_economics.schemas"]
+
+[tool.setuptools.package-dir]
+"bounty_economics" = "scripts"
+"bounty_economics.data" = "data"
+"bounty_economics.schemas" = "schemas"
+
+[tool.setuptools.package-data]
+"bounty_economics.data" = ["*.yaml"]
+"bounty_economics.schemas" = ["*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["scripts"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+extend-exclude = [".venv", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "RUF"]
+# The scripts are also run as paths (`python scripts/validate.py`), so a long
+# help string is not worth reflowing for the linter.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert; that is the point.
+"tests/*" = ["B011"]

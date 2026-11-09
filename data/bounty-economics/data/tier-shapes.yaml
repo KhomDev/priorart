@@ -1,0 +1,114 @@
+# Payout tier shapes — the closed vocabulary for `tier_shape`.
+#
+# The single most consequential field in a program ledger. Every reward table
+# resolves to one of these five shapes, and the shape decides whether a finding
+# is worth hunting at all.
+#
+# This file is DATA. It is the shared source of truth for the validator, the
+# ledger schema, and any downstream tool. It contains no program data: no names,
+# no chains, no reward tables. The shapes are generic; the instances stay with
+# whoever read the page.
+#
+# Two things this file deliberately does NOT say:
+#
+#   1. There is no `any` shape. See the note under `low_and_above`.
+#   2. A page that SAYS NOTHING about a floor is NOT `low_and_above`. An
+#      unstated floor is not evidence that Low pays; it is evidence the page has
+#      not been read. That entry is `tier_shape: unknown` with `floor_status:
+#      unstated`, and the validator warns on it. See `unknown` below.
+#      (A page that EXPLICITLY states "SEVERITY FLOOR: NONE" or "any" has said
+#      something: that is `low_and_above` with `floor_status: documented`.)
+
+version: 1
+
+# Order matters for reporting: narrowest floor first.
+shapes:
+  - id: critical_only
+    pays: [critical]
+    floor: critical
+    implication: >-
+      Everything below Critical is worth exactly zero, however correct it is.
+    risk: >-
+      The most expensive shape to misjudge. A Medium-class thesis — a value
+      misallocation between two counterparties, a griefing vector, a rounding
+      drift — has an expected value of zero here. Not low. Zero.
+    detection:
+      - "The reward table lists only a Critical row."
+      - "The program describes itself as critical-only, in whatever product name."
+      - "A High-severity finding was previously closed as out-of-scope-by-tier."
+    verify: >-
+      Confirm against the live rewards page before hunting. If your thesis cannot
+      reach Critical, stop — do not hunt carefully, stop.
+
+  - id: high_and_above
+    pays: [critical, high]
+    floor: high
+    implication: Medium and below are unpaid.
+    risk: >-
+      A real Medium finding with a working proof earns nothing. Common on
+      programs that frame themselves as protecting funds at risk.
+    detection:
+      - "The reward table lists Critical and High rows only."
+      - "Scope text excludes anything below High."
+    verify: Check whether a Medium tier exists at all before spending PoC time.
+
+  - id: medium_and_above
+    pays: [critical, high, medium]
+    floor: medium
+    implication: Low and informational are unpaid.
+    risk: >-
+      The most common shape, and the safest to hunt: most genuine value-moving
+      bugs land at Medium or above.
+    detection:
+      - "The reward table lists Critical, High and Medium rows."
+    verify: Note the Medium amount — it sets the floor for whether the work pays.
+
+  - id: low_and_above
+    pays: [critical, high, medium, low]
+    floor: low
+    implication: >-
+      Low is the lowest tier that pays. Everything valid above informational is
+      worth something.
+    risk: >-
+      Low floors attract volume, so duplicate risk rises. A paid Low is still a
+      small amount, and a duplicate is still zero.
+    detection:
+      - "The reward table lists a Low row with a non-zero amount."
+      - "Low is the lowest row with a non-zero amount, whatever the page calls it."
+      - "The page explicitly states 'SEVERITY FLOOR: NONE' or 'any' (floor_status: documented)."
+    verify: >-
+      Check the duplicate surface as carefully as the floor. A wide floor is an
+      invitation to the crowd.
+    # NOT a detection signal for this shape: a page that says nothing about a
+    # floor. That page has not been classified, it has not been read.
+    # That entry is `tier_shape: unknown` with `floor_status: unstated` — the
+    # validator errors if you write `low_and_above` beside `unstated`.
+    #
+    # WHY THERE IS NO SEPARATE `any` SHAPE
+    #
+    # An earlier version of this taxonomy carried a sixth shape, `any`, for
+    # programs whose reward table assigns a non-zero amount to informational.
+    # It has been removed, and the reasoning is worth keeping.
+    #
+    # The shape put an informational floor in the ledger. That made a hardening
+    # note look payable, and it made a program with a genuinely wide floor look
+    # narrower than it is. A shape that reads as a green light is worse than no
+    # shape, whether or not anyone has met a program that fits it. This taxonomy
+    # ships no count of how often it was met, and makes no claim about that.
+
+  - id: unknown
+    pays: []
+    floor: null
+    implication: >-
+      The reward table has not been transcribed. This is a gap in your ledger,
+      not a property of the program.
+    risk: >-
+      THE DANGEROUS VALUE. It does not mean "pays everything" — it means the page
+      has not been read. Hunting an untranscribed program is an unhedged bet, and
+      you will make it while believing you did your homework.
+    detection:
+      - "You have not opened the program's rewards page yet."
+      - "The page says nothing about a floor, so no reward table has been read yet."
+    verify: >-
+      Open it. This is a twenty-minute task that decides whether the next forty
+      hours are worth spending.

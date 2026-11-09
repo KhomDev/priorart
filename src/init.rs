@@ -21,7 +21,9 @@ pub const LEDGER_TEMPLATE: &str = r#"# Program ledger — YOUR transcription of 
 # is worse than a missing entry, because you will act on it. `vg` warns on an
 # uncited floor for exactly this reason.
 #
-# Docs: https://github.com/KhomDev/bounty-economics
+# Schema (vendored): data/bounty-economics/schemas/ledger.schema.json
+# Snapshot of https://github.com/KhomDev/bounty-economics v0.5.0 (MIT).
+# Clause classes: data/bounty-economics/data/clause-classes.yaml
 
 - id: REPLACE-ME                 # your slug for the program
   tier_shape: unknown            # critical_only | high_and_above | medium_and_above

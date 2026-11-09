@@ -19,7 +19,13 @@ Existing files are not overwritten without `--force`.
 ## `audit.yaml`
 
 This is an engagement file, the sort of record a hunt keeps beside a target.
-It is not the bounty-economics ledger. Import transcribes it into one.
+It is not the ledger itself. Import transcribes it into one ledger entry in the
+shape of [`data/bounty-economics/schemas/ledger.schema.json`](../data/bounty-economics/schemas/ledger.schema.json),
+a snapshot of [bounty-economics](https://github.com/KhomDev/bounty-economics)
+v0.5.0 (MIT). Tier shapes and clause classes are the closed lists in
+`data/bounty-economics/data/`. A class that is not in that list is named in
+`IMPORT-NOTES.md` and left out of the ledger. Import does not pick a class
+for you. `schema_version: 1` is written on the entry.
 
 ```yaml
 version: 1                 # optional; if present, must be 1

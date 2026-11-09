@@ -16,7 +16,8 @@
 #                 NOT subtract from the viability score: a failed gate makes the
 #                 outcome HOLD, an unknown one makes it INCOMPLETE.
 #   evidence    - in_sample | none. Whether the author's log has rows behind it.
-#   origin_rows - how many rows of rejection-taxonomy v0.5.1 (113 rows), in the
+#   origin_rows - how many rows of the vendored rejection-taxonomy snapshot
+#                 (v0.6.0, 113 rows), in the
 #                 column named in the comment above each gate. 0 = not measured.
 #   implemented_by - optional; the flag that supplies a corpus-type input
 #   checks      - the mechanical checks applied to the supplied input

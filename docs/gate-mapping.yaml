@@ -11,7 +11,7 @@
 #   private rejection log and is not reproducible. This file is the public
 #   restatement of that mapping, authored from (a) the semantics of each rule in
 #   rules/anti-patterns.yaml and (b) the public gate vocabulary documented in
-#   rejection-taxonomy/data/SCHEMA.md. It is a JUDGEMENT, not a re-derivation:
+#   data/rejection-taxonomy/data/SCHEMA.md. It is a JUDGEMENT, not a re-derivation:
 #   it has not been validated against the private dataset, and it cannot be,
 #   because the dataset is not published.
 #

@@ -48,6 +48,12 @@ admission used to be missed.
 
 ### Changed
 
+- Snapshots of [rejection-taxonomy](https://github.com/KhomDev/rejection-taxonomy)
+  v0.6.0 and [bounty-economics](https://github.com/KhomDev/bounty-economics) v0.5.0
+  live under `data/`, with their licences and a `SOURCE.md` each. `check_readme.py`
+  reads the vendored CSV. `vg import` writes ledger entries against that schema
+  and only emits a clause class the taxonomy lists. The source repositories
+  were not modified.
 - A weight-0 note no longer hides an unknown gate. The outcome stays
   INCOMPLETE until the gates can run.
 - The pinned rejection-taxonomy tag is `v0.6.0` (was `v0.5.1`). rejection-taxonomy

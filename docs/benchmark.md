@@ -109,13 +109,19 @@ no hard rule and no ledger is not CLEAR, and it should not be.
 
 ## In-sample reference, not this measurement
 
-The attached rejection database is 125 rows of the author's own triage
-summaries: 47 duplicate (37.6%), 26 out of scope, 25 informational, 23
-intentional design, 3 valid but below the payout floor, 1 spam. `bounty_outcomes.csv`
-has the decision and no report text. Neither was scored. Scoring a triage
-summary would measure the summary, not the tool. The published in-sample recall
-(strict 14/59, lenient 45/59) is a different catalog and a different set, and
-it was not re-run. See [calibration.md](calibration.md).
+The classified log this catalog was derived from is vendored at
+[data/rejection-taxonomy/](../data/rejection-taxonomy/) (snapshot of
+[rejection-taxonomy](https://github.com/KhomDev/rejection-taxonomy) v0.6.0,
+113 rows, rejections only). Its own generated table, not this benchmark, is
+the class mix of that log: 43 duplicate, 26 out of scope, 24 informational,
+16 intentional design, 3 below the payout floor, 1 spam. There is no paid row
+in it. The strict 14/59 recall was measured on an older catalog against a
+private subset of that log and was not re-run. See
+[calibration.md](calibration.md).
+
+A separate private triage database of 125 rows (47 of them duplicate) and
+`bounty_outcomes.csv` have no report bodies. They were not scored. Scoring a
+triage summary would measure the summary.
 
 ## Reproduce
 

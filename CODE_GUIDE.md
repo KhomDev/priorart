@@ -475,9 +475,9 @@ concurrent duplicate.
   [scripts/check_readme.py](scripts/check_readme.py) recomputes every
   `origin_rows`, every automation-table row and the reachable total from the
   dataset at the pinned tag and fails CI on drift. The tag is pinned in ONE
-  place, `PINNED_TAXONOMY_TAG` (line 60, currently "v0.6.0"); the dataset is
-  read from `$VG_TAXONOMY_CSV` or `../rejection-taxonomy/data/rejections.csv`
-  (`dataset_path`, lines 137-141).
+  place, `PINNED_TAXONOMY_TAG` (currently "v0.6.0"); the dataset is the vendored
+  snapshot `data/rejection-taxonomy/data/rejections.csv`, or `$VG_TAXONOMY_CSV`
+  when that is set. `data/rejection-taxonomy/SOURCE.md` records the same tag.
 
 ## 10 Tests
 
@@ -531,7 +531,7 @@ read-only token (lines 8-9).
 | cargo-audit | ubuntu | installs cargo-audit, runs `cargo audit` |
 | no network code | ubuntu | three steps: the resolved dependency graph carries none of the denylisted network crates (cargo tree + grep, and a Cargo.toml grep); no socket or request code in src/ (grep for TcpStream, UdpSocket, std::net, the HTTP clients); the release binary mentions no HTTP client name (grep of the built vg) |
 | tripwires | ubuntu | `python scripts/check_tripwires.py` and `--self-test` (11 boundary fixtures) |
-| generated docs are current | ubuntu | reads the pinned taxonomy tag, checks out KhomDev/rejection-taxonomy at it into `../rejection-taxonomy`, `gen_rule_docs.py --check`, `check_readme.py --require-dataset`, `regen-readme-examples.sh --check` against a release build |
+| generated docs are current | ubuntu | `gen_rule_docs.py --check`, `check_readme.py --require-dataset` against the vendored `data/rejection-taxonomy` snapshot, `regen-readme-examples.sh --check` against a release build |
 | calibration fixture | ubuntu | builds release, calibrate.py `--dry-run`, calibrate.py scored against `--expect examples/calibration/expected.json` (fails if a rule change moves strict/lenient/miss/per_gate), and `vg bench` over the bench fixture |
 | shipped rules name no target | ubuntu | greps rules/ for platform and forge-host names; only this project's own repositories are allowed as provenance |
 

@@ -40,8 +40,8 @@
 #
 # HOW EVERY origin_rows VALUE HERE IS DERIVED - no value is an estimate, and no
 # value is invented. Each one is a count over the public rejection dataset in the
-# sibling repository rejection-taxonomy, at the tag pinned in
-# scripts/check_readme.py (v0.5.1: data/rejections.csv, 113 rows), using the
+# vendored snapshot data/rejection-taxonomy (tag pinned in
+# scripts/check_readme.py; v0.6.0, data/rejections.csv, 113 rows), using the
 # rule's own token in a published column:
 #
 #   P2   root_cause_class = oos_privileged_role     P15  earliest_gate = G5_test_intent
@@ -53,9 +53,10 @@
 # scripts/check_readme.py recomputes every one of these from the pinned dataset
 # and fails CI on drift. Reproduce them by hand with:
 #
-#   cd rejection-taxonomy && git checkout v0.5.1
+#   python scripts/check_readme.py --require-dataset
+#   # dataset: data/rejection-taxonomy/data/rejections.csv (snapshot v0.6.0)
 #   python -c "import csv,collections; \
-#     rows=list(csv.DictReader(open('data/rejections.csv',encoding='utf-8'))); \
+#     rows=list(csv.DictReader(open('data/rejection-taxonomy/data/rejections.csv',encoding='utf-8'))); \
 #     print(collections.Counter(r['earliest_gate'] for r in rows)); \
 #     print(collections.Counter(r['root_cause_class'] for r in rows)); \
 #     print(collections.Counter(r['bug_family'] for r in rows))"

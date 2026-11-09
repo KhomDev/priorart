@@ -141,7 +141,7 @@ The 52-point gap is the summary: good at saying stop, bad at saying why. The rul
 
 ## Related
 
-- [rejection-taxonomy](https://github.com/KhomDev/rejection-taxonomy) — the public log this catalog is derived from. Which buckets the catalog can reach, against the `earliest_gate` column of the pinned tag:
+- [data/rejection-taxonomy/](data/rejection-taxonomy/) — the public log this catalog is derived from, snapshotted from [rejection-taxonomy](https://github.com/KhomDev/rejection-taxonomy) v0.6.0 (code MIT, data and prose CC BY 4.0). Which buckets the catalog can reach, against the `earliest_gate` column of that snapshot:
 
   | Reachable bucket | Rows | Rules that reach it |
   |---|---:|---|
@@ -162,12 +162,12 @@ The 52-point gap is the summary: good at saying stop, bad at saying why. The rul
   `D1_duplicate_check` is 41 rows and is not reachable from the finding's prose alone. "Can reach" means a rule maps to that bucket. It is not a recall figure.
 
   ```bash
-  git clone --branch "$(python scripts/check_readme.py --print-pinned-tag)" \
-      https://github.com/KhomDev/rejection-taxonomy ../rejection-taxonomy
   python scripts/check_readme.py --require-dataset
   ```
 
-- [bounty-economics](https://github.com/KhomDev/bounty-economics) — the ledger schema behind G1 and G2
+  The CSV is `data/rejection-taxonomy/data/rejections.csv`. `SOURCE.md` in that directory records the tag and the commit.
+
+- [data/bounty-economics/](data/bounty-economics/) — the ledger schema and the tier and clause taxonomies behind G1, G2, and `vg import`, snapshotted from [bounty-economics](https://github.com/KhomDev/bounty-economics) v0.5.0 (MIT). Schema: `data/bounty-economics/schemas/ledger.schema.json`.
 - [realism-gate](https://github.com/KhomDev/realism-gate) — a static checker for the proof, after this one
 - [examples/bench/](examples/bench/) — the synthetic bench fixture. It proves the harness runs. It measures nothing about the world.
 - [docs/rules/](docs/rules/) — generated page per rule

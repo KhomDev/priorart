@@ -30,18 +30,28 @@ It was. The **Scope** paragraph in `README.md`'s License section now says so: th
 MIT grant covers the entire repository, including `rules/` and `docs/`, and the
 catalog may be extracted, shipped as a ruleset in another tool, or adapted under
 the same terms. The catalog is the author's original work, derived from the
-author's own rejection log. The classified log is published separately in
-[rejection-taxonomy](https://github.com/KhomDev/rejection-taxonomy), whose terms
-this licence does not change. No second licence file was added.
+author's own rejection log. The classified log is also published separately in
+[rejection-taxonomy](https://github.com/KhomDev/rejection-taxonomy). A snapshot
+of that repository at tag v0.6.0 is vendored at
+[`data/rejection-taxonomy/`](../data/rejection-taxonomy/). Its code is MIT
+([LICENSE](../data/rejection-taxonomy/LICENSE)) and its dataset and prose are
+CC BY 4.0 ([LICENSE-DATA](../data/rejection-taxonomy/LICENSE-DATA)). Credit
+that repository when you share the dataset.
+
+A snapshot of [bounty-economics](https://github.com/KhomDev/bounty-economics)
+v0.5.0 is vendored at [`data/bounty-economics/`](../data/bounty-economics/)
+under its MIT licence ([LICENSE](../data/bounty-economics/LICENSE)). Credit
+that repository when you share the schema or the taxonomies. Neither snapshot
+changes the terms of the source repository.
 
 ## What is deliberately not bundled
 
 The tool ships **no** third-party data:
 
 - No program names, no chain names, no reward tables.
-- No rejection log. The 111-row dataset lives in
-  [rejection-taxonomy](https://github.com/KhomDev/rejection-taxonomy) under its
-  own licence and is not vendored here.
+- The rejection log is vendored as a snapshot, under that repository's own
+  licences, at `data/rejection-taxonomy/`. It is not rewritten into the MIT
+  grant above.
 - No prior-audit PDFs and no known-issues corpora. Those are user inputs
   (`--known-issues`), supplied at runtime and never redistributed.
 - No control set of report text. [`docs/benchmark.md`](benchmark.md) records a

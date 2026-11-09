@@ -1,0 +1,49 @@
+# gitignore template for each of the three public repos.
+# Copy this into the repo root as `.gitignore` BEFORE the first commit.
+#
+# The critical entry is the blocklist: it is the only file that contains real
+# protocol names, and committing it would defeat the entire redaction model.
+
+# --- private redaction inputs (NEVER commit) -------------------------------
+*.PRIVATE.yaml
+*.PRIVATE.yml
+redaction-blocklist*.yaml
+redaction-blocklist*.yml
+protocol-map*.yaml
+protocol-map*.yml
+
+# --- private working data ---------------------------------------------------
+# The public export is generated; the private source is not part of this repo.
+/source/
+/private/
+my-ledger*.yaml
+my-ledger*.yml
+*.private.json
+
+# --- secrets -----------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# --- build / tooling --------------------------------------------------------
+target/
+dist/
+build/
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+coverage/
+*.egg-info/
+
+# --- editors / OS -----------------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
