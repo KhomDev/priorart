@@ -78,9 +78,19 @@ static QUANTIFIED: LazyLock<Regex> = LazyLock::new(|| {
 
 static SEVERITY_QUOTE: LazyLock<Regex> = LazyLock::new(|| {
     compile_pattern(
-        r#"(severity rule|program rule|reward criteria|impacts? in scope)\s*:|["“][^"”]{20,160}(critical|high|medium|low)[^"”]{0,80}(reward|payout|theft|freeze|funds|eligible|bounty|scope)[^"”]{0,40}["”]"#,
+        r#"(severity rule|program rule|reward criteria|impacts? in scope|severity (criteria|matrix|classification))\s*:|["“][^"”]{12,200}(critical|high|medium|low)[^"”]{0,80}(reward|payout|theft|freeze|funds|eligible|bounty|scope)[^"”]{0,40}["”]"#,
     )
     .expect("quoted severity rule")
+});
+
+/// A program severity-matrix row, quoted or not. Contest writeups paste these
+/// sentences without the quote marks the old pattern required, and the old
+/// check then fired on every one of them.
+static SEVERITY_CRITERION: LazyLock<Regex> = LazyLock::new(|| {
+    compile_pattern(
+        r"\b(direct (theft|loss) of (user |protocol )?funds|permanent freezing of (funds|assets|nfts)|temporary freezing of (funds|assets)|theft of unclaimed (yield|royalties|rewards)|protocol insolvency|assets can be (stolen|lost|frozen|compromised)|smart contract (is )?unable to operate)\b",
+    )
+    .expect("severity criterion")
 });
 
 static SEVERITY_ASSERTION: LazyLock<Regex> = LazyLock::new(|| {
@@ -155,8 +165,14 @@ pub fn impact(text: &str) -> Option<Match> {
 }
 
 /// P26. The program's own severity sentence, not the author's label.
+///
+/// Fires only when a tier is asserted and no program criterion is quoted or
+/// paraphrased. A report that never names a tier used to fire too, which made
+/// the note true of every item on the public bench. That branch is gone.
+/// The rule is also opt-in (`default_emit: false`): the default `evaluate`
+/// does not run it.
 pub fn severity_rule(text: &str) -> Option<Match> {
-    if matches(&SEVERITY_QUOTE, text) {
+    if matches(&SEVERITY_QUOTE, text) || matches(&SEVERITY_CRITERION, text) {
         return None;
     }
     if matches(&SEVERITY_ASSERTION, text) {
@@ -164,9 +180,7 @@ pub fn severity_rule(text: &str) -> Option<Match> {
             "weak: a severity is asserted, but the program's own severity rule is not quoted",
         ));
     }
-    Some(note(
-        "missing: no quoted program severity rule for the claimed tier",
-    ))
+    None
 }
 
 #[cfg(test)]
@@ -199,6 +213,25 @@ mod tests {
     #[test]
     fn a_year_is_not_a_quantity() {
         let m = impact("Discovered in 2026. Impact: funds are frozen.").unwrap();
+        assert!(m.evidence[0].starts_with("weak:"));
+    }
+
+    #[test]
+    fn p26_is_silent_when_no_tier_is_asserted() {
+        assert!(severity_rule(
+            "An unprivileged attacker drains 4 tokens. Preconditions: the vault holds funds. The victim depositor must withdraw."
+        )
+        .is_none());
+    }
+
+    #[test]
+    fn p26_is_silent_on_a_matrix_sentence_without_quote_marks() {
+        assert!(severity_rule("Severity: High. Impact is direct theft of user funds.").is_none());
+    }
+
+    #[test]
+    fn p26_notes_a_bare_severity_label() {
+        let m = severity_rule("Suggested severity: High.").unwrap();
         assert!(m.evidence[0].starts_with("weak:"));
     }
 }

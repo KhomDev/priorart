@@ -9,6 +9,56 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-09
+
+Not published to crates.io. Install from git.
+
+Outcomes change. A bare front-run is a hold. An unprivileged yield theft that
+mentions an owner or front-running is not killed for those words. "No one but
+the admin can" is a kill. A cited file or line that is not in the pinned tree
+is a kill and the score is not 100. `--funnel` turns claim-heuristic hard rules
+into ROUTE-TO-VERIFY.
+
+### Added
+
+- Gate A1, citation anchor. `--target <dir> --commit <hex-sha>` reads cited
+  source files from that commit (`git show`, not the working tree). A missing
+  file, a line past EOF, or a function that is not in the file fails the gate
+  and emits hard finding `CITE` (weight 40), so the score cannot stay 100.
+  Fenced blocks and test, script, and dependency paths are not anchored.
+  Unpinned is not a pass. The check does not compare snippets byte for byte
+  and does not prove reachability.
+- `--funnel`. Claim-heuristic hard rules (P1–P26) become ROUTE-TO-VERIFY.
+  Known-issue matches (`KI:`) and `CITE` stay KILL. `--fail-on-kill` does not
+  fail on a route.
+- Path values that start with `-` are rejected on findings, `--target`,
+  `--commit`, `--rules`, and the other path flags. A commit must be a hex SHA.
+  This crate has no MCP server; the check is the CLI equivalent of not
+  letting a crafted path select flags.
+
+### Changed
+
+- P2. "No one but / nobody except / no one other than" is an affirmation, not
+  a negation. An unprivileged yield theft suppresses the rule for the whole
+  document, including when another sentence says the owner can set a parameter.
+- P3. Base verdict is soft. Hard requires front-run-only, a sole dependence on
+  ordering, "before the operator", or operator delay. The same unprivileged
+  yield-theft suppression applies.
+- P18. Also matches "already been reported", "previously disclosed", and
+  "acknowledged as a known issue". It still does not match a bare "prior
+  audit". The 0.6.0 bench fired it zero times because judged writeups do not
+  contain the admission. That is investigated in docs/benchmark.md, not fixed
+  by widening the rule into the opposite claim.
+- P26 is opt-in (`--severity-notes`). It no longer fires when no tier is
+  asserted, and a severity-matrix sentence satisfies it. On the 0.6.0 bench it
+  fired on 340/340 reports.
+- README tagline. This is a writing filter, not a validity oracle, and not a
+  promise the report will avoid Informative, Duplicate, or out of scope.
+
+### Measured
+
+- Re-scored the unchanged public manifest with `vg` 0.7.0 (`python eval/run.py score`, `python eval/run.py check`). Hard KILL on **12/220** paid Medium/High (5.5%; was 19/220, 8.6%) and **13/120** invalid or won't-fix (10.8%; was 19/120, 15.8%). Precision of a hard kill on that pair is 12/25 (48%). The unpaid/paid kill-rate ratio is about 2.0 (was 1.8). P3 hard-killed 0 paid findings (7 fires, all soft). P2 was unchanged at 9 paid hard kills. P18 fired 0 times. P26 did not run. Details in `docs/benchmark.md`. The separator is still weak.
+
 ## [0.6.0] - 2026-11-09
 
 Not published to crates.io. Install from git.
@@ -451,7 +501,9 @@ The tree itself is unchanged except for the two fixes recorded here.
 - The rule catalog and gate definitions as data, embedded in the binary.
 - The fixture suite: one positive and one negative case per anti-pattern.
 
-[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/KhomDev/viability-gate/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/KhomDev/viability-gate/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/KhomDev/viability-gate/compare/v0.4.4...v0.5.0
 [0.4.4]: https://github.com/KhomDev/viability-gate/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/KhomDev/viability-gate/compare/v0.4.2...v0.4.3

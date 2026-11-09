@@ -13,7 +13,7 @@ these pages are generated from it and cannot drift from it.
 | [`P12`](P12.md) | Panic or revert without persisted impact | A | `soft` | 30 |
 | [`P13`](P13.md) | "Inconsistent state" without a quantified fund-flow delta | A | `soft` | 25 |
 | [`P2`](P2.md) | Privileged-role-gated against a program exclusion | B | `hard` | 40 |
-| [`P3`](P3.md) | Front-run-only or operator-delay dependency | B | `hard` | 35 |
+| [`P3`](P3.md) | Front-run-only or operator-delay dependency | B | `soft` | 35 |
 | [`P5`](P5.md) | Out-of-scope file primitive | B | `hard` | 35 |
 | [`P11`](P11.md) | Testnet-only finding at Critical tier | B | `hard` | 35 |
 | [`P20`](P20.md) | Requires a cooperating party | B | `soft` | 30 |

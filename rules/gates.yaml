@@ -41,11 +41,13 @@
 #   G6  fork novelty
 #   G7  own history
 #   D1  known-issues / duplicate
+#   A1  cited location (this repository only; not an earliest_gate id)
 #
 # D1's input is a corpus (--known-issues) rather than a property of the target,
 # but it runs like every other gate: unknown without a corpus, fail on a match.
 # Declaring it here also keeps the vocabulary complete, so rejection-taxonomy can
-# assert that the two repositories agree on it.
+# assert that the two repositories agree on it. A1 is not in that vocabulary.
+# It is the one gate that opens the target tree. The shared ids above do not.
 #
 # HONESTY NOTE ON EVIDENCE: the counts below are rows of the author's own
 # rejection log that the gate is derived from. They are NOT a validated detection
@@ -285,3 +287,38 @@ gates:
       - name: patterns_compile
         test: every pattern must be a valid regex
         fail: "a pattern is not a valid regex"
+
+  # A1 reads the target. It is not an earliest_gate id and it has no rows in
+  # the rejection log: the log is prose, and this gate opens files. Unknown
+  # without --target. Fail when a cited source location does not exist.
+  # `vg check` also emits a weighted CITE finding on that failure, because a
+  # gate alone does not change the score and a fabricated citation must not
+  # score 100. Pass requires --commit as well as a tree: an unpinned working
+  # tree is not the audited revision.
+  - id: A1
+    title: Cited location
+    question: Does every cited source file, line, and function exist at the pinned commit?
+    needs: "the target checkout [--target] and the audited SHA [--commit]"
+    blocks: >-
+      Treating a fabricated file or line as a complete finding. The prose
+      score does not open the tree; this gate does.
+    weight: 40
+    implemented_by: "--target"
+    evidence: none
+    origin_rows: 0
+    checks:
+      - name: target_supplied
+        test: a target directory must be provided
+        fail: "no target tree supplied - cited locations were not opened"
+      - name: commit_pinned
+        test: --commit is a hex SHA that resolves in that checkout
+        fail: "no commit pin - a working tree is not the audited revision"
+      - name: locations_exist
+        test: >-
+          every cited source path outside a fence and outside a test, script,
+          or dependency directory exists, every cited line is in range, and
+          every cited function is in that file
+        fail: >-
+          a cited file, line, or function is not in the tree at the pin. The
+          score drops. This does not prove the snippet or that the function
+          is reachable.

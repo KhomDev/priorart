@@ -136,6 +136,8 @@ def render_rule(rule: dict, note: dict, catalog_version: str) -> str:
     out.append("| **Evidence** | " + evidence_cell(rule) + " |")
     out.append("| **False-positive rate** | " + FP_CELL + " |")
     out.append("| **Last validated** | " + str(rule.get("last_validated", "not recorded")) + " |")
+    if rule.get("default_emit") is False:
+        out.append("| **Emit** | opt-in. `vg check --severity-notes`. Off by default. |")
     out.append("")
     out.append("## Intent")
     out.append("")
@@ -208,6 +210,13 @@ def render_rule(rule: dict, note: dict, catalog_version: str) -> str:
         out.append("")
         out.append("```text")
         out.append(fence_patterns(rule["none_of"]))
+        out.append("```")
+        out.append("")
+    if rule.get("suppress_document"):
+        out.append("**Suppressed from any sentence** when one of these matches, even if `none_of` is sentence-scoped. The match is still negation-aware:")
+        out.append("")
+        out.append("```text")
+        out.append(fence_patterns(rule["suppress_document"]))
         out.append("```")
         out.append("")
     out.append("## Known false-positive modes")

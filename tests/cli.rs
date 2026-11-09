@@ -188,8 +188,20 @@ const CLEAN: &str = "# Reentrancy in withdraw lets an attacker drain the vault\n
 #[test]
 fn clear_is_reachable_when_every_gate_runs_and_passes() {
     let dir = tmp();
+    let sha = pin_vault(
+        &dir,
+        "contract V {\n    function withdraw() external {}\n}\n",
+    );
     let f = write(&dir, "clean.md", CLEAN);
-    let mut args: Vec<String> = vec!["check".into(), f.to_string_lossy().into(), "--json".into()];
+    let mut args: Vec<String> = vec![
+        "check".into(),
+        f.to_string_lossy().into(),
+        "--json".into(),
+        "--target".into(),
+        dir.to_string_lossy().into(),
+        "--commit".into(),
+        sha,
+    ];
     args.extend(full_inputs(&dir, "(owner|admin) (can|must)"));
     let refs: Vec<&str> = args.iter().map(String::as_str).collect();
     let o = vg(&refs, &dir);
@@ -549,4 +561,284 @@ fn import_audit_writes_the_gate_inputs_and_match_ranks_identifiers() {
         "{}",
         stderr(&o)
     );
+}
+
+fn git(dir: &Path, args: &[&str]) {
+    let o = Command::new("git")
+        .args(args)
+        .current_dir(dir)
+        .env("GIT_AUTHOR_NAME", "vg-test")
+        .env("GIT_AUTHOR_EMAIL", "vg-test@example.invalid")
+        .env("GIT_COMMITTER_NAME", "vg-test")
+        .env("GIT_COMMITTER_EMAIL", "vg-test@example.invalid")
+        .output()
+        .expect("git runs");
+    assert!(
+        o.status.success(),
+        "git {args:?}\n{}",
+        String::from_utf8_lossy(&o.stderr)
+    );
+}
+
+/// A one-file checkout and the SHA it is pinned to.
+fn pin_vault(dir: &Path, body: &str) -> String {
+    git(dir, &["init", "-b", "main"]);
+    write(dir, "src/Vault.sol", body);
+    git(dir, &["add", "src/Vault.sol"]);
+    git(dir, &["-c", "commit.gpgsign=false", "commit", "-m", "pin"]);
+    let o = Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .current_dir(dir)
+        .output()
+        .unwrap();
+    assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
+    String::from_utf8(o.stdout).unwrap().trim().to_string()
+}
+
+#[test]
+fn a_fake_citation_does_not_score_100_and_does_not_pass() {
+    let dir = tmp();
+    let sha = pin_vault(
+        &dir,
+        "contract Other {\n    function deposit() external {}\n}\n",
+    );
+    let f = write(
+        &dir,
+        "fake.md",
+        "# Rounding drain\n\nAn unprivileged attacker drains 4 tokens via a rounding bug in `src/Vault.sol` at line 214, in function deposit.\n\nPreconditions: the vault holds deposits. The victim depositor must withdraw. Impact: 4 tokens.\n",
+    );
+    let v = json(&vg(
+        &[
+            "check",
+            f.to_str().unwrap(),
+            "--target",
+            dir.to_str().unwrap(),
+            "--commit",
+            &sha,
+            "--json",
+        ],
+        &dir,
+    ));
+    assert_eq!(v["outcome"], "KILL", "{v}");
+    assert!(v["viability_score"].as_u64().unwrap() < 100, "{v}");
+    let cite = v["findings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|f| f["rule"] == "CITE")
+        .expect("CITE finding");
+    assert_eq!(cite["verdict"], "hard");
+    let a1 = v["gates"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|g| g["gate"] == "A1")
+        .unwrap();
+    assert_eq!(a1["status"], "fail", "{a1}");
+}
+
+#[test]
+fn a_real_citation_at_the_pin_passes_the_anchor() {
+    let dir = tmp();
+    let sha = pin_vault(
+        &dir,
+        "contract V {\n    function withdraw() external {}\n}\n",
+    );
+    let f = write(&dir, "clean.md", CLEAN);
+    let mut args: Vec<String> = vec![
+        "check".into(),
+        f.to_string_lossy().into(),
+        "--json".into(),
+        "--target".into(),
+        dir.to_string_lossy().into(),
+        "--commit".into(),
+        sha,
+    ];
+    args.extend(full_inputs(&dir, "(owner|admin) (can|must)"));
+    let refs: Vec<&str> = args.iter().map(String::as_str).collect();
+    let v = json(&vg(&refs, &dir));
+    let a1 = v["gates"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|g| g["gate"] == "A1")
+        .unwrap();
+    assert_eq!(a1["status"], "pass", "{a1}");
+    assert_eq!(v["outcome"], "CLEAR", "{v}");
+    assert_eq!(v["viability_score"], 100);
+}
+
+#[test]
+fn negation_admin_does_not_hide_a_privileged_claim() {
+    let dir = tmp();
+    let (outcome, rules) = outcome_of(
+        &dir,
+        "neg.md",
+        "No one but the admin can call setParams() and redirect the fees. Impact: 10 tokens stolen, and only the admin can do it.\n",
+    );
+    assert!(rules.contains(&"P2".to_string()), "{rules:?}");
+    assert_eq!(outcome, "KILL");
+}
+
+#[test]
+fn unprivileged_yield_theft_is_not_killed_for_owner_config_or_front_running() {
+    let dir = tmp();
+    let (outcome, rules) = outcome_of(
+        &dir,
+        "yield.md",
+        "# Unprivileged yield theft\n\nThe owner can set the fee in the config. An unprivileged user steals the pending yield by donating before the harvest. A searcher can front-run that harvest.\n\nPreconditions: the vault holds deposits. The victim depositor must withdraw. Impact: 12.5 tokens.\n",
+    );
+    assert!(!rules.contains(&"P2".to_string()), "{rules:?}");
+    assert!(!rules.contains(&"P3".to_string()), "{rules:?}");
+    assert_ne!(outcome, "KILL", "{outcome} {rules:?}");
+}
+
+#[test]
+fn a_bare_front_run_is_a_hold_and_operator_delay_still_kills() {
+    let dir = tmp();
+    let (soft, rules) = outcome_of(
+        &dir,
+        "fr.md",
+        "The attacker front-runs the update and captures the spread. Impact: 2 tokens.\n",
+    );
+    assert!(rules.contains(&"P3".to_string()), "{rules:?}");
+    assert_eq!(soft, "HOLD");
+    let (hard, rules) = outcome_of(
+        &dir,
+        "delay.md",
+        "The attacker front-runs the update. The operator delay gives a window of several blocks.\n",
+    );
+    assert!(rules.contains(&"P3".to_string()), "{rules:?}");
+    assert_eq!(hard, "KILL");
+}
+
+#[test]
+fn p26_does_not_fire_on_every_report_unless_asked() {
+    let dir = tmp();
+    let body = "An unprivileged attacker drains 4 tokens. Preconditions: the vault holds funds. The victim depositor must withdraw. Suggested severity: High.\n";
+    let (_, rules) = outcome_of(&dir, "sev.md", body);
+    assert!(
+        !rules.contains(&"P26".to_string()),
+        "P26 is opt-in and must not spam the default run: {rules:?}"
+    );
+    let f = write(&dir, "sev2.md", body);
+    let v = json(&vg(
+        &["check", f.to_str().unwrap(), "--severity-notes", "--json"],
+        &dir,
+    ));
+    let rules: Vec<_> = v["findings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|f| f["rule"].as_str().unwrap().to_string())
+        .collect();
+    assert!(rules.contains(&"P26".to_string()), "{rules:?}");
+    let quiet = "An unprivileged attacker drains 4 tokens. Preconditions: the vault holds funds. The victim depositor must withdraw. Severity: High. This is direct theft of user funds.\n";
+    let f = write(&dir, "matrix.md", quiet);
+    let v = json(&vg(
+        &["check", f.to_str().unwrap(), "--severity-notes", "--json"],
+        &dir,
+    ));
+    let rules: Vec<_> = v["findings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|f| f["rule"].as_str().unwrap().to_string())
+        .collect();
+    assert!(!rules.contains(&"P26".to_string()), "{rules:?}");
+}
+
+#[test]
+fn funnel_routes_heuristic_kills_and_keeps_structured_ones() {
+    let dir = tmp();
+    let f = write(
+        &dir,
+        "admin.md",
+        "An admin can set the pause flag and brick the vault.\n",
+    );
+    let v = json(&vg(
+        &["check", f.to_str().unwrap(), "--funnel", "--json"],
+        &dir,
+    ));
+    assert_eq!(v["outcome"], "ROUTE-TO-VERIFY", "{v}");
+    assert!(v["funnel"].as_bool().unwrap());
+    assert!(v["viability_score"].as_u64().unwrap() < 100);
+    let o = vg(
+        &["check", f.to_str().unwrap(), "--funnel", "--fail-on-kill"],
+        &dir,
+    );
+    assert_eq!(
+        o.status.code(),
+        Some(0),
+        "a route is not a kill: {}",
+        stderr(&o)
+    );
+
+    let sha = pin_vault(&dir, "contract Other {}\n");
+    let fake = write(
+        &dir,
+        "fake.md",
+        "An unprivileged attacker drains 4 tokens in src/Vault.sol at line 214.\n",
+    );
+    let v = json(&vg(
+        &[
+            "check",
+            fake.to_str().unwrap(),
+            "--funnel",
+            "--target",
+            dir.to_str().unwrap(),
+            "--commit",
+            &sha,
+            "--json",
+        ],
+        &dir,
+    ));
+    assert_eq!(v["outcome"], "KILL", "a missing file stays a kill: {v}");
+
+    let ki = write(
+        &dir,
+        "ki.yaml",
+        "- id: KI-1\n  summary: dust\n  patterns: [\"dust.{0,20}stuck\"]\n",
+    );
+    let known = write(&dir, "dust.md", "Dust is left stuck in the router.\n");
+    let v = json(&vg(
+        &[
+            "check",
+            known.to_str().unwrap(),
+            "--funnel",
+            "--known-issues",
+            ki.to_str().unwrap(),
+            "--json",
+        ],
+        &dir,
+    ));
+    assert_eq!(v["outcome"], "KILL", "{v}");
+}
+
+#[test]
+fn a_path_that_looks_like_a_flag_is_rejected() {
+    let dir = tmp();
+    let o = vg(&["check", "--", "--skip"], &dir);
+    assert_eq!(o.status.code(), Some(2), "{}", stdout(&o));
+    assert!(stderr(&o).contains("starts with"), "{}", stderr(&o));
+    let o = vg(&["--rules=-evil", "rules"], &dir);
+    assert_eq!(o.status.code(), Some(2), "{}", stderr(&o));
+    assert!(stderr(&o).contains("starts with"), "{}", stderr(&o));
+    let f = write(&dir, "f.md", "An unprivileged attacker drains 1 token.\n");
+    let o = vg(
+        &[
+            "check",
+            f.to_str().unwrap(),
+            "--target",
+            dir.to_str().unwrap(),
+            "--commit",
+            "HEAD",
+        ],
+        &dir,
+    );
+    assert_eq!(o.status.code(), Some(2), "{}", stderr(&o));
+    assert!(stderr(&o).contains("hex SHA"), "{}", stderr(&o));
+    let o = vg(&["check", f.to_str().unwrap(), "--commit=--output"], &dir);
+    assert_eq!(o.status.code(), Some(2), "{}", stderr(&o));
+    assert!(stderr(&o).contains("starts with"), "{}", stderr(&o));
 }

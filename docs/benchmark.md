@@ -1,13 +1,8 @@
 # Public-corpus benchmark
 
-Measured 2026-11-09 with `vg` 0.6.0. Re-run with `python eval/run.py fetch` and
-`python eval/run.py score`. The bodies are downloaded into `eval/cache/`, which
-is gitignored. This repository commits the manifest and the results, not the
-reports.
+Re-scored 2026-11-09 with `vg` 0.7.0 on the same manifest `eval/run.py fetch` wrote for 0.6.0 (`eval/dataset.manifest.yaml` did not change). Bodies stay in `eval/cache/`, which is gitignored. This repository commits the manifest and the results, not the reports.
 
-This is one corpus. It is not a property of the rules, and it is not the
-false-positive rate on the author's own paid findings. That log has no paid
-findings. See [control-set.md](control-set.md).
+This is one corpus of judged, human-written contest reports. It is not a property of the rules, and it is not the false-positive rate on model-written hypotheses. The author's own log has no paid findings. See [control-set.md](control-set.md).
 
 ## What was scored
 
@@ -34,47 +29,33 @@ Accepted severities in the capped set: 101 High, 119 Medium.
 
 ## Headline
 
-A **hard KILL** is the outcome that would have stopped a submission.
+A **hard KILL** is the outcome that would have stopped a submission. 0.7.0, default flags, no ledger, no target tree. A1 is unknown on every row. P26 does not run.
 
-| Set | N | Hard KILL | Rate |
-|---|---:|---:|---:|
-| Paid Medium/High | 220 | 19 | 8.6% |
-| Invalid + won't-fix | 120 | 19 | 15.8% |
-| Code4rena QA | 60 | 14 | 23.3% |
-| Sherlock Low/Info | 60 | 10 | 16.7% |
+| Set | N | Hard KILL | Rate | 0.6.0 |
+|---|---:|---:|---:|---:|
+| Paid Medium/High | 220 | 12 | 5.5% | 19 (8.6%) |
+| Invalid + won't-fix | 120 | 13 | 10.8% | 19 (15.8%) |
+| Code4rena QA | 60 | 11 | 18.3% | 14 (23.3%) |
+| Sherlock Low/Info | 60 | 9 | 15.0% | 10 (16.7%) |
 
-Of the 38 hard kills on paid or invalid/won't-fix, 19 are paid findings. That
-is a precision of **19/38 (50%)** for "this hard kill marks a finding the
-platform did not pay." The base rate of invalid/won't-fix in that pair of sets
-is 120/340 (35%). A hard kill is more common on the unpaid side than that base
-rate, and half of the hard kills are still findings a platform paid. Do not
-read 8.6% as "the tool is safe 91% of the time." Nineteen paid findings were
-hard-killed.
+Of the 25 hard kills on paid or invalid/won't-fix, 12 are paid findings. That is a precision of **12/25 (48%)** for "this hard kill marks a finding the platform did not pay." The base rate of invalid/won't-fix in that pair is 120/340 (35%). The kill rate on the unpaid side divided by the kill rate on the paid side is 10.8 / 5.5 ≈ **2.0**. On 0.6.0 that ratio was 15.8 / 8.6 ≈ 1.8, and the precision was 19/38 (50%).
 
-Which rules did the killing, on the paid set: **P2 on 9, P3 on 7, P19 on 2,
-P15 on 1.** Paid contest reports describe admins and sandwiches inside findings
-that were paid anyway. P2 and P3 are the catalog entries that do that, and on
-this set they do not separate paid from invalid (P2 precision against
-invalid/won't-fix is 10/19, P3 is 7/14).
+Softening P3 moved paid hard kills from 19 to 12 and invalid hard kills from 19 to 13. The separator is still weak. A hard kill is not evidence the finding is invalid. Do not read 5.5% as "the tool is safe 94% of the time." Twelve paid findings were hard-killed.
 
-P18 did not fire on any of the 220 paid findings or the 120 invalid/won't-fix
-findings. Those writeups are the judged text, and the judged text of a paid
-finding does not usually admit "same root cause as accepted issue M-1." The
-CMP-04 regression is that admission. This benchmark does not measure it. The
-fixture does.
+Which rules did the killing, on the paid set: **P2 on 9, P19 on 2, P15 on 1.** P3 fired on 7 paid findings and on 7 invalid/won't-fix findings, and **none of those fires were hard**. The 0.6.0 paid kills that were P3 (7) are holds now. P2 did not move: still 9 paid and 10 invalid/won't-fix, precision 0.53. The negation fix and the unprivileged-yield suppression are covered by fixtures. This corpus does not contain those wordings, so the bench cannot show them.
+
+P18 fired on **0** of 460 items, same as 0.6.0. The phrases added in 0.7.0 ("already been reported", "previously disclosed", "acknowledged as a known issue") are not in these bodies either. Judged contest writeups do not admit a prior issue in the words the rule keys on. Matching a bare "prior audit" was tried in an earlier catalog and removed, because "the prior audit missed this" is the opposite claim. The duplicate a report does not mention is `--index`, not P18. The CMP-04 fixture is the admission this rule does catch. This benchmark does not measure that fixture.
+
+P26 is absent from the table below because the default score does not run it. On 0.6.0 it fired on 340/340 of paid plus invalid/won't-fix, and on the QA and Low/Info sets as well. A note that is true of every row is not a signal, so 0.7.0 leaves it off unless `--severity-notes`. That is a demotion, not a measured gain in precision. The bench was not re-scored with the flag on.
 
 ## Per rule
 
-A fire on an invalid finding is not evidence the rule named the reason the
-platform closed it. There is no per-rule ground truth in the labels. Precision
-here means: of the times the rule fired on paid or invalid/won't-fix, how often
-the finding was in the invalid/won't-fix set. A rule that never fired has no
-precision. Rates are `fires / N`.
+A fire on an invalid finding is not evidence the rule named the reason the platform closed it. There is no per-rule ground truth in the labels. Precision here means: of the times the rule fired on paid or invalid/won't-fix, how often the finding was in the invalid/won't-fix set. A rule that never fired has no precision. Rates are `fires / N`.
 
 | Rule | Paid fires (hard) | Invalid+won't-fix fires | Precision |
 |---|---:|---:|---:|
 | P2 | 9 (9) | 10 | 0.53 |
-| P3 | 7 (7) | 7 | 0.50 |
+| P3 | 7 (0) | 7 | 0.50 |
 | P15 | 1 (1) | 2 | 0.67 |
 | P17 | 22 (0) | 9 | 0.29 |
 | P19 | 2 (2) | 0 | 0.00 |
@@ -83,29 +64,24 @@ precision. Rates are `fires / N`.
 | P10 | 1 (0) | 0 | 0.00 |
 | P14 | 0 | 1 | 1.00 |
 | P18 | 0 | 0 | — |
+| P26 | not run | not run | — |
 
-P14's precision of 1.00 is one fire. That is not a measurement of P14.
+P14's precision of 1.00 is one fire. That is not a measurement of P14. P3's 0.50 is the same coin flip as 0.6.0, and it no longer hard-kills.
 
 ### Claim checks (weight 0)
 
-P23–P26 are notes. They do not kill. They also do not separate the classes.
-P26 fired on **220/220** paid findings and **120/120** invalid/won't-fix
-findings. Contest writeups state a severity label. They do not quote a program
-severity sentence in the shape the check looks for. A 100% fire rate means the
-check does not recognise that label. It is reported because hiding it would
-make the note look like it had found something.
+P23–P25 are notes. They do not kill. They also do not separate the classes. P26 is the same kind of note and is opt-in; it is not in these counts.
 
 | Rule | Paid | Invalid+won't-fix | QA | Low/Info |
 |---|---:|---:|---:|---:|
 | P23 attacker | 168/220 | 89/120 | 53/60 | 51/60 |
 | P24 preconditions / victim | 214/220 | 114/120 | 60/60 | 57/60 |
 | P25 quantified impact | 187/220 | 100/120 | 59/60 | 58/60 |
-| P26 severity rule quoted | 220/220 | 120/120 | 60/60 | 60/60 |
+| P26 severity rule quoted | not run | not run | not run | not run |
 
-Outcomes on the paid set, with no ledger and no index supplied (every gate
-unknown): KILL 19, HOLD 20, NOTE 5, INCOMPLETE 176. INCOMPLETE is the common
-outcome because unknown gates outrank a zero-weight note. A paid finding with
-no hard rule and no ledger is not CLEAR, and it should not be.
+Outcomes on the paid set, with no ledger and no target tree (every gate unknown, including A1): KILL 12, HOLD 27, NOTE 5, INCOMPLETE 176. INCOMPLETE is the common outcome because unknown gates outrank a zero-weight note. A paid finding with no hard rule and no ledger is not CLEAR, and it should not be. A1 cannot pass on this corpus: the bench does not supply a checkout or a commit, so the anchor is unmeasured here. The fixture for a missing `src/Vault.sol:214` is in `tests/cli.rs`.
+
+The corpus is judged human writeups. A model hypothesis that says "owner can" and "front-run" next to a real bug is what the P2/P3 changes and `--funnel` are for. This table does not contain that text. Expect the bench to understate how often those rules would have fired on model output, and do not treat 5.5% as that rate.
 
 ## In-sample reference, not this measurement
 

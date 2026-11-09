@@ -31,6 +31,14 @@ CI by `cargo tree`, a source grep and a binary string check; see
 [`docs/no-network.md`](../docs/no-network.md). A way to make the tool open a
 socket is a security issue.
 
+## 4. A path argument is parsed as an option
+
+`vg` rejects a path, commit, or id that starts with `-` (stdin remains `-`).
+Pass `--` before positional findings. A `--commit` value must be a 7 to 64
+digit hex SHA, and git is invoked with `--end-of-options` and an argument
+list, not a shell. This crate has no MCP server. A model-controlled string
+spliced into argv must not become `--rules` or another flag.
+
 ## What does not count
 
 - **A wrong verdict.** The tool is a heuristic with an unmeasured false-positive
