@@ -367,7 +367,7 @@ pub fn parse_log(text: &str) -> Result<Vec<crate::model::LogEntry>, String> {
 /// Quote a YAML scalar as a double-quoted string, always. A bare scalar can
 /// silently change type (`null`, `true`, `1e3`, `~`) or break the document
 /// (`- x`, `#x`, `: x`), and every one of those is a plausible family label.
-fn yaml_quote(s: &str) -> String {
+pub(crate) fn yaml_quote(s: &str) -> String {
     let mut out = String::with_capacity(s.len() + 2);
     out.push('"');
     for c in s.chars() {

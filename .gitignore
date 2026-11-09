@@ -54,6 +54,10 @@ coverage/
 .regen/
 repro/
 
+# Downloaded contest findings for eval/run.py. The manifest and the results
+# are committed; the bodies are not. See docs/benchmark.md.
+eval/cache/
+
 # --- editors / OS -----------------------------------------------------------
 .vscode/
 .idea/

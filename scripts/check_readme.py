@@ -102,7 +102,7 @@ BANNED = (
      "G7 uses containment, not Jaccard, since 0.5.0"),
 )
 
-REQUIRED_SECTIONS = ("Known limitations",)
+REQUIRED_SECTIONS = ("Limits",)
 
 # Links the README must carry, each with the reason it is checked. A doc that is
 # written and never linked is a doc nobody reads.

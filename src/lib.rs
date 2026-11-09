@@ -6,8 +6,11 @@
 //! already has that one can install and call `viability-gate` instead.
 
 pub mod bench;
+pub mod claims;
 pub mod cli;
 pub mod engine;
+pub mod import;
+pub mod index;
 pub mod init;
 pub mod model;
 pub mod render;

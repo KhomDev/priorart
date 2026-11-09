@@ -8,8 +8,9 @@ Three ways. All three install the same code.
 cargo install viability-gate
 ```
 
-Published from 0.3.0 onward. The crate version matches the `v*` tag it was
-published from.
+Published from 0.3.0 through 0.5.0. **0.6.0 is not on crates.io.** Install that
+release from git (method 2) or from a checkout. The crate version of a
+published release matches the `v*` tag it was published from.
 
 ## 2. From the repository
 

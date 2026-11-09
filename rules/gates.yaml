@@ -260,7 +260,7 @@ gates:
   - id: D1
     title: Known-issues / duplicate
     question: Is this already in the program's known-issues list or its prior audits?
-    needs: "a known-issues corpus [--known-issues]"
+    needs: "a known-issues corpus [--known-issues] or a prior-finding index [--index]"
     blocks: >-
       Submitting something the team already knows about. This is the largest
       single rejection category, and it is the one no pattern over the finding's

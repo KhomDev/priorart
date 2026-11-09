@@ -9,13 +9,54 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-09
+
+Not published to crates.io. Install from git.
+
+Outcomes change where a negated phrase used to fire, and where a prior-issue
+admission used to be missed.
+
+### Fixed
+
+- Contrastive phrases (`rather than`, `instead of`, `as opposed to`, and the
+  rest of the list in `docs/negation-audit.md`) negate the words that follow
+  them. An immediately preceding `non` negates a hyphenated form. All 26 rules
+  were audited; the residuals are in that doc.
+- P7 no longer fires on "rather than a best-practice observation."
+- P18 fires on "same root cause as", "accepted as <name> issue", hyphenated
+  "previously-reported", and an issue id (H-1, M-01, L-3) next to an admission.
+  Firm names stay out of the catalog. Suppression is sentence-scoped. A bare
+  issue id still does not fire.
+- `tests/fixtures/cmp-04-report.md` is the report that produced the false HOLD.
+  No personal email was in it.
+
+### Added
+
+- P23–P26, weight 0: attacker profile, preconditions and victim action,
+  quantified impact, quoted program severity rule. A `finding.yaml` (or
+  `<name>.finding.yaml`) can supply the same fields. A recorded prior-audit
+  check does not suppress P18.
+- `vg import audit`, `vg import program`, `vg import prior`. Local files only.
+  Schema in `docs/import.md`. PDF via an uncompressed scrape, then `pdftotext`
+  if it is installed.
+- `vg match` and `--index`. D1 ranks prior findings by code identifiers, not
+  word overlap. Threshold documented as uncalibrated in `docs/duplicate-matching.md`.
+- `eval/run.py` downloads a public Code4rena and Sherlock set and scores it.
+  Bodies are not committed. Headline: hard KILL on 19/220 paid Medium/High
+  (8.6%) and 19/120 invalid or won't-fix (15.8%). Nine of the paid kills are
+  P2, seven are P3. `docs/benchmark.md`.
+
 ### Changed
 
-- The pinned rejection-taxonomy tag is now `v0.6.0` (was `v0.5.1`). rejection-taxonomy
-  reset its history on 2026-11-06, so the `v0.5.1` tag no longer exists and the README check
-  could not check it out. Every `origin_rows` count and every gate count in the README is
-  unchanged: 0.6.0 moved only `preventable_by`, `duplicate_source` and two family-level
-  classes, none of which this repository reads.
+- A weight-0 note no longer hides an unknown gate. The outcome stays
+  INCOMPLETE until the gates can run.
+- The pinned rejection-taxonomy tag is `v0.6.0` (was `v0.5.1`). rejection-taxonomy
+  reset its history on 2026-11-06, so the `v0.5.1` tag no longer exists. The
+  `origin_rows` counts did not change: that tag moved columns this repository
+  does not read.
+- README leads with the pitch, the install line, the CMP-04 output, and the
+  benchmark table. Name collision, the dated in-sample study, and the other
+  caveats are under Limits.
 
 ## [0.5.0] - 2026-11-06
 

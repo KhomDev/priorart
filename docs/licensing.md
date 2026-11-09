@@ -13,6 +13,8 @@
 | `rules/packs/**` | Ecosystem token packs (data) | **MIT** |
 | `docs/**`, `README.md` | Documentation | **MIT** |
 | `examples/**` | Synthetic fixtures | **MIT** |
+| `eval/sources.yaml`, `eval/dataset.manifest.yaml`, `eval/results/**` | URLs, label facts, and aggregate scores. Not the finding texts | **MIT** |
+| `eval/cache/**` | Downloaded contest bodies, gitignored, not part of this repository | not ours |
 
 The repository `LICENSE` is the MIT licence and it is the only licence text in
 the tree. There is no per-directory licence file and no `SPDX-License-Identifier`
@@ -42,8 +44,11 @@ The tool ships **no** third-party data:
   own licence and is not vendored here.
 - No prior-audit PDFs and no known-issues corpora. Those are user inputs
   (`--known-issues`), supplied at runtime and never redistributed.
-- No control set. [`docs/control-set.md`](control-set.md) explains how to build
-  one from public paid reports; fetching one into this repository is a stop gate.
+- No control set of report text. [`docs/benchmark.md`](benchmark.md) records a
+  measurement against public contest issues. The bodies are downloaded by
+  `eval/run.py` into a gitignored cache and are not part of this repository.
+  [`docs/control-set.md`](control-set.md) is still how to measure the author's
+  own paid findings, which do not exist in the log.
 
 That is why there is no `NOTICE` file and no third-party licence inventory: the
 only third-party code is the crate graph, and `cargo` resolves and reports those

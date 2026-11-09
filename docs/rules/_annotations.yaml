@@ -362,8 +362,10 @@ rules:
       Signals are convention nouns and improvement verbs: best practice,
       industry standard, style or gas suggestion, "deviates from".
     escape_hatches: >-
-      None. The rule is about the *claim*, and the fix is to attach a fund-loss
-      consequence to the specific deviation.
+      No suppression list. The engine's negation window applies, including
+      contrastive phrases: "rather than a best-practice observation" is a denial
+      of that class and does not fire. The fix, when the phrase is not negated,
+      is to attach a fund-loss consequence to the specific deviation.
     false_positives:
       - A finding that states the convention and then demonstrates a concrete
         loss, where the rule fires on the framing sentence.
@@ -378,6 +380,11 @@ rules:
       does_not_fire: >-
         "The strict comparison lets the attacker extract funds after expiry."
     changelog:
+      - date: 2026-11-09
+        note: >-
+          "rather than a best-practice observation" no longer fires. Contrastive
+          phrases ("rather than", "instead of", "as opposed to") negate the
+          words that follow them. See docs/negation-audit.md.
       - date: 2026-10-08
         note: "Introduced with the first catalog commit."
 
@@ -412,17 +419,23 @@ rules:
       prior audit was not read, which is worse than not submitting.
     signals_note: >-
       Signals are admission phrases: "previously reported", "already known",
-      "known issue", "documented as intended", or a named prior audit that
-      covered or accepted the surface. A bare mention of "prior audit" is
-      deliberately NOT a signal, because "the prior audit missed this" is the
-      opposite claim. The rule fires on the report's own words, which is why it
-      cannot find the *real* duplicate that the report does not mention.
+      "known issue", "documented as intended", "same root cause as", "accepted
+      as <name> issue", or an issue id (H-1, M-01, L-3) sitting next to one of
+      those admissions. A bare mention of "prior audit" is deliberately NOT a
+      signal, because "the prior audit missed this" is the opposite claim. A
+      bare issue id is not a signal either: drafts number their own findings.
+      Firm names are not listed. "accepted as <name> issue" matches every venue
+      without naming one, and a shipped rule that names one venue is a
+      disclosure. The rule still fires only on the report's own words, which is
+      why it cannot find the duplicate the report does not mention. That case
+      is the index behind --index, not this rule.
     escape_hatches: >-
-      Six suppression patterns, all negations: "no prior audit", "not covered by
-      a prior review", "no known", "not previously", "new since", "first audit
-      of". A negated statement is the opposite signal — it says the surface is
-      new — and without these the rule fired on exactly the findings it should
-      have passed.
+      Suppression is sentence-scoped. "no prior audit of module A" does not
+      hide "same root cause as issue M-1" in a later sentence. In the matching
+      sentence, the negations are "no prior audit", "not covered by a prior
+      review", "no known", "not previously", "new since", "first audit of", and
+      a prior audit that missed the surface. The engine's negation window
+      applies on top of those.
     false_positives:
       - A report that cites a prior audit to distinguish its own finding from it,
         where the distinguishing language is not one of the six negations.
@@ -437,6 +450,11 @@ rules:
         "No prior audit covers this module; the surface is new since the last
         review."
     changelog:
+      - date: 2026-11-09
+        note: >-
+          Same-root-cause admissions, "accepted as <name> issue", and issue ids
+          next to an admission now fire. Hyphenated "previously-reported" fires.
+          Suppression is sentence-scoped. Firm names stay out of the catalog.
       - date: 2026-10-08
         note: >-
           Escape hatches for negated forms added before the first catalog
@@ -803,3 +821,112 @@ rules:
           in all three parts fires as a note, not a kill.
       - date: 2026-10-08
         note: "Introduced with the first catalog commit."
+
+  P23:
+    intent: >-
+      The report never says who can do this. A mechanism with no attacker
+      profile is the shape the 2026-09-28 post-mortem held: the proof shows a
+      call, and not whether an unprivileged address can make it.
+    signals_note: >-
+      Structural. It looks for an attacker, an adversary, an unprivileged
+      caller, or a named privileged role that can act. "A user" with none of
+      those is weak, not silent. Weight is 0: this is a note, and it does not
+      hide a gate that could not run.
+    escape_hatches: >-
+      A finding.yaml attacker field that is non-empty suppresses the note. The
+      prose check itself has no suppression list.
+    false_positives:
+      - A report that names the attacker only by a role this list does not
+        know.
+      - A short note that is not a submission draft.
+      - A quote of someone else's report that contains the word attacker, which
+        satisfies the check without the draft having its own profile.
+    examples:
+      fires: >-
+        "The vault accounting is wrong and deposits can be lost."
+      does_not_fire: >-
+        "An unprivileged attacker calls withdraw."
+    changelog:
+      - date: 2026-11-09
+        note: >-
+          Added from the author's post-mortems (the private notes call this
+          class P23). origin_rows is 0 because the public taxonomy has no
+          column for it.
+
+  P24:
+    intent: >-
+      The report does not say what must already be true, or what the victim
+      does. Both belong to one attacker-model record, which is why they share
+      one id.
+    signals_note: >-
+      Structural. A precondition word plus a victim, and ideally a victim
+      action (what they call, sign, or are forced to do). One of the two is
+      weak. Neither is missing. Weight is 0.
+    escape_hatches: >-
+      A finding.yaml with both victim and preconditions filled in suppresses
+      the note.
+    false_positives:
+      - A report that states the precondition in a diagram or a table the
+        matcher does not read as words.
+      - >-
+        "Assuming" used about a hypothetical the author then rejects.
+      - A victim named only as "the protocol", which this list does not treat
+        as a victim.
+    examples:
+      fires: >-
+        "An unprivileged attacker drains the vault. Impact: 4 tokens."
+      does_not_fire: >-
+        "Preconditions: the vault holds funds. The victim depositor must
+        withdraw during the window."
+    changelog:
+      - date: 2026-11-09
+        note: "Added with P23. Preconditions and victim action share this id."
+
+  P25:
+    intent: >-
+      The report describes harm and never says how much. A year, a transaction
+      count, or the word "total" is not a quantity.
+    signals_note: >-
+      Structural. A currency mark, a percent, or a number of tokens, shares, or
+      units satisfies it. Impact words with none of those are weak. Weight is 0.
+    escape_hatches: >-
+      finding.yaml impact_usd greater than zero suppresses the note. Zero does
+      not: it is not a quantified loss.
+    false_positives:
+      - A percent that describes a fee parameter rather than the loss.
+      - A token amount in the reproduction that is the setup, not the impact.
+      - A loss denominated only in a unit this pattern does not list.
+    examples:
+      fires: >-
+        "Impact: complete loss of funds, with no figure attached."
+      does_not_fire: >-
+        "The attacker extracts 12.5 tokens."
+    changelog:
+      - date: 2026-11-09
+        note: "Added with P23. A bare year does not count as a quantity."
+
+  P26:
+    intent: >-
+      The report names a tier and does not quote the program sentence that
+      tier comes from. Self-assigned severity is how a real Medium becomes a
+      claimed High.
+    signals_note: >-
+      Structural. A "severity rule" label, or a quotation that contains both a
+      tier word and a reward or impact word, satisfies it. "Suggested severity:
+      High" with no quotation is weak. Weight is 0.
+    escape_hatches: >-
+      finding.yaml severity_rule_quoted, non-empty, suppresses the note. The
+      field is the author's copy of the program text; the tool does not check
+      it against a live page.
+    false_positives:
+      - A quotation of a tier from a different program.
+      - A severity table pasted without the quote marks this pattern looks for.
+      - A report that quotes the rule in an image.
+    examples:
+      fires: >-
+        "Suggested severity: High."
+      does_not_fire: >-
+        "Severity rule: \"High: direct theft of user funds from the protocol\"."
+    changelog:
+      - date: 2026-11-09
+        note: "Added with P23. Quoting a tier label is not quoting the rule."

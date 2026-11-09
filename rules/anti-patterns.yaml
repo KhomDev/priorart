@@ -6,7 +6,7 @@
 # about which ecosystems the author works on.
 #
 # Schema per entry:
-#   id             - stable identifier (P1..P22)
+#   id             - stable identifier (P1..P26)
 #   title          - one line
 #   group          - A: impact absent | B: precondition disallowed | C: harm bounded
 #                    D: already known      | E: report fails
@@ -362,16 +362,29 @@ rules:
     group: C
     verdict: hard
     weight: 40
+    # Sentence scope: "no prior audit of module A" must not hide "same root
+    # cause as issue M-1" in a later sentence. The negation window still drops
+    # a denial in the same sentence.
+    none_of_scope: sentence
     any_of:
       # The bare phrase "prior audit" is NOT here on purpose. "The prior audit
       # missed this" is the opposite signal - it says the surface is new - and
       # the old rule hard-killed it. A prior-audit match now requires a
-      # previously/already statement or a named source.
-      - "previously (reported|identified|reviewed|raised|accepted|assessed)"
-      - "already (reported|known|acknowledged|accepted|covered|raised)"
+      # previously/already statement, a same-root-cause admission, or an
+      # accepted issue id. Firm names are deliberately not listed: a shipped
+      # rule that names one venue is a disclosure, and "accepted as <name>
+      # issue" matches every venue without naming one.
+      - "previously[- ](reported|identified|reviewed|raised|accepted|assessed|documented)"
+      - "already[- ](reported|known|acknowledged|accepted|covered|raised|identified|documented|assessed)"
       - "known (issue|limitation|characteristic|design)"
-      - "(prior|earlier|previous) audit .{0,40}(covered|identified|accepted|reported|raised)"
+      - "(prior|earlier|previous|published) audit .{0,60}(covered|identified|accepted|reported|raised|documented)"
       - "documented (as |)(intended|design)"
+      - "same root[- ]cause (as|with|behind|of)"
+      - "accepted as [^.]{0,80}(issue|finding|report)"
+      - "(duplicate of|same (issue|finding|bug|defect) as) [^.]{0,60}(issue|finding|report)"
+      # Issue ids (H-1, M-01, L-3, and the lower-case forms) only next to an
+      # admission. A bare id is how a draft numbers its own findings.
+      - "(accepted|duplicate|prior audit|prior report|same root[- ]cause|previously[- ]reported|contest issue|warden issue|published audit).{0,80}\\b[chmliqs]-\\d{1,3}\\b"
     none_of:
       # Negated forms are the OPPOSITE signal: they say the surface is NEW.
       - "no prior audit"
@@ -650,4 +663,70 @@ rules:
     origin_rows: 1
     evidence: in_sample
     last_validated: "2026-10-10"
+    fp_rate: null
+
+  # ---------------------------------------------------------------- Group E, claim checks
+  # Weight 0 on purpose. A missing heading is a note, and a note that moved
+  # the score would hold drafts for structure rather than for an admission.
+  # The public taxonomy has no column for these, so origin_rows stays 0.
+  - id: P23
+    title: Attacker profile missing or thin
+    group: E
+    verdict: warn
+    weight: 0
+    structural: p23_attacker
+    fix: >-
+      Name who can call the bug and whether they are unprivileged. "A user" is
+      not a profile. A finding.yaml attacker field answers the same check.
+    doc: docs/rules/P23.md
+    origin_rows: 0
+    evidence: none
+    last_validated: "2026-11-09"
+    fp_rate: null
+
+  - id: P24
+    title: Preconditions or victim action missing or thin
+    group: E
+    verdict: warn
+    weight: 0
+    structural: p24_preconditions
+    fix: >-
+      State what must already be true, who the victim is, and what they do or
+      are forced to do. A finding.yaml victim and preconditions answer this.
+    doc: docs/rules/P24.md
+    origin_rows: 0
+    evidence: none
+    last_validated: "2026-11-09"
+    fp_rate: null
+
+  - id: P25
+    title: Impact missing or not quantified
+    group: E
+    verdict: warn
+    weight: 0
+    structural: p25_impact
+    fix: >-
+      Quantify the loss, freeze, or theft in units, percent, or currency. A
+      year or a count of hours is not an impact figure. finding.yaml impact_usd
+      above zero answers this.
+    doc: docs/rules/P25.md
+    origin_rows: 0
+    evidence: none
+    last_validated: "2026-11-09"
+    fp_rate: null
+
+  - id: P26
+    title: Program severity rule not quoted
+    group: E
+    verdict: warn
+    weight: 0
+    structural: p26_severity_rule
+    fix: >-
+      Quote the program's own severity sentence that this claim maps to. Naming
+      a tier is the author's label, not the program's rule. finding.yaml
+      severity_rule_quoted answers this.
+    doc: docs/rules/P26.md
+    origin_rows: 0
+    evidence: none
+    last_validated: "2026-11-09"
     fp_rate: null

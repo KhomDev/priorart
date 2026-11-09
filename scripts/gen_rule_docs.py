@@ -48,7 +48,9 @@ VERDICT_MEANING = {
 # The tool has never been run against an accepted or paid finding, so the
 # false-positive rate does not exist. It is rendered as "unmeasured" on every
 # page rather than omitted, because an omitted field reads as "not applicable".
-FP_CELL = "**unmeasured** - there is no accepted/paid control set yet. See docs/control-set.md"
+FP_CELL = ("**not stored on the rule** - a single rate would hide which corpus it came from. "
+           "The public-corpus measurement is in docs/benchmark.md. The author's own log still "
+           "has no paid findings, so the in-sample false-positive rate remains unmeasured.")
 
 
 def evidence_cell(rule: dict) -> str:

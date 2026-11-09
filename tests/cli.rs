@@ -98,7 +98,13 @@ fn valid_findings_from_the_audit_are_not_killed() {
     for (name, body) in cases {
         let (outcome, rules) = outcome_of(&dir, name, body);
         assert_ne!(outcome, "KILL", "{name} was killed by {rules:?}");
-        assert!(rules.is_empty(), "{name} fired {rules:?}");
+        // P23-P26 are zero-weight notes about report structure. They are not
+        // the false kills this regression guards against.
+        let bad: Vec<_> = rules
+            .iter()
+            .filter(|r| !matches!(r.as_str(), "P23" | "P24" | "P25" | "P26"))
+            .collect();
+        assert!(bad.is_empty(), "{name} fired {bad:?}");
     }
 }
 
@@ -177,7 +183,7 @@ fn full_inputs(dir: &Path, exclusion_pattern: &str) -> Vec<String> {
     ]
 }
 
-const CLEAN: &str = "# Reentrancy in withdraw lets an attacker drain the vault\n\n**Severity:** High\n\n## Description\n`withdraw` in src/Vault.sol sends ETH before zeroing the balance. An unprivileged attacker re-enters and drains 50 ETH.\n";
+const CLEAN: &str = "# Reentrancy in withdraw lets an attacker drain the vault\n\n**Severity:** High\n\n## Description\nPreconditions: the vault holds deposits. `withdraw` in src/Vault.sol sends ETH before zeroing the balance. An unprivileged attacker re-enters. The victim depositor is forced to absorb the loss. Impact: 50 ETH.\n\nSeverity rule: \"High: direct theft of user funds\".\n";
 
 #[test]
 fn clear_is_reachable_when_every_gate_runs_and_passes() {
@@ -316,8 +322,8 @@ fn the_command_vg_init_prints_runs() {
 fn every_rule_explains_and_the_catalog_lists() {
     let dir = tmp();
     let o = vg(&["rules"], &dir);
-    assert!(stdout(&o).contains("22 rules"));
-    for n in 1..=22 {
+    assert!(stdout(&o).contains("26 rules"));
+    for n in 1..=26 {
         let id = format!("P{n}");
         let o = vg(&["explain", &id], &dir);
         assert_eq!(o.status.code(), Some(0), "{id}: {}", stderr(&o));
@@ -490,4 +496,57 @@ fn control_characters_in_a_finding_never_reach_the_terminal() {
     let o = vg(&["check", f.to_str().unwrap()], &dir);
     assert!(!stdout(&o).contains('\u{1b}'), "{}", stdout(&o));
     assert!(!stdout(&o).contains('\u{7}'));
+}
+
+#[test]
+fn import_audit_writes_the_gate_inputs_and_match_ranks_identifiers() {
+    let dir = tmp();
+    let audit = write(
+        &dir,
+        "audit.yaml",
+        "version: 1\nid: example-engagement\nseverity_floor: high\nexclusion_clauses:\n  - class: privileged_role\n    text: \"Attacks that require a privileged role\"\nknown_issues:\n  - id: M-1\n    summary: \"`reduce_outflow` credits only the current segment and `add_outflow` aborts\"\n    identifiers: [\"reduce_outflow\", \"add_outflow\"]\nscope:\n  - src/Vault.sol\n",
+    );
+    let out = dir.join("out");
+    let o = vg(
+        &[
+            "import",
+            "audit",
+            audit.to_str().unwrap(),
+            "--out",
+            out.to_str().unwrap(),
+        ],
+        &dir,
+    );
+    assert_eq!(o.status.code(), Some(0), "{}", stderr(&o));
+    assert!(out.join("ledger.yaml").is_file());
+    assert!(out.join("scope.txt").is_file());
+    assert!(out.join("index.yaml").is_file());
+    let ledger = std::fs::read_to_string(out.join("ledger.yaml")).unwrap();
+    assert!(ledger.contains("high_and_above"), "{ledger}");
+    assert!(
+        !ledger.contains("pattern:"),
+        "import must not invent a regex"
+    );
+
+    let finding = write(
+        &dir,
+        "draft.md",
+        "An unprivileged attacker calls `reduce_outflow` and `add_outflow` in the same transaction. Impact: 3 tokens.\n",
+    );
+    let o = vg(
+        &[
+            "match",
+            finding.to_str().unwrap(),
+            "--index",
+            out.join("index.yaml").to_str().unwrap(),
+        ],
+        &dir,
+    );
+    let text = stdout(&o);
+    assert!(text.contains("reduce_outflow"), "{text}");
+    assert!(
+        o.status.code() == Some(0) || o.status.code() == Some(1),
+        "{}",
+        stderr(&o)
+    );
 }

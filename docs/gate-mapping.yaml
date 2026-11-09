@@ -83,6 +83,10 @@ rules:
   P20: [P20_cooperating_party]    # a second party must act
   P21: [REALISM]                  # configuration mismatch
   P22: [REALISM]                  # primitive with no deployed consumer
+  P23: []                         # report-quality: attacker profile. Weight 0.
+  P24: []                         # report-quality: preconditions and victim action. Weight 0.
+  P25: []                         # report-quality: quantified impact. Weight 0.
+  P26: []                         # report-quality: quoted severity rule. Weight 0.
 
 # Why each mapping is what it is. Empty lists are deliberate.
 notes:

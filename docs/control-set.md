@@ -1,8 +1,11 @@
 # The control set — measuring the false-positive rate
 
-**Status: PENDING. The false-positive rate of this tool has never been
-measured.** This document is how to measure it. It reports no result, because
-there is not one.
+**Status: an external public-corpus measurement now exists.** The numbers are
+in [benchmark.md](benchmark.md), and they are the rate on that corpus, not a
+property of the rules. The false-positive rate on the author's own paid
+findings is still unmeasured: that log contains no paid findings. This
+document is how that second measurement would be built. It is not the same
+question as the public contest set, and the two numbers are not substitutes.
 
 ## Why this is the number that matters
 

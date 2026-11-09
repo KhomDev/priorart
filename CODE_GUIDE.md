@@ -289,11 +289,11 @@ lines 2559 and 2568); the D1 gate itself fails on an unusable entry
 ## 6 The rule catalog
 
 [rules/anti-patterns.yaml](rules/anti-patterns.yaml) is 653 lines of data, not
-code. It carries exactly **22 rules, P1-P22** - asserted by
+code. It carries exactly **26 rules, P1-P26** - asserted by
 `catalog_has_22_rules` ([tests/rules_test.rs](tests/rules_test.rs) line 59) and
 `every_rule_explains_and_the_catalog_lists` ([tests/cli.rs](tests/cli.rs) line
-319, which drives `vg explain` for P1..P22 and asserts the rules list prints
-"22 rules"). Header comments (lines 1-70) document the schema, the origin_rows
+319, which drives `vg explain` for P1..P26 and asserts the rules list prints
+"26 rules"). Header comments (lines 1-70) document the schema, the origin_rows
 derivation and the case-insensitivity rule. Summing the pattern lists gives 158
 individual patterns across the 22 rules; 10 rules carry `evidence: in_sample`
 and 12 carry `origin_rows: 0` with `evidence: none`.

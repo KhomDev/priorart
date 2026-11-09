@@ -14,8 +14,11 @@
 //! 2. any_of / all_of are evaluated sentence by sentence.
 //! 3. A match is discarded when a negation cue appears within the N tokens
 //!    immediately before it (default 6). Typographic apostrophes are folded to
-//!    ASCII first, so "doesn’t" negates like "doesn't". Rules that already
-//!    handle negation through none_of set negation_aware: false.
+//!    ASCII first, so "doesn’t" negates like "doesn't". A contrastive phrase
+//!    in a slightly wider window ("rather than", "instead of", "as opposed to")
+//!    negates what follows it, which a single-token cue cannot see. An
+//!    immediately preceding "non" negates a hyphenated form ("non-best-practice").
+//!    Rules that already handle negation through none_of set negation_aware: false.
 //! 4. Every fire reports the matched snippet AND its sentence, so the user can
 //!    see exactly what the tool reacted to and argue with it.
 //!
@@ -34,8 +37,30 @@ const NEGATION_CUES: [&str; 19] = [
     "nothing", "lack", "lacks", "lacking", "absent", "fails", "fail", "unable", "missing",
 ];
 
-/// How many tokens before a match the negation window looks at.
+/// How many tokens before a match the single-token negation window looks at.
 pub const NEGATION_WINDOW: usize = 6;
+
+/// How many tokens before a match a multi-word contrastive phrase is sought in.
+/// Wider than the single-token window so "in contrast to a best-practice"
+/// still reaches the phrase, without letting a lone "not" travel that far.
+pub const NEGATION_PHRASE_WINDOW: usize = 8;
+
+/// Contrastive phrases that negate the words which follow them.
+/// "rather than a best-practice observation" is a denial of that class, and
+/// "rather" / "than" are not single-token cues.
+const NEGATION_PHRASES: [&str; 11] = [
+    "rather than",
+    "instead of",
+    "as opposed to",
+    "other than",
+    "in contrast to",
+    "more than a",
+    "more than just",
+    "beyond a",
+    "anything but",
+    "far from a",
+    "far from the",
+];
 
 /// A rule with its regexes pre-compiled, so matching is a single pass.
 pub struct CompiledRule {
@@ -439,8 +464,8 @@ fn find_unnegated(
     None
 }
 
-/// Is the match negated by a cue in the preceding window?
-fn is_negated(sentence: &str, at: usize) -> bool {
+/// Tokens before `at`, apostrophes folded, lowercased.
+fn prefix_tokens(sentence: &str, at: usize) -> Vec<String> {
     let prefix: String = sentence[..at]
         .chars()
         .map(|c| match c {
@@ -448,15 +473,32 @@ fn is_negated(sentence: &str, at: usize) -> bool {
             other => other,
         })
         .collect();
-    let tokens: Vec<String> = prefix
+    prefix
         .split(|c: char| !c.is_alphanumeric() && c != '\'')
         .filter(|t| !t.is_empty())
         .map(|t| t.to_lowercase())
-        .collect();
-    let start = tokens.len().saturating_sub(NEGATION_WINDOW);
-    tokens[start..]
+        .collect()
+}
+
+/// Is the match negated by a cue or a contrastive phrase in the preceding window?
+fn is_negated(sentence: &str, at: usize) -> bool {
+    let tokens = prefix_tokens(sentence, at);
+    // "non-best-practice" splits on the hyphen, so "non" is the token
+    // immediately before the match. "non" further back is a different word
+    // ("a non trivial note about best practice" is still that class).
+    if tokens.last().is_some_and(|t| t == "non") {
+        return true;
+    }
+    let cue_at = tokens.len().saturating_sub(NEGATION_WINDOW);
+    if tokens[cue_at..]
         .iter()
         .any(|t| NEGATION_CUES.contains(&t.as_str()) || t.ends_with("n't"))
+    {
+        return true;
+    }
+    let phrase_at = tokens.len().saturating_sub(NEGATION_PHRASE_WINDOW);
+    let joined = tokens[phrase_at..].join(" ");
+    NEGATION_PHRASES.iter().any(|p| joined.contains(p))
 }
 
 /// Collapse whitespace, drop control characters, and cap the length, so a
@@ -519,6 +561,10 @@ static PERSISTED_STATE: LazyLock<Regex> = LazyLock::new(|| {
 fn structural_match(kind: Structural, text: &str) -> Option<Match> {
     match kind {
         Structural::P19HeadlineVsProof => p19(text),
+        Structural::P23Attacker => crate::claims::attacker(text),
+        Structural::P24Preconditions => crate::claims::preconditions(text),
+        Structural::P25Impact => crate::claims::impact(text),
+        Structural::P26SeverityRule => crate::claims::severity_rule(text),
     }
 }
 
@@ -607,9 +653,14 @@ pub fn evaluate(rules: &[CompiledRule], text: &str) -> (Vec<Finding>, Vec<String
 /// ONE decision rule, in this order:
 ///   1. any fired rule with a hard verdict                    -> KILL
 ///   2. any soft rule, any FAILED gate, or score < threshold  -> HOLD
-///   3. any fired rule with a warn verdict                    -> NOTE
+///   3. any warn rule with a non-zero weight                  -> NOTE
 ///   4. any gate Unknown                                      -> INCOMPLETE
-///   5. otherwise                                             -> CLEAR
+///   5. only zero-weight notes, and every gate ran            -> NOTE
+///   6. otherwise                                             -> CLEAR
+///
+/// A zero-weight note (the claim checks, P23-P26) does not hide an unknown
+/// gate: absence of a heading is a weaker fact than a gate that could not run.
+/// A warn rule that carries weight still outranks an unknown gate, as before.
 ///
 /// The score is 100 minus the hand-set weights of the fired rules, clamped to
 /// 0..=100. It is an UNCALIBRATED HEURISTIC and not a probability. Gates do NOT
@@ -621,7 +672,12 @@ pub fn outcome(findings: &[Finding], gates: &[GateOutcome], threshold: u32) -> (
 
     let has_hard = findings.iter().any(|f| f.verdict == Verdict::Hard);
     let has_soft = findings.iter().any(|f| f.verdict == Verdict::Soft);
-    let has_warn = findings.iter().any(|f| f.verdict == Verdict::Warn);
+    let has_weighted_warn = findings
+        .iter()
+        .any(|f| f.verdict == Verdict::Warn && f.weight > 0);
+    let has_note = findings
+        .iter()
+        .any(|f| f.verdict == Verdict::Warn && f.weight == 0);
     let gate_failed = gates.iter().any(|g| g.status == GateStatus::Fail);
     let gate_unknown = gates.iter().any(|g| g.status == GateStatus::Unknown);
 
@@ -629,10 +685,12 @@ pub fn outcome(findings: &[Finding], gates: &[GateOutcome], threshold: u32) -> (
         Outcome::Kill
     } else if has_soft || gate_failed || score < threshold {
         Outcome::Hold
-    } else if has_warn {
+    } else if has_weighted_warn {
         Outcome::Note
     } else if gate_unknown {
         Outcome::Incomplete
+    } else if has_note {
+        Outcome::Note
     } else {
         Outcome::Clear
     };
@@ -773,6 +831,9 @@ pub struct GateInputs<'a> {
     pub fork_of: Option<&'a str>,
     pub own_log: Option<&'a [LogEntry]>,
     pub known_issues: Option<&'a [KnownIssue]>,
+    /// Prior findings ranked by code identifiers. Drives D1 together with,
+    /// or instead of, the regex corpus.
+    pub index: Option<&'a [IndexedFinding]>,
     pub finding: Option<&'a str>,
 }
 
@@ -854,7 +915,7 @@ pub fn evaluate_gates(gates: &[Gate], inp: &GateInputs<'_>) -> Vec<GateOutcome> 
                 "G5" => gate_tests(inp),
                 "G6" => gate_fork(inp.fork_of),
                 "G7" => gate_own_history(inp.own_log, inp.finding),
-                "D1" => gate_known_issues(inp.known_issues, inp.finding),
+                "D1" => gate_known_issues(inp.known_issues, inp.index, inp.finding),
                 _ => (GateStatus::Unknown, "unrecognised gate".to_string()),
             };
             GateOutcome {
@@ -1598,17 +1659,31 @@ fn gate_own_history(log: Option<&[LogEntry]>, finding: Option<&str>) -> (GateSta
     }
 }
 
-/// D1 - the known-issues corpus.
-fn gate_known_issues(known: Option<&[KnownIssue]>, finding: Option<&str>) -> (GateStatus, String) {
-    let Some(issues) = known else {
+/// D1 - the known-issues corpus and, when supplied, the identifier index.
+fn gate_known_issues(
+    known: Option<&[KnownIssue]>,
+    index: Option<&[IndexedFinding]>,
+    finding: Option<&str>,
+) -> (GateStatus, String) {
+    if known.is_none() && index.is_none() {
         return (
             GateStatus::Unknown,
-            "no known-issues corpus supplied - supply the program's known issues with \
-             --known-issues"
+            "no known-issues corpus or prior-finding index supplied - supply \
+             --known-issues or --index"
                 .into(),
         );
+    }
+    let Some(issues) = known else {
+        return gate_index(index, finding);
     };
     if issues.is_empty() {
+        if index.is_some() {
+            let (status, detail) = gate_index(index, finding);
+            return (
+                status,
+                format!("the regex corpus is empty: 0 known issues transcribed. {detail}"),
+            );
+        }
         return (
             GateStatus::Pass,
             "the corpus is empty: 0 known issues transcribed. That is a pass only if the \
@@ -1634,7 +1709,22 @@ fn gate_known_issues(known: Option<&[KnownIssue]>, finding: Option<&str>) -> (Ga
     if !warnings.is_empty() {
         parts.push(format!("unusable corpus entries: {}", warnings.join("; ")));
     }
-    if parts.is_empty() {
+    let (index_status, index_detail) = if index.is_some() {
+        gate_index(index, finding)
+    } else {
+        (GateStatus::Pass, String::new())
+    };
+    if !index_detail.is_empty() {
+        parts.push(index_detail);
+    }
+    let status = if parts.is_empty() && index_status == GateStatus::Pass {
+        GateStatus::Pass
+    } else if !found.is_empty() || !warnings.is_empty() || index_status == GateStatus::Fail {
+        GateStatus::Fail
+    } else {
+        worst(GateStatus::Pass, index_status)
+    };
+    if status == GateStatus::Pass && parts.is_empty() {
         (
             GateStatus::Pass,
             format!(
@@ -1643,8 +1733,71 @@ fn gate_known_issues(known: Option<&[KnownIssue]>, finding: Option<&str>) -> (Ga
                 issues.len()
             ),
         )
+    } else if status == GateStatus::Pass {
+        (
+            GateStatus::Pass,
+            format!(
+                "{} known issue(s) checked; none matched. {}",
+                issues.len(),
+                parts.join("; ")
+            ),
+        )
     } else {
-        (GateStatus::Fail, parts.join("; "))
+        (status, parts.join("; "))
+    }
+}
+
+/// Identifier ranking. A near miss is reported and does not fail the gate.
+/// The fail line is the uncalibrated threshold in `index::FAIL_SCORE`.
+fn gate_index(index: Option<&[IndexedFinding]>, finding: Option<&str>) -> (GateStatus, String) {
+    let Some(index) = index else {
+        return (
+            GateStatus::Unknown,
+            "no prior-finding index supplied".into(),
+        );
+    };
+    if index.is_empty() {
+        return (GateStatus::Pass, "the prior-finding index is empty".into());
+    }
+    let Some(text) = finding else {
+        return (
+            GateStatus::Unknown,
+            format!(
+                "{} prior finding(s) indexed; no finding text supplied to compare",
+                index.len()
+            ),
+        );
+    };
+    let ranked = crate::index::rank(text, index);
+    if ranked.is_empty() {
+        return (
+            GateStatus::Pass,
+            format!(
+                "{} prior finding(s) indexed; no shared code identifiers. Word overlap is not \
+                 scored",
+                index.len()
+            ),
+        );
+    }
+    let shown: Vec<String> = ranked.iter().map(crate::index::summary).collect();
+    if ranked.iter().any(|r| r.fails) {
+        (
+            GateStatus::Fail,
+            format!(
+                "identifier overlap with a prior finding (threshold {:.2}, uncalibrated): {}",
+                crate::index::FAIL_SCORE,
+                shown.join(" | ")
+            ),
+        )
+    } else {
+        (
+            GateStatus::Pass,
+            format!(
+                "closest prior findings are below the fail threshold {:.2}: {}",
+                crate::index::FAIL_SCORE,
+                shown.join(" | ")
+            ),
+        )
     }
 }
 
@@ -2127,6 +2280,40 @@ mod tests {
     fn warn_only_is_note_not_clear() {
         let (o, _) = outcome(&[finding(Verdict::Warn, 10)], &[], 50);
         assert_eq!(o, Outcome::Note);
+    }
+
+    #[test]
+    fn a_zero_weight_note_does_not_hide_an_unknown_gate() {
+        let (o, score) = outcome(
+            &[finding(Verdict::Warn, 0)],
+            &[gate_with(GateStatus::Unknown)],
+            50,
+        );
+        assert_eq!(o, Outcome::Incomplete);
+        assert_eq!(score, 100);
+        let (noted, _) = outcome(
+            &[finding(Verdict::Warn, 0)],
+            &[gate_with(GateStatus::Pass)],
+            50,
+        );
+        assert_eq!(noted, Outcome::Note);
+    }
+
+    #[test]
+    fn rather_than_negates_what_follows_it() {
+        let r = rule("P7", Verdict::Soft, &["best[- ]practice"], &[]);
+        assert!(r.matches("This is a best-practice observation.").is_some());
+        assert!(r
+            .matches(
+                "The behaviour differs from the description rather than a best-practice observation."
+            )
+            .is_none());
+        assert!(r
+            .matches("The report is instead of a best-practice note.")
+            .is_none());
+        assert!(r
+            .matches("This is a non-best-practice defect with measured loss.")
+            .is_none());
     }
 
     #[test]
