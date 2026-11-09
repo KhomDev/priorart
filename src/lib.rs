@@ -5,6 +5,7 @@
 //! is also the name of an unrelated bioinformatics tool: a researcher whose PATH
 //! already has that one can install and call `viability-gate` instead.
 
+pub mod anchor;
 pub mod bench;
 pub mod claims;
 pub mod cli;

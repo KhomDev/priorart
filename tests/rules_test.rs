@@ -223,13 +223,12 @@ fn regression_cases_hold() {
 }
 
 #[test]
-fn gates_are_eight_and_well_formed() {
-    // G1..G7 plus D1. D1's input is the --known-issues corpus; it is declared
-    // so the gate vocabulary here and the earliest_gate vocabulary in
-    // rejection-taxonomy are the same id set.
+fn gates_are_nine_and_well_formed() {
+    // G1..G7 plus D1 are the ids shared with rejection-taxonomy. A1 is local:
+    // it opens the target tree, and the taxonomy has no earliest_gate for it.
     let g: GateFile = serde_saphyr::from_str(GATES).expect("gates.yaml parses");
     assert_eq!(g.version, viability_gate::model::CATALOG_VERSION);
-    assert_eq!(g.gates.len(), 8, "expected G1..G7 plus D1");
+    assert_eq!(g.gates.len(), 9, "expected G1..G7, D1, and A1");
     let ids: BTreeSet<&str> = g.gates.iter().map(|x| x.id.as_str()).collect();
     for n in 1..=7 {
         let id = format!("G{n}");
@@ -239,6 +238,7 @@ fn gates_are_eight_and_well_formed() {
         ids.contains("D1"),
         "missing gate D1 - the renamed duplicate gate"
     );
+    assert!(ids.contains("A1"), "missing gate A1 - the citation anchor");
     let d1 = g.gates.iter().find(|x| x.id == "D1").expect("D1 exists");
     assert_eq!(d1.implemented_by.as_deref(), Some("--known-issues"));
     for gate in &g.gates {

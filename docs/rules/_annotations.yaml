@@ -197,9 +197,13 @@ rules:
       and a user-held owner or approved operator (the owner of a token or
       position is not a privileged role). They are scoped to the SENTENCE, not
       the document: a "permissionless" in an unrelated sentence must not switch
-      the rule off. The engine's negation window also treats "missing",
-      "lacks" and "without" as cues, so "missing the onlyOwner modifier" -
-      a missing-access-control finding - does not fire.
+      the rule off. A separate document-level list suppresses the whole rule
+      when an unprivileged caller steals, drains, or extracts yield. "The owner
+      can set the fee" in another sentence is then context, not the attack.
+      The engine's negation window also treats "missing", "lacks" and "without"
+      as cues, so "missing the onlyOwner modifier" does not fire. "No one but
+      the admin", "nobody except the owner", and "no one other than" are
+      exclusive claims, not negations, and they still fire.
     false_positives:
       - The unknowing-admin case — a reasonable admin action with a non-obvious
         destructive second-order effect. The report mentions the admin and is
@@ -213,6 +217,12 @@ rules:
       does_not_fire: >-
         "Any caller can invoke this; unprivileged escalation is demonstrated."
     changelog:
+      - date: 2026-11-09
+        note: >-
+          "No one but the admin can" was dropped by the negation window. An
+          exclusive phrase (no one but, nobody except, no one other than) is
+          an affirmation. An unprivileged yield theft that also says the owner
+          can configure a parameter is suppressed for the whole document.
       - date: 2026-11-06
         note: >-
           "missing the onlyOwner modifier" - the opposite signal, an
@@ -231,29 +241,40 @@ rules:
       The attack only works if the attacker wins a race or if the operator fails
       to act. Front-running and delay dependencies are excluded by most
       programs, because the finding describes a competition rather than a bug.
+      A bare mention of front-running is not that finding.
     signals_note: >-
-      Signals are timing words: front-run, mempool, sandwich, race against,
-      "before the operator calls".
+      Weak signals (front-run, mempool, sandwich, race against) hold the
+      report. Strong signals escalate to a hard fail: front-run-only, depends
+      entirely on ordering, before the operator calls, operator delay. An
+      unprivileged yield theft that mentions front-running is suppressed, not
+      held and not killed.
     escape_hatches: >-
-      Two kinds of suppression. Atomicity - an atomic single-transaction path,
-      a flash loan, or "same transaction" - removes the race, which is the whole
-      reason the exclusion applied. A missing slippage or deadline check
-      ("slippage", a minimum-amount-out, "deadline") is a code defect that a
+      Two kinds of suppression, plus a document-level one. Atomicity - an atomic
+      single-transaction path, a flash loan, or "same transaction" - removes
+      the race. A missing slippage or deadline check is a code defect that a
       sandwich merely exploits, and programs pay it, so it suppresses the rule
-      too.
+      too. An unprivileged caller stealing or extracting yield suppresses the
+      rule even when front-running is also mentioned.
     false_positives:
       - A finding that is atomic but describes the atomic path in a way the
         patterns do not phrase as one transaction.
       - A private-mempool or builder scenario where front-running is not
         available to an outsider but the ordering bug is still real.
       - A report where "front-run" appears in a mitigation note rather than in
-        the attack path.
+        the attack path. That now holds instead of killing, and it is still a
+        false hold.
     examples:
       fires: >-
-        "The attacker front-runs the operator's update call."
+        "The attack is front-run-only. The operator delay is the whole path."
       does_not_fire: >-
-        "The attack is atomic in one transaction via a flash loan."
+        "An unprivileged user steals the pending yield. A searcher can front-run the harvest."
     changelog:
+      - date: 2026-11-09
+        note: >-
+          Base verdict is soft. Hard requires a strong form (front-run-only,
+          operator delay, before the operator acts). An unprivileged yield
+          theft that mentions front-running does not fire. On the 0.6.0 bench,
+          7 of 19 paid hard kills were this rule.
       - date: 2026-11-06
         note: >-
           A missing-slippage finding was hard-killed as front-run-only. Slippage,
@@ -419,16 +440,21 @@ rules:
       prior audit was not read, which is worse than not submitting.
     signals_note: >-
       Signals are admission phrases: "previously reported", "already known",
-      "known issue", "documented as intended", "same root cause as", "accepted
-      as <name> issue", or an issue id (H-1, M-01, L-3) sitting next to one of
-      those admissions. A bare mention of "prior audit" is deliberately NOT a
-      signal, because "the prior audit missed this" is the opposite claim. A
-      bare issue id is not a signal either: drafts number their own findings.
-      Firm names are not listed. "accepted as <name> issue" matches every venue
-      without naming one, and a shipped rule that names one venue is a
-      disclosure. The rule still fires only on the report's own words, which is
-      why it cannot find the duplicate the report does not mention. That case
-      is the index behind --index, not this rule.
+      "already been reported", "previously disclosed", "acknowledged as a known
+      issue", "known issue", "documented as intended", "same root cause as",
+      "accepted as <name> issue", or an issue id (H-1, M-01, L-3) sitting next
+      to one of those admissions. A bare mention of "prior audit" is
+      deliberately NOT a signal, because "the prior audit missed this" is the
+      opposite claim. A bare issue id is not a signal either: drafts number
+      their own findings. Firm names are not listed. "accepted as <name> issue"
+      matches every venue without naming one, and a shipped rule that names one
+      venue is a disclosure. The rule still fires only on the report's own
+      words, which is why it cannot find the duplicate the report does not
+      mention. That case is the index behind --index, not this rule. On the
+      0.6.0 public bench this rule fired zero times: judged writeups do not
+      contain these admissions. Widening it to "prior audit" would kill the
+      finding that says the prior audit missed the bug. That trade was checked
+      and kept.
     escape_hatches: >-
       Suppression is sentence-scoped. "no prior audit of module A" does not
       hide "same root cause as issue M-1" in a later sentence. In the matching
@@ -450,6 +476,11 @@ rules:
         "No prior audit covers this module; the surface is new since the last
         review."
     changelog:
+      - date: 2026-11-09
+        note: >-
+          "already been reported", "previously disclosed", and "acknowledged as
+          a known issue" were added. The 0.6.0 bench still showed zero fires;
+          judged text does not admit these phrases. "prior audit" stays out.
       - date: 2026-11-09
         note: >-
           Same-root-cause admissions, "accepted as <name> issue", and issue ids
@@ -911,22 +942,34 @@ rules:
       tier comes from. Self-assigned severity is how a real Medium becomes a
       claimed High.
     signals_note: >-
-      Structural. A "severity rule" label, or a quotation that contains both a
-      tier word and a reward or impact word, satisfies it. "Suggested severity:
-      High" with no quotation is weak. Weight is 0.
+      Structural, and opt-in (`vg check --severity-notes`). It fires only when
+      a tier is asserted and neither a quoted program sentence nor a
+      severity-matrix row is present ("direct theft of user funds", "permanent
+      freezing of funds", and the other rows in the matcher). A report that
+      never names a tier does not fire. On the 0.6.0 bench the old check fired
+      on every item, because both the missing-tier branch and a quote pattern
+      contest writeups do not use were always true. Weight is 0. Default
+      `vg check` does not run it.
     escape_hatches: >-
-      finding.yaml severity_rule_quoted, non-empty, suppresses the note. The
-      field is the author's copy of the program text; the tool does not check
-      it against a live page.
+      finding.yaml severity_rule_quoted, non-empty, suppresses the note when
+      the note is enabled. The field is the author's copy of the program text;
+      the tool does not check it against a live page. A matrix sentence in the
+      prose also satisfies the check. Passing nothing leaves the note off.
     false_positives:
       - A quotation of a tier from a different program.
-      - A severity table pasted without the quote marks this pattern looks for.
-      - A report that quotes the rule in an image.
+      - A severity table pasted as an image.
+      - A report that names a tier and describes the impact without using a
+        matrix row this matcher knows.
     examples:
       fires: >-
         "Suggested severity: High."
       does_not_fire: >-
-        "Severity rule: \"High: direct theft of user funds from the protocol\"."
+        "Severity: High. The impact is direct theft of user funds."
     changelog:
+      - date: 2026-11-09
+        note: >-
+          Demoted to opt-in. The missing-tier branch was removed. An unquoted
+          severity-matrix row now satisfies the check. The 0.6.0 bench fired
+          this note on 340 of 340 reports.
       - date: 2026-11-09
         note: "Added with P23. Quoting a tier label is not quoting the rule."

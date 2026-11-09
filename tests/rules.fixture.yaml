@@ -273,3 +273,55 @@ cases:
     regression: "# Permanent fund lock in the validator\n\nThe headline claims a total loss of funds.\n\n## Proof of concept\n\nThe call reverts for the attacker, but the committed storage slot keeps the funds stranded after the call returns.\n"
     regression_expect: fires
     regression_verdict: warn
+
+  # ------------------------------------------------- 0.7.0 gate-review regressions
+
+  - rule: P2
+    fires: "No one but the admin can call setParams() and redirect the fees."
+    suppressed: "The owner can set the fee. An unprivileged user steals the pending yield by donating before harvest."
+    # REPRODUCED: the 6-token negation window treated "No one but the admin can"
+    # as a denial, so a privileged-only theft scored as if P2 had not fired.
+    regression: "No one but the admin can call setParams() and take the funds."
+    regression_expect: fires
+    regression_verdict: hard
+
+  - rule: P2
+    fires: "Only the owner can rotate the oracle."
+    suppressed: "Any caller can invoke this; unprivileged escalation is demonstrated."
+    # REPRODUCED: an unprivileged yield theft was killed for mentioning that the
+    # owner can configure a parameter. The profit path is the finding.
+    regression: "The owner can set the fee in the config. An unprivileged user steals the pending yield."
+    regression_expect: silent
+
+  - rule: P3
+    fires: "The attack is front-run-only and depends entirely on ordering."
+    suppressed: "The attack is atomic in one transaction via a flash loan."
+    # REPRODUCED: mentioning front-running inside an unprivileged yield theft
+    # was a hard kill. A bare front-run, with no "only" and no operator delay,
+    # is a hold, not a kill.
+    regression: "The owner can set the fee. An unprivileged user steals the pending yield. A searcher can front-run the harvest."
+    regression_expect: silent
+
+  - rule: P3
+    fires: "Before the operator acts, a bot can front-run the call."
+    suppressed: "There is no front-run exposure in this path."
+    regression: "The attacker front-runs the operator's update call."
+    regression_expect: fires
+    regression_verdict: soft
+
+  - rule: P18
+    fires: "This has already been reported to the team and acknowledged as a known issue."
+    suppressed: "The prior audit missed this path entirely; it did not cover this module."
+    # The 0.6.0 bench fired P18 zero times. "already been reported" was not in
+    # the pattern list ("already reported" does not span "been"). Judged bodies
+    # still rarely admit this. The fixture is the admission, not a recall claim.
+    regression: "This bug has already been reported in the previous contest."
+    regression_expect: fires
+
+  - rule: P26
+    fires: "Suggested severity: High."
+    suppressed: "Severity: High. The impact is direct theft of user funds."
+    # REPRODUCED: the missing-tier branch fired on every report that did not
+    # assert a severity, which is why the note was true of the whole bench.
+    regression: "An unprivileged attacker drains 4 tokens. Preconditions: the vault holds funds. The victim depositor must withdraw. No tier label is stated."
+    regression_expect: silent

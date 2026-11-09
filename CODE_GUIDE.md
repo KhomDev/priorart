@@ -352,20 +352,19 @@ and 12 carry `origin_rows: 0` with `evidence: none`.
 
 ## 7 The gate catalog
 
-[rules/gates.yaml](rules/gates.yaml) is 286 lines declaring **8 gates: G1-G7 plus
-D1** - asserted by `gates_are_eight_and_well_formed`
-([tests/rules_test.rs](tests/rules_test.rs) line 186), which also requires every
-gate to declare at least one named check (25 checks in total across the eight
-gates) and D1 to set `implemented_by: "--known-issues"` (line 203). The header
-(lines 32-47) pins the shared gate vocabulary with the rejection-taxonomy
-repository, so no id may mean two things across the two repositories.
-
-Weights: G1 40, G2 35, G3 30, G4 30, G5 25, G6 20, G7 30, D1 0. These are shown
-by `vg gates --verbose` and never subtracted from the score (header, lines
-15-17). `origin_rows`: G1 5, G2 20, G3 4, G4 7, G5 1, G6 0, G7 12, D1 41.
-G6 declares `evidence: none` with an inline note (lines 211-213) - no rejection
-in the author's log is attributed to fork provenance; `gate_evidence_is_declared`
-([tests/rules_test.rs](tests/rules_test.rs) line 231) pins that honesty. D1's 41
+[rules/gates.yaml](rules/gates.yaml) declares **9 gates: G1–G7, D1, and A1**.
+G1–G7 and D1 are the ids shared with rejection-taxonomy. A1 is local to this
+repository: it opens the target tree (`--target`, `--commit`) and is not an
+`earliest_gate` id. `gates_are_nine_and_well_formed` in
+[tests/rules_test.rs](tests/rules_test.rs) requires every gate to declare at
+least one named check, and D1 to set `implemented_by: "--known-issues"`.
+A1 sets `implemented_by: "--target"`. Gate weights are shown by
+`vg gates --verbose` and are not themselves subtracted from the score. A failed
+citation is also a weighted `CITE` finding, so that one failure does move the
+score. `origin_rows`: G1 5, G2 20, G3 4, G4 7, G5 1, G6 0, G7 12, D1 41, A1 0.
+G6 and A1 declare `evidence: none`. `gate_evidence_is_declared`
+([tests/rules_test.rs](tests/rules_test.rs)) pins that honesty for a gate with
+no rows. D1's 41
 rows are "a count of rejections, NOT a measure of this matcher" (comment, lines
 270-273), and the D1 entry carries the honest status note (lines 257-259): recall
 was 11-14% at 40-50% cross-fire in the author's test, and it cannot catch a

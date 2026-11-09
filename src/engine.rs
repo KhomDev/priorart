@@ -18,7 +18,10 @@
 //!    in a slightly wider window ("rather than", "instead of", "as opposed to")
 //!    negates what follows it, which a single-token cue cannot see. An
 //!    immediately preceding "non" negates a hyphenated form ("non-best-practice").
-//!    Rules that already handle negation through none_of set negation_aware: false.
+//!    An exclusive phrase in that same window ("no one but", "nobody except",
+//!    "no one other than") is NOT a negation: it says only the following thing
+//!    holds. Rules that already handle negation through none_of set
+//!    negation_aware: false.
 //! 4. Every fire reports the matched snippet AND its sentence, so the user can
 //!    see exactly what the tool reacted to and argue with it.
 //!
@@ -70,6 +73,7 @@ pub struct CompiledRule {
     none_of: Vec<Regex>,
     escalate_on: Vec<Regex>,
     downgrade_on: Vec<Regex>,
+    suppress_document: Vec<Regex>,
 }
 
 #[derive(Debug)]
@@ -121,6 +125,7 @@ impl CompiledRule {
         let none_of = compile(&rule.id, &rule.none_of)?;
         let escalate_on = compile(&rule.id, &rule.escalate_on)?;
         let downgrade_on = compile(&rule.id, &rule.downgrade_on)?;
+        let suppress_document = compile(&rule.id, &rule.suppress_document)?;
         Ok(Self {
             rule,
             any_of,
@@ -128,6 +133,7 @@ impl CompiledRule {
             none_of,
             escalate_on,
             downgrade_on,
+            suppress_document,
         })
     }
 
@@ -143,6 +149,19 @@ impl CompiledRule {
         }
 
         let sections = split_sections(text);
+
+        // Document-level suppression. Unlike sentence-scoped none_of, one
+        // sentence that demonstrates an unprivileged profit path drops the
+        // rule even when the privileged word is in a different sentence.
+        if self.suppress_document.iter().any(|re| {
+            sections.iter().any(|section| {
+                section.sentences.iter().any(|sentence| {
+                    find_unnegated(re, sentence, self.rule.negation_aware).is_some()
+                })
+            })
+        }) {
+            return None;
+        }
 
         // Document-scoped escape hatch. A none_of hit anywhere suppresses the
         // rule, unless the rule scopes suppression to the sentence.
@@ -489,6 +508,13 @@ fn is_negated(sentence: &str, at: usize) -> bool {
     if tokens.last().is_some_and(|t| t == "non") {
         return true;
     }
+    // "No one but the admin can" is an exclusive claim, not a denial. The
+    // cue "no" and the phrase "other than" both sit in front of "admin can",
+    // and treating them as negation hid the privilege.
+    let phrase_at = tokens.len().saturating_sub(NEGATION_PHRASE_WINDOW);
+    if exclusive_affirmation(&tokens[phrase_at..]) {
+        return false;
+    }
     let cue_at = tokens.len().saturating_sub(NEGATION_WINDOW);
     if tokens[cue_at..]
         .iter()
@@ -496,9 +522,48 @@ fn is_negated(sentence: &str, at: usize) -> bool {
     {
         return true;
     }
-    let phrase_at = tokens.len().saturating_sub(NEGATION_PHRASE_WINDOW);
     let joined = tokens[phrase_at..].join(" ");
     NEGATION_PHRASES.iter().any(|p| joined.contains(p))
+}
+
+/// "no one but", "nobody except", "nothing other than", "no user but".
+/// The words select the match; they do not deny it.
+fn exclusive_affirmation(tokens: &[String]) -> bool {
+    let n = tokens.len();
+    for i in 0..n {
+        // "no one but", "no user but", "no one other than". The word after
+        // "no" is the thing being excluded, not a negation of the match.
+        if tokens[i] == "no"
+            && i + 1 < n
+            && !NEGATION_CUES.contains(&tokens[i + 1].as_str())
+            && exclusive_tail(&tokens[i + 2..])
+        {
+            return true;
+        }
+        if matches!(tokens[i].as_str(), "nobody" | "nothing" | "none" | "noone")
+            && exclusive_tail(&tokens[i + 1..])
+        {
+            return true;
+        }
+    }
+    false
+}
+
+fn exclusive_tail(tokens: &[String]) -> bool {
+    match tokens {
+        [t, ..] if t == "but" || t == "except" => true,
+        [a, b, ..] if a == "other" && b == "than" => true,
+        _ => false,
+    }
+}
+
+/// A catalog id (`P2`, `P26`). Known-issue ids (`KI:`) and the citation anchor
+/// (`CITE`) are structured facts, not claim heuristics.
+pub fn claim_heuristic(rule_id: &str) -> bool {
+    let Some(rest) = rule_id.strip_prefix('P') else {
+        return false;
+    };
+    !rest.is_empty() && rest.chars().all(|c| c.is_ascii_digit())
 }
 
 /// Collapse whitespace, drop control characters, and cap the length, so a
@@ -622,12 +687,26 @@ fn p19(text: &str) -> Option<Match> {
 
 // ---------------------------------------------------------------- evaluate
 
-/// Run every rule against the finding text.
+/// Run every default rule against the finding text.
+///
+/// Opt-in rules (P26) are skipped. Pass `evaluate_with(..., true)` to run them.
 pub fn evaluate(rules: &[CompiledRule], text: &str) -> (Vec<Finding>, Vec<String>) {
+    evaluate_with(rules, text, false)
+}
+
+/// Run the catalog. `include_opt_in` turns on rules with `default_emit: false`.
+pub fn evaluate_with(
+    rules: &[CompiledRule],
+    text: &str,
+    include_opt_in: bool,
+) -> (Vec<Finding>, Vec<String>) {
     let mut findings = Vec::new();
     let mut passed = Vec::new();
 
     for cr in rules {
+        if !cr.rule.default_emit && !include_opt_in {
+            continue;
+        }
         match cr.matches(text) {
             Some(m) => findings.push(Finding {
                 rule: cr.rule.id.clone(),
@@ -665,12 +744,33 @@ pub fn evaluate(rules: &[CompiledRule], text: &str) -> (Vec<Finding>, Vec<String
 /// The score is 100 minus the hand-set weights of the fired rules, clamped to
 /// 0..=100. It is an UNCALIBRATED HEURISTIC and not a probability. Gates do NOT
 /// deduct from it; a failed gate holds the finding and an unknown one makes the
-/// outcome INCOMPLETE instead.
+/// outcome INCOMPLETE instead. The citation anchor is the exception that still
+/// deducts: a missing file or line is emitted as a weighted hard finding, not
+/// only as a gate, so a fabricated citation cannot score 100.
+///
+/// `funnel` rewrites claim-heuristic hard rules (the P-ids) to ROUTE-TO-VERIFY.
+/// A known-issue match (`KI:`) and a failed citation (`CITE`) stay KILL.
 pub fn outcome(findings: &[Finding], gates: &[GateOutcome], threshold: u32) -> (Outcome, u32) {
+    decide(findings, gates, threshold, false)
+}
+
+/// Same decision as [`outcome`], with `--funnel` selecting ROUTE-TO-VERIFY for
+/// claim-heuristic hard rules.
+pub fn decide(
+    findings: &[Finding],
+    gates: &[GateOutcome],
+    threshold: u32,
+    funnel: bool,
+) -> (Outcome, u32) {
     let deducted: u64 = findings.iter().map(|f| u64::from(f.weight)).sum();
     let score = 100u64.saturating_sub(deducted) as u32;
 
-    let has_hard = findings.iter().any(|f| f.verdict == Verdict::Hard);
+    let structured_hard = findings
+        .iter()
+        .any(|f| f.verdict == Verdict::Hard && !claim_heuristic(&f.rule));
+    let heuristic_hard = findings
+        .iter()
+        .any(|f| f.verdict == Verdict::Hard && claim_heuristic(&f.rule));
     let has_soft = findings.iter().any(|f| f.verdict == Verdict::Soft);
     let has_weighted_warn = findings
         .iter()
@@ -681,7 +781,11 @@ pub fn outcome(findings: &[Finding], gates: &[GateOutcome], threshold: u32) -> (
     let gate_failed = gates.iter().any(|g| g.status == GateStatus::Fail);
     let gate_unknown = gates.iter().any(|g| g.status == GateStatus::Unknown);
 
-    let outcome = if has_hard {
+    let outcome = if structured_hard {
+        Outcome::Kill
+    } else if funnel && heuristic_hard {
+        Outcome::Route
+    } else if heuristic_hard {
         Outcome::Kill
     } else if has_soft || gate_failed || score < threshold {
         Outcome::Hold
@@ -835,6 +939,17 @@ pub struct GateInputs<'a> {
     /// or instead of, the regex corpus.
     pub index: Option<&'a [IndexedFinding]>,
     pub finding: Option<&'a str>,
+    /// Citation anchor, already computed against `--target` / `--commit`.
+    /// None means no target was supplied.
+    pub anchor: Option<AnchorGate<'a>>,
+}
+
+/// The citation-anchor result the gate printer shows. The weighted finding,
+/// when there is one, is attached by the caller so the score moves.
+#[derive(Clone, Copy)]
+pub struct AnchorGate<'a> {
+    pub status: GateStatus,
+    pub detail: &'a str,
 }
 
 /// The ledger entry a gate should read.
@@ -897,6 +1012,16 @@ fn program_unavailable(p: &Program<'_>, what: &str) -> Option<(GateStatus, Strin
     }
 }
 
+fn gate_anchor(anchor: Option<AnchorGate<'_>>) -> (GateStatus, String) {
+    match anchor {
+        None => (
+            GateStatus::Unknown,
+            "no target tree supplied - cited files were not opened. Unknown is not a pass".into(),
+        ),
+        Some(a) => (a.status, a.detail.to_string()),
+    }
+}
+
 /// Evaluate the pre-hunt gates from whatever inputs were supplied.
 ///
 /// A gate whose input is missing reports Unknown, never Pass. Unknown is not
@@ -916,6 +1041,7 @@ pub fn evaluate_gates(gates: &[Gate], inp: &GateInputs<'_>) -> Vec<GateOutcome> 
                 "G6" => gate_fork(inp.fork_of),
                 "G7" => gate_own_history(inp.own_log, inp.finding),
                 "D1" => gate_known_issues(inp.known_issues, inp.index, inp.finding),
+                "A1" => gate_anchor(inp.anchor),
                 _ => (GateStatus::Unknown, "unrecognised gate".to_string()),
             };
             GateOutcome {
@@ -1964,6 +2090,8 @@ mod tests {
             last_validated: None,
             fp_rate: None,
             negation_aware: true,
+            suppress_document: vec![],
+            default_emit: true,
         })
         .unwrap()
     }
@@ -2021,6 +2149,50 @@ mod tests {
         assert!(r
             .matches("Front-run, but atomic in one transaction.")
             .is_none());
+    }
+
+    #[test]
+    fn no_one_but_the_admin_is_an_affirmation_not_a_negation() {
+        let r = rule(
+            "P2",
+            Verdict::Hard,
+            &["(admin|owner|guardian) (can|may)"],
+            &[],
+        );
+        assert!(
+            r.matches("No one but the admin can call setParams().")
+                .is_some(),
+            "exclusive admin claim must fire"
+        );
+        assert!(r
+            .matches("No one other than the owner can call setParams().")
+            .is_some());
+        assert!(r
+            .matches("Nobody except the guardian can call setParams().")
+            .is_some());
+        assert!(
+            r.matches("There is no admin can-call in this path.")
+                .is_none(),
+            "a real denial must stay silent"
+        );
+        assert!(r
+            .matches("This is rather than an admin can call it.")
+            .is_none());
+    }
+
+    #[test]
+    fn funnel_routes_a_claim_heuristic_and_still_kills_a_structured_hard_fail() {
+        let mut heuristic = finding(Verdict::Hard, 40);
+        heuristic.rule = "P2".into();
+        let (routed, score) = decide(std::slice::from_ref(&heuristic), &[], 50, true);
+        assert_eq!(routed, Outcome::Route);
+        assert_eq!(score, 60);
+        let mut structured = finding(Verdict::Hard, 40);
+        structured.rule = "CITE".into();
+        let (killed, _) = decide(std::slice::from_ref(&structured), &[], 50, true);
+        assert_eq!(killed, Outcome::Kill);
+        let (plain, _) = decide(std::slice::from_ref(&heuristic), &[], 50, false);
+        assert_eq!(plain, Outcome::Kill);
     }
 
     #[test]
@@ -2336,6 +2508,7 @@ mod tests {
             Outcome::Note,
             Outcome::Incomplete,
             Outcome::Clear,
+            Outcome::Route,
         ] {
             assert_ne!(o.word(), "SUBMIT");
         }
@@ -2345,7 +2518,7 @@ mod tests {
 
     #[test]
     fn every_gate_reports_unknown_not_pass_without_input() {
-        for id in ["G1", "G2", "G3", "G4", "G5", "G6", "G7", "D1"] {
+        for id in ["G1", "G2", "G3", "G4", "G5", "G6", "G7", "D1", "A1"] {
             assert_eq!(
                 one(id, GateInputs::default()).status,
                 GateStatus::Unknown,

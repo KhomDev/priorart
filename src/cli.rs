@@ -115,6 +115,16 @@ struct TargetArgs {
     /// probable repeats of a family you already submitted.
     #[arg(long)]
     log: Option<PathBuf>,
+
+    /// Target source tree. Gate A1 opens it and checks cited files, lines, and
+    /// functions. Without it those citations are not read.
+    #[arg(long, value_name = "DIR")]
+    target: Option<PathBuf>,
+
+    /// Audited commit, as a hex SHA. A1 does not pass without this pin. The
+    /// files are read from the commit, not from a dirty working tree.
+    #[arg(long, value_name = "SHA")]
+    commit: Option<String>,
 }
 
 #[derive(Subcommand)]
@@ -138,9 +148,21 @@ enum Command {
         #[arg(long)]
         table: bool,
 
-        /// Exit non-zero when any outcome is KILL
+        /// Exit non-zero when any outcome is KILL. ROUTE-TO-VERIFY does not
+        /// trip this; that outcome is a verification question.
         #[arg(long)]
         fail_on_kill: bool,
+
+        /// Audit-operator funnel. Claim-heuristic hard rules (P1–P26) become
+        /// ROUTE-TO-VERIFY instead of KILL. A known-issue match and a failed
+        /// citation anchor stay KILL.
+        #[arg(long)]
+        funnel: bool,
+
+        /// Run opt-in notes. P26 is opt-in because it fired on every report
+        /// in the public bench and carried no signal.
+        #[arg(long)]
+        severity_notes: bool,
 
         #[command(flatten)]
         target: TargetArgs,
@@ -314,6 +336,7 @@ fn emit(s: &str) {
 fn load_rules(dir: Option<&Path>) -> Result<(Vec<CompiledRule>, Vec<Gate>), String> {
     let (ap_text, gate_text) = match dir {
         Some(d) => {
+            reject_flag_shaped("--rules", &d.to_string_lossy())?;
             let ap = std::fs::read_to_string(d.join("anti-patterns.yaml"))
                 .map_err(|e| format!("cannot read {}/anti-patterns.yaml: {e}", d.display()))?;
             let g = std::fs::read_to_string(d.join("gates.yaml"))
@@ -363,6 +386,23 @@ fn read_text(path: &str) -> Result<String, String> {
     }
     let text = std::fs::read_to_string(path).map_err(|e| format!("cannot read {path}: {e}"))?;
     Ok(strip_bom(text))
+}
+
+/// A path or id that starts with `-` is an option, not a value. Agents that
+/// splice a model-controlled string into argv will otherwise turn `--skip` or
+/// `--rules` into a flag. Stdin stays available as the single argument `-`.
+fn reject_flag_shaped(flag: &str, value: &str) -> Result<(), String> {
+    if value.starts_with('-') {
+        return Err(format!(
+            "{flag} value {value:?} starts with '-'. A path, commit, or id is not an option. \
+             Pass '--' before positional findings. This is what stops a crafted path from \
+             selecting flags the caller did not mean to set."
+        ));
+    }
+    if value.chars().any(|c| c.is_control()) {
+        return Err(format!("{flag} value contains a control character"));
+    }
+    Ok(())
 }
 
 /// Strip a UTF-8 BOM. Windows editors add one, and it corrupts the first
@@ -509,6 +549,8 @@ struct Target {
     known: Option<Vec<KnownIssue>>,
     index: Option<Vec<IndexedFinding>>,
     log: Option<Vec<LogEntry>>,
+    root: Option<PathBuf>,
+    commit: Option<String>,
 }
 
 impl Target {
@@ -530,6 +572,34 @@ impl Target {
                     format!("--severity {s:?}: use critical, high, medium or low")
                 })?),
             };
+        if let Some(dir) = &a.target {
+            reject_flag_shaped("--target", &dir.to_string_lossy())?;
+        }
+        if let Some(commit) = &a.commit {
+            reject_flag_shaped("--commit", commit)?;
+            if a.target.is_none() {
+                return Err("--commit needs --target".into());
+            }
+        }
+        for (flag, path) in [
+            ("--ledger", &a.ledger),
+            ("--scope", &a.scope),
+            ("--prior-audits", &a.prior_audits),
+            ("--tests", &a.tests),
+            ("--known-issues", &a.known_issues),
+            ("--index", &a.index),
+            ("--log", &a.log),
+        ] {
+            if let Some(p) = path {
+                reject_flag_shaped(flag, &p.to_string_lossy())?;
+            }
+        }
+        if let Some(id) = &a.program {
+            reject_flag_shaped("--program", id)?;
+        }
+        if let Some(fork) = &a.fork_of {
+            reject_flag_shaped("--fork-of", fork)?;
+        }
         Ok(Self {
             ledger,
             program: a.program.clone(),
@@ -541,10 +611,16 @@ impl Target {
             known: read_known_issues(&a.known_issues)?,
             index: read_index(&a.index)?,
             log: read_log(&a.log)?,
+            root: a.target.clone(),
+            commit: a.commit.clone(),
         })
     }
 
-    fn inputs<'a>(&'a self, finding: Option<&'a str>) -> GateInputs<'a> {
+    fn inputs<'a>(
+        &'a self,
+        finding: Option<&'a str>,
+        anchor: Option<engine::AnchorGate<'a>>,
+    ) -> GateInputs<'a> {
         GateInputs {
             ledger: self.ledger.as_deref(),
             program: self.program.as_deref(),
@@ -557,8 +633,15 @@ impl Target {
             known_issues: self.known.as_deref(),
             index: self.index.as_deref(),
             finding,
+            anchor,
         }
     }
+}
+
+struct CheckMode {
+    threshold: u32,
+    funnel: bool,
+    severity_notes: bool,
 }
 
 fn build_report(
@@ -566,11 +649,15 @@ fn build_report(
     text: &str,
     rules: &[CompiledRule],
     gates: &[Gate],
-    threshold: u32,
     target: &Target,
     manifest: Option<&FindingManifest>,
-) -> Report {
-    let (mut findings, mut passed) = engine::evaluate(rules, text);
+    mode: CheckMode,
+) -> Result<Report, String> {
+    let anchor =
+        crate::anchor::assess_tree(text, target.root.as_deref(), target.commit.as_deref())?;
+    let anchor_status = anchor.status;
+    let anchor_detail = anchor.detail.clone();
+    let (mut findings, mut passed) = engine::evaluate_with(rules, text, mode.severity_notes);
 
     let mut ki_warnings: Vec<String> = Vec::new();
     if let Some(m) = manifest {
@@ -644,6 +731,9 @@ fn build_report(
         ki_warnings = warnings;
         findings.extend(ki_findings);
     }
+    if let Some(cite) = anchor.finding {
+        findings.push(cite);
+    }
     // Hard fails first, then by weight, so the worst problem reads first.
     findings.sort_by(|a, b| {
         let rank = |v: Verdict| match v {
@@ -656,21 +746,28 @@ fn build_report(
             .then(b.weight.cmp(&a.weight))
     });
 
-    let gate_outcomes = engine::evaluate_gates(gates, &target.inputs(Some(text)));
-    let (outcome, viability_score) = engine::outcome(&findings, &gate_outcomes, threshold);
-    Report {
+    let anchor_gate = engine::AnchorGate {
+        status: anchor_status,
+        detail: &anchor_detail,
+    };
+    let gate_outcomes =
+        engine::evaluate_gates(gates, &target.inputs(Some(text), Some(anchor_gate)));
+    let (outcome, viability_score) =
+        engine::decide(&findings, &gate_outcomes, mode.threshold, mode.funnel);
+    Ok(Report {
         tool: "viability-gate".into(),
         version: VERSION.into(),
         subject,
         outcome,
         viability_score,
-        threshold,
+        threshold: mode.threshold,
         findings,
         passed,
         gates: gate_outcomes,
         disclaimer: DISCLAIMER.into(),
         warnings: ki_warnings,
-    }
+        funnel: mode.funnel,
+    })
 }
 
 fn run(cli: Cli) -> Result<ExitCode, String> {
@@ -685,7 +782,11 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             finding,
             index,
             json,
-        } => return run_match(finding, index, *json),
+        } => {
+            reject_flag_shaped("finding", &finding.to_string_lossy())?;
+            reject_flag_shaped("--index", &index.to_string_lossy())?;
+            return run_match(finding, index, *json);
+        }
         _ => {}
     }
 
@@ -724,6 +825,13 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             labels,
             json,
         } => {
+            reject_flag_shaped("--rejected", &rejected.to_string_lossy())?;
+            if let Some(d) = &accepted {
+                reject_flag_shaped("--accepted", &d.to_string_lossy())?;
+            }
+            if let Some(p) = &labels {
+                reject_flag_shaped("--labels", &p.to_string_lossy())?;
+            }
             let rejected_findings = read_findings_dir(&rejected)?;
             let accepted_findings = match &accepted {
                 Some(d) => read_findings_dir(d)?,
@@ -751,10 +859,25 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
         } => {
             let target = Target::read(&target)?;
             let finding_text = match &finding {
-                Some(path) => Some(read_text(&path.display().to_string())?),
+                Some(path) => {
+                    reject_flag_shaped("--finding", &path.to_string_lossy())?;
+                    Some(read_text(&path.display().to_string())?)
+                }
                 None => None,
             };
-            let outcomes = engine::evaluate_gates(&gates, &target.inputs(finding_text.as_deref()));
+            let anchor = crate::anchor::assess_tree(
+                finding_text.as_deref().unwrap_or(""),
+                target.root.as_deref(),
+                target.commit.as_deref(),
+            )?;
+            let anchor_gate = engine::AnchorGate {
+                status: anchor.status,
+                detail: &anchor.detail,
+            };
+            let outcomes = engine::evaluate_gates(
+                &gates,
+                &target.inputs(finding_text.as_deref(), Some(anchor_gate)),
+            );
             if json {
                 println!(
                     "{}",
@@ -789,10 +912,17 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             min_score,
             table,
             fail_on_kill,
+            funnel,
+            severity_notes,
             target,
         } => {
             if findings.iter().filter(|f| f.as_str() == "-").count() > 1 {
                 return Err("stdin (-) can be read only once".into());
+            }
+            for finding in &findings {
+                if finding != "-" {
+                    reject_flag_shaped("finding", finding)?;
+                }
             }
             let target = Target::read(&target)?;
             let mut reports = Vec::new();
@@ -807,10 +937,14 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
                     &text,
                     &rules,
                     &gates,
-                    min_score,
                     &target,
                     manifest.as_ref(),
-                ));
+                    CheckMode {
+                        threshold: min_score,
+                        funnel,
+                        severity_notes,
+                    },
+                )?);
             }
 
             if json {

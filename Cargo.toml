@@ -1,6 +1,6 @@
 [package]
 name = "viability-gate"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2021"
 description = "Offline, deterministic pre-submission checker for smart-contract audit findings. Heuristic, in-sample calibrated."
 license = "MIT"

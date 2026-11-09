@@ -165,6 +165,15 @@ pub struct Rule {
     /// mechanisms do not fight each other.
     #[serde(default = "default_true")]
     pub negation_aware: bool,
+    /// Patterns that suppress the rule from any sentence, even when `none_of`
+    /// is sentence-scoped. An unprivileged profit path is the attack; a
+    /// privileged word in another sentence is context.
+    #[serde(default)]
+    pub suppress_document: Vec<String>,
+    /// When false, `evaluate` skips the rule unless the caller opts in.
+    /// P26 is opt-in: it fired on every item of the public bench.
+    #[serde(default = "default_true")]
+    pub default_emit: bool,
 }
 
 fn default_true() -> bool {
@@ -214,6 +223,11 @@ pub enum Outcome {
     Incomplete,
     /// Nothing fired, no gate failed, and every gate ran.
     Clear,
+    /// A claim-heuristic hard rule fired while `--funnel` was set. The finding
+    /// is a verification question, not a kill. Structured hard failures
+    /// (known-issue match, citation anchor) stay `Kill`.
+    #[serde(rename = "ROUTE-TO-VERIFY")]
+    Route,
 }
 
 impl Outcome {
@@ -224,6 +238,7 @@ impl Outcome {
             Outcome::Note => "NOTE",
             Outcome::Incomplete => "INCOMPLETE",
             Outcome::Clear => "CLEAR",
+            Outcome::Route => "ROUTE-TO-VERIFY",
         }
     }
 
@@ -239,6 +254,9 @@ impl Outcome {
                 "No known blocker found, but at least one gate could not run. Unknown is not pass."
             }
             Outcome::Clear => "No known blocker found by this tool. That is all it means.",
+            Outcome::Route => {
+                "A claim-heuristic hard rule fired. Funnel mode routes it to verification instead of killing it. This is not a clearance."
+            }
         }
     }
 }
@@ -651,4 +669,7 @@ pub struct Report {
     pub disclaimer: String,
     /// Non-fatal problems with the supplied inputs.
     pub warnings: Vec<String>,
+    /// True when `--funnel` routed claim-heuristic hard rules to
+    /// ROUTE-TO-VERIFY instead of KILL.
+    pub funnel: bool,
 }

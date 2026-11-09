@@ -1,25 +1,25 @@
 {
   "paid_n": 220,
-  "paid_any_hard": 19,
-  "paid_hard_rate": 0.0864,
+  "paid_any_hard": 12,
+  "paid_hard_rate": 0.0545,
   "paid_any_fire": 220,
   "invalid_wontfix_n": 120,
-  "invalid_wontfix_any_hard": 19,
-  "invalid_wontfix_hard_rate": 0.1583,
+  "invalid_wontfix_any_hard": 13,
+  "invalid_wontfix_hard_rate": 0.1083,
   "qa_n": 60,
-  "qa_any_hard": 14,
+  "qa_any_hard": 11,
   "informative_n": 60,
-  "informative_any_hard": 10,
+  "informative_any_hard": 9,
   "outcomes_paid": {
-    "HOLD": 20,
-    "KILL": 19,
+    "HOLD": 27,
+    "KILL": 12,
     "INCOMPLETE": 176,
     "NOTE": 5
   },
   "outcomes_invalid_wontfix": {
     "INCOMPLETE": 92,
-    "HOLD": 9,
-    "KILL": 19
+    "HOLD": 15,
+    "KILL": 13
   },
   "class_counts": {
     "accepted": 220,
@@ -190,28 +190,12 @@
       "informative_n": 60
     },
     {
-      "rule": "P26",
-      "paid_n": 220,
-      "paid_fires": 220,
-      "paid_hard": 0,
-      "paid_fire_rate": 1.0,
-      "paid_hard_rate": 0.0,
-      "invalid_wontfix_n": 120,
-      "invalid_wontfix_fires": 120,
-      "invalid_wontfix_fire_rate": 1.0,
-      "precision_vs_invalid_wontfix": 0.3529,
-      "qa_fires": 60,
-      "qa_n": 60,
-      "informative_fires": 60,
-      "informative_n": 60
-    },
-    {
       "rule": "P3",
       "paid_n": 220,
       "paid_fires": 7,
-      "paid_hard": 7,
+      "paid_hard": 0,
       "paid_fire_rate": 0.0318,
-      "paid_hard_rate": 0.0318,
+      "paid_hard_rate": 0.0,
       "invalid_wontfix_n": 120,
       "invalid_wontfix_fires": 7,
       "invalid_wontfix_fire_rate": 0.0583,
@@ -254,6 +238,6 @@
       "informative_n": 60
     }
   ],
-  "csv": "rule,paid_n,paid_fires,paid_hard,paid_fire_rate,paid_hard_rate,invalid_wontfix_n,invalid_wontfix_fires,invalid_wontfix_fire_rate,precision_vs_invalid_wontfix,qa_n,qa_fires,informative_n,informative_fires\nP10,220,1,0,0.0045,0.0,120,0,0.0,0.0,60,0,60,0\nP12,220,3,0,0.0136,0.0,120,1,0.0083,0.25,60,1,60,0\nP14,220,0,0,0.0,0.0,120,1,0.0083,1.0,60,0,60,0\nP15,220,1,1,0.0045,0.0045,120,2,0.0167,0.6667,60,2,60,1\nP17,220,22,0,0.1,0.0,120,9,0.075,0.2903,60,4,60,2\nP19,220,2,2,0.0091,0.0091,120,0,0.0,0.0,60,0,60,0\nP2,220,9,9,0.0409,0.0409,120,10,0.0833,0.5263,60,9,60,7\nP23,220,168,0,0.7636,0.0,120,89,0.7417,0.3463,60,53,60,51\nP24,220,214,0,0.9727,0.0,120,114,0.95,0.3476,60,60,60,57\nP25,220,187,0,0.85,0.0,120,100,0.8333,0.3484,60,59,60,58\nP26,220,220,0,1.0,0.0,120,120,1.0,0.3529,60,60,60,60\nP3,220,7,7,0.0318,0.0318,120,7,0.0583,0.5,60,3,60,1\nP4,220,4,0,0.0182,0.0,120,2,0.0167,0.3333,60,0,60,0\nP5,220,0,0,0.0,0.0,120,0,0.0,None,60,0,60,1\n",
+  "csv": "rule,paid_n,paid_fires,paid_hard,paid_fire_rate,paid_hard_rate,invalid_wontfix_n,invalid_wontfix_fires,invalid_wontfix_fire_rate,precision_vs_invalid_wontfix,qa_n,qa_fires,informative_n,informative_fires\nP10,220,1,0,0.0045,0.0,120,0,0.0,0.0,60,0,60,0\nP12,220,3,0,0.0136,0.0,120,1,0.0083,0.25,60,1,60,0\nP14,220,0,0,0.0,0.0,120,1,0.0083,1.0,60,0,60,0\nP15,220,1,1,0.0045,0.0045,120,2,0.0167,0.6667,60,2,60,1\nP17,220,22,0,0.1,0.0,120,9,0.075,0.2903,60,4,60,2\nP19,220,2,2,0.0091,0.0091,120,0,0.0,0.0,60,0,60,0\nP2,220,9,9,0.0409,0.0409,120,10,0.0833,0.5263,60,9,60,7\nP23,220,168,0,0.7636,0.0,120,89,0.7417,0.3463,60,53,60,51\nP24,220,214,0,0.9727,0.0,120,114,0.95,0.3476,60,60,60,57\nP25,220,187,0,0.85,0.0,120,100,0.8333,0.3484,60,59,60,58\nP3,220,7,0,0.0318,0.0,120,7,0.0583,0.5,60,3,60,1\nP4,220,4,0,0.0182,0.0,120,2,0.0167,0.3333,60,0,60,0\nP5,220,0,0,0.0,0.0,120,0,0.0,None,60,0,60,1\n",
   "items": 460
 }

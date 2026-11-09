@@ -220,8 +220,9 @@ pub fn rules_list(rules: &[Rule]) -> String {
             };
             out.push_str(&format!("\n{name}\n"));
         }
+        let emit = if r.default_emit { "" } else { " (opt-in)" };
         out.push_str(&format!(
-            "  {:<4} {:<9} {}\n",
+            "  {:<4} {:<9} {}{emit}\n",
             r.id,
             format!("{:?}", r.verdict).to_lowercase(),
             r.title
@@ -236,6 +237,11 @@ pub fn explain(rule: &Rule) -> String {
     out.push_str(&format!("  group     {}\n", rule.group));
     out.push_str(&format!("  verdict   {:?}\n", rule.verdict).to_lowercase());
     out.push_str(&format!("  weight    {} of 100\n", rule.weight));
+    if !rule.default_emit {
+        out.push_str(
+            "  emit      opt-in (vg check --severity-notes). Off by default: it fired on every\n            report in the public bench and was not a signal.\n",
+        );
+    }
     out.push_str(&format!(
         "  evidence  {} ({} row(s) of the author's log)\n",
         rule.evidence.label(),

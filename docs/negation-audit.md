@@ -15,7 +15,9 @@ that class.
 The single-token window stayed at 6. Widening it would also hide a real
 admission that happens to have a `not` several clauses earlier in the same
 sentence. The phrase window is wider because the phrase itself is two or three
-tokens, and the word it negates is after it.
+tokens, and the word it negates is after it. An exclusive construction inside
+that phrase window (`no one but`, `nobody except`, `no one other than`,
+`nothing but`) is not a negation: it names the only actor who can.
 
 Every catalog rule has `negation_aware: true` (the default). None of them opts
 out. The audit below is which rules that helps, and where a phrase cue can
@@ -25,7 +27,7 @@ another special case.
 | Rule | What the window does | Residual |
 |---|---|---|
 | P1 | The signals are themselves negations ("not currently exploitable"). A cue *before* that phrase suppresses the admission. "rather than not currently exploitable" is not a sentence anyone writes. | A quoted denial the author then refutes, if the refutation is not a separate sentence. |
-| P2 | "no admin can" and "rather than an admin can" do not fire. "missing the onlyOwner modifier" was already a cue. | "no one other than the admin can" is admin-gated and is suppressed, because both `no` and `other than` sit in front of `admin can`. |
+| P2 | "no admin can" and "rather than an admin can" do not fire. "missing the onlyOwner modifier" was already a cue. "No one but the admin can", "nobody except the owner", and "no one other than the guardian" are exclusive claims and DO fire. | A quoted denial the author then refutes inside the same window, if the refutation is not a separate sentence. |
 | P3 | "there is no front-run" stays silent. "rather than a front-run" stays silent. | A front-run that is named and then, more than 8 tokens later, called the real path. |
 | P4 | Contrast in front of `MockVault` drops the weak form. The strong form "instead of the real contract" starts at `instead`, so the phrase is the match, not a cue in front of it. | None new. |
 | P5 | "not outside the scope" is suppressed by `not`. | "outside the scope" of a sentence the author is quoting. |
