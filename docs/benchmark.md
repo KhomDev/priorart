@@ -2,7 +2,7 @@
 
 Re-scored 2026-11-09 with `vg` 0.7.0 on the same manifest `eval/run.py fetch` wrote for 0.6.0 (`eval/dataset.manifest.yaml` did not change). Bodies stay in `eval/cache/`, which is gitignored. This repository commits the manifest and the results, not the reports.
 
-**0.8.0 changes the consequence, not the hits.** The per-rule hits below are unchanged. Since 0.8.0 a claim-heuristic hard rule is ROUTE-TO-VERIFY by default; the hard KILL column is the `--strict` (pre-0.8.0) behaviour. The default table is in the next section. The 2026-11-10 review is why: a hard stop that is wrong 52% of the time and hits 5.5% of paid findings should not be the default.
+**0.8.0 changes the consequence, not the hits.** The per-rule hits below are unchanged. Since 0.8.0 a claim-heuristic hard rule is ROUTE-TO-VERIFY by default; the hard KILL column is the `--strict` (pre-0.8.0) behaviour. The default table is in the next section. The 2026-11-10 review is why: a hard stop that is wrong 48% of the time and hits 5.5% of paid findings should not be the default.
 
 This is one corpus of judged, human-written contest reports. It is not a property of the rules, and it is not the false-positive rate on model-written hypotheses. The author's own log has no paid findings. See [control-set.md](control-set.md).
 
@@ -51,7 +51,7 @@ A **hard KILL** is the outcome that would have stopped a submission. 0.7.0, defa
 | Code4rena QA | 60 | 11 | 18.3% | 14 (23.3%) |
 | Sherlock Low/Info | 60 | 9 | 15.0% | 10 (16.7%) |
 
-Of the 25 default routes on paid or invalid/won't-fix, 12 are paid findings. That is a precision of **12/25 (48%)** for "this route marks a finding the platform did not pay." The base rate of invalid/won't-fix in that pair is 120/340 (35%). The route rate on the unpaid side divided by the route rate on the paid side is 10.8 / 5.5 ≈ **2.0**. On 0.6.0 that ratio was 15.8 / 8.6 ≈ 1.8, and the precision was 19/38 (50%).
+Of the 25 default routes on paid or invalid/won't-fix, 12 are paid findings and 13 are invalid/won't-fix. The paid share is **12/25 (48%)**; the precision of "this route marks a finding the platform did not pay" is **13/25 (52%)**. The base rate of invalid/won't-fix in that pair is 120/340 (35%). The route rate on the unpaid side divided by the route rate on the paid side is 10.8 / 5.5 ≈ **2.0**. On 0.6.0 that ratio was 15.8 / 8.6 ≈ 1.8, and the precision was 19/38 (50%).
 
 Softening P3 moved paid hard kills from 19 to 12 and invalid hard kills from 19 to 13. The separator is still weak. A route is not evidence the finding is invalid, and a hard kill is not either. Do not read 5.5% as "the tool is safe 94% of the time." Twelve paid findings are routed, and under `--strict` they would have been hard-killed.
 

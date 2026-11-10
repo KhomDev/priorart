@@ -9,13 +9,36 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-10
+
+A correction release. 0.8.0 shipped a precision sentence that inverted the
+numerator: 12 of the 25 hard kills were paid findings (48%), so the kill was
+right 13/25 (52%) that the finding was unpaid. The 0.7.0 changelog and the
+2026-11-10 review both repeated the inversion. The separator is still weak
+either way; the number now says what it measures.
+
+### Fixed
+
+- README, `docs/benchmark.md`, `docs/validation.md` and the 0.8.0 changelog
+  entry state the paid share (12/25, 48%) and the precision (13/25, 52%)
+  separately. The 0.6.0 comparison (19/38, 50%) is unchanged.
+- The release workflow publishes the `CHANGELOG.md` section for the tag as the
+  release body. The 0.6.0, 0.7.0 and 0.8.0 bodies were the generic install
+  template plus GitHub's generated notes, so a reader could not see what the
+  release changed.
+
+### Changed
+
+- Version 0.8.0 -> 0.8.1. No rule, gate, outcome or CLI behaviour changed.
+
 ## [0.8.0] - 2026-11-10
 
 Not published to crates.io. Install from git.
 
 A review release. The 2026-11-10 Fable 5.2 portfolio review made the
 precision problem a blocker: on the public pair a 0.7.0 hard kill was right
-12/25 times (48%) and hit 12 of 220 paid Medium/High findings (5.5%). The
+13/25 times (52%); 12 of the 25 kills were paid findings (48%), and the kill
+hit 12 of 220 paid Medium/High findings (5.5%). The
 review's point is not that the number was hidden - the README and benchmark
 said it - but that a weak separator was still the default hard stop. This
 release changes the default consequence.
@@ -29,9 +52,10 @@ release changes the default consequence.
   `--funnel` is still accepted as a deprecated alias for the default.
 - The default hard-kill count on the public pair is therefore **0** (was 12 of
   220 paid). The same 12 paid findings are routed to verification; a route is
-  advice, not a stop. The measured separator is still weak (52% of the routes
-  are paid findings), and `docs/benchmark.md` says so in both modes.
-- `--strict` reproduces the 0.7.0 behaviour (12 paid hard kills, 48%
+  advice, not a stop. The measured separator is still weak (48% of the routes
+  are paid findings; 52% are invalid/won't-fix), and `docs/benchmark.md` says
+  so in both modes.
+- `--strict` reproduces the 0.7.0 behaviour (12 paid hard kills; 13/25, 52%,
   precision) for callers who explicitly accept the trade.
 
 ### Added
@@ -61,7 +85,7 @@ release changes the default consequence.
   distinguish the 0.8.0 default from `--strict`; the example now shows P18 as
   ROUTE-TO-VERIFY.
 - `docs/benchmark.md` carries both tables and states the route precision
-  (12/25, 52%) instead of implying a kill is a verdict.
+  (13/25, 52%; 12/25, 48%, paid share) instead of implying a kill is a verdict.
 - Rule pages say a hard rule is `KILL with --strict; ROUTE-TO-VERIFY by
   default since 0.8.0`.
 
@@ -557,7 +581,8 @@ The tree itself is unchanged except for the two fixes recorded here.
 - The rule catalog and gate definitions as data, embedded in the binary.
 - The fixture suite: one positive and one negative case per anti-pattern.
 
-[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/KhomDev/viability-gate/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/KhomDev/viability-gate/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/KhomDev/viability-gate/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/KhomDev/viability-gate/compare/v0.5.0...v0.6.0

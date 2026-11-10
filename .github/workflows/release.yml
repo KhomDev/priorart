@@ -193,6 +193,37 @@ jobs:
         with:
           subject-path: dist/SHA256SUMS
 
+      - name: Release notes from CHANGELOG.md
+        shell: bash
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -eu
+          # index() rather than a regex: '[' would open a bracket expression.
+          awk -v h="## [$VERSION]" '
+            index($0, h) == 1 { on = 1; next }
+            on && index($0, "## [") == 1 { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md
+          cat >> notes.md <<'EOF'
+
+          ### Install
+
+          Two binaries are included: vg and viability-gate. They are the same
+          program. vg collides with an unrelated bioinformatics tool of the same
+          name, so viability-gate is the safe choice. See docs/install.md.
+
+          Verify the download before running it:
+
+              sha256sum -c SHA256SUMS --ignore-missing
+              gh attestation verify <asset> --repo KhomDev/viability-gate
+
+          What this release does not claim: the catalog is calibrated in-sample
+          against one researcher's rejection log, and its false-positive rate is
+          unmeasured. Read docs/calibration.md before trusting a verdict.
+          EOF
+
       - name: Create the release
         # Third-party action that holds the write token: pinned to a commit.
         uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3
@@ -201,21 +232,5 @@ jobs:
             dist/*.tar.gz
             dist/*.zip
             dist/SHA256SUMS
-          generate_release_notes: true
           fail_on_unmatched_files: true
-          body: |
-            ## viability-gate ${{ needs.verify.outputs.version }}
-
-            Two binaries are included: vg and viability-gate. They are the same
-            program. vg collides with an unrelated bioinformatics tool of the
-            same name, so viability-gate is the safe choice. See docs/install.md.
-
-            Verify the download before running it:
-
-                sha256sum -c SHA256SUMS --ignore-missing
-                gh attestation verify <asset> --repo KhomDev/viability-gate
-
-            What this release does not claim: the catalog is calibrated
-            in-sample against one researcher's rejection log, and its
-            false-positive rate is unmeasured. Read docs/calibration.md before
-            trusting a verdict.
+          body_path: notes.md

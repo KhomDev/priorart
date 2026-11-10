@@ -4,14 +4,14 @@
 
 For bug-bounty hunters, and for anyone using an AI to draft the report. One offline binary. No account, no API key, no network.
 
-The public contest benchmark is a weak separator. On 0.7.0, a hard kill landed on 5.5% of paid Medium/High findings and 10.8% of invalid or won't-fix findings, and 12 of those 25 kills were paid. That is about twice as often on the unpaid side as on the paid side (1.8× on 0.6.0). The 0.8.0 default never hard-kills on a claim rule: the same 12 paid findings are routed to verification instead of being stopped, and only a structured known-issue match or a failed citation anchor kills. **The separator is still weak either way** - 12 of the 25 default routes are paid findings (52% precision). The difference is the consequence of being wrong: a route asks for verification, a kill stopped a submission. [docs/benchmark.md](docs/benchmark.md) has both measurements, and [docs/validation.md](docs/validation.md) lists what is and is not validated.
+The public contest benchmark is a weak separator. On 0.7.0, a hard kill landed on 5.5% of paid Medium/High findings and 10.8% of invalid or won't-fix findings, and 12 of those 25 kills were paid. That is about twice as often on the unpaid side as on the paid side (1.8× on 0.6.0). The 0.8.0 default never hard-kills on a claim rule: the same 12 paid findings are routed to verification instead of being stopped, and only a structured known-issue match or a failed citation anchor kills. **The separator is still weak either way** - 12 of the 25 default routes are paid findings (48% paid share), so a route is right 13 times in 25 (52%) that the finding is unpaid. The difference is the consequence of being wrong: a route asks for verification, a kill stopped a submission. [docs/benchmark.md](docs/benchmark.md) has both measurements, and [docs/validation.md](docs/validation.md) lists what is and is not validated.
 
 ```bash
 cargo install --git https://github.com/KhomDev/viability-gate
 vg check finding.md
 ```
 
-0.8.0 is not published to crates.io. Install from git, or `cargo install --path .` from a checkout. Rust 1.89 or newer if you build it. Release binaries need no Rust. Both `vg` and `viability-gate` are installed; they are the same program.
+0.8.1 is not published to crates.io. Install from git, or `cargo install --path .` from a checkout. Rust 1.89 or newer if you build it. Release binaries need no Rust. Both `vg` and `viability-gate` are installed; they are the same program.
 
 ## Before and after
 
@@ -20,7 +20,7 @@ A real report, closed Informative as a duplicate of a published contest issue. P
 <!-- BEGIN:example -->
 
 ```text
-viability-gate 0.8.0  —  cmp-04.md
+viability-gate 0.8.1  —  cmp-04.md
 
   OUTCOME   ROUTE-TO-VERIFY
             A claim-heuristic hard rule fired. By default it routes to verification instead of killing the finding; use --strict to turn it back into a hard stop. This is not a clearance.
@@ -79,7 +79,7 @@ P18 is routed to verification by default; it was the hard stop before 0.8.0, and
 | Code4rena QA | 60 | 11 | 18.3% | 23.3% |
 | Sherlock Low/Info | 60 | 9 | 15.0% | 16.7% |
 
-The separator is weak in both modes: 12 of the 25 default routes are paid findings (52% precision), and the unpaid route rate divided by the paid route rate is about 2.0 (it was 1.8 on 0.6.0). Nine of the 12 paid routes are P2. P3 no longer hard-kills on this set (7 paid fires, 0 of them hard). The default is deliberately the weaker claim: a wrong route asks for verification, a wrong kill stopped a submission. The in-sample recall further down is a different set and an older catalog.
+The separator is weak in both modes: 12 of the 25 default routes are paid findings (48% paid share; 13 of 25 are invalid/won't-fix, so the route is right 52% of the time), and the unpaid route rate divided by the paid route rate is about 2.0 (it was 1.8 on 0.6.0). Nine of the 12 paid routes are P2. P3 no longer hard-kills on this set (7 paid fires, 0 of them hard). The default is deliberately the weaker claim: a wrong route asks for verification, a wrong kill stopped a submission. The in-sample recall further down is a different set and an older catalog.
 
 ## What you run
 
@@ -114,7 +114,7 @@ The check does not compare a quoted snippet byte for byte, and it does not prove
 
 ## Strict mode (pre-0.8.0)
 
-By default a claim-heuristic hard rule (`P1`–`P26`) is **ROUTE-TO-VERIFY**, not **KILL**. The rule is still listed, and its weight still comes off the score. `--fail-on-kill` does not fail on a route. This is the default because the public benchmark does not show a separator strong enough to justify stopping a submission: on 0.7.0 the hard kills were 48% precise and hit 5.5% of paid findings.
+By default a claim-heuristic hard rule (`P1`–`P26`) is **ROUTE-TO-VERIFY**, not **KILL**. The rule is still listed, and its weight still comes off the score. `--fail-on-kill` does not fail on a route. This is the default because the public benchmark does not show a separator strong enough to justify stopping a submission: on 0.7.0 the hard kills were 52% precise and hit 5.5% of paid findings.
 
 `vg check finding.md --strict` restores the pre-0.8.0 hard stop: those rules are **KILL** again. A known-issue match and a failed citation anchor are **KILL** in every mode. `--funnel` is still accepted as a deprecated alias for the default.
 
@@ -169,7 +169,7 @@ The 52-point gap is the summary: good at saying stop, bad at saying why. The rul
 
 **A HOLD is advice.** The researcher still decides.
 
-**The hard stop is opt-in since 0.8.0.** The 2026-11-10 review showed the 0.7.0 hard kill hitting 12 of 220 paid findings (5.5%) at 48% precision, and the same benchmark shows no claim rule with enough support and precision to justify a default stop. The default therefore routes claim rules to verification; `--strict` restores the stop for callers who accept that trade. The claim-by-claim evidence is [docs/validation.md](docs/validation.md).
+**The hard stop is opt-in since 0.8.0.** The 2026-11-10 review showed the 0.7.0 hard kill hitting 12 of 220 paid findings (5.5%) at 52% precision, and the same benchmark shows no claim rule with enough support and precision to justify a default stop. The default therefore routes claim rules to verification; `--strict` restores the stop for callers who accept that trade. The claim-by-claim evidence is [docs/validation.md](docs/validation.md).
 
 ## Related
 
@@ -206,7 +206,7 @@ The 52-point gap is the summary: good at saying stop, bad at saying why. The rul
 - [docs/validation.md](docs/validation.md) — the claim-by-claim validation ledger, including the 2026-11-06 audit and the 2026-11-10 review
 
 Pin to a tag, not to `main`:
-[viability-gate v0.8.0](https://github.com/KhomDev/viability-gate/tree/v0.8.0).
+[viability-gate v0.8.1](https://github.com/KhomDev/viability-gate/tree/v0.8.1).
 
 ## License
 

@@ -28,7 +28,7 @@ Status values:
 | 8 | G7 uses containment, not Jaccard, and an empty log passes | `cargo test --lib` G7 cases; `docs/duplicate-matching.md` | 2026-11-06 | validated |
 | 9 | Fenced code blocks do not start sections; a heading needs `#` plus a space | `cargo test --lib hash_lines_inside_a_code_fence_are_not_headings` | 2026-11-06 | validated |
 | 10 | A missing cited file or line is a hard `CITE` finding and the score cannot stay 100 | `cargo test --test cli a_fake_citation_does_not_score_100_and_does_not_pass` | 2026-11-09 | validated |
-| 11 | On the public pair, a 0.7.0 hard kill was 12/25 (48%) precise and hit 5.5% of paid Medium/High findings | `eval/results/summary.json`; `eval/results/per-item.jsonl`; arithmetic in `docs/benchmark.md` | 2026-11-09 | validated |
+| 11 | On the public pair, a 0.7.0 hard kill was 13/25 (52%) precise (12/25, 48%, of the kills were paid findings) and hit 5.5% of paid Medium/High findings | `eval/results/summary.json`; `eval/results/per-item.jsonl`; arithmetic in `docs/benchmark.md` | 2026-11-09 | validated |
 | 12 | Since 0.8.0 the default outcome for a claim-heuristic hard rule is ROUTE-TO-VERIFY, and the default hard-kill count on the public pair is 0 | `cargo test --test cli claim_rules_route_by_default_and_strict_restores_the_kill`; `docs/benchmark.md` default table | 2026-11-10 | validated |
 | 13 | `--strict` restores the pre-0.8.0 hard stop for claim rules; `KI:` and `CITE` kill in every mode | `cargo test --test cli claim_rules_route_by_default_and_strict_restores_the_kill` | 2026-11-10 | validated |
 | 14 | The catalog has 26 rules, P1-P26, each with a positive and a negative fixture | `cargo test --test rules` | 2026-11-10 | validated |
