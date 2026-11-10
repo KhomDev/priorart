@@ -15,7 +15,7 @@ vg check finding.md
 
 ## Before and after
 
-A real report, closed Informative as a duplicate of a published contest issue. Personal emails were not in the text. On 0.5.0, P7 held it: the matcher saw `best-practice` inside `rather than a best-practice observation`, and P18 did not see `accepted as Sherlock issue M-1`. This is what 0.8.0 prints on that report: P18 routes it to verification rather than killing it. `scripts/regen-readme-examples.sh` produces the block, and CI fails if it drifts.
+A real report, closed Informative as a duplicate of a published contest issue. Personal emails were not in the text. On 0.5.0, P7 held it: the matcher saw `best-practice` inside `rather than a best-practice observation`, and P18 did not see `accepted as Sherlock issue M-1`. This is what 0.8.1 prints on that report: P18 routes it to verification rather than killing it. `scripts/regen-readme-examples.sh` produces the block, and CI fails if it drifts.
 
 <!-- BEGIN:example -->
 
