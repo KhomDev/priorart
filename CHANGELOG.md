@@ -9,6 +9,62 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-10
+
+Not published to crates.io. Install from git.
+
+A review release. The 2026-11-10 Fable 5.2 portfolio review made the
+precision problem a blocker: on the public pair a 0.7.0 hard kill was right
+12/25 times (48%) and hit 12 of 220 paid Medium/High findings (5.5%). The
+review's point is not that the number was hidden - the README and benchmark
+said it - but that a weak separator was still the default hard stop. This
+release changes the default consequence.
+
+### Changed - outcomes
+
+- **A claim-heuristic hard rule is ROUTE-TO-VERIFY by default.** The
+  P1-P26 rules no longer stop a submission unless the operator passes the new
+  `--strict` flag. A known-issue match (`KI:`) and a failed citation anchor
+  (`CITE`) are structured hard failures and stay KILL in every mode.
+  `--funnel` is still accepted as a deprecated alias for the default.
+- The default hard-kill count on the public pair is therefore **0** (was 12 of
+  220 paid). The same 12 paid findings are routed to verification; a route is
+  advice, not a stop. The measured separator is still weak (52% of the routes
+  are paid findings), and `docs/benchmark.md` says so in both modes.
+- `--strict` reproduces the 0.7.0 behaviour (12 paid hard kills, 48%
+  precision) for callers who explicitly accept the trade.
+
+### Added
+
+- **`docs/validation.md`**, a claim-by-claim ledger: every public claim with a
+  test or committed result file, a date, and a status (validated / unvalidated /
+  retracted). It records the 2026-11-06 audit, what 0.5.0 fixed, and the
+  precision history.
+- **The hard-stop policy.** A claim rule may be a default stop only with
+  precision >= 0.75, >= 20 fires, and a paid hard-kill rate <= 1%. No rule meets
+  it today; the rule that comes closest is P2 at 0.53 over 19 fires. The policy
+  is in `docs/validation.md`.
+- **A release checklist step**: refresh the benchmark (or state why it did not
+  change) and update the validation ledger before a tag. The release workflow
+  already refuses a tag that disagrees with `Cargo.toml`.
+
+### Fixed - release provenance
+
+- Annotated tags `v0.6.0` and `v0.7.0` are restored on the commits whose
+  `Cargo.toml` carries those versions. The 0.6.0 and 0.7.0 releases were on
+  `main` with no tag, so the README's "pin to a tag" link and a reader's
+  ability to match a claim to a release were both broken.
+
+### Docs
+
+- README tagline, example, benchmark tables, outcome table and limits
+  distinguish the 0.8.0 default from `--strict`; the example now shows P18 as
+  ROUTE-TO-VERIFY.
+- `docs/benchmark.md` carries both tables and states the route precision
+  (12/25, 52%) instead of implying a kill is a verdict.
+- Rule pages say a hard rule is `KILL with --strict; ROUTE-TO-VERIFY by
+  default since 0.8.0`.
+
 ## [0.7.0] - 2026-11-09
 
 Not published to crates.io. Install from git.
@@ -501,7 +557,8 @@ The tree itself is unchanged except for the two fixes recorded here.
 - The rule catalog and gate definitions as data, embedded in the binary.
 - The fixture suite: one positive and one negative case per anti-pattern.
 
-[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/KhomDev/viability-gate/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/KhomDev/viability-gate/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/KhomDev/viability-gate/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/KhomDev/viability-gate/compare/v0.4.4...v0.5.0

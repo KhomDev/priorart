@@ -40,7 +40,7 @@ GROUP_TITLES = {
 }
 
 VERDICT_MEANING = {
-    "hard": "hard fail - the verdict becomes KILL",
+    "hard": "hard fail - KILL with --strict; ROUTE-TO-VERIFY by default since 0.8.0",
     "soft": "soft fail - the verdict becomes HOLD",
     "warn": "note only - does not change the verdict",
 }

@@ -50,6 +50,25 @@ python tools/calibrate/calibrate.py --log examples/calibration/labels.csv \
 CI runs all of these, plus `cargo deny check`, `cargo audit`, an MSRV build and
 an OS matrix. Running them locally first is faster than reading a red build.
 
+## Releasing
+
+A release is a claim, so the checklist is part of the change, not an afterthought:
+
+1. Bump `Cargo.toml` (and `Cargo.lock`) to the version being released.
+2. Write the `CHANGELOG.md` entry. Every number in it must come from a command
+   that can be re-run; link the file that holds the result.
+3. Refresh the benchmark, or state in the changelog why the numbers did not
+   change. If a rule's measured precision moved, update `docs/benchmark.md`.
+4. Update `docs/validation.md`: add or change the rows for the claims this
+   release makes, and mark anything the release retracts.
+5. Run the full local suite above, including `scripts/check_readme.py` and the
+   generated-docs check.
+6. Commit on `main`, then create an **annotated** tag `vX.Y.Z` on that commit
+   and push it. The release workflow refuses a tag that disagrees with
+   `Cargo.toml` and runs the test suite before it builds anything.
+7. Never move or delete a published version tag. A bad release gets a new patch
+   version.
+
 ## Adding or changing a rule
 
 The catalog is [`rules/anti-patterns.yaml`](rules/anti-patterns.yaml). A rule is:
@@ -58,7 +77,7 @@ The catalog is [`rules/anti-patterns.yaml`](rules/anti-patterns.yaml). A rule is
 - id: P17
   title: No attacker-win scenario
   group: E            # A..E, see the file header
-  verdict: soft       # hard = KILL, soft = HOLD, warn = note only
+  verdict: soft       # hard = KILL with --strict (ROUTE by default), soft = HOLD, warn = note only
   weight: 30          # subtracted from the 100-point estimate
   any_of: ["no (fund loss|attacker profit|extraction)"]
   none_of: ["attacker (profits?|gains?) \\d"]   # escape hatch suppresses the rule

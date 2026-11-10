@@ -2,6 +2,8 @@
 
 Re-scored 2026-11-09 with `vg` 0.7.0 on the same manifest `eval/run.py fetch` wrote for 0.6.0 (`eval/dataset.manifest.yaml` did not change). Bodies stay in `eval/cache/`, which is gitignored. This repository commits the manifest and the results, not the reports.
 
+**0.8.0 changes the consequence, not the hits.** The per-rule hits below are unchanged. Since 0.8.0 a claim-heuristic hard rule is ROUTE-TO-VERIFY by default; the hard KILL column is the `--strict` (pre-0.8.0) behaviour. The default table is in the next section. The 2026-11-10 review is why: a hard stop that is wrong 52% of the time and hits 5.5% of paid findings should not be the default.
+
 This is one corpus of judged, human-written contest reports. It is not a property of the rules, and it is not the false-positive rate on model-written hypotheses. The author's own log has no paid findings. See [control-set.md](control-set.md).
 
 ## What was scored
@@ -31,6 +33,17 @@ Accepted severities in the capped set: 101 High, 119 Medium.
 
 A **hard KILL** is the outcome that would have stopped a submission. 0.7.0, default flags, no ledger, no target tree. A1 is unknown on every row. P26 does not run.
 
+**0.8.0 default** (claim-heuristic hard hits are ROUTE-TO-VERIFY):
+
+| Set | N | ROUTE-TO-VERIFY | Rate | Hard KILL |
+|---|---:|---:|---:|---:|
+| Paid Medium/High | 220 | 12 | 5.5% | 0 |
+| Invalid + won't-fix | 120 | 13 | 10.8% | 0 |
+| Code4rena QA | 60 | 11 | 18.3% | 0 |
+| Sherlock Low/Info | 60 | 9 | 15.0% | 0 |
+
+**`--strict` / 0.7.0** (the same hits, as hard stops):
+
 | Set | N | Hard KILL | Rate | 0.6.0 |
 |---|---:|---:|---:|---:|
 | Paid Medium/High | 220 | 12 | 5.5% | 19 (8.6%) |
@@ -38,9 +51,9 @@ A **hard KILL** is the outcome that would have stopped a submission. 0.7.0, defa
 | Code4rena QA | 60 | 11 | 18.3% | 14 (23.3%) |
 | Sherlock Low/Info | 60 | 9 | 15.0% | 10 (16.7%) |
 
-Of the 25 hard kills on paid or invalid/won't-fix, 12 are paid findings. That is a precision of **12/25 (48%)** for "this hard kill marks a finding the platform did not pay." The base rate of invalid/won't-fix in that pair is 120/340 (35%). The kill rate on the unpaid side divided by the kill rate on the paid side is 10.8 / 5.5 ≈ **2.0**. On 0.6.0 that ratio was 15.8 / 8.6 ≈ 1.8, and the precision was 19/38 (50%).
+Of the 25 default routes on paid or invalid/won't-fix, 12 are paid findings. That is a precision of **12/25 (48%)** for "this route marks a finding the platform did not pay." The base rate of invalid/won't-fix in that pair is 120/340 (35%). The route rate on the unpaid side divided by the route rate on the paid side is 10.8 / 5.5 ≈ **2.0**. On 0.6.0 that ratio was 15.8 / 8.6 ≈ 1.8, and the precision was 19/38 (50%).
 
-Softening P3 moved paid hard kills from 19 to 12 and invalid hard kills from 19 to 13. The separator is still weak. A hard kill is not evidence the finding is invalid. Do not read 5.5% as "the tool is safe 94% of the time." Twelve paid findings were hard-killed.
+Softening P3 moved paid hard kills from 19 to 12 and invalid hard kills from 19 to 13. The separator is still weak. A route is not evidence the finding is invalid, and a hard kill is not either. Do not read 5.5% as "the tool is safe 94% of the time." Twelve paid findings are routed, and under `--strict` they would have been hard-killed.
 
 Which rules did the killing, on the paid set: **P2 on 9, P19 on 2, P15 on 1.** P3 fired on 7 paid findings and on 7 invalid/won't-fix findings, and **none of those fires were hard**. The 0.6.0 paid kills that were P3 (7) are holds now. P2 did not move: still 9 paid and 10 invalid/won't-fix, precision 0.53. The negation fix and the unprivileged-yield suppression are covered by fixtures. This corpus does not contain those wordings, so the bench cannot show them.
 
@@ -79,7 +92,7 @@ P23–P25 are notes. They do not kill. They also do not separate the classes. P2
 | P25 quantified impact | 187/220 | 100/120 | 59/60 | 58/60 |
 | P26 severity rule quoted | not run | not run | not run | not run |
 
-Outcomes on the paid set, with no ledger and no target tree (every gate unknown, including A1): KILL 12, HOLD 27, NOTE 5, INCOMPLETE 176. INCOMPLETE is the common outcome because unknown gates outrank a zero-weight note. A paid finding with no hard rule and no ledger is not CLEAR, and it should not be. A1 cannot pass on this corpus: the bench does not supply a checkout or a commit, so the anchor is unmeasured here. The fixture for a missing `src/Vault.sol:214` is in `tests/cli.rs`.
+Outcomes on the paid set, with no ledger and no target tree (every gate unknown, including A1): under 0.8.0 default, ROUTE-TO-VERIFY 12, HOLD 27, NOTE 5, INCOMPLETE 176, KILL 0. Under `--strict`, KILL 12 instead of the routes. INCOMPLETE is the common outcome because unknown gates outrank a zero-weight note. A paid finding with no hard rule and no ledger is not CLEAR, and it should not be. A1 cannot pass on this corpus: the bench does not supply a checkout or a commit, so the anchor is unmeasured here. The fixture for a missing `src/Vault.sol:214` is in `tests/cli.rs`.
 
 The corpus is judged human writeups. A model hypothesis that says "owner can" and "front-run" next to a real bug is what the P2/P3 changes and `--funnel` are for. This table does not contain that text. Expect the bench to understate how often those rules would have fired on model output, and do not treat 5.5% as that rate.
 
@@ -108,6 +121,8 @@ cargo build --release
 python eval/run.py score --vg target/release/vg
 python eval/run.py check
 ```
+
+The committed `eval/results/` are the 0.7.0 per-rule hits. The 0.8.0 default table is the same hits with the default outcome rule applied; `--strict` reproduces the 0.7.0 KILL column.
 
 `fetch` uses the network. `score` does not. `check` recomputes the headline
 from `eval/results/per-item.jsonl` and fails if `summary.json` has drifted.

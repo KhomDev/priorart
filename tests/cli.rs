@@ -68,6 +68,21 @@ fn outcome_of(dir: &Path, name: &str, body: &str) -> (String, Vec<String>) {
     (v["outcome"].as_str().unwrap().to_string(), rules)
 }
 
+/// The pre-0.8.0 mode: claim-heuristic hard rules are KILL again.
+fn outcome_of_strict(dir: &Path, name: &str, body: &str) -> (String, Vec<String>) {
+    let f = write(dir, name, body);
+    let o = vg(&["check", f.to_str().unwrap(), "--strict", "--json"], dir);
+    assert_eq!(o.status.code(), Some(0), "{}", stderr(&o));
+    let v = json(&o);
+    let rules = v["findings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|f| f["rule"].as_str().unwrap().to_string())
+        .collect();
+    (v["outcome"].as_str().unwrap().to_string(), rules)
+}
+
 // ------------------------------------------------------------ audit counterexamples
 
 #[test]
@@ -287,6 +302,7 @@ fn check_accepts_several_findings_and_fails_on_any_kill() {
             "--min-score",
             "50",
             "--fail-on-kill",
+            "--strict",
         ],
         &dir,
     );
@@ -671,7 +687,7 @@ fn a_real_citation_at_the_pin_passes_the_anchor() {
 #[test]
 fn negation_admin_does_not_hide_a_privileged_claim() {
     let dir = tmp();
-    let (outcome, rules) = outcome_of(
+    let (outcome, rules) = outcome_of_strict(
         &dir,
         "neg.md",
         "No one but the admin can call setParams() and redirect the fees. Impact: 10 tokens stolen, and only the admin can do it.\n",
@@ -703,7 +719,7 @@ fn a_bare_front_run_is_a_hold_and_operator_delay_still_kills() {
     );
     assert!(rules.contains(&"P3".to_string()), "{rules:?}");
     assert_eq!(soft, "HOLD");
-    let (hard, rules) = outcome_of(
+    let (hard, rules) = outcome_of_strict(
         &dir,
         "delay.md",
         "The attacker front-runs the update. The operator delay gives a window of several blocks.\n",
@@ -749,51 +765,67 @@ fn p26_does_not_fire_on_every_report_unless_asked() {
 }
 
 #[test]
-fn funnel_routes_heuristic_kills_and_keeps_structured_ones() {
+fn claim_rules_route_by_default_and_strict_restores_the_kill() {
     let dir = tmp();
     let f = write(
         &dir,
         "admin.md",
         "An admin can set the pause flag and brick the vault.\n",
     );
-    let v = json(&vg(
-        &["check", f.to_str().unwrap(), "--funnel", "--json"],
-        &dir,
-    ));
+    // Default: a claim-heuristic hard rule is a verification question.
+    let v = json(&vg(&["check", f.to_str().unwrap(), "--json"], &dir));
     assert_eq!(v["outcome"], "ROUTE-TO-VERIFY", "{v}");
     assert!(v["funnel"].as_bool().unwrap());
     assert!(v["viability_score"].as_u64().unwrap() < 100);
-    let o = vg(
-        &["check", f.to_str().unwrap(), "--funnel", "--fail-on-kill"],
-        &dir,
-    );
+    let o = vg(&["check", f.to_str().unwrap(), "--fail-on-kill"], &dir);
     assert_eq!(
         o.status.code(),
         Some(0),
         "a route is not a kill: {}",
         stderr(&o)
     );
+    // --strict is the pre-0.8.0 hard stop.
+    let v = json(&vg(
+        &["check", f.to_str().unwrap(), "--strict", "--json"],
+        &dir,
+    ));
+    assert_eq!(v["outcome"], "KILL", "{v}");
+    assert!(!v["funnel"].as_bool().unwrap());
+    let o = vg(
+        &["check", f.to_str().unwrap(), "--strict", "--fail-on-kill"],
+        &dir,
+    );
+    assert_eq!(o.status.code(), Some(1), "{}", stderr(&o));
+    // The old flag is still accepted as an alias of the default.
+    let v = json(&vg(
+        &["check", f.to_str().unwrap(), "--funnel", "--json"],
+        &dir,
+    ));
+    assert_eq!(v["outcome"], "ROUTE-TO-VERIFY", "{v}");
 
+    // Structured hard failures kill in every mode.
     let sha = pin_vault(&dir, "contract Other {}\n");
     let fake = write(
         &dir,
         "fake.md",
         "An unprivileged attacker drains 4 tokens in src/Vault.sol at line 214.\n",
     );
-    let v = json(&vg(
-        &[
+    for mode in [None, Some("--strict"), Some("--funnel")] {
+        let mut args = vec![
             "check",
             fake.to_str().unwrap(),
-            "--funnel",
             "--target",
             dir.to_str().unwrap(),
             "--commit",
             &sha,
             "--json",
-        ],
-        &dir,
-    ));
-    assert_eq!(v["outcome"], "KILL", "a missing file stays a kill: {v}");
+        ];
+        if let Some(m) = mode {
+            args.push(m);
+        }
+        let v = json(&vg(&args, &dir));
+        assert_eq!(v["outcome"], "KILL", "a missing file stays a kill: {v}");
+    }
 
     let ki = write(
         &dir,
@@ -801,18 +833,20 @@ fn funnel_routes_heuristic_kills_and_keeps_structured_ones() {
         "- id: KI-1\n  summary: dust\n  patterns: [\"dust.{0,20}stuck\"]\n",
     );
     let known = write(&dir, "dust.md", "Dust is left stuck in the router.\n");
-    let v = json(&vg(
-        &[
+    for mode in [None, Some("--strict"), Some("--funnel")] {
+        let mut args = vec![
             "check",
             known.to_str().unwrap(),
-            "--funnel",
             "--known-issues",
             ki.to_str().unwrap(),
             "--json",
-        ],
-        &dir,
-    ));
-    assert_eq!(v["outcome"], "KILL", "{v}");
+        ];
+        if let Some(m) = mode {
+            args.push(m);
+        }
+        let v = json(&vg(&args, &dir));
+        assert_eq!(v["outcome"], "KILL", "{v}");
+    }
 }
 
 #[test]

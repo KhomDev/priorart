@@ -153,10 +153,16 @@ enum Command {
         #[arg(long)]
         fail_on_kill: bool,
 
-        /// Audit-operator funnel. Claim-heuristic hard rules (P1–P26) become
-        /// ROUTE-TO-VERIFY instead of KILL. A known-issue match and a failed
-        /// citation anchor stay KILL.
-        #[arg(long)]
+        /// Pre-0.8.0 behaviour: a claim-heuristic hard rule (P1–P26) is a hard
+        /// KILL instead of the default ROUTE-TO-VERIFY. A known-issue match and
+        /// a failed citation anchor stay KILL in either mode.
+        #[arg(long, conflicts_with = "funnel")]
+        strict: bool,
+
+        /// Deprecated alias. Routing claim-heuristic hard rules to
+        /// ROUTE-TO-VERIFY is the default since 0.8.0; this flag is accepted for
+        /// scripts that still pass it.
+        #[arg(long, hide = true)]
         funnel: bool,
 
         /// Run opt-in notes. P26 is opt-in because it fired on every report
@@ -640,7 +646,8 @@ impl Target {
 
 struct CheckMode {
     threshold: u32,
-    funnel: bool,
+    /// True unless --strict: claim-heuristic hard rules route instead of kill.
+    route_claim_rules: bool,
     severity_notes: bool,
 }
 
@@ -752,8 +759,12 @@ fn build_report(
     };
     let gate_outcomes =
         engine::evaluate_gates(gates, &target.inputs(Some(text), Some(anchor_gate)));
-    let (outcome, viability_score) =
-        engine::decide(&findings, &gate_outcomes, mode.threshold, mode.funnel);
+    let (outcome, viability_score) = engine::decide(
+        &findings,
+        &gate_outcomes,
+        mode.threshold,
+        mode.route_claim_rules,
+    );
     Ok(Report {
         tool: "viability-gate".into(),
         version: VERSION.into(),
@@ -766,7 +777,7 @@ fn build_report(
         gates: gate_outcomes,
         disclaimer: DISCLAIMER.into(),
         warnings: ki_warnings,
-        funnel: mode.funnel,
+        funnel: mode.route_claim_rules,
     })
 }
 
@@ -912,7 +923,8 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             min_score,
             table,
             fail_on_kill,
-            funnel,
+            strict,
+            funnel: _funnel,
             severity_notes,
             target,
         } => {
@@ -941,7 +953,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
                     manifest.as_ref(),
                     CheckMode {
                         threshold: min_score,
-                        funnel,
+                        route_claim_rules: !strict,
                         severity_notes,
                     },
                 )?);

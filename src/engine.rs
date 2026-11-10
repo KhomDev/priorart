@@ -730,12 +730,14 @@ pub fn evaluate_with(
 /// Compute the report outcome and the viability score.
 ///
 /// ONE decision rule, in this order:
-///   1. any fired rule with a hard verdict                    -> KILL
-///   2. any soft rule, any FAILED gate, or score < threshold  -> HOLD
-///   3. any warn rule with a non-zero weight                  -> NOTE
-///   4. any gate Unknown                                      -> INCOMPLETE
-///   5. only zero-weight notes, and every gate ran            -> NOTE
-///   6. otherwise                                             -> CLEAR
+///   1. a STRUCTURED hard finding (known issue, failed citation) -> KILL
+///   2. a claim-heuristic hard rule, default                     -> ROUTE-TO-VERIFY
+///      2b. the same rule with `strict` (--strict)               -> KILL
+///   3. any soft rule, any FAILED gate, or score < threshold     -> HOLD
+///   4. any warn rule with a non-zero weight                     -> NOTE
+///   5. any gate Unknown                                         -> INCOMPLETE
+///   6. only zero-weight notes, and every gate ran               -> NOTE
+///   7. otherwise                                                -> CLEAR
 ///
 /// A zero-weight note (the claim checks, P23-P26) does not hide an unknown
 /// gate: absence of a heading is a weaker fact than a gate that could not run.
@@ -748,19 +750,35 @@ pub fn evaluate_with(
 /// deducts: a missing file or line is emitted as a weighted hard finding, not
 /// only as a gate, so a fabricated citation cannot score 100.
 ///
-/// `funnel` rewrites claim-heuristic hard rules (the P-ids) to ROUTE-TO-VERIFY.
-/// A known-issue match (`KI:`) and a failed citation (`CITE`) stay KILL.
+/// Since 0.8.0 a claim-heuristic hard rule (the P-ids) is ROUTE-TO-VERIFY, not a
+/// hard stop. That is the default because the public benchmark does not show a
+/// separator strong enough to justify stopping a submission: on 0.7.0 the hard
+/// kills were 48% precise and hit 5.5% of paid findings. A known-issue match
+/// (`KI:`) and a failed citation (`CITE`) are structured hard failures and
+/// stay KILL in every mode. The pre-0.8.0 behaviour is `outcome_strict` /
+/// `decide(..., false)`, reachable from the CLI with `--strict`.
 pub fn outcome(findings: &[Finding], gates: &[GateOutcome], threshold: u32) -> (Outcome, u32) {
+    decide(findings, gates, threshold, true)
+}
+
+/// The pre-0.8.0 decision rule: claim-heuristic hard rules are KILL, not ROUTE.
+/// Kept for tests and for callers that explicitly want the strict mode.
+pub fn outcome_strict(
+    findings: &[Finding],
+    gates: &[GateOutcome],
+    threshold: u32,
+) -> (Outcome, u32) {
     decide(findings, gates, threshold, false)
 }
 
-/// Same decision as [`outcome`], with `--funnel` selecting ROUTE-TO-VERIFY for
-/// claim-heuristic hard rules.
+/// Same decision as [`outcome`]. `route_claim_rules` is true by default: a
+/// claim-heuristic hard rule becomes ROUTE-TO-VERIFY. Pass false for the strict
+/// mode (`--strict` on the CLI).
 pub fn decide(
     findings: &[Finding],
     gates: &[GateOutcome],
     threshold: u32,
-    funnel: bool,
+    route_claim_rules: bool,
 ) -> (Outcome, u32) {
     let deducted: u64 = findings.iter().map(|f| u64::from(f.weight)).sum();
     let score = 100u64.saturating_sub(deducted) as u32;
@@ -783,7 +801,7 @@ pub fn decide(
 
     let outcome = if structured_hard {
         Outcome::Kill
-    } else if funnel && heuristic_hard {
+    } else if route_claim_rules && heuristic_hard {
         Outcome::Route
     } else if heuristic_hard {
         Outcome::Kill
@@ -2181,18 +2199,26 @@ mod tests {
     }
 
     #[test]
-    fn funnel_routes_a_claim_heuristic_and_still_kills_a_structured_hard_fail() {
+    fn default_routes_a_claim_heuristic_and_strict_kills_it() {
         let mut heuristic = finding(Verdict::Hard, 40);
         heuristic.rule = "P2".into();
-        let (routed, score) = decide(std::slice::from_ref(&heuristic), &[], 50, true);
+        let (routed, score) = outcome(std::slice::from_ref(&heuristic), &[], 50);
         assert_eq!(routed, Outcome::Route);
         assert_eq!(score, 60);
+        let (routed_explicit, _) = decide(std::slice::from_ref(&heuristic), &[], 50, true);
+        assert_eq!(routed_explicit, Outcome::Route);
+        let (strict, _) = outcome_strict(std::slice::from_ref(&heuristic), &[], 50);
+        assert_eq!(strict, Outcome::Kill);
+        let (strict_explicit, _) = decide(std::slice::from_ref(&heuristic), &[], 50, false);
+        assert_eq!(strict_explicit, Outcome::Kill);
         let mut structured = finding(Verdict::Hard, 40);
         structured.rule = "CITE".into();
-        let (killed, _) = decide(std::slice::from_ref(&structured), &[], 50, true);
+        let (killed, _) = outcome(std::slice::from_ref(&structured), &[], 50);
         assert_eq!(killed, Outcome::Kill);
-        let (plain, _) = decide(std::slice::from_ref(&heuristic), &[], 50, false);
-        assert_eq!(plain, Outcome::Kill);
+        let mut known = finding(Verdict::Hard, 40);
+        known.rule = "KI:KI-1".into();
+        let (known_killed, _) = outcome(std::slice::from_ref(&known), &[], 50);
+        assert_eq!(known_killed, Outcome::Kill);
     }
 
     #[test]

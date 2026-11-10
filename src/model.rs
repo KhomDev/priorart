@@ -223,9 +223,10 @@ pub enum Outcome {
     Incomplete,
     /// Nothing fired, no gate failed, and every gate ran.
     Clear,
-    /// A claim-heuristic hard rule fired while `--funnel` was set. The finding
-    /// is a verification question, not a kill. Structured hard failures
-    /// (known-issue match, citation anchor) stay `Kill`.
+    /// A claim-heuristic hard rule fired. Since 0.8.0 this is the DEFAULT
+    /// outcome: the finding is a verification question, not a kill. Structured
+    /// hard failures (known-issue match, citation anchor) stay `Kill`. The
+    /// pre-0.8.0 hard stop is available with `--strict`.
     #[serde(rename = "ROUTE-TO-VERIFY")]
     Route,
 }
@@ -255,7 +256,7 @@ impl Outcome {
             }
             Outcome::Clear => "No known blocker found by this tool. That is all it means.",
             Outcome::Route => {
-                "A claim-heuristic hard rule fired. Funnel mode routes it to verification instead of killing it. This is not a clearance."
+                "A claim-heuristic hard rule fired. By default it routes to verification instead of killing the finding; use --strict to turn it back into a hard stop. This is not a clearance."
             }
         }
     }
@@ -669,7 +670,9 @@ pub struct Report {
     pub disclaimer: String,
     /// Non-fatal problems with the supplied inputs.
     pub warnings: Vec<String>,
-    /// True when `--funnel` routed claim-heuristic hard rules to
-    /// ROUTE-TO-VERIFY instead of KILL.
+    /// True when claim-heuristic hard rules are routed to ROUTE-TO-VERIFY
+    /// instead of KILL. Since 0.8.0 that is the default; `--strict` sets it
+    /// false. The field keeps its 0.7.0 name so existing JSON consumers do not
+    /// break.
     pub funnel: bool,
 }

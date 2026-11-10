@@ -1,29 +1,29 @@
 # viability-gate
 
-**A second-opinion writing filter for a draft finding.** It reads the report. It does not decide that the bug is real, and a `CLEAR` is not a prediction that a program will pay, or that the report will avoid Informative, Duplicate, or out of scope.
+**A second-opinion writing filter for a draft finding.** It reads the report. It does not decide that the bug is real, and a `CLEAR` is not a prediction that a program will pay, or that the report will avoid Informative, Duplicate, or out of scope. **Since 0.8.0 a claim-heuristic rule does not hard-kill by default:** it routes the finding to verification, and `--strict` restores the pre-0.8.0 hard stop for callers who want it.
 
 For bug-bounty hunters, and for anyone using an AI to draft the report. One offline binary. No account, no API key, no network.
 
-The public contest benchmark is a weak separator. On 0.7.0, a hard kill landed on 5.5% of paid Medium/High findings and 10.8% of invalid or won't-fix findings, and 12 of those 25 kills were paid. That is about twice as often on the unpaid side as on the paid side (1.8× on 0.6.0). [docs/benchmark.md](docs/benchmark.md) has both measurements. Do not read a kill as a verdict.
+The public contest benchmark is a weak separator. On 0.7.0, a hard kill landed on 5.5% of paid Medium/High findings and 10.8% of invalid or won't-fix findings, and 12 of those 25 kills were paid. That is about twice as often on the unpaid side as on the paid side (1.8× on 0.6.0). The 0.8.0 default never hard-kills on a claim rule: the same 12 paid findings are routed to verification instead of being stopped, and only a structured known-issue match or a failed citation anchor kills. **The separator is still weak either way** - 12 of the 25 default routes are paid findings (52% precision). The difference is the consequence of being wrong: a route asks for verification, a kill stopped a submission. [docs/benchmark.md](docs/benchmark.md) has both measurements, and [docs/validation.md](docs/validation.md) lists what is and is not validated.
 
 ```bash
 cargo install --git https://github.com/KhomDev/viability-gate
 vg check finding.md
 ```
 
-0.7.0 is not published to crates.io. Install from git, or `cargo install --path .` from a checkout. Rust 1.89 or newer if you build it. Release binaries need no Rust. Both `vg` and `viability-gate` are installed; they are the same program.
+0.8.0 is not published to crates.io. Install from git, or `cargo install --path .` from a checkout. Rust 1.89 or newer if you build it. Release binaries need no Rust. Both `vg` and `viability-gate` are installed; they are the same program.
 
 ## Before and after
 
-A real report, closed Informative as a duplicate of a published contest issue. Personal emails were not in the text. On 0.5.0, P7 held it: the matcher saw `best-practice` inside `rather than a best-practice observation`, and P18 did not see `accepted as Sherlock issue M-1`. This is what 0.7.0 prints on that report. `scripts/regen-readme-examples.sh` produces the block, and CI fails if it drifts.
+A real report, closed Informative as a duplicate of a published contest issue. Personal emails were not in the text. On 0.5.0, P7 held it: the matcher saw `best-practice` inside `rather than a best-practice observation`, and P18 did not see `accepted as Sherlock issue M-1`. This is what 0.8.0 prints on that report: P18 routes it to verification rather than killing it. `scripts/regen-readme-examples.sh` produces the block, and CI fails if it drifts.
 
 <!-- BEGIN:example -->
 
 ```text
-viability-gate 0.7.0  —  cmp-04.md
+viability-gate 0.8.0  —  cmp-04.md
 
-  OUTCOME   KILL
-            A hard blocker fired. Do not submit as written.
+  OUTCOME   ROUTE-TO-VERIFY
+            A claim-heuristic hard rule fired. By default it routes to verification instead of killing the finding; use --strict to turn it back into a hard stop. This is not a clearance.
   SCORE     60 / 100   (uncalibrated heuristic; not a probability; threshold 50)
 
   HARD  P18  Known characteristic documented in a prior audit
@@ -53,13 +53,24 @@ viability-gate 0.7.0  —  cmp-04.md
 
 <!-- END:example -->
 
-P18 is the hard stop. P7 is in the pass list. P26 is not in this output: it is opt-in (`--severity-notes`) because on the 0.6.0 bench it fired on every report. Gate A1 is `?` because no `--target` was passed, and `?` is not a pass. The score is 100 minus the weights that fired. It is not a probability, and it does not mean the cited code was opened.
+P18 is routed to verification by default; it was the hard stop before 0.8.0, and `--strict` restores that. P7 is in the pass list. P26 is not in this output: it is opt-in (`--severity-notes`) because on the 0.6.0 bench it fired on every report. Gate A1 is `?` because no `--target` was passed, and `?` is not a pass. The score is 100 minus the weights that fired. It is not a probability, and it does not mean the cited code was opened.
 
 ![cmp-04 through vg](docs/demo.gif)
 
 ## Benchmark
 
-220 paid Medium/High findings (110 Code4rena, 110 Sherlock) and 120 invalid or won't-fix findings, labels applied after `vg` ran. The selection rule and the per-rule table are in [docs/benchmark.md](docs/benchmark.md). Re-scored on 0.7.0 against the same manifest.
+220 paid Medium/High findings (110 Code4rena, 110 Sherlock) and 120 invalid or won't-fix findings, labels applied after `vg` ran. The selection rule and the per-rule table are in [docs/benchmark.md](docs/benchmark.md). The per-rule hits were re-scored on 0.7.0 against the same manifest; the 0.8.0 table applies the new default outcome rule to those same hits.
+
+**0.8.0 default** (a claim-heuristic hard hit is ROUTE-TO-VERIFY):
+
+| Set | N | ROUTE-TO-VERIFY | Rate | Hard KILL |
+|---|---:|---:|---:|---:|
+| Paid Medium/High | 220 | 12 | 5.5% | 0 |
+| Invalid + won't-fix | 120 | 13 | 10.8% | 0 |
+| Code4rena QA | 60 | 11 | 18.3% | 0 |
+| Sherlock Low/Info | 60 | 9 | 15.0% | 0 |
+
+**`--strict` / 0.7.0** (the same hits, as hard stops):
 
 | Set | N | Hard KILL | Rate | 0.6.0 |
 |---|---:|---:|---:|---:|
@@ -68,14 +79,14 @@ P18 is the hard stop. P7 is in the pass list. P26 is not in this output: it is o
 | Code4rena QA | 60 | 11 | 18.3% | 23.3% |
 | Sherlock Low/Info | 60 | 9 | 15.0% | 16.7% |
 
-A hard kill on this pair is right about half the time: 12 of 25 kills are paid findings (48%). The unpaid kill rate divided by the paid kill rate is about 2.0 (it was 1.8 on 0.6.0). That is a weak separator. Nine of the 12 paid kills are still P2. P3 no longer hard-kills on this set (7 paid fires, 0 of them hard). The in-sample recall further down is a different set and an older catalog.
+The separator is weak in both modes: 12 of the 25 default routes are paid findings (52% precision), and the unpaid route rate divided by the paid route rate is about 2.0 (it was 1.8 on 0.6.0). Nine of the 12 paid routes are P2. P3 no longer hard-kills on this set (7 paid fires, 0 of them hard). The default is deliberately the weaker claim: a wrong route asks for verification, a wrong kill stopped a submission. The in-sample recall further down is a different set and an older catalog.
 
 ## What you run
 
 ```bash
 vg check finding.md
 vg check finding.md --target repo --commit <sha>
-vg check finding.md --funnel
+vg check finding.md --strict
 vg check finding.md --severity-notes
 vg check finding.md --ledger ledger.yaml --scope scope.txt --known-issues known.yaml --index index.yaml
 vg import audit audit.yaml --out target/
@@ -101,11 +112,13 @@ Without `--target`, A1 is unknown. The prose score does not change, because noth
 
 The check does not compare a quoted snippet byte for byte, and it does not prove the function is reachable from an external entry point.
 
-## Funnel mode
+## Strict mode (pre-0.8.0)
 
-`vg check finding.md --funnel` is the audit-operator setting. Claim-heuristic hard rules (`P1`–`P26`) become **ROUTE-TO-VERIFY** instead of **KILL**. The rule is still listed, and its weight still comes off the score. `--fail-on-kill` does not fail on a route.
+By default a claim-heuristic hard rule (`P1`–`P26`) is **ROUTE-TO-VERIFY**, not **KILL**. The rule is still listed, and its weight still comes off the score. `--fail-on-kill` does not fail on a route. This is the default because the public benchmark does not show a separator strong enough to justify stopping a submission: on 0.7.0 the hard kills were 48% precise and hit 5.5% of paid findings.
 
-P2 and P3 are also softer with the flag off. "No one but the admin can…" is a privilege claim and kills. An unprivileged yield theft that mentions an owner setting a parameter, or front-running, does not die for those words. A bare "front-run" holds. "Front-run-only" and "operator delay" still kill, and `--funnel` turns that kill into a route.
+`vg check finding.md --strict` restores the pre-0.8.0 hard stop: those rules are **KILL** again. A known-issue match and a failed citation anchor are **KILL** in every mode. `--funnel` is still accepted as a deprecated alias for the default.
+
+P2 and P3 are softer in the default mode. "No one but the admin can…" is a privilege claim; the default routes it, and `--strict` kills it. An unprivileged yield theft that mentions an owner setting a parameter, or front-running, does not die for those words. A bare "front-run" holds. "Front-run-only" and "operator delay" are hard under `--strict` and routes by default.
 
 P26 does not run unless `--severity-notes`. It fired on every item of the 0.6.0 bench and was not a signal.
 
@@ -118,8 +131,8 @@ P1–P22 are the rejection shapes (privileged role, best-practice, prior audit, 
 | # | Condition | Outcome |
 |---|---|---|
 | 1 | a structured hard finding (known-issue match, or `CITE`) | **KILL** |
-| 2 | a claim-heuristic hard rule, with `--funnel` | **ROUTE-TO-VERIFY** |
-| 3 | a claim-heuristic hard rule, without `--funnel` | **KILL** |
+| 2 | a claim-heuristic hard rule (default) | **ROUTE-TO-VERIFY** |
+| 3 | a claim-heuristic hard rule, with `--strict` | **KILL** |
 | 4 | any soft rule, any failed gate, or score under the threshold | **HOLD** |
 | 5 | any warn rule with weight | **NOTE** |
 | 6 | any gate `?` | **INCOMPLETE** |
@@ -156,6 +169,8 @@ The 52-point gap is the summary: good at saying stop, bad at saying why. The rul
 
 **A HOLD is advice.** The researcher still decides.
 
+**The hard stop is opt-in since 0.8.0.** The 2026-11-10 review showed the 0.7.0 hard kill hitting 12 of 220 paid findings (5.5%) at 48% precision, and the same benchmark shows no claim rule with enough support and precision to justify a default stop. The default therefore routes claim rules to verification; `--strict` restores the stop for callers who accept that trade. The claim-by-claim evidence is [docs/validation.md](docs/validation.md).
+
 ## Related
 
 - [data/rejection-taxonomy/](data/rejection-taxonomy/) — the public log this catalog is derived from, snapshotted from [rejection-taxonomy](https://github.com/KhomDev/rejection-taxonomy) v0.6.0 (code MIT, data and prose CC BY 4.0). Which buckets the catalog can reach, against the `earliest_gate` column of that snapshot:
@@ -188,9 +203,10 @@ The 52-point gap is the summary: good at saying stop, bad at saying why. The rul
 - [realism-gate](https://github.com/KhomDev/realism-gate) — a static checker for the proof, after this one
 - [examples/bench/](examples/bench/) — the synthetic bench fixture. It proves the harness runs. It measures nothing about the world.
 - [docs/rules/](docs/rules/) — generated page per rule
+- [docs/validation.md](docs/validation.md) — the claim-by-claim validation ledger, including the 2026-11-06 audit and the 2026-11-10 review
 
 Pin to a tag, not to `main`:
-[viability-gate v0.7.0](https://github.com/KhomDev/viability-gate/tree/v0.7.0).
+[viability-gate v0.8.0](https://github.com/KhomDev/viability-gate/tree/v0.8.0).
 
 ## License
 
