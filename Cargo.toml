@@ -1,10 +1,10 @@
 [package]
 name = "viability-gate"
-version = "0.8.1"
+version = "0.9.0"
 edition = "2021"
-description = "Offline, deterministic pre-submission checker for smart-contract audit findings. Heuristic, in-sample calibrated."
+description = "FINAL 0.9.0, deprecated: moved to priorart (prior-art matching) and realism-gate (claim checks). Install priorart instead."
 license = "MIT"
-repository = "https://github.com/KhomDev/viability-gate"
+repository = "https://github.com/KhomDev/priorart"
 keywords = ["bug-bounty", "smart-contract", "audit", "triage", "security"]
 categories = ["command-line-utilities", "development-tools"]
 readme = "README.md"

@@ -1,5 +1,17 @@
 # viability-gate
 
+> **FINAL RELEASE — 0.9.0, deprecated 2026-11-12. Do not start here.**
+> This crate was consolidated into two self-contained tools, one per question:
+> **[priorart](https://github.com/KhomDev/priorart)** answers *has this been found, is it excluded,
+> and can it be paid?* (import, identifier matching, gates G1–G4, ledger schema v1, vocabularies);
+> **[realism-gate](https://github.com/KhomDev/realism-gate) 1.0** answers *does the proof prove the
+> claim?* (PoC rules RG01–RG20, citation anchor at a commit, claim ↔ evidence binding).
+>
+> What did **not** move: the P1–P26 prose anti-patterns, the ecosystem packs and the 0–100 score.
+> The project's own benchmark showed they did not separate paid from unpaid findings (a route was
+> right 13 times in 25), so they are deleted rather than carried forward. `vg` 0.9.0 is the last
+> version and it keeps working exactly as 0.8.1 did, with a one-line stderr notice. It is not yanked.
+
 **A second-opinion writing filter for a draft finding.** It reads the report. It does not decide that the bug is real, and a `CLEAR` is not a prediction that a program will pay, or that the report will avoid Informative, Duplicate, or out of scope. **Since 0.8.0 a claim-heuristic rule does not hard-kill by default:** it routes the finding to verification, and `--strict` restores the pre-0.8.0 hard stop for callers who want it.
 
 For bug-bounty hunters, and for anyone using an AI to draft the report. One offline binary. No account, no API key, no network.
@@ -11,16 +23,16 @@ cargo install --git https://github.com/KhomDev/viability-gate
 vg check finding.md
 ```
 
-0.8.1 is not published to crates.io. Install from git, or `cargo install --path .` from a checkout. Rust 1.89 or newer if you build it. Release binaries need no Rust. Both `vg` and `viability-gate` are installed; they are the same program.
+0.9.0 is the final crate release and is published to crates.io. It is a deprecation release: the code is 0.8.1 with one stderr notice, so existing pins keep working. For new work use [priorart](https://github.com/KhomDev/priorart) and [realism-gate](https://github.com/KhomDev/realism-gate). Rust 1.89 or newer if you build it. Release binaries need no Rust. Both `vg` and `viability-gate` are installed; they are the same program.
 
 ## Before and after
 
-A real report, closed Informative as a duplicate of a published contest issue. Personal emails were not in the text. On 0.5.0, P7 held it: the matcher saw `best-practice` inside `rather than a best-practice observation`, and P18 did not see `accepted as Sherlock issue M-1`. This is what 0.8.1 prints on that report: P18 routes it to verification rather than killing it. `scripts/regen-readme-examples.sh` produces the block, and CI fails if it drifts.
+A real report, closed Informative as a duplicate of a published contest issue. Personal emails were not in the text. On 0.5.0, P7 held it: the matcher saw `best-practice` inside `rather than a best-practice observation`, and P18 did not see `accepted as Sherlock issue M-1`. This is what 0.9.0 prints on that report: P18 routes it to verification rather than killing it. `scripts/regen-readme-examples.sh` produces the block, and CI fails if it drifts.
 
 <!-- BEGIN:example -->
 
 ```text
-viability-gate 0.8.1  —  cmp-04.md
+viability-gate 0.9.0  —  cmp-04.md
 
   OUTCOME   ROUTE-TO-VERIFY
             A claim-heuristic hard rule fired. By default it routes to verification instead of killing the finding; use --strict to turn it back into a hard stop. This is not a clearance.
@@ -206,7 +218,7 @@ The 52-point gap is the summary: good at saying stop, bad at saying why. The rul
 - [docs/validation.md](docs/validation.md) — the claim-by-claim validation ledger, including the 2026-11-06 audit and the 2026-11-10 review
 
 Pin to a tag, not to `main`:
-[viability-gate v0.8.1](https://github.com/KhomDev/viability-gate/tree/v0.8.1).
+[viability-gate v0.9.0](https://github.com/KhomDev/priorart/tree/v0.9.0).
 
 ## License
 

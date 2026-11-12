@@ -9,6 +9,27 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-12
+
+**Final release. Deprecated. The repository is archived as priorart.** The project was
+consolidated into [priorart](https://github.com/KhomDev/priorart) (the renamed viability-gate
+repository; the old GitHub URL redirects) for prior-art matching and gates, and into
+[realism-gate](https://github.com/KhomDev/realism-gate) 1.0 for claim checks.
+
+This release is 0.8.1's code plus one stderr notice and this documentation. **No rule, gate,
+outcome or CLI behaviour changes**, and the crate is **not yanked**, so a pin to
+`viability-gate = "0.8"` keeps resolving.
+
+Deleted rather than moved: the P1–P26 prose anti-patterns, the ecosystem packs and the 0–100 score.
+The public benchmark showed the hard kill was right 13 times in 25 (52%), and 5.5% of paid
+Medium/High findings were stopped; carrying that into priorart would carry the weakness forward.
+
+### Changed
+
+- Version 0.8.1 -> 0.9.0. Both binaries print a one-line deprecation notice to stderr.
+- README is a deprecation notice pointing at priorart and realism-gate.
+- Crate metadata points at the renamed priorart repository.
+
 ## [0.8.1] - 2026-11-10
 
 A correction release. 0.8.0 shipped a precision sentence that inverted the
@@ -581,7 +602,8 @@ The tree itself is unchanged except for the two fixes recorded here.
 - The rule catalog and gate definitions as data, embedded in the binary.
 - The fixture suite: one positive and one negative case per anti-pattern.
 
-[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/KhomDev/priorart/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/KhomDev/priorart/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/KhomDev/viability-gate/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/KhomDev/viability-gate/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/KhomDev/viability-gate/compare/v0.6.0...v0.7.0
