@@ -8,10 +8,10 @@ is a file you already saved.
 ```text
 priorart check finding.md --dossier rain-usdr.dossier
 
-HAS THIS BEEN FOUND?  2 prior items share >=2 strong identifiers
+HAS THIS BEEN FOUND?  2 prior items to read (share >=2 symbol identifiers)
   [audit: Internal review 2026-08, p.14, section H-02]  "backing check ... distributeSurplus ..."
      shared: BalanceSheet.distributeSurplus, ReserveBackingShortfall
-  -> read both before writing the PoC. priorart does not decide duplicates.
+  -> reading list only. priorart does not decide duplicates; see docs/benchmark.md
 IS IT EXCLUDED?       no clause class matches your preconditions (attacker: any user; oracle: none)
 CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable
 ```

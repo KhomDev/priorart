@@ -146,22 +146,24 @@ From the demo finding, in `NOTES`:
 And the ranked item itself, in `HAS THIS BEEN FOUND?`:
 
 ```text
-HAS THIS BEEN FOUND?  1 prior item shares >=2 strong identifiers
+HAS THIS BEEN FOUND?  1 prior item to read (shares >=2 symbol identifiers)
   [audit: internal-review.md p.1, section H-02 Reserve backing check]  "The backing check in `BalanceSheet.distributeSurplus` reverts with `ReserveBackingShortfall` when the stable reserve is smaller than the summed debt of fee-exempt collateral types."
-     shared: balancesheet.distributesurplus, pegstabilitymodule, pegstabilitymodule.sellstable, reservebackingshortfall, vaultengine.open
+     shared: balancesheet, balancesheet.distributesurplus, pegstabilitymodule, pegstabilitymodule.sellstable, reservebackingshortfall, vaultengine, vaultengine.open
      their mechanism: accounting_order_of_operations
+  -> reading list only. priorart does not decide duplicates; see docs/benchmark.md
 ```
 
-The section ends with a reading-list note. 0.1.0 ships retrieval-only: it prints
-no duplicate warning, because the final benchmark's false-alarm rate is above the
+The closing line is the whole point of retrieval-only mode: 0.1.0 prints no
+duplicate warning, because the final benchmark's false-alarm rate is above the
 plan's trigger ([benchmark.md](benchmark.md)).
 
 **What `null` means here:** an audit with no `covers` list prints
 `no 'covers' list recorded, so coverage could not be read`; a dossier with no
 audit surface prints `no prior-audit surface in this dossier`. Neither is
-"not previously found". The no-hit line is `no prior item shares >=2 strong
-identifiers`, and a finding with fewer than two identifiers says it cannot be
-ranked at all.
+"not previously found". The no-hit line is
+`nothing ranked (no prior item shares >=2 symbol identifiers)`; a finding with
+fewer than two identifiers says
+`nothing ranked (the finding names fewer than 2 symbol identifiers)`.
 
 ## Why there is no score
 

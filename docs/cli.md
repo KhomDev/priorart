@@ -98,10 +98,11 @@ payout gate reports that it could not compare.
 ```text
 $ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
 
-HAS THIS BEEN FOUND?  1 prior item shares >=2 strong identifiers
+HAS THIS BEEN FOUND?  1 prior item to read (shares >=2 symbol identifiers)
   [audit: internal-review.md p.1, section H-02 Reserve backing check]  "The backing check in `BalanceSheet.distributeSurplus` reverts with `ReserveBackingShortfall` when the stable reserve is smaller than the summed debt of fee-exempt collateral types."
-     shared: balancesheet.distributesurplus, pegstabilitymodule, pegstabilitymodule.sellstable, reservebackingshortfall, vaultengine.open
+     shared: balancesheet, balancesheet.distributesurplus, pegstabilitymodule, pegstabilitymodule.sellstable, reservebackingshortfall, vaultengine, vaultengine.open
      their mechanism: accounting_order_of_operations
+  -> reading list only. priorart does not decide duplicates; see docs/benchmark.md
 
 IS IT EXCLUDED?       no clause class matches your preconditions (attacker: any user; oracle: none)
 
@@ -110,9 +111,9 @@ CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, f
   High is at or above the floor (Medium)
 ```
 
-The section ends with a reading-list note. 0.1.0 ships retrieval-only: it prints
-no duplicate warning, because the final benchmark's false-alarm rate is above the
-plan's trigger ([benchmark.md](benchmark.md)).
+That closing note is retrieval-only: 0.1.0 prints no duplicate warning, because
+the final benchmark's false-alarm rate is above the plan's trigger
+([benchmark.md](benchmark.md)).
 
 A match with `--fail-on-excluded` prints the same evidence and exits 1:
 
@@ -125,11 +126,10 @@ $ echo $?
 1
 ```
 
-For `--fail-on-unpayable`, the finding must claim a severity below the floor
-(e.g. `Severity: Low` against the demo's Medium floor); the output then reads
-`Low is below the floor and pays nothing` and the exit is 1. The committed
-`examples/finding-unpayable.md` claims Medium against a Medium floor and is
-therefore payable; the exit-1 path is exercised by
+For `--fail-on-unpayable`, the finding must claim a severity below the floor.
+`examples/finding-unpayable.md` claims `Severity: Low` against the demo's Medium
+floor, prints `Low is below the floor and pays nothing`, and exits 1 with the
+flag. The same test is
 `tests/cli.rs::fail_on_unpayable_exits_one_below_the_floor`.
 
 ## ledger validate
@@ -150,10 +150,10 @@ document or more than one YAML document in a file.
 
 ```text
 $ priorart ledger validate examples/ledger.example.yaml examples/tier-shapes.example.yaml
-WARN  priorart/examples/ledger.example.yaml: entry[0] (example-lending-v2): source_url uses a placeholder host (example.invalid) - expected in an example file, not in a real ledger.
+WARN  examples/ledger.example.yaml: entry[0] (example-lending-v2): source_url uses a placeholder host (example.invalid) - expected in an example file, not in a real ledger.
 ...
-priorart/examples/ledger.example.yaml: 1 entry, 0 error(s), 1 warning(s)
-priorart/examples/tier-shapes.example.yaml: 5 entries, 0 error(s), 9 warning(s)
+examples/ledger.example.yaml: 1 entry, 0 error(s), 1 warning(s)
+examples/tier-shapes.example.yaml: 5 entries, 0 error(s), 9 warning(s)
 
 6 entries, 0 error(s), 10 warning(s)
 ```

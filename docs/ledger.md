@@ -66,10 +66,10 @@ Text: `WARN` lines on stdout, `ERROR` lines on stderr, then a one-line summary.
 
 ```text
 $ priorart ledger validate examples/ledger.example.yaml examples/tier-shapes.example.yaml
-WARN  priorart/examples/ledger.example.yaml: entry[0] (example-lending-v2): source_url uses a placeholder host (example.invalid) - expected in an example file, not in a real ledger.
+WARN  examples/ledger.example.yaml: entry[0] (example-lending-v2): source_url uses a placeholder host (example.invalid) - expected in an example file, not in a real ledger.
 ...
-priorart/examples/ledger.example.yaml: 1 entry, 0 error(s), 1 warning(s)
-priorart/examples/tier-shapes.example.yaml: 5 entries, 0 error(s), 9 warning(s)
+examples/ledger.example.yaml: 1 entry, 0 error(s), 1 warning(s)
+examples/tier-shapes.example.yaml: 5 entries, 0 error(s), 9 warning(s)
 
 6 entries, 0 error(s), 10 warning(s)
 ```
