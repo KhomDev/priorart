@@ -43,6 +43,15 @@ src/check.rs; no scoring, ranking, threshold or negation change). Both the
 numbers (26/60 = 43.3%, 39/64 = 60.9%, n=1 known-prior, 0 errors), so the frozen
 sha in `results.json` and in this file is `dabfcc0c...`.
 
+**Release provenance.** `dabfcc0c...` is the debug binary this harness measured.
+It is not the crates.io or GitHub-release artefact: release-profile builds have a
+different hash. The durable provenance is the source commit (and tag) the release
+is cut from. At measurement time the release tree was uncommitted (priorart HEAD
+was `f715c07` with 226 changed or untracked paths), so `results.json.release`
+carries null commit, tag and release-binary hash with status "pending"; the Lead
+records them there when the release is cut. Quoting `dabfcc0c...` without the
+source commit is only valid for this benchmark run, not as a release identifier.
+
 **Correction, 2026-11-13.** An earlier interim report by this harness said
 duplicate recall@5 was 0/64. That number was wrong: the harness compared the
 judged id `acc:001-M` with the dossier item `acc-001-M.md` without normalising

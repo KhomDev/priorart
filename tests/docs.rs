@@ -7,6 +7,7 @@
 
 use std::path::PathBuf;
 use std::process::Command;
+use std::sync::Mutex;
 
 const BEGIN: &str = "<!-- BEGIN GENERATED EXAMPLE (scripts/regen-readme-examples.sh) -->";
 const END: &str = "<!-- END GENERATED EXAMPLE -->";
@@ -35,8 +36,16 @@ fn run(args: &[&str]) -> String {
         .to_string()
 }
 
+/// Serialises the tests that build the committed fixture in place: they write
+/// the same dossier and would otherwise race on the atomic rename, failing one
+/// of them with "cannot rename into ... (os error 2)".
+static FIXTURE_LOCK: Mutex<()> = Mutex::new(());
+
 /// The generated block, without the marker lines.
 pub fn example_block() -> String {
+    let _guard = FIXTURE_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     let build = run(&["build", "examples/dossier-demo"]);
     let check = run(&[
         "check",

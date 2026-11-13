@@ -6,14 +6,16 @@ priorart never touches the network. This is a design constraint, not a promise:
   (`tests/cli.rs::the_crate_has_no_http_client`) fails if `reqwest`, `ureq`,
   `hyper`, `isahc`, `curl`, `surf`, `attohttpc`, `minreq` or `awc` appears -
   and fails if a source file opens a `TcpStream` or `UdpSocket`.
-- `Cargo.lock` is checked for the same crate names, so a transitive addition
-  cannot slip in unnoticed.
+- `Cargo.lock` is checked for the network crate names that matter (`reqwest`,
+  `ureq`, `hyper`, `isahc`, `attohttpc`, `minreq`, `tokio`), so a transitive
+  addition cannot slip in unnoticed.
 - Everything a program page says is a file **you** saved. There is no fetch
   command, no URL argument, and no cache to go stale. Fetching a platform page is
   that platform's terms question, and staleness is why this tool refuses to hold
   program data.
 - The vocabularies and the rejection dataset are compiled into the binary with
-  `include_str!`. There is no data directory to point at, and no update check.
+  `include_str!`. There is no data directory to point at, no rules download and
+  no update check: the vocabulary is exactly what shipped with your binary.
 
 The only place network access is allowed is the benchmark harness under
 `priorart/eval/`, which fetches the public corpus by pointer. That directory is
