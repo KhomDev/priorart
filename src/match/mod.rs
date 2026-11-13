@@ -263,7 +263,7 @@ pub struct Profile {
     pub paths: BTreeSet<String>,
     pub roots: BTreeSet<String>,
     /// The identifier as it was written, keyed by its lowercased form, so a
-    /// dossier stores BalanceSheet rather than balancesheet and a rebuilt
+    /// dossier stores FeeLedger rather than feeledger and a rebuilt
     /// profile still recognises it as a symbol.
     display: std::collections::BTreeMap<String, String>,
 }
@@ -534,7 +534,7 @@ pub fn find_unnegated(re: &Regex, text: &str) -> Option<String> {
 /// The quote is the sentence that names a strong identifier, returned whole. A
 /// sentence longer than MAX_QUOTE_CHARS is windowed around the identifier at a
 /// word boundary with ellipses, never cut at a fixed length mid-clause. A
-/// period inside an identifier (BalanceSheet.distributeSurplus) is not a
+/// period inside an identifier (FeeLedger.distributeFees) is not a
 /// sentence boundary.
 pub fn evidence_quote(text: &str) -> String {
     let profile = Profile::from_text(text);
@@ -670,8 +670,8 @@ pub fn mentions_word(text: &str, word: &str) -> bool {
     Regex::new(&format!(r"(?i)\b{}\b", regex::escape(word))).is_ok_and(|r| r.is_match(text))
 }
 
-/// The file stem of a scope or coverage entry (VaultEngine for
-/// src/VaultEngine.sol), or None when it is too short to identify anything.
+/// The file stem of a scope or coverage entry (LoanBook for
+/// src/LoanBook.sol), or None when it is too short to identify anything.
 pub fn file_stem(entry: &str) -> Option<&str> {
     let name = entry.trim().rsplit(['/', '\\']).next()?;
     let stem = name.split('.').next()?;
@@ -968,21 +968,21 @@ mod tests {
         for i in 0..10 {
             items.push(item(
                 &format!("item-{:04}", i + 1),
-                "The VaultEngine contract calls PegStabilityModule on every route.",
+                "The LoanBook contract calls SwapDesk on every route.",
             ));
         }
         items.push(item(
             "item-0011",
-            "A rare path: ReserveBackingShortfall fires inside BalanceSheet.",
+            "A rare path: FeeAccountingMismatch fires inside FeeLedger.",
         ));
-        let hits = rank(&items, "VaultEngine and PegStabilityModule appear here", 5);
+        let hits = rank(&items, "LoanBook and SwapDesk appear here", 5);
         assert!(
             hits.is_empty(),
             "symbols shared by most items are generic: {hits:?}"
         );
         let hits = rank(
             &items,
-            "ReserveBackingShortfall and BalanceSheet both appear here",
+            "FeeAccountingMismatch and FeeLedger both appear here",
             5,
         );
         assert_eq!(hits.len(), 1, "{hits:?}");
@@ -1016,7 +1016,7 @@ mod tests {
     fn a_path_alone_does_not_meet_the_threshold() {
         let prior = item(
             "item-0001",
-            "The bug is in src/Vault.sol: distributeSurplus loses the refund.",
+            "The bug is in src/Vault.sol: distributeFees loses the refund.",
         );
         let draft = "src/Vault.sol is where the settle path lives.";
         assert!(
@@ -1027,8 +1027,8 @@ mod tests {
 
     #[test]
     fn one_shared_identifier_is_below_the_threshold() {
-        let prior = item("item-0001", "The distributeSurplus call reverts.");
-        let draft = "Only distributeSurplus is mentioned once, with settleSurplus.";
+        let prior = item("item-0001", "The distributeFees call reverts.");
+        let draft = "Only distributeFees is mentioned once, with settleFees.";
         assert!(rank(&[prior], draft, 5).is_empty());
     }
 
@@ -1089,16 +1089,16 @@ mod tests {
 
     #[test]
     fn quotes_are_whole_sentences_and_never_cut_inside_an_identifier() {
-        let text = "The backing check in BalanceSheet.distributeSurplus reverts with ReserveBackingShortfall when the stable reserve is smaller than the summed debt.";
+        let text = "The consistency check in FeeLedger.distributeFees reverts with FeeAccountingMismatch when the fee index rounds up past the collected balance.";
         let quote = evidence_quote(text);
-        assert!(quote.ends_with("summed debt."), "{quote}");
-        assert!(quote.contains("BalanceSheet.distributeSurplus"), "{quote}");
+        assert!(quote.ends_with("collected balance."), "{quote}");
+        assert!(quote.contains("FeeLedger.distributeFees"), "{quote}");
     }
 
     #[test]
     fn a_very_long_sentence_is_windowed_at_a_word_boundary() {
         let long = format!(
-            "{} ReserveBackingShortfall {}",
+            "{} FeeAccountingMismatch {}",
             "word ".repeat(90),
             "tail ".repeat(90)
         );
@@ -1108,7 +1108,7 @@ mod tests {
             "window drifted too far: {}",
             quote.chars().count()
         );
-        assert!(quote.contains("ReserveBackingShortfall"), "{quote}");
+        assert!(quote.contains("FeeAccountingMismatch"), "{quote}");
         assert!(
             quote.starts_with('\u{2026}') && quote.ends_with('\u{2026}'),
             "{quote}"

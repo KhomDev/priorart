@@ -1,10 +1,7 @@
-# Internal review - August 2026
+# Internal review
 
-## H-02 Reserve backing check
+## M-03 Fee index rounding
 
-The backing check in `BalanceSheet.distributeSurplus` reverts with `ReserveBackingShortfall`
-when the stable reserve is smaller than the summed debt of fee-exempt collateral types. The check
-assumes every such debt has a reserve counterpart from `PegStabilityModule.sellStable`.
-
-The review's test drove the shortfall only through direct ledger writes, never through
-`VaultEngine.open` on a fee-exempt collateral type. Severity: High. Reported 2026-08-14.
+The consistency check in `FeeLedger.distributeFees` reverts with `FeeAccountingMismatch`
+when the fee index rounds up past the collected balance. The cause is rounding in the index
+update, not loan closure; the fix rounds the index down. Severity: Medium.

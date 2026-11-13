@@ -1,4 +1,4 @@
-# Rain - scope and rewards
+# Example Lend - scope and rewards
 
 ## Rewards
 
@@ -8,9 +8,9 @@
 
 ## In scope
 
-- src/VaultEngine.sol
-- src/BalanceSheet.sol
-- src/PegStabilityModule.sol
+- src/LoanBook.sol
+- src/FeeLedger.sol
+- src/SwapDesk.sol
 
 ## Out of scope
 

@@ -14,8 +14,8 @@ Two classes, extracted from the finding and from every dossier item:
   `camelCase`, `Contract.function`, `module::function`, plus backticked spans
   (a backticked span is split on whitespace, commas and parentheses, so a
   backticked sentence contributes its tokens, not one giant identifier).
-  Examples: `distributeSurplus`, `ReserveBackingShortfall`,
-  `BalanceSheet.distributeSurplus`, `VaultEngine.open`.
+  Examples: `distributeFees`, `FeeAccountingMismatch`,
+  `FeeLedger.distributeFees`, `LoanBook.close`.
 - **Paths** - file paths such as `src/Vault.sol` and bare source file names with
   a source extension.
 
@@ -41,7 +41,7 @@ items, unless it is named by at most two items. A symbol named by one or two
 items is rare in absolute terms, which keeps the rule usable on a dossier that
 holds one audit and its index. Generic symbols never count toward the threshold.
 
-This is what stops a shared base contract (`VaultEngine` in every finding of
+This is what stops a shared base contract (`LoanBook` in every finding of
 one repo) from making every pair of findings look related. It does not remove
 the problem; it reduces it.
 

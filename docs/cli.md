@@ -1,6 +1,6 @@
 # CLI reference
 
-Every command, flag and exit code in `priorart 0.1.0`. `priorart --help` and
+Every command, flag and exit code in `priorart 0.1.1`. `priorart --help` and
 `priorart <command> --help` print the same surface; the binary is the source of
 truth for wording.
 
@@ -64,16 +64,16 @@ source is skipped). Exit 2 when the folder does not exist or holds no inputs.
 
 ```text
 $ priorart build examples/dossier-demo
-priorart 0.1.0 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.1.1 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
   3 source(s), 13 item(s)
     audit-finding    1
     known-issue      2
     payout-tier      3
     scope-clause     4
     scope-path       3
-  [src-0001] program-page  scope.md  p.1  sha256 ecf837516e94
-  [src-0002] known-issues  known-issues.md  p.1  sha256 46534c52f77f
-  [src-0003] audit  audits/internal-review.md  p.1  sha256 79e56ab10021
+  [src-0001] program-page  scope.md  p.1  sha256 b63b6be9771d
+  [src-0002] known-issues  known-issues.md  p.1  sha256 a145ccf17597
+  [src-0003] audit  audits/internal-review.md  p.1  sha256 64bff58ef788
   note: 3 source(s) indexed (1 audit(s)); 13 item(s) extracted
 Next: priorart check <finding.md> --dossier examples/dossier-demo/dossier-demo.dossier
 ```
@@ -98,15 +98,17 @@ payout gate reports that it could not compare.
 ```text
 $ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
 
-HAS THIS BEEN FOUND?  1 prior item to read (shares >=2 symbol identifiers)
-  [audit: internal-review.md p.1, section H-02 Reserve backing check]  "The backing check in `BalanceSheet.distributeSurplus` reverts with `ReserveBackingShortfall` when the stable reserve is smaller than the summed debt of fee-exempt collateral types."
-     shared: balancesheet, balancesheet.distributesurplus, pegstabilitymodule, pegstabilitymodule.sellstable, reservebackingshortfall, vaultengine, vaultengine.open
-     their mechanism: accounting_order_of_operations
+HAS THIS BEEN FOUND?  2 prior items to read (share >=2 symbol identifiers)
+  [audit: internal-review.md p.1, section M-03 Fee index rounding]  "The consistency check in `FeeLedger.distributeFees` reverts with `FeeAccountingMismatch` when the fee index rounds up past the collected balance."
+     shared: feeaccountingmismatch, feeledger, feeledger.distributefees
+     their mechanism: rounding_direction   yours: accounting_order_of_operations
+  [known-issues: known-issues.md p.1, section Known issues]  "`SwapDesk.swapIn` can reach its cap during high volume; acknowledged, by design."
+     shared: swapdesk, swapdesk.swapin
   -> reading list only. priorart does not decide duplicates; see docs/benchmark.md
 
 IS IT EXCLUDED?       no clause class matches your preconditions (attacker: any user; oracle: none)
 
-CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable (cited: https://example.invalid/rain/rewards, section Rewards)
+CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable (cited: https://example.invalid/lend/rewards, section Rewards)
   "High: 10,000 USD"
   High is at or above the floor (Medium)
 ```
@@ -185,7 +187,7 @@ existing file without `--force`. `build` reads the scaffold without edits.
 
 ```text
 $ priorart init my-program
-priorart 0.1.0 - scaffolded my-program
+priorart 0.1.1 - scaffolded my-program
 
   program.yaml
   scope.md

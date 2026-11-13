@@ -37,7 +37,7 @@ fn demo_finding(tmp: &TempDir) -> String {
 fn version_and_help_are_final() {
     let v = run(&["--version"]);
     assert_eq!(v.code, 0);
-    assert!(v.stdout.contains("priorart 0.1.0"), "{}", v.stdout);
+    assert!(v.stdout.contains("priorart 0.1.1"), "{}", v.stdout);
 
     let h = run(&["--help"]);
     assert_eq!(h.code, 0);
@@ -244,7 +244,7 @@ fn check_prints_three_labelled_sections_with_a_whole_sentence_quote() {
         r.stdout
     );
     assert!(
-        r.stdout.contains("to read (shares >=2 symbol identifiers)"),
+        r.stdout.contains("to read (share") && r.stdout.contains(">=2 symbol identifiers)"),
         "reading-list headline is missing: {}",
         r.stdout
     );
@@ -256,21 +256,21 @@ fn check_prints_three_labelled_sections_with_a_whole_sentence_quote() {
     // D1: the quote is the whole sentence, not a fixed-length cut.
     assert!(
         r.stdout
-            .contains("when the stable reserve is smaller than the summed debt"),
+            .contains("when the fee index rounds up past the collected balance"),
         "quote was truncated: {}",
         r.stdout
     );
-    assert!(!r.stdout.contains("BalanceSheet\"\n"), "{}", r.stdout);
+    assert!(!r.stdout.contains("FeeLedger\"\n"), "{}", r.stdout);
     // D2: "no role" must not become a privileged precondition.
     assert!(!r.stdout.contains("privileged_role"), "{}", r.stdout);
     // D3/D4: coverage and scope are recognised by contract name.
     assert!(
-        r.stdout.contains("cited identifier VaultEngine"),
+        r.stdout.contains("cited identifier LoanBook"),
         "{}",
         r.stdout
     );
     assert!(
-        r.stdout.contains("VaultEngine (in src/VaultEngine.sol)"),
+        r.stdout.contains("LoanBook (in src/LoanBook.sol)"),
         "{}",
         r.stdout
     );
@@ -287,10 +287,21 @@ fn check_json_is_valid_against_the_shipped_schema() {
     let errors = validate(&schema("check.schema.json"), &report);
     assert!(errors.is_empty(), "{errors:#?}");
     assert_eq!(report["schema"], "priorart.check/v1");
-    assert_eq!(report["tool_version"], "0.1.0");
+    assert_eq!(report["tool_version"], "0.1.1");
     assert_eq!(report["payout"]["payable"], true);
-    // D5: "No oracle ... is needed" must not become a mechanism claim.
-    assert!(report["finding"]["mechanism_class"].is_null(), "{}", report);
+    // D5: "No oracle ... is needed" must not become a mechanism claim. The demo
+    // finding has its own mechanism (fees left unsettled on close), so the check
+    // is that the class is that one and never the oracle class.
+    assert_eq!(
+        report["finding"]["mechanism_class"], "accounting_order_of_operations",
+        "{}",
+        report
+    );
+    assert_ne!(
+        report["finding"]["mechanism_class"], "oracle_bounds_or_staleness",
+        "{}",
+        report
+    );
     for item in report["prior_art"].as_array().unwrap() {
         assert!(item["shared_identifiers"].as_array().unwrap().len() >= 2);
         assert!(item["page"].as_u64().unwrap() >= 1);
@@ -375,7 +386,7 @@ fn fail_on_excluded_exits_one_only_when_a_clause_matches() {
     let finding = write_finding(
         &tmp,
         "excluded.md",
-        "# Operator can freeze distributions\n\nSeverity: High\n\n## Summary\n\nThe operator can call `VaultEngine.open` with a stale reserve so `BalanceSheet.distributeSurplus` reverts for every depositor.\n",
+        "# Operator can freeze distributions\n\nSeverity: High\n\n## Summary\n\nThe operator can call `LoanBook.close` with a stale reserve so `FeeLedger.distributeFees` reverts for every depositor.\n",
     );
     let plain = run(&["check", &finding, "--dossier", &dossier]);
     assert_eq!(
@@ -401,7 +412,7 @@ fn fail_on_unpayable_exits_one_below_the_floor() {
     let finding = write_finding(
         &tmp,
         "low.md",
-        "# Rounding drift in share accounting\n\nSeverity: Low\n\n## Summary\n\nAny user can shift `BalanceSheet.distributeSurplus` rounding by one wei per call in `src/VaultEngine.sol`.\n",
+        "# Rounding drift in share accounting\n\nSeverity: Low\n\n## Summary\n\nAny user can shift `FeeLedger.distributeFees` rounding by one wei per call in `src/LoanBook.sol`.\n",
     );
     let plain = run(&["check", &finding, "--dossier", &dossier]);
     assert_eq!(plain.code, 0, "{}", plain.stderr);
@@ -423,17 +434,17 @@ fn unicode_and_crlf_findings_are_handled() {
     let unicode = write_finding(
         &tmp,
         "unicode.md",
-        "# Réserve — trésorerie\n\nSeverity: High\n\nLe défaut est dans `BalanceSheet.distributeSurplus` où la réserve « gelée » dépasse le plafond.\n",
+        "# Réserve — trésorerie\n\nSeverity: High\n\nLe défaut est dans `FeeLedger.distributeFees` où la réserve « gelée » dépasse le plafond.\n",
     );
     let r = run(&["check", &unicode, "--dossier", &dossier]);
     assert_eq!(r.code, 0, "{}", r.stderr);
     assert!(
-        r.stdout.contains("BalanceSheet.distributeSurplus"),
+        r.stdout.contains("FeeLedger.distributeFees"),
         "the finding's identifiers must survive non-ASCII text: {}",
         r.stdout
     );
 
-    let lf = "# CRLF finding\n\nSeverity: High\n\n`BalanceSheet.distributeSurplus` and `ReserveBackingShortfall` in `src/VaultEngine.sol`.\n";
+    let lf = "# CRLF finding\n\nSeverity: High\n\n`FeeLedger.distributeFees` and `FeeAccountingMismatch` in `src/LoanBook.sol`.\n";
     let crlf = lf.replace('\n', "\r\n");
     let lf_path = write_finding(&tmp, "lf.md", lf);
     let crlf_path = write_finding(&tmp, "crlf.md", &crlf);

@@ -1,4 +1,4 @@
 # Known issues
 
-- The PSM ceiling can be consumed by self-backed vaults on fee-exempt stable collateral; acknowledged in the internal review H-02.
-- Rounding in `distributeSurplus` is acknowledged and will not be paid.
+- `SwapDesk.swapIn` can reach its cap during high volume; acknowledged, by design.
+- Rounding in `distributeFees` is acknowledged and will not be paid.

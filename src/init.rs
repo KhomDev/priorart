@@ -60,7 +60,7 @@ this file; it never fetches a URL. Replace every line below with the real page.\
 ## In scope\n\
 \n\
 - src/Vault.sol\n\
-- src/VaultEngine.sol\n\
+- src/LoanBook.sol\n\
 \n\
 ## Out of scope\n\
 \n\
@@ -75,7 +75,7 @@ The program's own known-issues list, verbatim. One bullet per issue. Any\n\
 identifier you copy here (a function, a file, an error name) is what priorart\n\
 matches on; paraphrasing it removes the match.\n\
 \n\
-- Rounding in distributeSurplus is acknowledged and will not be paid.\n";
+- Rounding in distributeFees is acknowledged and will not be paid.\n";
 
 const AUDITS_README_MD: &str = "# audits/\n\
 \n\
