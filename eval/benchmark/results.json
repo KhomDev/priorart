@@ -203,10 +203,10 @@
   ],
   "release": {
     "measured_binary_sha256": "dabfcc0ca197ee35b40772cb7db666f17105c5c36faa7f9da7ef783a9a78e12a",
-    "release_binary_sha256": null,
-    "source_commit": null,
-    "tag": null,
-    "status": "pending: the release tree is uncommitted at the time of measurement (priorart HEAD f715c07 with 226 changed/untracked paths), so no commit or tag exists yet. Record the commit and tag here when the Lead cuts the release; the release-profile binary hash will differ from the debug hash."
+    "release_binary_sha256": "b5a8cbf87f32cb6889e12f42198a8732f7d1fbf92da8d9b3fe6a68d75edcedb3",
+    "source_commit": "2c343904a74a79a184fe9cebee3cc9b67367108d",
+    "tag": "v0.1.0",
+    "status": "recorded 2026-11-13: release v0.1.0 is cut from source commit 2c34390. release_binary_sha256 is the x86_64-unknown-linux-gnu executable inside priorart-v0.1.0-x86_64-unknown-linux-gnu.tar.gz (archive sha256 739af6ca0aae33e4e72d1d054a197e8455c4a72bbef91a63faad20836cce97ab); the debug binary hash above is the measurement identifier, not a release identifier. crates.io priorart 0.1.0 was published from the same commit."
   },
   "per_query": [
     {

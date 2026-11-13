@@ -45,11 +45,12 @@ sha in `results.json` and in this file is `dabfcc0c...`.
 
 **Release provenance.** `dabfcc0c...` is the debug binary this harness measured.
 It is not the crates.io or GitHub-release artefact: release-profile builds have a
-different hash. The durable provenance is the source commit (and tag) the release
-is cut from. At measurement time the release tree was uncommitted (priorart HEAD
-was `f715c07` with 226 changed or untracked paths), so `results.json.release`
-carries null commit, tag and release-binary hash with status "pending"; the Lead
-records them there when the release is cut. Quoting `dabfcc0c...` without the
+different hash. The durable provenance is the source commit and tag the release is
+cut from: **v0.1.0, commit `2c343904a74a79a184fe9cebee3cc9b67367108d`**, recorded in
+`results.json.release` together with the release executable hash
+(`b5a8cbf8...`, the x86_64-unknown-linux-gnu binary inside
+`priorart-v0.1.0-x86_64-unknown-linux-gnu.tar.gz`). The release was built from that
+commit and the crate was published from it. Quoting `dabfcc0c...` without the
 source commit is only valid for this benchmark run, not as a release identifier.
 
 **Correction, 2026-11-13.** An earlier interim report by this harness said
