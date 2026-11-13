@@ -1,147 +1,154 @@
 # Contributing
 
-The most valuable contribution to this repository is **a rule with a real cited
-example and both test cases**. The second most valuable is a report that one of
-the published numbers is wrong.
+The most valuable contribution is **a case where priorart was wrong, with the
+file and the re-runnable command**. The second is a documentation fix where the
+docs and the binary disagree. Both are more useful than a new feature.
 
 ## Ground rules
 
-1. **No target names.** No program, platform, chain, repository or protocol name
-   anywhere — not in a rule, a pattern, a docstring, an example, a test fixture,
-   a commit message or an issue. A rule that names a target is a disclosure, and
-   the test suite enforces this. Describe a mechanism by the role its symbols
-   play ("an effective-leverage calculation"), never by its identifier.
-2. **No invented numbers.** Every figure in the docs must come from a command
-   someone ran, with the command recorded next to it, or be labelled "not yet
-   measured". If you cannot measure it, say so; the repository has several
-   `PENDING` and `UNMEASURED` markers and they are deliberate.
-3. **Never weaken a test to make it pass.** If a rule change breaks a fixture,
+1. **No target names.** No program, platform, chain, protocol or repository name
+   in a rule, a pattern, a docstring, an example, a fixture, a commit message or
+   an issue. The public benchmark stores pointers and labels only
+   (`repo@commit` plus a path), never finding text. A doc example that names a
+   real program is a disclosure.
+2. **No invented numbers.** Every figure in a doc must come from a command or a
+   committed file, with the command recorded next to it, or be labelled "not
+   measured". The benchmark's numbers live in `eval/benchmark/results.json`;
+   `docs/benchmark.md` cites it and does not round it.
+3. **Never weaken a test to make it pass.** If a matcher change breaks a fixture,
    either the change is wrong or the fixture is wrong. Decide which, and say
    which in the commit message.
-4. **No private-workspace strings.** `python scripts/check_tripwires.py` must
-   pass. It runs in CI.
-5. **Do not add data.** The tool ships rules, not data. Do not vendor a report
-   corpus, a program list, a reward table or a control set.
+4. **No private-workspace strings.** No local absolute paths, no private
+   classifier output, no blocklist tokens. The release checklist scans for them.
+5. **Do not add data.** The vocabularies and the rejection dataset move only
+   through the two-stage export from their upstream repositories. Never vendor a
+   report corpus, a program list or a reward table; the benchmark fetches by
+   pointer into a gitignored cache.
+6. **The crate stays offline.** No HTTP client crate, no socket, no update check.
+   `tests/cli.rs::the_crate_has_no_http_client` enforces it. Network is allowed
+   only in `eval/` fetch scripts, with pointers committed.
 
 ## Setup
 
-```bash
-git clone https://github.com/KhomDev/viability-gate
-cd viability-gate
-cargo build --release
-python -m pip install pyyaml
+```sh
+git clone https://github.com/KhomDev/priorart
+cd priorart
+cargo build            # Rust 1.89 or newer
+cargo test --locked    # unit + integration tests, offline
+python scripts/check_links.py   # every relative doc link resolves
 ```
+
+The only Python needed for the repo checks is Python 3 (standard library).
+`eval/benchmark/fetch.py` needs its own dependencies; it is not part of the
+crate and it is the only component that touches the network.
 
 ## Before you open a pull request
 
-```bash
-cargo fmt --all
-cargo clippy --all-targets --all-features -- -D warnings
-cargo test --release
-
-python scripts/check_tripwires.py
-python scripts/gen_rule_docs.py --check     # or run it without --check to regenerate
-python scripts/check_readme.py
-python tools/calibrate/calibrate.py --log examples/calibration/labels.csv \
-  --findings-dir examples/calibration/findings --vg target/release/vg \
-  --expect examples/calibration/expected.json
+```sh
+cargo fmt --all -- --check
+cargo clippy --locked --all-targets --all-features -- -D warnings
+cargo test --locked
+python scripts/check_links.py
 ```
 
-CI runs all of these, plus `cargo deny check`, `cargo audit`, an MSRV build and
-an OS matrix. Running them locally first is faster than reading a red build.
+CI runs the same on Windows and Linux, plus an MSRV build and `cargo deny`.
+Running them locally is faster than reading a red build.
+
+## Changing the matcher or the gates
+
+A matcher change is a claim about retrieval, so it needs more than a green test:
+
+1. Add or update a fixture in `tests/` for the behaviour you changed.
+2. Re-run the public benchmark (`python eval/benchmark/run.py --priorart
+   target/debug/priorart --split all`) and update `docs/benchmark.md` **and**
+   `docs/validation.md` with the new n, intervals and the binary hash. If the
+   numbers did not move, say so.
+3. If the rule changed meaning, update `docs/matching.md` or `docs/gates.md`
+   in the same pull request.
+4. Do not tune on the held-out split. `run.py` refuses a held-out run without a
+   committed `freeze.json`, and the reason is in `docs/benchmark.md`.
+
+A change to the 5 tier shapes or the 14 clause classes starts upstream in
+bounty-economics and is moved in with its provenance and byte-identity check. Do
+not edit `vocab/*.yaml` in place without updating `docs/vocab.md`.
+
+## Documentation rules
+
+- `README.md`'s generated example block is written by
+  `scripts/regen-readme-examples.sh` and checked by `tests/docs.rs`. Do not
+  hand-edit it; run the script and commit the result.
+- Every relative link must resolve. `python scripts/check_links.py` fails on a
+  missing target, an absolute host path or a link that escapes the repository.
+- Every command in the docs must have been run at least once. If you change a
+  flag, change `docs/cli.md` and the test that exercises it.
+- A number in a doc needs a source: `results.json`, a committed file, or a
+  command in the same section.
 
 ## Releasing
 
-A release is a claim, so the checklist is part of the change, not an afterthought:
+A release is a claim, so the checklist is part of the change:
 
-1. Bump `Cargo.toml` (and `Cargo.lock`) to the version being released.
-2. Write the `CHANGELOG.md` entry. Every number in it must come from a command
-   that can be re-run; link the file that holds the result.
-3. Refresh the benchmark, or state in the changelog why the numbers did not
-   change. If a rule's measured precision moved, update `docs/benchmark.md`.
-4. Update `docs/validation.md`: add or change the rows for the claims this
-   release makes, and mark anything the release retracts.
-5. Run the full local suite above, including `scripts/check_readme.py` and the
-   generated-docs check.
-6. Commit on `main`, then create an **annotated** tag `vX.Y.Z` on that commit
-   and push it. The release workflow refuses a tag that disagrees with
-   `Cargo.toml` and runs the test suite before it builds anything.
-7. Never move or delete a published version tag. A bad release gets a new patch
-   version.
-
-## Adding or changing a rule
-
-The catalog is [`rules/anti-patterns.yaml`](rules/anti-patterns.yaml). A rule is:
-
-```yaml
-- id: P17
-  title: No attacker-win scenario
-  group: E            # A..E, see the file header
-  verdict: soft       # hard = KILL with --strict (ROUTE by default), soft = HOLD, warn = note only
-  weight: 30          # subtracted from the 100-point estimate
-  any_of: ["no (fund loss|attacker profit|extraction)"]
-  none_of: ["attacker (profits?|gains?) \\d"]   # escape hatch suppresses the rule
-  fix: "Identify the beneficiary and quantify the loss, or downgrade."
-  doc: "docs/rules/P17.md"
-```
-
-A rule change needs, in the same pull request:
-
-1. **A positive fixture** in [`tests/rules.fixture.yaml`](tests/rules.fixture.yaml)
-   — a synthetic finding the rule must fire on.
-2. **A negative fixture** — the closest synthetic finding it must *not* fire on.
-   This is the half that decides whether a rule survives contact with real
-   findings.
-3. **A page annotation** in [`docs/rules/_annotations.yaml`](docs/rules/_annotations.yaml)
-   — intent, escape hatches, known false-positive modes, both examples, and a
-   changelog entry.
-4. **Regenerated pages**: `python scripts/gen_rule_docs.py`.
-
-If the change moves the calibration fixture's numbers, regenerate
-`examples/calibration/expected.json` **and say in the pull request what moved and
-why**. A silent regeneration is the failure mode that file exists to prevent.
-
-If the change moves a number quoted in `README.md` or `docs/calibration.md`,
-update it in the same commit. `python scripts/check_readme.py` checks the ones
-that can be checked mechanically.
-
-## Adding an ecosystem pack
-
-Ecosystem tokens live in [`rules/packs/`](rules/packs/), never in the catalog.
-The pack set must stay balanced — at least seven packs, and no pack with more
-than twice the entries of the smallest — because an unbalanced set is a statement
-about which ecosystem the author hunts. See
-[`rules/packs/README.md`](rules/packs/README.md).
+1. **Version.** Bump `Cargo.toml` and `Cargo.lock` to the version being
+   released. `priorart --version` must print it.
+2. **Changelog.** Write the `CHANGELOG.md` entry under a new `## [X.Y.Z]`
+   heading. Every number in it must come from a command a reader can re-run.
+3. **Benchmark.** Refresh the public benchmark, or state in the changelog why the
+   numbers did not change. If a metric moved, update `docs/benchmark.md` and the
+   matching rows in `docs/validation.md` with n and the Wilson interval.
+4. **Validation ledger.** Update [docs/validation.md](docs/validation.md): add
+   rows for the claims this release makes, and mark anything it retracts.
+5. **Offline check.** `cargo tree` must show no HTTP client;
+   `tests/cli.rs::the_crate_has_no_http_client` must pass. Read
+   [docs/no-network.md](docs/no-network.md) if you are adding a dependency.
+6. **Private-data scans, over the full history.** These tools live in the
+   private/upstream rejection-taxonomy tooling, not in this repository. Run both
+   against priorart before any push and every release:
+   ```sh
+   python <tools>/check_hygiene.py --private-dir <private-dir> --json
+   python <tools>/verify_blocklist.py --source <private-log> \
+     --blocklist <private-blocklist.yaml> --scan-repo --repo ../priorart
+   ```
+   `check_hygiene.py` scans every tracked file **and every commit in priorart's
+   full history** unless you pass `--no-history`; a clean working tree is not
+   enough. `verify_blocklist.py --scan-repo` cross-checks the tracked files
+   against the private source. Both must pass. If either fails, do not tag.
+7. **Full local suite.** The four commands in "Before you open a pull request",
+   plus `cargo test --locked --release` if the release changes codegen.
+8. **Tag and publish.** Commit on `main`, then create an **annotated** tag
+   `vX.Y.Z` on that commit and push it. The release workflow refuses a tag that
+   disagrees with `Cargo.toml` and runs the test suite before it builds anything.
+   The maintainer runs `cargo publish`. **Never move or delete a published
+   version tag, and never yank a published crate.** A bad release gets a new
+   patch version. The `viability-gate` crate is frozen at 0.9.0 for exactly this
+   reason: it still installs, it prints a deprecation notice, and it is not
+   yanked.
 
 ## Commit messages
 
 Conventional commits, one logical change each:
 
 ```text
-feat(rules): add P23 for ...
-fix(engine): stop P18 firing on negated statements
-docs(calibration): state both denominators for the corpus-only class
+feat(matcher): rank ties by rarity before shared count
+fix(dossier): do not skip a PDF whose scrape found no letters
+docs(gates): state what null means for each gate
 chore(deps): bump serde-saphyr
 ```
 
-The subject line is a complete sentence about what changed. The body says what
-was measured, and with which command, if the change moves a number.
+The subject line says what changed. The body says what was measured, and with
+which command, if the change moves a number.
 
-## Pull request review
+## Review
 
-A rule change is reviewed on evidence, in this order:
+A change is reviewed on evidence, in this order:
 
-1. Does the example exist, and is it described without naming a target?
-2. Does the negative fixture make sense — is it the *closest* passing case, not an
-   easy one?
-3. Are the known false-positive modes honest?
-4. Does anything else in the docs need to move?
-
-Expect a rule with no cited example to be closed. That is not unfriendliness; it
-is the only bar that keeps the catalog from filling with plausible patterns
-nobody has seen fire.
+1. Does it come with a case or a fixture, and is the case described without
+   naming a target?
+2. Does it move a number? If so, is the new number from a re-runnable command?
+3. Does it weaken a test, hide an "unknown", or turn a quote into a verdict?
+4. Do the docs and the binary still say the same thing?
 
 ## Licensing
 
 By opening a pull request you agree to license your contribution under the MIT
-licence, matching the repository. See [`docs/licensing.md`](docs/licensing.md).
+licence, matching the repository code. The rejection dataset stays CC BY 4.0.
+See [docs/licensing.md](docs/licensing.md).

@@ -1,0 +1,50 @@
+# Pinned public inputs for the priorart public benchmark.
+#
+# This file is the only place that names a network endpoint. fetch.py reads it
+# with the network and writes eval/cache/benchmark/ (gitignored), plus
+# cache.lock.json (committed: repo, commit and sha256 of every fetched file).
+# run.py never touches the network. Nothing in this repository contains a
+# finding body: the manifest stores pointers (repo@commit + path) and labels.
+#
+# Checked 2026-11-12; terms notes in eval/benchmark/BENCHMARK.md ("Terms check").
+version: 1
+# Committed sampling seed. Used for the dev/held-out split and for the
+# hand-labelled agreement sample. Never change it without a new corpus version.
+seed: "priorart-bench-2026-11-12"
+
+sources:
+  # The prior audit: Code4rena's judged report for Tapioca (2023-07). Its
+  # High/Medium headings are the prior-item candidates the matcher is asked to
+  # retrieve. Stored as one pointer; fetch.py downloads the markdown.
+  - id: c4-2023-07-tapioca-audit
+    role: prior-audit
+    kind: single
+    repo: code-423n4/2023-07-tapioca-findings
+    commit: 4193111261e3cf8de27c15857babecaa2519d67c
+    path: report.md
+    terms: "public findings repository, no LICENSE file; Code4rena Terms of Service (code4rena.com/terms); pointers and labels only"
+
+  # The later contest's public README: its Q&A answers are the sponsor's
+  # known issues / acceptable risks and the list of previous audits. That is
+  # the known-issues input to the dossier.
+  - id: sherlock-2024-02-tapioca-contest
+    role: known-issues
+    kind: single
+    repo: sherlock-audit/2024-02-tapioca
+    commit: dc2464f420927409a67763de6ec60fe5c028ab0e
+    path: README.md
+    terms: "public contest repository, no LICENSE file; Sherlock Terms of Service (sherlock.xyz/terms); pointers and labels only"
+
+  # The judging artifacts: one directory per accepted finding (NNN-H / NNN-M,
+  # the *-best.md file is the representative submission) and invalid/ for the
+  # findings the judge excluded. Judge labels are the only machine-readable
+  # provenance; the judging repos do not publish the reason for an invalid.
+  - id: sherlock-2024-02-tapioca-judging
+    role: judging
+    kind: tree
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    include:
+      - "^[0-9]{3}-[HM]/"
+      - "^invalid/"
+    terms: "public judging repository, no LICENSE file; Sherlock Terms of Service (sherlock.xyz/terms); pointers and labels only"

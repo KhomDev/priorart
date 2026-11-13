@@ -1,18 +1,15 @@
 [package]
-name = "viability-gate"
-version = "0.8.1"
+name = "priorart"
+version = "0.1.0"
 edition = "2021"
-description = "Offline, deterministic pre-submission checker for smart-contract audit findings. Heuristic, in-sample calibrated."
+description = "Offline, deterministic prior-art dossiers for smart-contract audit findings: has this been found, is it excluded, and can it be paid?"
 license = "MIT"
-repository = "https://github.com/KhomDev/viability-gate"
-keywords = ["bug-bounty", "smart-contract", "audit", "triage", "security"]
+repository = "https://github.com/KhomDev/priorart"
+homepage = "https://github.com/KhomDev/priorart"
+keywords = ["bug-bounty", "smart-contract", "audit", "prior-art", "triage"]
 categories = ["command-line-utilities", "development-tools"]
 readme = "README.md"
 rust-version = "1.89"
-
-# Two binaries, same code: src/bin/vg.rs and src/bin/viability-gate.rs. "vg"
-# collides with an unrelated bioinformatics tool of the same name, so both names
-# ship and you can pick whichever does not collide on your PATH.
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }

@@ -1,678 +1,225 @@
-//! Data model for the rule catalog and the ledger.
+//! The two JSON documents priorart emits, and the inputs the gates read.
+//!
+//! `Dossier` is `priorart.dossier/v1`: one deterministic file per program.
+//! `CheckReport` is `priorart.check/v1`: the evidence for one finding.
+//!
+//! Both are serialised with every key present so a consumer never has to
+//! distinguish "absent" from "null". Ordering is fixed by construction: sources
+//! are sorted by path, items follow document order.
 
 use serde::{Deserialize, Serialize};
 
-// ---------------------------------------------------------------- rules
+/// Schema id for a dossier file.
+pub const DOSSIER_SCHEMA: &str = "priorart.dossier/v1";
 
-/// The only catalog / gate-file format version this build understands.
-pub const CATALOG_VERSION: u32 = 1;
+/// Schema id for `priorart check --json`.
+pub const CHECK_SCHEMA: &str = "priorart.check/v1";
 
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct RuleFile {
-    pub version: u32,
-    pub rules: Vec<Rule>,
+/// Schema id for `priorart rejections summary --json`.
+pub const REJECTIONS_SCHEMA: &str = "priorart.rejections-summary/v1";
+
+// ------------------------------------------------------------------ dossier
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Dossier {
+    pub schema: String,
+    pub tool: ToolInfo,
+    pub program: Program,
+    pub sources: Vec<Source>,
+    pub items: Vec<Item>,
 }
 
-/// How a rule's provenance is supported.
-#[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq, Serialize, Default)]
-#[serde(rename_all = "snake_case")]
-pub enum Evidence {
-    /// Derived from rows in the author's own rejection log.
-    InSample,
-    /// No supporting rows. The rule is a judgement, and says so.
-    #[default]
-    None,
-}
-
-impl Evidence {
-    pub fn label(self) -> &'static str {
-        match self {
-            Evidence::InSample => "in-sample",
-            Evidence::None => "none",
-        }
-    }
-}
-
-/// Where a `none_of` match suppresses a rule.
-#[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq, Default)]
-#[serde(rename_all = "snake_case")]
-pub enum NoneOfScope {
-    /// A match anywhere in the document suppresses the rule.
-    #[default]
-    Document,
-    /// Only a match in the same sentence as the `any_of` hit suppresses it.
-    Sentence,
-}
-
-impl NoneOfScope {
-    pub fn label(self) -> &'static str {
-        match self {
-            NoneOfScope::Document => "document",
-            NoneOfScope::Sentence => "sentence",
-        }
-    }
-}
-
-/// The kind of a markdown section, decided from its heading.
-#[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq)]
-#[serde(rename_all = "snake_case")]
-pub enum SectionKind {
-    /// Proof of concept, reproduction steps, tests.
-    Poc,
-    /// Title, summary, description, impact, severity.
-    Claim,
-    /// Recommendation, mitigation, remediation, fix.
-    Recommendation,
-    /// Anything else.
-    Other,
-}
-
-impl SectionKind {
-    pub fn label(self) -> &'static str {
-        match self {
-            SectionKind::Poc => "poc",
-            SectionKind::Claim => "claim",
-            SectionKind::Recommendation => "recommendation",
-            SectionKind::Other => "other",
-        }
-    }
-}
-
-/// Hand-written structural matchers a rule can dispatch to.
-#[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq)]
-#[serde(rename_all = "snake_case")]
-pub enum Structural {
-    /// P19: the headline claims a loss that the proof section contradicts.
-    P19HeadlineVsProof,
-    /// P23: the report does not say who the attacker is.
-    P23Attacker,
-    /// P24: preconditions or the victim's action are missing or thin.
-    P24Preconditions,
-    /// P25: impact is missing or not quantified.
-    P25Impact,
-    /// P26: the program's own severity rule is not quoted.
-    P26SeverityRule,
-}
-
-impl Structural {
-    pub fn label(self) -> &'static str {
-        match self {
-            Structural::P19HeadlineVsProof => "p19_headline_vs_proof",
-            Structural::P23Attacker => "p23_attacker",
-            Structural::P24Preconditions => "p24_preconditions",
-            Structural::P25Impact => "p25_impact",
-            Structural::P26SeverityRule => "p26_severity_rule",
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[serde(deny_unknown_fields)]
-pub struct Rule {
-    pub id: String,
-    pub title: String,
-    pub group: String,
-    pub verdict: Verdict,
-    pub weight: u32,
-    #[serde(default)]
-    pub any_of: Vec<String>,
-    #[serde(default)]
-    pub all_of: Vec<String>,
-    #[serde(default)]
-    pub none_of: Vec<String>,
-    /// Strong forms. When one of these matches, the rule carries `escalate_to`
-    /// (default: hard) even if its base verdict is softer.
-    #[serde(default)]
-    pub escalate_on: Vec<String>,
-    #[serde(default)]
-    pub escalate_to: Option<Verdict>,
-    /// Weak forms. When the ONLY thing that matched is one of these, the rule is
-    /// dropped entirely rather than firing hard. This is how a rule says "this
-    /// signal alone is not enough".
-    #[serde(default)]
-    pub downgrade_on: Vec<String>,
-    /// Dispatch a rule to a hand-written structural matcher, e.g.
-    /// `p19_headline_vs_proof`. Structural rules ignore any_of/all_of.
-    #[serde(default)]
-    pub structural: Option<Structural>,
-    /// `document` (default) applies none_of to the whole text; `sentence`
-    /// applies it only to the sentence that produced the any_of match.
-    #[serde(default)]
-    pub none_of_scope: NoneOfScope,
-    /// Section kinds to skip when matching: `poc`, `claim`,
-    /// `recommendation`, `other`.
-    #[serde(default)]
-    pub ignore_sections: Vec<SectionKind>,
-    pub fix: String,
-    /// Public documentation for this rule, e.g. `docs/rules/P19.md`.
-    pub doc: String,
-    /// How many rows of the author's log this rule was derived from. 0 means
-    /// "not measured", not "zero rows".
-    #[serde(default)]
-    pub origin_rows: u32,
-    #[serde(default)]
-    pub evidence: Evidence,
-    /// ISO date the rule was last checked against a fixture set.
-    #[serde(default)]
-    pub last_validated: Option<String>,
-    /// False-positive rate once a control set exists. None = unmeasured, and it
-    /// stays unmeasured until a paid/accepted corpus is available.
-    #[serde(default)]
-    pub fp_rate: Option<f64>,
-    /// Whether the engine's negation window applies to this rule. Rules that
-    /// already handle negation through `none_of` set this to false, so the two
-    /// mechanisms do not fight each other.
-    #[serde(default = "default_true")]
-    pub negation_aware: bool,
-    /// Patterns that suppress the rule from any sentence, even when `none_of`
-    /// is sentence-scoped. An unprivileged profit path is the attack; a
-    /// privileged word in another sentence is context.
-    #[serde(default)]
-    pub suppress_document: Vec<String>,
-    /// When false, `evaluate` skips the rule unless the caller opts in.
-    /// P26 is opt-in: it fired on every item of the public bench.
-    #[serde(default = "default_true")]
-    pub default_emit: bool,
-}
-
-fn default_true() -> bool {
-    true
-}
-
-#[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Verdict {
-    /// Hard fail: kills the submission.
-    Hard,
-    /// Soft fail: hold in notes, do not submit yet.
-    Soft,
-    /// Note only; does not change the verdict.
-    Warn,
-}
-
-impl Verdict {
-    pub fn label(self) -> &'static str {
-        match self {
-            Verdict::Hard => "KILL",
-            Verdict::Soft => "HOLD",
-            Verdict::Warn => "NOTE",
-        }
-    }
-}
-
-/// The report-level outcome.
-///
-/// This is NOT the same type as a rule's `Verdict`. A rule's verdict says how
-/// bad that one rule's finding is; the outcome is the decision rule applied
-/// across all of them, plus the gate states.
-///
-/// There is no `Submit`. The tool cannot tell you to submit: it has no positive
-/// evidence, only the absence of a blocker it knows how to look for.
-#[derive(Debug, Serialize, Clone, Copy, PartialEq, Eq)]
-#[serde(rename_all = "UPPERCASE")]
-pub enum Outcome {
-    /// At least one hard rule fired.
-    Kill,
-    /// At least one soft rule fired, a gate failed, or the score is under the
-    /// threshold.
-    Hold,
-    /// Only warnings fired.
-    Note,
-    /// Nothing fired and no gate failed, but at least one gate could not run.
-    Incomplete,
-    /// Nothing fired, no gate failed, and every gate ran.
-    Clear,
-    /// A claim-heuristic hard rule fired. Since 0.8.0 this is the DEFAULT
-    /// outcome: the finding is a verification question, not a kill. Structured
-    /// hard failures (known-issue match, citation anchor) stay `Kill`. The
-    /// pre-0.8.0 hard stop is available with `--strict`.
-    #[serde(rename = "ROUTE-TO-VERIFY")]
-    Route,
-}
-
-impl Outcome {
-    pub fn word(self) -> &'static str {
-        match self {
-            Outcome::Kill => "KILL",
-            Outcome::Hold => "HOLD",
-            Outcome::Note => "NOTE",
-            Outcome::Incomplete => "INCOMPLETE",
-            Outcome::Clear => "CLEAR",
-            Outcome::Route => "ROUTE-TO-VERIFY",
-        }
-    }
-
-    /// One line explaining what the word does and does not mean.
-    pub fn meaning(self) -> &'static str {
-        match self {
-            Outcome::Kill => "A hard blocker fired. Do not submit as written.",
-            Outcome::Hold => {
-                "A soft blocker fired, a gate failed, or the score is below threshold. Hold in notes."
-            }
-            Outcome::Note => "Only notes fired. This is not a clearance - read them.",
-            Outcome::Incomplete => {
-                "No known blocker found, but at least one gate could not run. Unknown is not pass."
-            }
-            Outcome::Clear => "No known blocker found by this tool. That is all it means.",
-            Outcome::Route => {
-                "A claim-heuristic hard rule fired. By default it routes to verification instead of killing the finding; use --strict to turn it back into a hard stop. This is not a clearance."
-            }
-        }
-    }
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct GateFile {
-    pub version: u32,
-    pub gates: Vec<Gate>,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[serde(deny_unknown_fields)]
-pub struct Gate {
-    pub id: String,
-    pub title: String,
-    pub question: String,
-    pub needs: String,
-    pub blocks: String,
-    pub weight: u32,
-    #[serde(default)]
-    pub checks: Vec<GateCheck>,
-    /// Whether this gate has rows in the author's log behind it.
-    #[serde(default)]
-    pub evidence: Evidence,
-    /// How many log rows support this gate. 0 = not measured.
-    #[serde(default)]
-    pub origin_rows: u32,
-    /// The flag that supplies this gate's input when it is a corpus rather than
-    /// a target-side input, e.g. `--known-issues` for D1. Informational only.
-    #[serde(default)]
-    pub implemented_by: Option<String>,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[serde(deny_unknown_fields)]
-pub struct GateCheck {
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ToolInfo {
     pub name: String,
-    pub test: String,
-    pub fail: String,
+    pub version: String,
 }
 
-// ---------------------------------------------------------------- ledger
-
-/// The researcher's own private transcription of a program's terms.
-/// Never bundled with the tool; always supplied at runtime.
-///
-/// Deliberately NOT `deny_unknown_fields`: the ledger schema is owned by
-/// bounty-economics, whose contract is that new fields are additive and an
-/// older reader ignores them.
-#[derive(Debug, Deserialize)]
-pub struct LedgerEntry {
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub struct Program {
+    /// Stable slug used in the default output filename.
     pub id: String,
-    pub tier_shape: Option<String>,
-    #[serde(default)]
-    pub floor_severity: Option<String>,
-    /// `documented` | `unstated` | `conflicting`. An unstated floor is not a
-    /// Low floor; it is a page that has not been read.
-    #[serde(default)]
-    pub floor_status: Option<String>,
-    #[serde(default)]
-    pub source_url: Option<String>,
-    #[serde(default)]
-    pub retrieved: Option<String>,
-    #[serde(default)]
-    pub conflicts: Vec<String>,
-    #[serde(default)]
-    pub exclusions: Vec<Exclusion>,
-    #[serde(default)]
-    pub prior_audits: Vec<PriorAudit>,
-    #[serde(default)]
-    pub post_audit_delta: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Exclusion {
-    pub class: String,
-    #[serde(default)]
-    pub clause: Option<String>,
-    #[serde(default)]
-    pub pattern: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct PriorAudit {
-    #[serde(default)]
-    pub firm: Option<String>,
-    #[serde(default)]
+    pub name: Option<String>,
+    pub platform: Option<String>,
     pub url: Option<String>,
-    #[serde(default)]
+    pub scope_url: Option<String>,
+    /// The program's payout terms, transcribed from the page the user saved.
+    /// Absent means the payout gate did not run - not that the program pays.
+    pub payout: Option<Payout>,
+    /// Prior audits named in program.yaml, for the prior-audit gate.
+    pub prior_audits: Vec<PriorAudit>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Payout {
+    /// One of the five tier shapes in vocab/tier-shapes.yaml.
+    pub tier_shape: String,
+    pub floor_status: Option<String>,
+    pub floor_severity: Option<String>,
+    /// The page the terms were read from. A payout claim without one is a
+    /// guess, and the gate says so.
+    pub source_url: Option<String>,
+    pub retrieved: Option<String>,
+    /// Heading the quote was read under, e.g. "Rewards".
+    pub section: Option<String>,
+    /// Verbatim line from the saved page.
+    pub quote: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub struct PriorAudit {
+    pub firm: Option<String>,
+    pub url: Option<String>,
     pub covers: Vec<String>,
-    #[serde(default)]
     pub known_issues: Vec<String>,
 }
 
-// ---------------------------------------------------------------- known issues
-
-/// A known-issue corpus supplied by the user at runtime.
-///
-/// This addresses the largest rejection category: duplicate and prior-audit
-/// matches. It is a KNOWN-ISSUE MATCHER, not a duplicate catcher - it can only
-/// see issues the user already transcribed, so it cannot catch a concurrent
-/// duplicate, which by definition is not in any corpus yet.
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct KnownIssue {
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Source {
+    /// Stable id, `src-0001` in path order.
     pub id: String,
-    pub summary: String,
-    /// Case-insensitive regexes matched against the finding text.
-    #[serde(default)]
-    pub patterns: Vec<String>,
-    #[serde(default)]
-    pub source: Option<String>,
+    /// `program-page` | `known-issues` | `audit`.
+    pub kind: String,
+    /// File name or document title.
+    pub title: Option<String>,
+    /// Path relative to the program directory, forward slashes.
+    pub path: String,
+    /// SHA-256 of the file's bytes, lowercase hex.
+    pub sha256: String,
+    /// Page count: 1 + the number of form feeds (pdftotext's page break).
+    pub pages: usize,
 }
 
-// ---------------------------------------------------------------- prior-finding index
-
-/// One prior finding in a local index.
-///
-/// Built by `vg import prior` or loaded from a directory of markdown. The
-/// quotes are short excerpts, not the whole document. An index of someone
-/// else's reports is still their text: keep it local.
-#[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct IndexedFinding {
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Item {
+    /// Stable id, `item-0001` in document order.
     pub id: String,
-    #[serde(default)]
-    pub source: String,
-    #[serde(default)]
-    pub title: String,
-    #[serde(default)]
+    pub source_id: String,
+    /// `audit-finding` | `audit-section` | `known-issue` | `scope-clause`
+    /// | `scope-path` | `payout-tier` | `page-section`.
+    pub kind: String,
+    pub title: Option<String>,
+    pub section: Option<String>,
+    /// 1-based page the item starts on.
+    pub page: usize,
+    /// Verbatim excerpt of the source, whitespace collapsed.
+    pub quote: String,
+    /// Strong code identifiers found in the item text.
     pub identifiers: Vec<String>,
-    #[serde(default)]
-    pub root_causes: Vec<String>,
-    #[serde(default)]
-    pub quotes: Vec<String>,
+    /// Lexical mechanism estimate. Never used for ranking.
+    pub mechanism_class: Option<String>,
+    /// For scope-clause items: the clause class from the taxonomy, or null
+    /// when the clause text matches no suggested pattern.
+    pub clause_class: Option<String>,
+    /// The item's text as read from the source.
+    pub text: String,
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct IndexFile {
-    pub version: u32,
-    pub entries: Vec<IndexedFinding>,
+// -------------------------------------------------------------------- check
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct CheckReport {
+    pub schema: String,
+    pub tool_version: String,
+    pub finding: FindingRef,
+    pub dossier: DossierRef,
+    pub prior_art: Vec<PriorArt>,
+    pub exclusions: Vec<ExclusionEvidence>,
+    pub payout: PayoutEvidence,
+    pub notes: Vec<String>,
 }
 
-/// Optional manifest beside a draft. Fields the author fills in so the claim
-/// checks (P23-P26) can see what the prose did not say. Empty strings count
-/// as missing. `impact_usd: 0` does not count as a quantified impact.
-#[derive(Debug, Clone, Deserialize, Default)]
-#[serde(deny_unknown_fields)]
-pub struct FindingManifest {
-    #[serde(default)]
-    pub attacker: Option<String>,
-    #[serde(default)]
-    pub victim: Option<String>,
-    #[serde(default)]
-    pub preconditions: Option<ManifestPreconditions>,
-    #[serde(default)]
-    pub impact_usd: Option<f64>,
-    #[serde(default)]
-    pub severity_rule_quoted: Option<String>,
-    #[serde(default)]
-    pub prior_audit_check: Option<String>,
-    #[serde(default)]
-    pub duplicate_check: Option<String>,
-    #[serde(default)]
-    pub status: Option<String>,
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct FindingRef {
+    pub path: String,
+    pub sha256: String,
+    pub identifiers: Vec<String>,
+    pub claimed_severity: Option<String>,
+    /// Lexical mechanism estimate for the finding, so a prior item's mechanism
+    /// can be compared side by side.
+    pub mechanism_class: Option<String>,
 }
 
-/// A precondition list, written as one string or as a list.
-#[derive(Debug, Clone, Deserialize)]
-#[serde(untagged)]
-pub enum ManifestPreconditions {
-    One(String),
-    Many(Vec<String>),
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct DossierRef {
+    pub path: String,
+    pub schema: String,
+    pub program_id: String,
 }
 
-impl ManifestPreconditions {
-    pub fn is_blank(&self) -> bool {
-        match self {
-            ManifestPreconditions::One(s) => s.trim().is_empty(),
-            ManifestPreconditions::Many(v) => v.iter().all(|s| s.trim().is_empty()),
-        }
-    }
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct PriorArt {
+    pub item_id: String,
+    pub source_id: String,
+    pub source_kind: String,
+    pub source_title: Option<String>,
+    pub path: String,
+    pub page: usize,
+    pub section: Option<String>,
+    pub quote: String,
+    pub shared_identifiers: Vec<String>,
+    pub mechanism_class: Option<String>,
 }
 
-impl FindingManifest {
-    pub fn filled(s: &Option<String>) -> bool {
-        s.as_deref().is_some_and(|v| !v.trim().is_empty())
-    }
-
-    /// Which claim-check ids this manifest answers. It does not suppress P18
-    /// or an index hit: a sentence that says "I checked" is not a check.
-    pub fn suppresses(&self, rule: &str) -> bool {
-        match rule {
-            "P23" => Self::filled(&self.attacker),
-            "P24" => {
-                Self::filled(&self.victim)
-                    && self.preconditions.as_ref().is_some_and(|p| !p.is_blank())
-            }
-            "P25" => self.impact_usd.is_some_and(|n| n > 0.0),
-            "P26" => Self::filled(&self.severity_rule_quoted),
-            _ => false,
-        }
-    }
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ExclusionEvidence {
+    /// Clause class id from vocab/clause-classes.yaml, or null when the clause
+    /// could not be classified.
+    pub clause_class: Option<String>,
+    /// The precondition in the finding that triggered the match.
+    pub precondition: String,
+    /// The program's clause, verbatim.
+    pub clause: String,
+    /// The item the clause came from.
+    pub item_id: String,
+    pub source_id: String,
+    pub page: usize,
+    pub section: Option<String>,
 }
 
-/// Status values `finding.yaml` may record. Anything else is a typo, and a
-/// typo must not be stored as if it were a disposition.
-pub const MANIFEST_STATUSES: [&str; 9] = [
-    "draft",
-    "held",
-    "submitted",
-    "paid",
-    "rejected",
-    "duplicate",
-    "informative",
-    "oos",
-    "wontfix",
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct PayoutEvidence {
+    pub tier_shape: Option<String>,
+    pub floor: Option<String>,
+    pub claimed_severity: Option<String>,
+    /// `true` payable, `false` below the floor, `null` not checkable.
+    pub payable: Option<bool>,
+    pub citation: Option<String>,
+    pub section: Option<String>,
+    pub quote: Option<String>,
+    /// Why the gate could not decide, when `payable` is null.
+    pub detail: Option<String>,
+}
+
+// -------------------------------------------------------------------- scope
+
+/// Gate ids, in the order `priorart rules` lists them.
+pub const GATES: [GateSpec; 4] = [
+    GateSpec {
+        id: "G1",
+        question: "Can it be paid?",
+        checks: "the claimed severity against the program's payout tier shape and floor",
+    },
+    GateSpec {
+        id: "G2",
+        question: "Is it excluded?",
+        checks: "the finding's preconditions against the program's exclusion clause classes",
+    },
+    GateSpec {
+        id: "G3",
+        question: "Is the root cause in scope?",
+        checks: "the paths the finding cites against the in-scope file list",
+    },
+    GateSpec {
+        id: "G4",
+        question: "Has this been found?",
+        checks: "prior audit coverage and ranked prior items sharing strong identifiers",
+    },
 ];
 
-// ---------------------------------------------------------------- engagement manifest
-
-/// An engagement file (`audit.yaml`) of the kind a hunt keeps beside a target.
-///
-/// This is not the bounty-economics ledger. `vg import audit` transcribes the
-/// fields below into a ledger, a scope list, and a known-issues file. Unknown
-/// keys are ignored: real engagement files grow extra fields, and dropping the
-/// file for a key this version does not read would make import useless.
-#[derive(Debug, Deserialize)]
-pub struct Engagement {
-    #[serde(default)]
-    pub version: Option<u32>,
-    pub id: String,
-    #[serde(default)]
-    pub program: Option<String>,
-    #[serde(default)]
-    pub platform: Option<String>,
-    /// Lowest severity the program pays: critical, high, medium, low, or none.
-    #[serde(default)]
-    pub severity_floor: Option<String>,
-    #[serde(default)]
-    pub floor_status: Option<String>,
-    #[serde(default)]
-    pub tier_shape: Option<String>,
-    #[serde(default)]
-    pub source_url: Option<String>,
-    #[serde(default)]
-    pub retrieved: Option<String>,
-    #[serde(default)]
-    pub exclusion_clauses: Vec<EngagementClause>,
-    #[serde(default)]
-    pub known_issues: Vec<EngagementIssue>,
-    #[serde(default)]
-    pub scope: Vec<String>,
-    #[serde(default)]
-    pub severity_rules: Vec<EngagementSeverityRule>,
-    #[serde(default)]
-    pub prior_audits: Vec<PriorAudit>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct EngagementClause {
-    #[serde(default)]
-    pub id: Option<String>,
-    #[serde(default)]
-    pub class: Option<String>,
-    /// The clause, verbatim. `clause` is accepted as an alias.
-    #[serde(default)]
-    pub text: Option<String>,
-    #[serde(default)]
-    pub clause: Option<String>,
-    /// Optional regex. Import does not invent one.
-    #[serde(default)]
-    pub pattern: Option<String>,
-}
-
-impl EngagementClause {
-    pub fn body(&self) -> String {
-        self.text
-            .as_deref()
-            .or(self.clause.as_deref())
-            .unwrap_or("")
-            .trim()
-            .to_string()
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct EngagementIssue {
-    #[serde(default)]
-    pub id: Option<String>,
-    #[serde(default)]
-    pub summary: Option<String>,
-    #[serde(default)]
-    pub text: Option<String>,
-    #[serde(default)]
-    pub source: Option<String>,
-    #[serde(default)]
-    pub patterns: Vec<String>,
-    #[serde(default)]
-    pub identifiers: Vec<String>,
-}
-
-impl EngagementIssue {
-    pub fn body(&self) -> String {
-        self.summary
-            .as_deref()
-            .or(self.text.as_deref())
-            .unwrap_or("")
-            .trim()
-            .to_string()
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct EngagementSeverityRule {
-    #[serde(default)]
-    pub tier: Option<String>,
-    #[serde(default)]
-    pub text: Option<String>,
-}
-
-// ---------------------------------------------------------------- own history
-
-/// One entry in the researcher's own submission log.
-///
-/// This is the only input that can catch the author's own repeats. In the source
-/// log behind this tool, 12 of 113 rows repeat a family already present, so a
-/// local history beats any regex over a finding's prose.
-#[derive(Debug, Deserialize, Serialize, Clone)]
-#[serde(deny_unknown_fields)]
-pub struct LogEntry {
-    /// The bug family label, as the researcher writes it. Free text by design:
-    /// this file is local, gitignored, and never leaves the machine.
-    pub family: String,
-    pub outcome: String,
-    #[serde(default)]
-    pub note: Option<String>,
-    #[serde(default)]
-    pub date: Option<String>,
-}
-
-// ---------------------------------------------------------------- results
-
-#[derive(Debug, Serialize)]
-pub struct Finding {
-    pub rule: String,
-    pub title: String,
-    pub group: String,
-    pub verdict: Verdict,
-    pub weight: u32,
-    /// The matched snippets. `matched_sentences[i]` is the sentence that
-    /// `evidence[i]` came from.
-    pub evidence: Vec<String>,
-    /// The sentence each snippet was found in, so the user can argue with it.
-    pub matched_sentences: Vec<String>,
-    pub fix: String,
-    pub doc: String,
-    pub evidence_kind: Evidence,
-    pub origin_rows: u32,
-}
-
-#[derive(Debug, Serialize)]
-pub struct GateOutcome {
-    pub gate: String,
-    pub title: String,
-    pub question: String,
-    pub needs: String,
-    /// What a failure of this gate prevents.
-    pub blocks: String,
-    pub weight: u32,
-    pub status: GateStatus,
-    pub detail: String,
-    /// The individual checks this gate ran, so the user can see what was tested.
-    pub checks: Vec<String>,
-    pub evidence: Evidence,
-    pub origin_rows: u32,
-}
-
-#[derive(Debug, Serialize, PartialEq, Eq, Clone, Copy)]
-#[serde(rename_all = "lowercase")]
-pub enum GateStatus {
-    Pass,
-    Fail,
-    Unknown,
-}
-
-impl GateStatus {
-    pub fn is_pass(self) -> bool {
-        matches!(self, GateStatus::Pass)
-    }
-}
-
-#[derive(Debug, Serialize)]
-pub struct Report {
-    pub tool: String,
-    pub version: String,
-    pub subject: String,
-    pub outcome: Outcome,
-    /// 100 minus the hand-set weights of the fired rules.
-    ///
-    /// An UNCALIBRATED HEURISTIC. It is not a probability, and it is not
-    /// "payout odds". Gates do not deduct from it.
-    pub viability_score: u32,
-    pub threshold: u32,
-    pub findings: Vec<Finding>,
-    pub passed: Vec<String>,
-    pub gates: Vec<GateOutcome>,
-    pub disclaimer: String,
-    /// Non-fatal problems with the supplied inputs.
-    pub warnings: Vec<String>,
-    /// True when claim-heuristic hard rules are routed to ROUTE-TO-VERIFY
-    /// instead of KILL. Since 0.8.0 that is the default; `--strict` sets it
-    /// false. The field keeps its 0.7.0 name so existing JSON consumers do not
-    /// break.
-    pub funnel: bool,
+#[derive(Debug, Clone, Copy)]
+pub struct GateSpec {
+    pub id: &'static str,
+    pub question: &'static str,
+    pub checks: &'static str,
 }

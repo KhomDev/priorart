@@ -1,13 +1,153 @@
 # Changelog
 
-Notable changes to `viability-gate`. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
-[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+One repository, two histories. **priorart 0.1.0 is the rename and rewrite of
+viability-gate**; the old entries are kept unchanged below a clear header,
+because a changelog that deletes its own history is not a changelog.
 
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
+versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are the commit dates. Entries are written after the change, and a number
 appears here only if it came from a command that can be re-run.
 
-## [Unreleased]
+## priorart
+
+## [0.1.0] - 2026-11-13
+
+First release under the name **priorart**, from the repository that was
+viability-gate. One question, three answers, no verdict: *has this been found,
+is it excluded, and can it be paid?* Everything is quoted evidence with a page
+number, read from files the user saved. There is no score and no outcome enum.
+
+### Added
+
+- **The dossier.** `priorart build <program-dir>` reads `scope.md|html|txt`,
+  `known-issues.md|yaml|txt`, `audits/*.md|txt|pdf` and an optional
+  `program.yaml`, and writes one deterministic JSON file per program
+  (`priorart.dossier/v1`). Sources carry a SHA-256 and page count; items carry a
+  page, a verbatim quote, strong identifiers, a clause class and a mechanism
+  hint. Two builds over one folder are byte-identical, and a test asserts it.
+  Schema: `schemas/dossier.schema.json`.
+- **`priorart check`** with the three sections, `--top-k` (default 5, 1-50),
+  `--json` (`priorart.check/v1`), `--fail-on-excluded` and
+  `--fail-on-unpayable`. Exit 0 is "analysis produced"; exit 1 is opt-in and
+  only from those two flags; exit 2 is usage, IO or parse.
+- **The identifier matcher** behind *has this been found*: >=2 shared symbol
+  identifiers (function, error, contract, qualified names, backticked spans),
+  a 20% generic-symbol filter (with a one-or-two-item exception), ranking by
+  specificity, then rarity, then symbol count, then paths, then identifier
+  order. File paths are shown and break ties but never qualify an item alone.
+  Word overlap is not scored.
+- **Gates G1-G4 as evidence**: payout (the claimed severity against the
+  transcribed shape and floor), exclusion (the program's clauses against the
+  finding's preconditions, negation-aware), scope (cited paths and contract names
+  against the in-scope list), prior audits (named coverage plus ranked items).
+  Each gate reports what it could not read as unread, never as a pass.
+- **`priorart ledger validate`**, the Rust port of bounty-economics
+  `scripts/validate.py`. The schema is unchanged at v1 and byte-identical to the
+  bounty-economics v0.6.1 tag (sha256
+  `403324A1CA205BE9521FE9F51FCCF45030F3BE9B7AA642A2C727DF5842220A51`). An
+  uncited entry is an error, an unstated floor is not "Low pays", and the removed
+  `any` shape gets a migration message instead of a bare enum failure.
+- **`priorart vocab list|show` and `priorart explain`**: the 5 payout tier
+  shapes, the 14 exclusion clause classes and the gate cross-reference, compiled
+  into the binary with `include_str!`. Tier shapes and clause classes are
+  byte-identical to bounty-economics v0.6.1; the gate cross-reference had its
+  viability-gate rows removed.
+- **`data/rejections/`**: the rejection-taxonomy v0.6.1 tree (CSV, JSON,
+  `summary.json`, `SCHEMA.md`, `LICENSE-DATA`, `CITATION.cff`,
+  `provenance.json`), 113 rows and 10 columns, summary keys unchanged, CC BY 4.0.
+  `priorart rejections summary` reads its own compiled copy.
+- **`priorart init`** scaffolds `program.yaml`, `scope.md`, `known-issues.md`
+  and `audits/README.md`; the scaffold builds without edits.
+- **Offline by construction.** No HTTP client in `Cargo.toml` or `Cargo.lock`,
+  no socket in `src/`; a test fails the build if one appears. The vocabularies
+  and the rejection dataset are compiled in, so there is no data directory and no
+  update check.
+- **Docs**: `docs/dossier.md`, `docs/matching.md`, `docs/gates.md`,
+  `docs/cli.md`, `docs/ledger.md`, `docs/schema.md`, `docs/vocab.md`,
+  `docs/rejections.md`, `docs/benchmark.md`, `docs/validation.md`,
+  `docs/limitations.md`, `docs/install.md`, `docs/no-network.md`,
+  `docs/licensing.md`, plus [MIGRATION.md](MIGRATION.md).
+
+### Removed
+
+- The prose anti-pattern engine: P1-P26, `rules/anti-patterns.yaml`,
+  `rules/packs/`, `docs/rules/`, and the rule documentation generator. It did
+  not separate paid from unpaid findings: 12 of the 25 hard-killed findings were
+  paid, so the kill's precision was 13/25 (52%) that a finding was unpaid.
+- The 0-100 score and the KILL / ROUTE-TO-VERIFY / CLEAR outcome enum. There is
+  no replacement score; there are quotes.
+- `--strict`, `--funnel`, `--min-score` and `--severity-notes`.
+- The citation anchor (moved to realism-gate RG20, `--target` /
+  `--target-commit`) and the claim notes P23-P26 / P19 (moved to
+  `realism-gate check --report`).
+- The old calibration, control-set, prospective-protocol, tripwire,
+  negation-audit and rule-defect docs, and the stale `docs/demo.gif` /
+  `docs/demo.tape`. `docs/import.md` and `docs/duplicate-matching.md` are
+  replaced by `docs/dossier.md` and `docs/matching.md`.
+
+### Changed
+
+- Repository and crate name: viability-gate -> priorart. The GitHub repository
+  was renamed (old URLs redirect, history and issues kept). The
+  `viability-gate` crate cannot be renamed on crates.io, so it is frozen at
+  0.9.0 with a deprecation README and a one-line stderr notice. It still installs
+  and still works; **nothing was yanked**.
+- One binary, `priorart` (`priorart.exe` on Windows), replacing `vg` and
+  `viability-gate`.
+- The ledger schema stays v1 and existing private ledgers need no migration.
+
+### Measured
+
+- **Dossier determinism:** two builds over the committed demo folder are
+  byte-identical (`tests/cli.rs::build_writes_one_deterministic_dossier`,
+  2026-11-13).
+- **Public benchmark**, 2026-11-13, final build `dabfcc0c...` (matcher
+  behaviour-identical to the `2ec4c3c9...` deciding run; only wording changed
+  after it): false-alarm
+  rate on 60 judged paid+unique findings **26/60 = 43.3%** (Wilson 95%
+  31.6-55.9); duplicate recall@5 on 64 judge-grouped duplicates **39/64 = 60.9%**
+  (48.7-71.9); known-prior recall **n=1, 0 hits, not a rate**; label agreement
+  **15/20 = 75%**. Two earlier matcher revisions are recorded as provenance, not
+  as the number of record: `22648e33...` measured 18/60 = 30.0% and
+  `da176bc8...` measured 15/60 = 25.0%. An earlier 0/64 duplicate-recall report
+  was a harness locator bug, corrected in
+  [docs/benchmark.md](docs/benchmark.md#errata-2026-11-13).
+- **Ledger golden files:** `priorart ledger validate` on
+  `examples/ledger.example.yaml` + `examples/tier-shapes.example.yaml` prints
+  `6 entries, 0 error(s), 10 warning(s)` and exits 0.
+
+### Ship decision: retrieval only
+
+The plan's kill criterion triggers above a 30% false-alarm rate on unique
+findings. The final point estimate is **43.3%**, and the 95% interval
+(31.6-55.9%) does not cross 30%, so the trigger is met: **priorart 0.1.0 ships in
+retrieval-only mode.** The `HAS THIS BEEN FOUND?` section is a reading list with
+quotes, sources and pages; it prints no duplicate warning and implies no
+duplication. The warning can return only after the matcher is fixed and a fresh
+held-out measurement puts the false-alarm rate at or below 30%. The intermediate
+25.0% run and the release decision taken on it are superseded, and the benchmark
+does not soften that.
+
+### Not claimed
+
+- Not evidence that priorart finds bugs; the corpus is judged human findings.
+- Not a population estimate from 60 findings on one contest pair.
+- Known-prior recall is n=1 and is not a rate in either direction.
+- The matcher is not a duplicate detector, and a hit is not a duplicate finding.
+- A gate result is not a verdict; an unrun gate is not clear.
+- The rejection dataset is one researcher's log with no positive class, no
+  target dimension and no paid comparison; it is a vocabulary, not a base rate.
+- Behaviour on private reports, other platforms or scanned (image-only) PDFs is
+  not measured.
+
+# viability-gate history (0.1.0 - 0.8.1, this repository before the rename)
+
+The entries below are the viability-gate changelog, unchanged. They document a
+tool that no longer exists in this form; read them as history, not as the
+current surface.
+
+## [Unreleased] (viability-gate)
 
 ## [0.8.1] - 2026-11-10
 

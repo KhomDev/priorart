@@ -1,0 +1,8 @@
+{
+  "frozen_at": "written by eval/benchmark/run.py --split dev",
+  "manifest_sha256": "554207452495d9d2f14abb1ff794fa9782bdcfc792d638f8d9deda97333bf913",
+  "labels_sha256": "1595e40c4b84587b93777640d811b10304ac88cc62bf286604819b9742230821",
+  "harness_sha256": "5752491659b123b77ae146305e1b5f9ae4659bdcde2b1ce2f492f61be69c7376",
+  "seed": "priorart-bench-2026-11-12",
+  "k": 5
+}

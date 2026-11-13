@@ -1,0 +1,1406 @@
+{
+  "schema": "priorart.benchmark.results/v1",
+  "generated_by": "eval/benchmark/run.py",
+  "corpus": {
+    "manifest_sha256": "554207452495d9d2f14abb1ff794fa9782bdcfc792d638f8d9deda97333bf913",
+    "labels_sha256": "1595e40c4b84587b93777640d811b10304ac88cc62bf286604819b9742230821",
+    "sources": {
+      "prior_audit": {
+        "id": "c4-2023-07-tapioca-audit",
+        "repo": "code-423n4/2023-07-tapioca-findings",
+        "commit": "4193111261e3cf8de27c15857babecaa2519d67c",
+        "path": "report.md"
+      },
+      "known_issues": {
+        "id": "sherlock-2024-02-tapioca-contest",
+        "repo": "sherlock-audit/2024-02-tapioca",
+        "commit": "dc2464f420927409a67763de6ec60fe5c028ab0e",
+        "path": "README.md",
+        "section": "Q: Please list any known issues/acceptable risks"
+      }
+    },
+    "prior_items": 61,
+    "findings": 86,
+    "accepted": 60,
+    "invalid": 26,
+    "duplicates": 64,
+    "known_prior": 1,
+    "seed": "priorart-bench-2026-11-12"
+  },
+  "label_agreement": {
+    "n": 20,
+    "agree": 15,
+    "rate": 0.75,
+    "wilson95": [
+      0.5313,
+      0.8881
+    ],
+    "method": "blinded title-only second pass vs the full-text labels, same reader",
+    "note": "label stability of one reader, not correctness; the labels and the sample are published"
+  },
+  "tool": {
+    "path": "priorart/target/debug/priorart.exe",
+    "version": "priorart 0.1.0",
+    "binary_sha256": "dabfcc0ca197ee35b40772cb7db666f17105c5c36faa7f9da7ef783a9a78e12a",
+    "matching_rule": ">= 2 strong identifiers, ranked top-k (EXECUTION-BRIEF 3.3)"
+  },
+  "frozen": {
+    "k": 5,
+    "seed": "priorart-bench-2026-11-12",
+    "manifest_sha256": "554207452495d9d2f14abb1ff794fa9782bdcfc792d638f8d9deda97333bf913",
+    "heldout_opened": true,
+    "harness_sha256": "6ed8947a95371d94f8189eb3309dfb36eaca7d8f934c8547dce3638ac74c1743"
+  },
+  "measurements": {
+    "known_prior_recall": {
+      "n": 1,
+      "hits": 0,
+      "recall": 0.0,
+      "wilson95": [
+        0.0,
+        0.7935
+      ],
+      "status": "underpowered",
+      "reason": "fewer than 5 defensible known-prior positives exist in this corpus; the value is reported with its n but is not a rate (see BENCHMARK.md dead ends)"
+    },
+    "false_alarm_rate": {
+      "n": 60,
+      "alarms": 26,
+      "rate": 0.4333,
+      "wilson95": [
+        0.3157,
+        0.559
+      ],
+      "status": "measured",
+      "tool_errors": 0
+    },
+    "duplicate_recall": {
+      "n": 64,
+      "hits": 39,
+      "recall": 0.6094,
+      "wilson95": [
+        0.4869,
+        0.7194
+      ],
+      "status": "measured",
+      "note": "supplementary judged-duplicate retrieval, not the plan's known-issue metric"
+    }
+  },
+  "run_history": [
+    {
+      "binary_sha256": "22648e333dbde7e9d9ea0982cdc93ed7581ba1d8abd4045f29650994cd03ce82",
+      "label": "pre-fix matcher",
+      "date": "2026-11-12",
+      "far": {
+        "n": 60,
+        "alarms": 18,
+        "rate": 0.3,
+        "wilson95": [
+          0.199,
+          0.4251
+        ]
+      },
+      "duplicate_recall": {
+        "n": 64,
+        "hits": 36,
+        "recall": 0.5625,
+        "wilson95": [
+          0.4409,
+          0.6771
+        ]
+      },
+      "known_prior_recall": {
+        "n": 1,
+        "hits": 0
+      },
+      "tool_errors": 0
+    },
+    {
+      "binary_sha256": "da176bc86b86b9b81dcb3a3095dabeef00768ab8f4baf04c4b23e1e11af9e8db",
+      "label": "intermediate matcher",
+      "date": "2026-11-13",
+      "far": {
+        "n": 60,
+        "alarms": 15,
+        "rate": 0.25,
+        "wilson95": [
+          0.1578,
+          0.3723
+        ]
+      },
+      "duplicate_recall": {
+        "n": 64,
+        "hits": 33,
+        "recall": 0.5156,
+        "wilson95": [
+          0.3958,
+          0.6337
+        ]
+      },
+      "known_prior_recall": {
+        "n": 1,
+        "hits": 0
+      },
+      "tool_errors": 0
+    },
+    {
+      "binary_sha256": "176f19869065b1a27caa0f8c91c91b7790f248b20dee621b869cdf2e309e7d0c",
+      "label": "superseded by dabfcc0c (one prose-only fix; same matcher and numbers)",
+      "date": "2026-11-13",
+      "far": {
+        "n": 60,
+        "alarms": 26,
+        "rate": 0.4333,
+        "wilson95": [
+          0.3157,
+          0.559
+        ]
+      },
+      "duplicate_recall": {
+        "n": 64,
+        "hits": 39,
+        "recall": 0.6094,
+        "wilson95": [
+          0.4869,
+          0.7194
+        ]
+      },
+      "known_prior_recall": {
+        "n": 1,
+        "hits": 0
+      },
+      "tool_errors": 0
+    },
+    {
+      "binary_sha256": "dabfcc0ca197ee35b40772cb7db666f17105c5c36faa7f9da7ef783a9a78e12a",
+      "label": "FINAL (green tree, 91 tests; matcher identical to 2ec4c3c9, stale-prose wording only after it)",
+      "date": "2026-11-13",
+      "far": {
+        "n": 60,
+        "alarms": 26,
+        "rate": 0.4333,
+        "wilson95": [
+          0.3157,
+          0.559
+        ]
+      },
+      "duplicate_recall": {
+        "n": 64,
+        "hits": 39,
+        "recall": 0.6094,
+        "wilson95": [
+          0.4869,
+          0.7194
+        ]
+      },
+      "known_prior_recall": {
+        "n": 1,
+        "hits": 0
+      },
+      "tool_errors": 0,
+      "note": "number of record; the plan's >30% rule applies to this run"
+    }
+  ],
+  "release": {
+    "measured_binary_sha256": "dabfcc0ca197ee35b40772cb7db666f17105c5c36faa7f9da7ef783a9a78e12a",
+    "release_binary_sha256": null,
+    "source_commit": null,
+    "tag": null,
+    "status": "pending: the release tree is uncommitted at the time of measurement (priorart HEAD f715c07 with 226 changed/untracked paths), so no commit or tag exists yet. Record the commit and tag here when the Lead cuts the release; the release-profile binary hash will differ from the debug hash."
+  },
+  "per_query": [
+    {
+      "id": "inv:001",
+      "measure": "known_prior_recall",
+      "hit": false,
+      "expected": "ki-2024-02:1",
+      "returned": []
+    },
+    {
+      "id": "acc:001-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0005"
+      ]
+    },
+    {
+      "id": "acc:002-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0021",
+        "item-0004",
+        "item-0005"
+      ]
+    },
+    {
+      "id": "acc:003-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:004-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:005-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0035"
+      ]
+    },
+    {
+      "id": "acc:006-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:007-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0034"
+      ]
+    },
+    {
+      "id": "acc:008-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:009-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0005"
+      ]
+    },
+    {
+      "id": "acc:010-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0021",
+        "item-0036",
+        "item-0004",
+        "item-0031",
+        "item-0005"
+      ]
+    },
+    {
+      "id": "acc:011-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0034",
+        "item-0033"
+      ]
+    },
+    {
+      "id": "acc:012-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:013-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0004",
+        "item-0021"
+      ]
+    },
+    {
+      "id": "acc:014-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:015-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0005"
+      ]
+    },
+    {
+      "id": "acc:016-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:017-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0021"
+      ]
+    },
+    {
+      "id": "acc:018-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0005"
+      ]
+    },
+    {
+      "id": "acc:019-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0034",
+        "item-0035"
+      ]
+    },
+    {
+      "id": "acc:020-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0031"
+      ]
+    },
+    {
+      "id": "acc:021-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0005"
+      ]
+    },
+    {
+      "id": "acc:022-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0004"
+      ]
+    },
+    {
+      "id": "acc:023-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0005"
+      ]
+    },
+    {
+      "id": "acc:024-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:025-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0005"
+      ]
+    },
+    {
+      "id": "acc:026-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0034"
+      ]
+    },
+    {
+      "id": "acc:027-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:028-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:029-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0034"
+      ]
+    },
+    {
+      "id": "acc:030-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0034",
+        "item-0035"
+      ]
+    },
+    {
+      "id": "acc:031-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:032-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:033-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:034-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:035-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:036-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:037-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:038-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:039-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:040-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:041-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:042-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:043-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0005"
+      ]
+    },
+    {
+      "id": "acc:044-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:045-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:046-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:047-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:048-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:049-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:050-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:051-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0005",
+        "item-0007"
+      ]
+    },
+    {
+      "id": "acc:052-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:053-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:054-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:055-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:056-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:057-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0004",
+        "item-0021"
+      ]
+    },
+    {
+      "id": "acc:058-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0005"
+      ]
+    },
+    {
+      "id": "acc:059-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0021"
+      ]
+    },
+    {
+      "id": "acc:060-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0031"
+      ]
+    },
+    {
+      "id": "dup:001-M/056.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:001-M",
+      "returned": [
+        "item-0050",
+        "item-0127",
+        "item-0141",
+        "item-0053",
+        "item-0091"
+      ]
+    },
+    {
+      "id": "dup:001-M/058.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:001-M",
+      "returned": [
+        "item-0350",
+        "item-0153",
+        "item-0111",
+        "item-0133",
+        "item-0002"
+      ]
+    },
+    {
+      "id": "dup:001-M/101.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:001-M",
+      "returned": [
+        "item-0153",
+        "item-0111",
+        "item-0353",
+        "item-0350",
+        "item-0050"
+      ]
+    },
+    {
+      "id": "dup:001-M/117.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:001-M",
+      "returned": [
+        "item-0153",
+        "item-0127",
+        "item-0044",
+        "item-0350",
+        "item-0353"
+      ]
+    },
+    {
+      "id": "dup:002-H/034.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:002-H",
+      "returned": [
+        "item-0008",
+        "item-0007"
+      ]
+    },
+    {
+      "id": "dup:002-H/055.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:002-H",
+      "returned": [
+        "item-0008",
+        "item-0011",
+        "item-0007"
+      ]
+    },
+    {
+      "id": "dup:002-H/149.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:002-H",
+      "returned": [
+        "item-0385",
+        "item-0011"
+      ]
+    },
+    {
+      "id": "dup:003-M/024.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:003-M",
+      "returned": [
+        "item-0017"
+      ]
+    },
+    {
+      "id": "dup:003-M/066.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:003-M",
+      "returned": [
+        "item-0017"
+      ]
+    },
+    {
+      "id": "dup:003-M/118.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:003-M",
+      "returned": []
+    },
+    {
+      "id": "dup:004-M/052.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:004-M",
+      "returned": [
+        "item-0022",
+        "item-0023",
+        "item-0272",
+        "item-0199"
+      ]
+    },
+    {
+      "id": "dup:004-M/074.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:004-M",
+      "returned": [
+        "item-0022",
+        "item-0023",
+        "item-0199"
+      ]
+    },
+    {
+      "id": "dup:004-M/123.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:004-M",
+      "returned": [
+        "item-0199",
+        "item-0022",
+        "item-0023"
+      ]
+    },
+    {
+      "id": "dup:005-H/048.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:005-H",
+      "returned": [
+        "item-0070",
+        "item-0038"
+      ]
+    },
+    {
+      "id": "dup:005-H/075.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:005-H",
+      "returned": [
+        "item-0028",
+        "item-0079",
+        "item-0153",
+        "item-0353",
+        "item-0044"
+      ]
+    },
+    {
+      "id": "dup:005-H/093.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:005-H",
+      "returned": [
+        "item-0028",
+        "item-0029",
+        "item-0099",
+        "item-0204",
+        "item-0205"
+      ]
+    },
+    {
+      "id": "dup:006-M/023.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:006-M",
+      "returned": [
+        "item-0034",
+        "item-0126",
+        "item-0035",
+        "item-0477"
+      ]
+    },
+    {
+      "id": "dup:006-M/065.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:006-M",
+      "returned": [
+        "item-0034",
+        "item-0126",
+        "item-0035",
+        "item-0477",
+        "item-0480"
+      ]
+    },
+    {
+      "id": "dup:006-M/098.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:006-M",
+      "returned": [
+        "item-0034",
+        "item-0035",
+        "item-0126",
+        "item-0477",
+        "item-0480"
+      ]
+    },
+    {
+      "id": "dup:007-H/017.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:007-H",
+      "returned": [
+        "item-0145",
+        "item-0176",
+        "item-0230",
+        "item-0231",
+        "item-0099"
+      ]
+    },
+    {
+      "id": "dup:007-H/050.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:007-H",
+      "returned": [
+        "item-0099",
+        "item-0247",
+        "item-0301",
+        "item-0304",
+        "item-0250"
+      ]
+    },
+    {
+      "id": "dup:007-H/110.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:007-H",
+      "returned": [
+        "item-0062",
+        "item-0063",
+        "item-0158",
+        "item-0157",
+        "item-0184"
+      ]
+    },
+    {
+      "id": "dup:008-M/044.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:008-M",
+      "returned": [
+        "item-0044",
+        "item-0141",
+        "item-0111",
+        "item-0153",
+        "item-0127"
+      ]
+    },
+    {
+      "id": "dup:008-M/062.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:008-M",
+      "returned": [
+        "item-0141",
+        "item-0127",
+        "item-0044",
+        "item-0253",
+        "item-0091"
+      ]
+    },
+    {
+      "id": "dup:008-M/078.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:008-M",
+      "returned": [
+        "item-0141",
+        "item-0044",
+        "item-0127",
+        "item-0253",
+        "item-0254"
+      ]
+    },
+    {
+      "id": "dup:009-M/047.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:009-M",
+      "returned": []
+    },
+    {
+      "id": "dup:009-M/059.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:009-M",
+      "returned": [
+        "item-0111",
+        "item-0153",
+        "item-0154",
+        "item-0133",
+        "item-0350"
+      ]
+    },
+    {
+      "id": "dup:009-M/116.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:009-M",
+      "returned": [
+        "item-0050",
+        "item-0053",
+        "item-0127",
+        "item-0141",
+        "item-0153"
+      ]
+    },
+    {
+      "id": "dup:010-H/051.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:010-H",
+      "returned": [
+        "item-0058",
+        "item-0008",
+        "item-0265",
+        "item-0038",
+        "item-0111"
+      ]
+    },
+    {
+      "id": "dup:010-H/088.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:010-H",
+      "returned": [
+        "item-0058",
+        "item-0265",
+        "item-0008",
+        "item-0430",
+        "item-0002"
+      ]
+    },
+    {
+      "id": "dup:011-M/015.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:011-M",
+      "returned": [
+        "item-0062",
+        "item-0231",
+        "item-0084",
+        "item-0099",
+        "item-0157"
+      ]
+    },
+    {
+      "id": "dup:011-M/092.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:011-M",
+      "returned": [
+        "item-0099",
+        "item-0062",
+        "item-0250",
+        "item-0247",
+        "item-0301"
+      ]
+    },
+    {
+      "id": "dup:012-H/037.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:012-H",
+      "returned": [
+        "item-0127"
+      ]
+    },
+    {
+      "id": "dup:012-H/045.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:012-H",
+      "returned": [
+        "item-0070",
+        "item-0038",
+        "item-0307",
+        "item-0028",
+        "item-0115"
+      ]
+    },
+    {
+      "id": "dup:013-M/011.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:013-M",
+      "returned": []
+    },
+    {
+      "id": "dup:013-M/030.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:013-M",
+      "returned": []
+    },
+    {
+      "id": "dup:014-M/068.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:014-M",
+      "returned": [
+        "item-0288",
+        "item-0291",
+        "item-0084"
+      ]
+    },
+    {
+      "id": "dup:014-M/121.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:014-M",
+      "returned": [
+        "item-0084",
+        "item-0276",
+        "item-0288",
+        "item-0126",
+        "item-0034"
+      ]
+    },
+    {
+      "id": "dup:015-M/031.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:015-M",
+      "returned": [
+        "item-0141",
+        "item-0127",
+        "item-0050",
+        "item-0053",
+        "item-0091"
+      ]
+    },
+    {
+      "id": "dup:016-H/082.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:016-H",
+      "returned": [
+        "item-0099",
+        "item-0062",
+        "item-0250",
+        "item-0247",
+        "item-0328"
+      ]
+    },
+    {
+      "id": "dup:017-H/035.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:017-H",
+      "returned": []
+    },
+    {
+      "id": "dup:018-H/036.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:018-H",
+      "returned": [
+        "item-0111",
+        "item-0112"
+      ]
+    },
+    {
+      "id": "dup:019-M/122.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:019-M",
+      "returned": [
+        "item-0115",
+        "item-0184",
+        "item-0176",
+        "item-0157",
+        "item-0181"
+      ]
+    },
+    {
+      "id": "dup:020-M/142.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:020-M",
+      "returned": [
+        "item-0121",
+        "item-0362",
+        "item-0058",
+        "item-0430"
+      ]
+    },
+    {
+      "id": "dup:021-M/046.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:021-M",
+      "returned": [
+        "item-0141",
+        "item-0127",
+        "item-0126",
+        "item-0130",
+        "item-0111"
+      ]
+    },
+    {
+      "id": "dup:022-M/105.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:022-M",
+      "returned": [
+        "item-0153",
+        "item-0353",
+        "item-0350",
+        "item-0044",
+        "item-0111"
+      ]
+    },
+    {
+      "id": "dup:023-H/057.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:023-H",
+      "returned": [
+        "item-0141",
+        "item-0307",
+        "item-0111",
+        "item-0510",
+        "item-0142"
+      ]
+    },
+    {
+      "id": "dup:024-M/133.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:024-M",
+      "returned": [
+        "item-0145",
+        "item-0176",
+        "item-0506",
+        "item-0507"
+      ]
+    },
+    {
+      "id": "dup:025-H/060.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:025-H",
+      "returned": [
+        "item-0111",
+        "item-0141",
+        "item-0307",
+        "item-0153",
+        "item-0510"
+      ]
+    },
+    {
+      "id": "dup:026-H/114.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:026-H",
+      "returned": [
+        "item-0176",
+        "item-0157",
+        "item-0162",
+        "item-0145",
+        "item-0158"
+      ]
+    },
+    {
+      "id": "dup:027-M/085.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:027-M",
+      "returned": [
+        "item-0008"
+      ]
+    },
+    {
+      "id": "dup:028-M/145.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:028-M",
+      "returned": [
+        "item-0153",
+        "item-0050",
+        "item-0053",
+        "item-0111",
+        "item-0078"
+      ]
+    },
+    {
+      "id": "dup:029-H/135.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:029-H",
+      "returned": [
+        "item-0157",
+        "item-0184",
+        "item-0176",
+        "item-0181",
+        "item-0177"
+      ]
+    },
+    {
+      "id": "dup:030-M/109.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:030-M",
+      "returned": [
+        "item-0028",
+        "item-0029",
+        "item-0070",
+        "item-0259",
+        "item-0157"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-001/081.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-001",
+      "returned": [
+        "item-0506",
+        "item-0507",
+        "item-0099",
+        "item-0148",
+        "item-0204"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-001/112.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-001",
+      "returned": [
+        "item-0034",
+        "item-0126",
+        "item-0141",
+        "item-0127",
+        "item-0483"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-002/016.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-002",
+      "returned": [
+        "item-0510",
+        "item-0307",
+        "item-0127",
+        "item-0141",
+        "item-0050"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-002/020.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-002",
+      "returned": [
+        "item-0034",
+        "item-0483",
+        "item-0486",
+        "item-0126",
+        "item-0035"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-002/021.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-002",
+      "returned": [
+        "item-0034",
+        "item-0483",
+        "item-0486"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-002/086.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-002",
+      "returned": [
+        "item-0506",
+        "item-0507",
+        "item-0099",
+        "item-0148",
+        "item-0204"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-002/099.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-002",
+      "returned": [
+        "item-0176",
+        "item-0145",
+        "item-0247",
+        "item-0259",
+        "item-0158"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-003/025.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-003",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-003/026.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-003",
+      "returned": [
+        "item-0397",
+        "item-0079",
+        "item-0078",
+        "item-0008",
+        "item-0058"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-003/129.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-003",
+      "returned": [
+        "item-0519",
+        "item-0170",
+        "item-0050",
+        "item-0053",
+        "item-0153"
+      ]
+    }
+  ],
+  "tool_errors": [],
+  "not_claimed": [
+    "not a measurement of whether priorart finds bugs: the corpus is judged human findings",
+    "not a false-positive rate on model-written hypotheses",
+    "not a duplicate-detector score for submissions against public reports: the duplicate variant is a reading list and never a duplicate verdict",
+    "the known-prior positives are one reader's grounding, not the judge's published reason",
+    "no held-out split was opened"
+  ]
+}

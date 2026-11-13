@@ -1,0 +1,255 @@
+{
+  "schema": "priorart.dossier/v1",
+  "tool": {
+    "name": "priorart",
+    "version": "0.1.0"
+  },
+  "program": {
+    "id": "dossier-demo",
+    "name": "Rain",
+    "platform": "HardenedProof",
+    "url": "https://example.invalid/rain",
+    "scope_url": "https://example.invalid/rain/scope",
+    "payout": {
+      "tier_shape": "medium_and_above",
+      "floor_status": "documented",
+      "floor_severity": "medium",
+      "source_url": "https://example.invalid/rain/rewards",
+      "retrieved": "2026-09-01",
+      "section": "Rewards",
+      "quote": "High: 10,000 USD"
+    },
+    "prior_audits": [
+      {
+        "firm": "Internal review",
+        "url": "https://example.invalid/rain/internal-review",
+        "covers": [
+          "src/VaultEngine.sol",
+          "src/BalanceSheet.sol"
+        ],
+        "known_issues": [
+          "shortfall via direct ledger writes in the reserve backing check"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "src-0001",
+      "kind": "program-page",
+      "title": "scope.md",
+      "path": "scope.md",
+      "sha256": "ecf837516e94d8ac714b1936a08f416b8d4ea187505a9db4834a6bb5e01bb6a4",
+      "pages": 1
+    },
+    {
+      "id": "src-0002",
+      "kind": "known-issues",
+      "title": "known-issues.md",
+      "path": "known-issues.md",
+      "sha256": "46534c52f77fe485942e2b9192c899692362419c731b8b4498c8f9d7f9a608bd",
+      "pages": 1
+    },
+    {
+      "id": "src-0003",
+      "kind": "audit",
+      "title": "internal-review.md",
+      "path": "audits/internal-review.md",
+      "sha256": "79e56ab10021c75fefe6679c920a2f95ce77867871f293fc1457e50dcaee938b",
+      "pages": 1
+    }
+  ],
+  "items": [
+    {
+      "id": "item-0001",
+      "source_id": "src-0001",
+      "kind": "payout-tier",
+      "title": "scope.md",
+      "section": "Rewards",
+      "page": 1,
+      "quote": "Critical: 50,000 USD",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "Critical: 50,000 USD"
+    },
+    {
+      "id": "item-0002",
+      "source_id": "src-0001",
+      "kind": "payout-tier",
+      "title": "scope.md",
+      "section": "Rewards",
+      "page": 1,
+      "quote": "High: 10,000 USD",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "High: 10,000 USD"
+    },
+    {
+      "id": "item-0003",
+      "source_id": "src-0001",
+      "kind": "payout-tier",
+      "title": "scope.md",
+      "section": "Rewards",
+      "page": 1,
+      "quote": "Medium: 2,000 USD",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "Medium: 2,000 USD"
+    },
+    {
+      "id": "item-0004",
+      "source_id": "src-0001",
+      "kind": "scope-path",
+      "title": "scope.md",
+      "section": "In scope",
+      "page": 1,
+      "quote": "src/VaultEngine.sol",
+      "identifiers": [
+        "VaultEngine",
+        "src/VaultEngine.sol",
+        "VaultEngine.sol"
+      ],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "src/VaultEngine.sol"
+    },
+    {
+      "id": "item-0005",
+      "source_id": "src-0001",
+      "kind": "scope-path",
+      "title": "scope.md",
+      "section": "In scope",
+      "page": 1,
+      "quote": "src/BalanceSheet.sol",
+      "identifiers": [
+        "BalanceSheet",
+        "BalanceSheet.sol",
+        "src/BalanceSheet.sol"
+      ],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "src/BalanceSheet.sol"
+    },
+    {
+      "id": "item-0006",
+      "source_id": "src-0001",
+      "kind": "scope-path",
+      "title": "scope.md",
+      "section": "In scope",
+      "page": 1,
+      "quote": "src/PegStabilityModule.sol",
+      "identifiers": [
+        "PegStabilityModule",
+        "PegStabilityModule.sol",
+        "src/PegStabilityModule.sol"
+      ],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "src/PegStabilityModule.sol"
+    },
+    {
+      "id": "item-0007",
+      "source_id": "src-0001",
+      "kind": "scope-clause",
+      "title": "scope.md",
+      "section": "Out of scope",
+      "page": 1,
+      "quote": "Attacks that require a privileged role, owner, governance or keeper.",
+      "identifiers": [],
+      "mechanism_class": "privileged_path_bypass",
+      "clause_class": "privileged_role",
+      "text": "Attacks that require a privileged role, owner, governance or keeper."
+    },
+    {
+      "id": "item-0008",
+      "source_id": "src-0001",
+      "kind": "scope-clause",
+      "title": "scope.md",
+      "section": "Out of scope",
+      "page": 1,
+      "quote": "Findings whose only path is mempool front-running.",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": "front_run_only",
+      "text": "Findings whose only path is mempool front-running."
+    },
+    {
+      "id": "item-0009",
+      "source_id": "src-0001",
+      "kind": "scope-clause",
+      "title": "scope.md",
+      "section": "Out of scope",
+      "page": 1,
+      "quote": "Issues already listed in the known-issues section.",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": "known_issue",
+      "text": "Issues already listed in the known-issues section."
+    },
+    {
+      "id": "item-0010",
+      "source_id": "src-0001",
+      "kind": "scope-clause",
+      "title": "scope.md",
+      "section": "Out of scope",
+      "page": 1,
+      "quote": "Gas optimisations and best-practice recommendations.",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": "best_practice",
+      "text": "Gas optimisations and best-practice recommendations."
+    },
+    {
+      "id": "item-0011",
+      "source_id": "src-0002",
+      "kind": "known-issue",
+      "title": "known-issues.md",
+      "section": "Known issues",
+      "page": 1,
+      "quote": "The PSM ceiling can be consumed by self-backed vaults on fee-exempt stable collateral; acknowledged in the internal review H-02.",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "The PSM ceiling can be consumed by self-backed vaults on fee-exempt stable collateral; acknowledged in the internal review H-02."
+    },
+    {
+      "id": "item-0012",
+      "source_id": "src-0002",
+      "kind": "known-issue",
+      "title": "known-issues.md",
+      "section": "Known issues",
+      "page": 1,
+      "quote": "Rounding in `distributeSurplus` is acknowledged and will not be paid.",
+      "identifiers": [
+        "distributeSurplus"
+      ],
+      "mechanism_class": "rounding_direction",
+      "clause_class": null,
+      "text": "Rounding in `distributeSurplus` is acknowledged and will not be paid."
+    },
+    {
+      "id": "item-0013",
+      "source_id": "src-0003",
+      "kind": "audit-finding",
+      "title": "internal-review.md",
+      "section": "H-02 Reserve backing check",
+      "page": 1,
+      "quote": "The backing check in `BalanceSheet.distributeSurplus` reverts with `ReserveBackingShortfall` when the stable reserve is smaller than the summed debt of fee-exempt collateral types.",
+      "identifiers": [
+        "BalanceSheet",
+        "BalanceSheet.distributeSurplus",
+        "PegStabilityModule",
+        "PegStabilityModule.sellStable",
+        "ReserveBackingShortfall",
+        "VaultEngine",
+        "VaultEngine.open"
+      ],
+      "mechanism_class": "accounting_order_of_operations",
+      "clause_class": null,
+      "text": "The backing check in `BalanceSheet.distributeSurplus` reverts with `ReserveBackingShortfall`\nwhen the stable reserve is smaller than the summed debt of fee-exempt collateral types. The check\nassumes every such debt has a reserve counterpart from `PegStabilityModule.sellStable`.\n\nThe review's test drove the shortfall only through direct ledger writes, never through\n`VaultEngine.open` on a fee-exempt collateral type. Severity: High. Reported 2026-08-14."
+    }
+  ]
+}

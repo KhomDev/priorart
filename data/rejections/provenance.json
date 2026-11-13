@@ -1,0 +1,13 @@
+{
+  "source_sha256": "8dc5ea43ee90382919a15a0a76cc8a063685320d75cc9f5d47a5798e08991825",
+  "classifier_sha256": "80cc7b6087d06032345a555518c4209e84db99cdcb042a17a8f3db27b4910923",
+  "ledger_sha256": "1519d4cbdab8f05737990e4c023708d4b564e52f0a7dbed3d5c76104e8ffe09f",
+  "removed_ids": [],
+  "dataset_version": "0.6.1",
+  "data_identical_to": "0.6.0",
+  "data_unchanged_since": "rejection-taxonomy v0.6.0; v0.6.1 was docs-only and git diff v0.6.0..v0.6.1 -- data/ is empty",
+  "source_repository": "https://github.com/KhomDev/rejection-taxonomy",
+  "source_tag": "v0.6.1",
+  "moved_into": "priorart 0.1.0, data/rejections/",
+  "licence": "CC-BY-4.0 for data and prose, MIT for code; see LICENSE-DATA"
+}

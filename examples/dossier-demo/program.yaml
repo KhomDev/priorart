@@ -1,0 +1,24 @@
+# Saved by the user; read by priorart build.
+
+name: Rain
+platform: HardenedProof
+url: https://example.invalid/rain
+scope_url: https://example.invalid/rain/scope
+
+payout:
+  tier_shape: medium_and_above
+  floor_status: documented
+  floor_severity: medium
+  source_url: https://example.invalid/rain/rewards
+  retrieved: "2026-09-01"
+  section: Rewards
+  quote: "High: 10,000 USD"
+
+prior_audits:
+  - firm: Internal review
+    url: https://example.invalid/rain/internal-review
+    covers:
+      - src/VaultEngine.sol
+      - src/BalanceSheet.sol
+    known_issues:
+      - "shortfall via direct ledger writes in the reserve backing check"

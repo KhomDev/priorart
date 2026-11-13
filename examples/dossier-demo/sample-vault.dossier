@@ -1,0 +1,232 @@
+{
+  "schema": "priorart.dossier/v1",
+  "tool": {
+    "name": "priorart",
+    "version": "0.1.0"
+  },
+  "program": {
+    "id": "sample-vault",
+    "name": "Sample Vault",
+    "platform": "example-platform",
+    "url": "https://example.invalid/sample-vault",
+    "scope_url": "https://example.invalid/sample-vault/scope",
+    "payout": {
+      "tier_shape": "high_and_above",
+      "floor_status": "documented",
+      "floor_severity": "high",
+      "source_url": "https://example.invalid/sample-vault/rewards",
+      "retrieved": "2026-11-01",
+      "section": "Rewards",
+      "quote": "High: $10,000"
+    },
+    "prior_audits": [
+      {
+        "firm": "Internal review 2026-08",
+        "url": "https://example.invalid/sample-vault/audits/internal-2026-08",
+        "covers": [
+          "src/Vault.sol"
+        ],
+        "known_issues": []
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "src-0001",
+      "kind": "program-page",
+      "title": "scope.md",
+      "path": "scope.md",
+      "sha256": "5d1e0f05cb555b183e253dd8a54f69b975d9fd4204f19c8ea75ec08bb64bd215",
+      "pages": 1
+    },
+    {
+      "id": "src-0002",
+      "kind": "known-issues",
+      "title": "known-issues.md",
+      "path": "known-issues.md",
+      "sha256": "3577d704ff0fe29913f62d3074ab5a5ccfdbe7de0d0ffe0cd771baff10797def",
+      "pages": 1
+    },
+    {
+      "id": "src-0003",
+      "kind": "audit",
+      "title": "internal-review-2026-08.md",
+      "path": "audits/internal-review-2026-08.md",
+      "sha256": "0a350886d34643467c9905729bbc47c29471c145ff3ba6d9e1c3b8c8001aeb75",
+      "pages": 1
+    }
+  ],
+  "items": [
+    {
+      "id": "item-0001",
+      "source_id": "src-0001",
+      "kind": "payout-tier",
+      "title": "scope.md",
+      "section": "Rewards",
+      "page": 1,
+      "quote": "Critical: $50,000",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "Critical: $50,000"
+    },
+    {
+      "id": "item-0002",
+      "source_id": "src-0001",
+      "kind": "payout-tier",
+      "title": "scope.md",
+      "section": "Rewards",
+      "page": 1,
+      "quote": "High: $10,000",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "High: $10,000"
+    },
+    {
+      "id": "item-0003",
+      "source_id": "src-0001",
+      "kind": "payout-tier",
+      "title": "scope.md",
+      "section": "Rewards",
+      "page": 1,
+      "quote": "Medium: $2,000",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "Medium: $2,000"
+    },
+    {
+      "id": "item-0004",
+      "source_id": "src-0001",
+      "kind": "scope-path",
+      "title": "scope.md",
+      "section": "In scope",
+      "page": 1,
+      "quote": "src/Vault.sol",
+      "identifiers": [
+        "src/vault.sol",
+        "vault.sol"
+      ],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "src/Vault.sol"
+    },
+    {
+      "id": "item-0005",
+      "source_id": "src-0001",
+      "kind": "scope-path",
+      "title": "scope.md",
+      "section": "In scope",
+      "page": 1,
+      "quote": "src/VaultEngine.sol",
+      "identifiers": [
+        "src/vaultengine.sol",
+        "vaultengine",
+        "vaultengine.sol"
+      ],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "src/VaultEngine.sol"
+    },
+    {
+      "id": "item-0006",
+      "source_id": "src-0001",
+      "kind": "scope-clause",
+      "title": "scope.md",
+      "section": "Out of scope",
+      "page": 1,
+      "quote": "Attacks requiring access to privileged addresses",
+      "identifiers": [],
+      "mechanism_class": "privileged_path_bypass",
+      "clause_class": null,
+      "text": "Attacks requiring access to privileged addresses"
+    },
+    {
+      "id": "item-0007",
+      "source_id": "src-0001",
+      "kind": "scope-clause",
+      "title": "scope.md",
+      "section": "Out of scope",
+      "page": 1,
+      "quote": "Vulnerabilities exploitable through front-running only",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": "front_run_only",
+      "text": "Vulnerabilities exploitable through front-running only"
+    },
+    {
+      "id": "item-0008",
+      "source_id": "src-0001",
+      "kind": "scope-clause",
+      "title": "scope.md",
+      "section": "Out of scope",
+      "page": 1,
+      "quote": "Best-practice critiques and gas optimisations",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": "best_practice",
+      "text": "Best-practice critiques and gas optimisations"
+    },
+    {
+      "id": "item-0009",
+      "source_id": "src-0001",
+      "kind": "scope-clause",
+      "title": "scope.md",
+      "section": "Out of scope",
+      "page": 1,
+      "quote": "Issues already listed in the known-issues section",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "Issues already listed in the known-issues section"
+    },
+    {
+      "id": "item-0010",
+      "source_id": "src-0002",
+      "kind": "known-issue",
+      "title": "known-issues.md",
+      "section": "Known issues",
+      "page": 1,
+      "quote": "Rounding in `sharePrice` is acknowledged",
+      "identifiers": [
+        "shareprice"
+      ],
+      "mechanism_class": "rounding_direction",
+      "clause_class": null,
+      "text": "Rounding in `sharePrice` is acknowledged; findings about the last wei of rounding will not be paid."
+    },
+    {
+      "id": "item-0011",
+      "source_id": "src-0003",
+      "kind": "audit-finding",
+      "title": "internal-review-2026-08.md",
+      "section": "H-02 Backing check after a shadow draw",
+      "page": 1,
+      "quote": "The `distributeSurplus` path reads `backingCheck` after the ledger write, so a",
+      "identifiers": [
+        "backingcheck",
+        "distributesurplus",
+        "reservebackingshortfall"
+      ],
+      "mechanism_class": "stale_cached_value",
+      "clause_class": null,
+      "text": "The `distributeSurplus` path reads `backingCheck` after the ledger write, so a\n1 wei shadow draw makes `ReserveBackingShortfall` fire on every later distribution.\nThe audit recommended refreshing the cached total before the check."
+    },
+    {
+      "id": "item-0012",
+      "source_id": "src-0003",
+      "kind": "audit-finding",
+      "title": "internal-review-2026-08.md",
+      "section": "M-04 Oracle bounds",
+      "page": 1,
+      "quote": "The `priceOracle` read has no staleness bound, so a stale answer is accepted for up to",
+      "identifiers": [
+        "priceoracle"
+      ],
+      "mechanism_class": "oracle_bounds_or_staleness",
+      "clause_class": null,
+      "text": "The `priceOracle` read has no staleness bound, so a stale answer is accepted for up to\none hour after the feed stops updating."
+    }
+  ]
+}

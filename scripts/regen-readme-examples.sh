@@ -1,68 +1,55 @@
 #!/usr/bin/env bash
-# Regenerate every example output in README.md by RUNNING the binary.
+# Regenerate the generated block in README.md, or check it with --check.
 #
-# Hand-written example output drifts. It already had: the previous README showed
-# "0% estimated payout odds" for a finding that trips P2 (weight 40) and P19
-# (weight 50), which computes to 10, not 0. The example was stale.
-#
-# This script is the only writer of the example block. CI runs it with --check
-# and fails if the README has drifted from what the tool actually prints.
-#
-# Usage:
-#   scripts/regen-readme-examples.sh            # rewrite README.md
-#   scripts/regen-readme-examples.sh --check    # exit 1 if it would change
+# Run from anywhere; paths are resolved from the script location. The same block
+# is produced by tests/docs.rs from Rust, so a platform that cannot run bash
+# still has the check. Windows path separators are normalised to / so the block
+# is identical on every platform.
 set -euo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$here"
+mode="${1:-write}"
+case "$mode" in
+  write|--check) ;;
+  *) echo "usage: $0 [--check]" >&2; exit 2 ;;
+esac
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT"
+cargo build --quiet
+bin="./target/debug/priorart"
+[ -x "$bin" ] || bin="./target/debug/priorart.exe"
 
-MODE="write"
-if [ "${1:-}" = "--check" ]; then MODE="check"; fi
-
-BIN="$ROOT/target/release/vg"
-if [ ! -x "$BIN" ] && [ ! -f "$BIN.exe" ]; then cargo build --release >/dev/null; fi
-if [ -f "$BIN.exe" ]; then BIN="$BIN.exe"; fi
-
-README="$ROOT/README.md"
-BEGIN="<!-- BEGIN:example -->"
-END="<!-- END:example -->"
-
-if ! grep -qF "$BEGIN" "$README" || ! grep -qF "$END" "$README"; then
-  echo "ERROR: README.md is missing the example markers" >&2; exit 2
-fi
-
-TMP="$(mktemp)"
-NEW="$(mktemp)"
-trap 'rm -f "$TMP" "$NEW"' EXIT
-
+block="$(mktemp)"
 {
-  echo "$BEGIN"
+  echo '$ priorart build examples/dossier-demo'
+  "$bin" build examples/dossier-demo
   echo
-  echo '```text'
-  # The subject path is normalised so the block is identical on every machine.
-  "$BIN" check tests/fixtures/cmp-04-report.md \
-    | sed -e "s#tests/fixtures/cmp-04-report.md#cmp-04.md#"
-  echo '```'
-  echo
-  echo "$END"
-} > "$TMP"
+  echo '$ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier'
+  "$bin" check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
+} | sed 's|\\|/|g' > "$block"
 
-# Splice the block in with awk: everything before BEGIN, the new block, then
-# everything after END. No python, so this runs in any CI image.
-awk -v begin="$BEGIN" -v end="$END" -v blockfile="$TMP" '
-  BEGIN { while ((getline line < blockfile) > 0) block = block line "\n" }
-  { if (index($0, begin) == 1) { printf "%s", block; skip = 1; next }
-    if (skip) { if (index($0, end) == 1) skip = 0; next }
-    print }
-' "$README" > "$NEW"
-
-if cmp -s "$README" "$NEW"; then
-  echo "README examples are current"
-  exit 0
-fi
-if [ "$MODE" = "check" ]; then
-  echo "README examples are STALE - run scripts/regen-readme-examples.sh" >&2
-  exit 1
-fi
-cp "$NEW" "$README"
-echo "rewrote the README example block"
+python3 - "$block" "$mode" <<'PY'
+import pathlib, sys
+root = pathlib.Path.cwd()
+readme = root / "README.md"
+block = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8").rstrip("\n")
+mode = sys.argv[2]
+begin = "<!-- BEGIN GENERATED EXAMPLE (scripts/regen-readme-examples.sh) -->"
+end = "<!-- END GENERATED EXAMPLE -->"
+text = readme.read_text(encoding="utf-8")
+if begin not in text or end not in text:
+    raise SystemExit("README.md is missing the generated-example markers")
+head, rest = text.split(begin, 1)
+middle, tail = rest.split(end, 1)
+current = middle.strip("\n")
+if mode == "--check":
+    if current != block:
+        print("README example is stale. Regenerate with scripts/regen-readme-examples.sh", file=sys.stderr)
+        print("--- expected ---", file=sys.stderr)
+        print(block, file=sys.stderr)
+        raise SystemExit(1)
+    print("README example is current")
+else:
+    readme.write_text(head + begin + "\n" + block + "\n" + end + tail, encoding="utf-8")
+    print("README.md example regenerated")
+PY
+rm -f "$block"
