@@ -1,878 +1,780 @@
-//! End-to-end tests: drive the real `vg` and `viability-gate` binaries the way
-//! the README tells a user to, and check what they print and how they exit.
+//! Black-box tests for every command, flag and exit code.
 //!
-//! The unit and fixture tests exercise the engine. These exist because every
-//! defect in the 2026-11-06 audit that the engine tests could not see was in
-//! the command line: a documented command that did not parse, a flag that did
-//! nothing, a crash on real input, an outcome no input could produce.
+//! These run the real binary. Fixtures are either committed under examples/ and
+//! tests/fixtures/, or written into a temp directory by the test.
 
-use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
-use std::sync::atomic::{AtomicUsize, Ordering};
+mod support;
 
-const VG: &str = env!("CARGO_BIN_EXE_vg");
-const VIABILITY_GATE: &str = env!("CARGO_BIN_EXE_viability-gate");
+use serde_json::Value;
+use std::path::Path;
+use support::{manifest_dir, run, run_in, schema, validate, TempDir};
 
-static COUNTER: AtomicUsize = AtomicUsize::new(0);
+const DEMO: &str = "examples/dossier-demo";
+const FINDING: &str = "examples/finding-demo.md";
 
-/// A fresh, empty directory for one test.
-fn tmp() -> PathBuf {
-    let n = COUNTER.fetch_add(1, Ordering::SeqCst);
-    let dir = std::env::temp_dir().join(format!("vg-cli-{}-{n}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&dir);
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
+/// Build the demo dossier inside a temp copy, returning (dir, dossier path).
+fn demo_dossier(tmp: &TempDir) -> String {
+    tmp.copy_dir(&manifest_dir().join(DEMO), "program");
+    let out = tmp.join("demo.dossier");
+    let r = run(&[
+        "build",
+        tmp.join("program").to_str().unwrap(),
+        "--out",
+        out.to_str().unwrap(),
+    ]);
+    assert_eq!(r.code, 0, "build failed: {} {}", r.stdout, r.stderr);
+    out.to_str().unwrap().to_string()
 }
 
-fn write(dir: &Path, name: &str, body: &str) -> PathBuf {
-    let p = dir.join(name);
-    if let Some(parent) = p.parent() {
-        std::fs::create_dir_all(parent).unwrap();
-    }
-    std::fs::write(&p, body).unwrap();
-    p
+fn demo_finding(tmp: &TempDir) -> String {
+    std::fs::copy(manifest_dir().join(FINDING), tmp.join("finding.md")).unwrap();
+    tmp.join("finding.md").to_str().unwrap().to_string()
 }
 
-fn vg(args: &[&str], cwd: &Path) -> Output {
-    Command::new(VG)
-        .args(args)
-        .current_dir(cwd)
-        .output()
-        .expect("vg runs")
-}
-
-fn stdout(o: &Output) -> String {
-    String::from_utf8_lossy(&o.stdout).to_string()
-}
-
-fn stderr(o: &Output) -> String {
-    String::from_utf8_lossy(&o.stderr).to_string()
-}
-
-fn json(o: &Output) -> serde_json::Value {
-    serde_json::from_slice(&o.stdout)
-        .unwrap_or_else(|e| panic!("not JSON ({e}):\n{}\n{}", stdout(o), stderr(o)))
-}
-
-fn outcome_of(dir: &Path, name: &str, body: &str) -> (String, Vec<String>) {
-    let f = write(dir, name, body);
-    let o = vg(&["check", f.to_str().unwrap(), "--json"], dir);
-    assert_eq!(o.status.code(), Some(0), "{}", stderr(&o));
-    let v = json(&o);
-    let rules = v["findings"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|f| f["rule"].as_str().unwrap().to_string())
-        .collect();
-    (v["outcome"].as_str().unwrap().to_string(), rules)
-}
-
-/// The pre-0.8.0 mode: claim-heuristic hard rules are KILL again.
-fn outcome_of_strict(dir: &Path, name: &str, body: &str) -> (String, Vec<String>) {
-    let f = write(dir, name, body);
-    let o = vg(&["check", f.to_str().unwrap(), "--strict", "--json"], dir);
-    assert_eq!(o.status.code(), Some(0), "{}", stderr(&o));
-    let v = json(&o);
-    let rules = v["findings"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|f| f["rule"].as_str().unwrap().to_string())
-        .collect();
-    (v["outcome"].as_str().unwrap().to_string(), rules)
-}
-
-// ------------------------------------------------------------ audit counterexamples
+// ---------------------------------------------------------------- surface
 
 #[test]
-fn valid_findings_from_the_audit_are_not_killed() {
-    let dir = tmp();
-    let cases = [
-        (
-            "missing-ac.md",
-            "# Missing access control on setFee lets anyone drain fees\n\n## Description\nThe `setFee` function is missing the onlyOwner modifier, so any caller can set the fee to 100% and redirect all protocol fees to themselves.\n\n## Impact\nAn unprivileged attacker steals 12,500 USDC of accrued fees per day.\n",
-        ),
-        (
-            "sandwich.md",
-            "# Missing slippage check in swap allows sandwich attacks\n\n## Description\n`swapExactIn` passes amountOutMin = 0 to the router. A searcher can sandwich every user swap.\n\n## Impact\nUsers lose up to 30% of every swap; the attacker profits 4,000 USDC in our fork test.\n",
-        ),
-        (
-            "tvl.md",
-            "# Rounding bug lets attacker steal part of the total value locked\n\n## Summary\nThe attacker drains 1,200 USDC per call from the vault.\n\n## Proof of concept\nRun `forge test`. The attacker's balance increases by 1,200 USDC.\n\n## Recommendation\nThe function should revert when shares round to zero.\n",
-        ),
-        (
-            "intended.md",
-            "# Fee accrual breaks the intended behaviour of withdraw\n\n## Description\nContrary to the intended behaviour described in the whitepaper, withdraw charges the fee twice. The attacker profits 500 USDC per call at the users' expense.\n",
-        ),
-        (
-            "curly.md",
-            "# Report\n\n## Description\nThis path doesn\u{2019}t front-run anything; the attack is a single call.\n",
-        ),
-    ];
-    for (name, body) in cases {
-        let (outcome, rules) = outcome_of(&dir, name, body);
-        assert_ne!(outcome, "KILL", "{name} was killed by {rules:?}");
-        // P23-P26 are zero-weight notes about report structure. They are not
-        // the false kills this regression guards against.
-        let bad: Vec<_> = rules
-            .iter()
-            .filter(|r| !matches!(r.as_str(), "P23" | "P24" | "P25" | "P26"))
-            .collect();
-        assert!(bad.is_empty(), "{name} fired {bad:?}");
-    }
-}
+fn version_and_help_are_final() {
+    let v = run(&["--version"]);
+    assert_eq!(v.code, 0);
+    assert!(v.stdout.contains("priorart 0.1.0"), "{}", v.stdout);
 
-#[test]
-fn p21_no_longer_holds_on_its_own_advice() {
-    let dir = tmp();
-    let (_, rules) = outcome_of(
-        &dir,
-        "config.md",
-        "# Oracle staleness\n\nThe attack requires no misconfiguration and works under the deployed configuration. An unprivileged attacker borrows 90,000 USDC against collateral worth 10,000 USDC.\n",
-    );
-    assert!(!rules.contains(&"P21".to_string()), "{rules:?}");
-}
-
-#[test]
-fn p13_fires_on_an_unquantified_inconsistent_state() {
-    let dir = tmp();
-    let (outcome, rules) = outcome_of(
-        &dir,
-        "inconsistent.md",
-        "# Inconsistent state after partial liquidation\n\n## Description\nAfter a partial liquidation the protocol enters an inconsistent state where the debt index and collateral index diverge. In 2 of the tested paths this happens.\n",
-    );
-    assert!(rules.contains(&"P13".to_string()), "{rules:?}");
-    assert_eq!(outcome, "HOLD");
-}
-
-#[test]
-fn an_epoch_heading_is_not_a_proof_section() {
-    let dir = tmp();
-    let (_, rules) = outcome_of(
-        &dir,
-        "epoch.md",
-        "# Permanent loss of staking rewards\n\n## Epoch accounting\nThe epoch counter reverts to zero after rollover, so rewards for the last epoch are never distributed.\n",
-    );
-    assert!(!rules.contains(&"P19".to_string()), "{rules:?}");
-}
-
-// ------------------------------------------------------------ outcomes
-
-fn full_inputs(dir: &Path, exclusion_pattern: &str) -> Vec<String> {
-    let ledger = write(
-        dir,
-        "ledger.yaml",
-        &format!(
-            "- id: prog\n  tier_shape: low_and_above\n  floor_status: documented\n  floor_severity: low\n  source_url: \"https://example.org/rewards\"\n  retrieved: \"2026-11-01\"\n  exclusions:\n    - class: privileged_role\n      clause: \"Attacks requiring privileged access\"\n      pattern: \"{exclusion_pattern}\"\n  prior_audits:\n    - firm: X\n      url: \"https://example.org/a.pdf\"\n      covers: [\"src/Vault.sol\"]\n"
-        ),
-    );
-    let scope = write(dir, "scope.txt", "src/Vault.sol\n");
-    let prior = write(dir, "prior.txt", "audit-1\n");
-    write(dir, "suite/Vault.t.sol", "// withdraw works\n");
-    let hist = write(
-        dir,
-        "hist.yaml",
-        "submissions:\n  - family: \"price oracle stale bound\"\n    outcome: rejected\n",
-    );
-    let ki = write(
-        dir,
-        "ki.yaml",
-        "known_issues:\n  - id: KI-1\n    summary: dust\n    patterns: [\"dust.{0,20}stuck\"]\n",
-    );
-    vec![
-        "--ledger".into(),
-        ledger.to_string_lossy().into(),
-        "--scope".into(),
-        scope.to_string_lossy().into(),
-        "--prior-audits".into(),
-        prior.to_string_lossy().into(),
-        "--tests".into(),
-        dir.join("suite").to_string_lossy().into(),
-        "--fork-of".into(),
-        "none".into(),
-        "--log".into(),
-        hist.to_string_lossy().into(),
-        "--known-issues".into(),
-        ki.to_string_lossy().into(),
-    ]
-}
-
-const CLEAN: &str = "# Reentrancy in withdraw lets an attacker drain the vault\n\n**Severity:** High\n\n## Description\nPreconditions: the vault holds deposits. `withdraw` in src/Vault.sol sends ETH before zeroing the balance. An unprivileged attacker re-enters. The victim depositor is forced to absorb the loss. Impact: 50 ETH.\n\nSeverity rule: \"High: direct theft of user funds\".\n";
-
-#[test]
-fn clear_is_reachable_when_every_gate_runs_and_passes() {
-    let dir = tmp();
-    let sha = pin_vault(
-        &dir,
-        "contract V {\n    function withdraw() external {}\n}\n",
-    );
-    let f = write(&dir, "clean.md", CLEAN);
-    let mut args: Vec<String> = vec![
-        "check".into(),
-        f.to_string_lossy().into(),
-        "--json".into(),
-        "--target".into(),
-        dir.to_string_lossy().into(),
-        "--commit".into(),
-        sha,
-    ];
-    args.extend(full_inputs(&dir, "(owner|admin) (can|must)"));
-    let refs: Vec<&str> = args.iter().map(String::as_str).collect();
-    let o = vg(&refs, &dir);
-    let v = json(&o);
-    let gates: Vec<String> = v["gates"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|g| format!("{} {} {}", g["gate"], g["status"], g["detail"]))
-        .collect();
-    assert_eq!(v["outcome"], "CLEAR", "{gates:#?}");
-}
-
-#[test]
-fn a_failed_gate_holds_the_finding() {
-    let dir = tmp();
-    let f = write(&dir, "clean.md", CLEAN);
-    let mut args: Vec<String> = vec!["check".into(), f.to_string_lossy().into(), "--json".into()];
-    // This exclusion pattern matches the finding, so G2 fails.
-    args.extend(full_inputs(&dir, "re-?enter"));
-    let refs: Vec<&str> = args.iter().map(String::as_str).collect();
-    let v = json(&vg(&refs, &dir));
-    assert_eq!(v["outcome"], "HOLD");
-    let g2 = v["gates"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|g| g["gate"] == "G2")
-        .unwrap();
-    assert_eq!(g2["status"], "fail", "{g2}");
-}
-
-#[test]
-fn d1_runs_under_vg_check_with_a_corpus() {
-    let dir = tmp();
-    let f = write(
-        &dir,
-        "f.md",
-        "Dust is left stuck in the router after every swap.\n",
-    );
-    let ki = write(
-        &dir,
-        "ki.yaml",
-        "- id: KI-1\n  summary: dust\n  patterns: [\"dust.{0,20}stuck\"]\n",
-    );
-    let v = json(&vg(
-        &[
-            "check",
-            f.to_str().unwrap(),
-            "--known-issues",
-            ki.to_str().unwrap(),
-            "--json",
-        ],
-        &dir,
-    ));
-    assert_eq!(v["outcome"], "KILL");
-    let d1 = v["gates"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|g| g["gate"] == "D1")
-        .unwrap();
-    assert_eq!(d1["status"], "fail");
-}
-
-// ------------------------------------------------------------ the README commands
-
-#[test]
-fn check_accepts_several_findings_and_fails_on_any_kill() {
-    let dir = tmp();
-    let a = write(
-        &dir,
-        "a.md",
-        "An admin can set the pause flag and brick the vault.\n",
-    );
-    let b = write(&dir, "b.md", CLEAN);
-    let o = vg(
-        &[
-            "check",
-            a.to_str().unwrap(),
-            b.to_str().unwrap(),
-            "--json",
-            "--min-score",
-            "50",
-            "--fail-on-kill",
-            "--strict",
-        ],
-        &dir,
-    );
-    assert_eq!(o.status.code(), Some(1), "{}", stderr(&o));
-    let v = json(&o);
-    assert_eq!(
-        v.as_array().map(Vec::len),
-        Some(2),
-        "an array for several findings"
-    );
-    assert_eq!(v[0]["outcome"], "KILL");
-}
-
-#[test]
-fn the_command_vg_init_prints_runs() {
-    let dir = tmp();
-    let o = vg(&["init", "t1"], &dir);
-    assert_eq!(o.status.code(), Some(0), "{}", stderr(&o));
-    assert!(stdout(&o).contains("--known-issues"));
-    let o = vg(
-        &[
-            "gates",
-            "--ledger",
-            "t1/ledger.yaml",
-            "--scope",
-            "t1/scope.txt",
-            "--known-issues",
-            "t1/known-issues.yaml",
-            "--log",
-            "t1/history.yaml",
-        ],
-        &dir,
-    );
-    assert_ne!(
-        o.status.code(),
-        Some(2),
-        "a parse or usage error: {}",
-        stderr(&o)
-    );
-    // The unfilled scaffold is meant to fail: the floor is uncited.
-    assert_eq!(o.status.code(), Some(1));
-}
-
-#[test]
-fn every_rule_explains_and_the_catalog_lists() {
-    let dir = tmp();
-    let o = vg(&["rules"], &dir);
-    assert!(stdout(&o).contains("26 rules"));
-    for n in 1..=26 {
-        let id = format!("P{n}");
-        let o = vg(&["explain", &id], &dir);
-        assert_eq!(o.status.code(), Some(0), "{id}: {}", stderr(&o));
-    }
-}
-
-#[test]
-fn bench_uses_the_labels() {
-    let dir = tmp();
-    write(&dir, "rej/a.md", "An admin can set the pause flag.\n");
-    write(&dir, "rej/b.md", "The attacker drains 5 ETH.\n");
-    write(&dir, "acc/c.md", "The attacker drains 5 ETH atomically.\n");
-    let labels = write(
-        &dir,
-        "labels.csv",
-        "filename,label\na.md,rejected\nb.md,accepted\n",
-    );
-    let v = json(&vg(
-        &[
-            "bench",
-            "--rejected",
-            "rej",
-            "--accepted",
-            "acc",
-            "--labels",
-            labels.to_str().unwrap(),
-            "--json",
-        ],
-        &dir,
-    ));
-    assert_eq!(
-        v["rejected_total"], 1,
-        "b.md moved to accepted by its label"
-    );
-    assert_eq!(v["accepted_total"], 2);
-    let o = vg(&["bench", "--rejected", "rej"], &dir);
-    assert!(
-        stdout(&o).contains("n/a"),
-        "no accepted set means no rate:\n{}",
-        stdout(&o)
-    );
-}
-
-#[test]
-fn the_second_binary_names_itself() {
-    let o = Command::new(VIABILITY_GATE)
-        .arg("--version")
-        .output()
-        .unwrap();
-    assert!(stdout(&o).starts_with("viability-gate "), "{}", stdout(&o));
-}
-
-// ------------------------------------------------------------ the own-history log
-
-#[test]
-fn log_add_survives_hostile_labels_and_log_check_finds_a_real_repeat() {
-    let dir = tmp();
-    for family in ["null", "true", "stale cached exchange rate"] {
-        let o = vg(
-            &[
-                "log",
-                "add",
-                "--family",
-                family,
-                "--outcome",
-                "rejected",
-                "--file",
-                "h.yaml",
-            ],
-            &dir,
-        );
-        assert_eq!(o.status.code(), Some(0), "{family}: {}", stderr(&o));
-    }
-    let draft = write(
-        &dir,
-        "draft.md",
-        "# Stale cached exchange rate lets an attacker mint underpriced shares\n\nThe vault caches the exchange rate and refreshes it only when a deposit crosses the rebalance threshold, so the cached exchange rate goes stale and the attacker deposits at the stale rate.\n",
-    );
-    let o = vg(
-        &["log", "check", draft.to_str().unwrap(), "--file", "h.yaml"],
-        &dir,
-    );
-    assert_eq!(o.status.code(), Some(1), "{}{}", stdout(&o), stderr(&o));
-    assert!(stdout(&o).starts_with("REPEAT"));
-}
-
-#[test]
-fn log_add_rejects_a_bad_outcome() {
-    let dir = tmp();
-    let o = vg(
-        &[
-            "log",
-            "add",
-            "--family",
-            "f",
-            "--outcome",
-            "won",
-            "--file",
-            "h.yaml",
-        ],
-        &dir,
-    );
-    assert_eq!(o.status.code(), Some(2));
-    assert!(!dir.join("h.yaml").exists());
-}
-
-// ------------------------------------------------------------ input errors
-
-#[test]
-fn a_named_input_that_does_not_exist_is_an_error() {
-    let dir = tmp();
-    let f = write(&dir, "f.md", "text\n");
-    for args in [
-        vec!["check", f.to_str().unwrap(), "--log", "nope.yaml"],
-        vec!["check", f.to_str().unwrap(), "--program", "p"],
-        vec!["check", f.to_str().unwrap(), "--severity", "huge"],
-        vec!["check", f.to_str().unwrap(), "--min-score", "101"],
+    let h = run(&["--help"]);
+    assert_eq!(h.code, 0);
+    for command in [
+        "build",
+        "check",
+        "ledger",
+        "vocab",
+        "init",
+        "explain",
+        "rejections",
+        "rules",
     ] {
-        let o = vg(&args, &dir);
-        assert_eq!(o.status.code(), Some(2), "{args:?}: {}", stdout(&o));
+        assert!(h.stdout.contains(command), "help is missing {command}");
+    }
+    for sub in [
+        vec!["build", "--help"],
+        vec!["check", "--help"],
+        vec!["ledger", "--help"],
+        vec!["ledger", "validate", "--help"],
+        vec!["vocab", "--help"],
+        vec!["vocab", "list", "--help"],
+        vec!["vocab", "show", "--help"],
+        vec!["init", "--help"],
+        vec!["explain", "--help"],
+        vec!["rejections", "--help"],
+        vec!["rejections", "summary", "--help"],
+        vec!["rules", "--help"],
+    ] {
+        let r = run(&sub);
+        assert_eq!(r.code, 0, "{sub:?} --help failed: {}", r.stderr);
+        assert!(
+            !r.stdout.trim().is_empty(),
+            "{sub:?} --help printed nothing"
+        );
     }
 }
 
 #[test]
-fn a_rule_file_with_a_typo_is_rejected() {
-    let dir = tmp();
-    let rules = dir.join("rules");
-    std::fs::create_dir_all(&rules).unwrap();
-    let original = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("rules/anti-patterns.yaml"),
-    )
-    .unwrap()
-    .replace("\r\n", "\n");
-    let ap = original.replacen("    none_of:\n", "    none_off:\n", 1);
-    assert_ne!(ap, original, "the fixture must actually introduce the typo");
-    std::fs::write(rules.join("anti-patterns.yaml"), ap).unwrap();
-    std::fs::copy(
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("rules/gates.yaml"),
-        rules.join("gates.yaml"),
-    )
-    .unwrap();
-    let o = vg(&["--rules", rules.to_str().unwrap(), "rules"], &dir);
-    assert_eq!(o.status.code(), Some(2));
-    assert!(stderr(&o).contains("none_off"), "{}", stderr(&o));
+fn unknown_command_is_a_usage_error() {
+    let r = run(&["frobnicate"]);
+    assert_eq!(r.code, 2, "{}", r.stderr);
 }
 
 #[test]
-fn a_large_multibyte_test_suite_does_not_crash() {
-    let dir = tmp();
-    let mut body = "a".repeat(3_999_999);
-    body.push_str(&"é".repeat(10));
-    write(&dir, "suite/a.txt", &body);
-    let o = vg(&["gates", "--tests", "suite"], &dir);
-    assert!(
-        o.status.code() == Some(0) || o.status.code() == Some(1),
-        "{}",
-        stderr(&o)
-    );
-    assert!(!stderr(&o).contains("panicked"));
+fn rules_prints_the_whole_surface() {
+    let r = run(&["rules"]);
+    assert_eq!(r.code, 0);
+    for gate in ["G1", "G2", "G3", "G4"] {
+        assert!(r.stdout.contains(gate), "{}", r.stdout);
+    }
+    assert!(r.stdout.contains("Exit codes"));
+    assert!(r.stdout.contains("does NOT do"));
 }
 
-#[test]
-fn control_characters_in_a_finding_never_reach_the_terminal() {
-    let dir = tmp();
-    let f = write(
-        &dir,
-        "f.md",
-        "An admin can set the pause flag \u{1b}]0;pwned\u{7} and brick the vault.\n",
-    );
-    let o = vg(&["check", f.to_str().unwrap()], &dir);
-    assert!(!stdout(&o).contains('\u{1b}'), "{}", stdout(&o));
-    assert!(!stdout(&o).contains('\u{7}'));
-}
+// ---------------------------------------------------------------- build
 
 #[test]
-fn import_audit_writes_the_gate_inputs_and_match_ranks_identifiers() {
-    let dir = tmp();
-    let audit = write(
-        &dir,
-        "audit.yaml",
-        "version: 1\nid: example-engagement\nseverity_floor: high\nexclusion_clauses:\n  - class: privileged_role\n    text: \"Attacks that require a privileged role\"\nknown_issues:\n  - id: M-1\n    summary: \"`reduce_outflow` credits only the current segment and `add_outflow` aborts\"\n    identifiers: [\"reduce_outflow\", \"add_outflow\"]\nscope:\n  - src/Vault.sol\n",
-    );
-    let out = dir.join("out");
-    let o = vg(
-        &[
-            "import",
-            "audit",
-            audit.to_str().unwrap(),
+fn build_writes_one_deterministic_dossier() {
+    let tmp = TempDir::new("determinism");
+    tmp.copy_dir(&manifest_dir().join(DEMO), "program");
+    let dir = tmp.join("program");
+    let first = tmp.join("one.dossier");
+    let second = tmp.join("two.dossier");
+    for out in [&first, &second] {
+        let r = run(&[
+            "build",
+            dir.to_str().unwrap(),
             "--out",
             out.to_str().unwrap(),
-        ],
-        &dir,
-    );
-    assert_eq!(o.status.code(), Some(0), "{}", stderr(&o));
-    assert!(out.join("ledger.yaml").is_file());
-    assert!(out.join("scope.txt").is_file());
-    assert!(out.join("index.yaml").is_file());
-    let ledger = std::fs::read_to_string(out.join("ledger.yaml")).unwrap();
-    assert!(ledger.contains("high_and_above"), "{ledger}");
+        ]);
+        assert_eq!(r.code, 0, "{}", r.stderr);
+    }
+    let a = std::fs::read(&first).unwrap();
+    let b = std::fs::read(&second).unwrap();
+    assert_eq!(a, b, "two builds over one folder must be byte-identical");
+    let text = String::from_utf8(a).unwrap();
+    assert!(text.contains("priorart.dossier/v1"));
     assert!(
-        !ledger.contains("pattern:"),
-        "import must not invent a regex"
+        !text.contains("timestamp"),
+        "no wall-clock field in a dossier"
     );
+}
 
-    let finding = write(
-        &dir,
-        "draft.md",
-        "An unprivileged attacker calls `reduce_outflow` and `add_outflow` in the same transaction. Impact: 3 tokens.\n",
-    );
-    let o = vg(
-        &[
-            "match",
-            finding.to_str().unwrap(),
-            "--index",
-            out.join("index.yaml").to_str().unwrap(),
-        ],
-        &dir,
-    );
-    let text = stdout(&o);
-    assert!(text.contains("reduce_outflow"), "{text}");
+#[test]
+fn build_json_is_valid_against_the_shipped_schema() {
+    let tmp = TempDir::new("build-json");
+    tmp.copy_dir(&manifest_dir().join(DEMO), "program");
+    let r = run(&["build", tmp.join("program").to_str().unwrap(), "--json"]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let dossier: Value = serde_json::from_str(&r.stdout).expect("build --json prints JSON");
+    let errors = validate(&schema("dossier.schema.json"), &dossier);
+    assert!(errors.is_empty(), "{errors:#?}");
+    assert_eq!(dossier["schema"], "priorart.dossier/v1");
+    assert!(dossier["items"].as_array().unwrap().len() > 3);
+    // Every item quote must be a verbatim-ish excerpt: non-empty and inside the
+    // text it came from after whitespace normalisation.
+    for item in dossier["items"].as_array().unwrap() {
+        let quote = item["quote"].as_str().unwrap();
+        let text = item["text"].as_str().unwrap();
+        let flat = text.split_whitespace().collect::<Vec<_>>().join(" ");
+        assert!(
+            flat.contains(
+                quote
+                    .trim_end_matches('\u{2026}')
+                    .trim_start_matches('\u{2026}')
+            ),
+            "quote not found in text: {quote:?}"
+        );
+    }
+}
+
+#[test]
+fn build_honours_out_and_program_override() {
+    let tmp = TempDir::new("build-out");
+    tmp.copy_dir(&manifest_dir().join(DEMO), "program");
+    let out = tmp.join("named.dossier");
+    let r = run(&[
+        "build",
+        tmp.join("program").to_str().unwrap(),
+        "--program",
+        "My Program!",
+        "--out",
+        out.to_str().unwrap(),
+    ]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let dossier: Value = serde_json::from_str(&std::fs::read_to_string(&out).unwrap()).unwrap();
+    assert_eq!(dossier["program"]["id"], "my-program");
+}
+
+#[test]
+fn build_missing_and_empty_dirs_are_usage_errors() {
+    let tmp = TempDir::new("build-empty");
+    let missing = run(&["build", tmp.join("nope").to_str().unwrap()]);
+    assert_eq!(missing.code, 2);
     assert!(
-        o.status.code() == Some(0) || o.status.code() == Some(1),
+        missing.stderr.contains("not a directory"),
         "{}",
-        stderr(&o)
+        missing.stderr
     );
+
+    std::fs::create_dir_all(tmp.join("empty")).unwrap();
+    let empty = run(&["build", tmp.join("empty").to_str().unwrap()]);
+    assert_eq!(empty.code, 2);
+    assert!(empty.stderr.contains("no inputs found"), "{}", empty.stderr);
 }
 
-fn git(dir: &Path, args: &[&str]) {
-    let o = Command::new("git")
-        .args(args)
-        .current_dir(dir)
-        .env("GIT_AUTHOR_NAME", "vg-test")
-        .env("GIT_AUTHOR_EMAIL", "vg-test@example.invalid")
-        .env("GIT_COMMITTER_NAME", "vg-test")
-        .env("GIT_COMMITTER_EMAIL", "vg-test@example.invalid")
-        .output()
-        .expect("git runs");
+#[test]
+fn build_skips_the_audits_readme() {
+    let tmp = TempDir::new("audits-readme");
+    let dossier = demo_dossier(&tmp);
+    let text = std::fs::read_to_string(&dossier).unwrap();
     assert!(
-        o.status.success(),
-        "git {args:?}\n{}",
-        String::from_utf8_lossy(&o.stderr)
+        !text.contains("audits/README.md"),
+        "scaffolding must not be indexed as a prior audit"
     );
-}
-
-/// A one-file checkout and the SHA it is pinned to.
-fn pin_vault(dir: &Path, body: &str) -> String {
-    git(dir, &["init", "-b", "main"]);
-    write(dir, "src/Vault.sol", body);
-    git(dir, &["add", "src/Vault.sol"]);
-    git(dir, &["-c", "commit.gpgsign=false", "commit", "-m", "pin"]);
-    let o = Command::new("git")
-        .args(["rev-parse", "HEAD"])
-        .current_dir(dir)
-        .output()
-        .unwrap();
-    assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
-    String::from_utf8(o.stdout).unwrap().trim().to_string()
 }
 
 #[test]
-fn a_fake_citation_does_not_score_100_and_does_not_pass() {
-    let dir = tmp();
-    let sha = pin_vault(
-        &dir,
-        "contract Other {\n    function deposit() external {}\n}\n",
+fn a_pdf_without_extractable_text_is_a_warning_not_a_panic() {
+    let tmp = TempDir::new("pdf");
+    tmp.write(
+        "program/scope.md",
+        "# Rewards\n\n- High: $10,000\n\n## In scope\n\n- src/Vault.sol\n",
     );
-    let f = write(
-        &dir,
-        "fake.md",
-        "# Rounding drain\n\nAn unprivileged attacker drains 4 tokens via a rounding bug in `src/Vault.sol` at line 214, in function deposit.\n\nPreconditions: the vault holds deposits. The victim depositor must withdraw. Impact: 4 tokens.\n",
-    );
-    let v = json(&vg(
-        &[
-            "check",
-            f.to_str().unwrap(),
-            "--target",
-            dir.to_str().unwrap(),
-            "--commit",
-            &sha,
-            "--json",
-        ],
-        &dir,
-    ));
-    assert_eq!(v["outcome"], "KILL", "{v}");
-    assert!(v["viability_score"].as_u64().unwrap() < 100, "{v}");
-    let cite = v["findings"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|f| f["rule"] == "CITE")
-        .expect("CITE finding");
-    assert_eq!(cite["verdict"], "hard");
-    let a1 = v["gates"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|g| g["gate"] == "A1")
-        .unwrap();
-    assert_eq!(a1["status"], "fail", "{a1}");
-}
-
-#[test]
-fn a_real_citation_at_the_pin_passes_the_anchor() {
-    let dir = tmp();
-    let sha = pin_vault(
-        &dir,
-        "contract V {\n    function withdraw() external {}\n}\n",
-    );
-    let f = write(&dir, "clean.md", CLEAN);
-    let mut args: Vec<String> = vec![
-        "check".into(),
-        f.to_string_lossy().into(),
-        "--json".into(),
-        "--target".into(),
-        dir.to_string_lossy().into(),
-        "--commit".into(),
-        sha,
-    ];
-    args.extend(full_inputs(&dir, "(owner|admin) (can|must)"));
-    let refs: Vec<&str> = args.iter().map(String::as_str).collect();
-    let v = json(&vg(&refs, &dir));
-    let a1 = v["gates"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|g| g["gate"] == "A1")
-        .unwrap();
-    assert_eq!(a1["status"], "pass", "{a1}");
-    assert_eq!(v["outcome"], "CLEAR", "{v}");
-    assert_eq!(v["viability_score"], 100);
-}
-
-#[test]
-fn negation_admin_does_not_hide_a_privileged_claim() {
-    let dir = tmp();
-    let (outcome, rules) = outcome_of_strict(
-        &dir,
-        "neg.md",
-        "No one but the admin can call setParams() and redirect the fees. Impact: 10 tokens stolen, and only the admin can do it.\n",
-    );
-    assert!(rules.contains(&"P2".to_string()), "{rules:?}");
-    assert_eq!(outcome, "KILL");
-}
-
-#[test]
-fn unprivileged_yield_theft_is_not_killed_for_owner_config_or_front_running() {
-    let dir = tmp();
-    let (outcome, rules) = outcome_of(
-        &dir,
-        "yield.md",
-        "# Unprivileged yield theft\n\nThe owner can set the fee in the config. An unprivileged user steals the pending yield by donating before the harvest. A searcher can front-run that harvest.\n\nPreconditions: the vault holds deposits. The victim depositor must withdraw. Impact: 12.5 tokens.\n",
-    );
-    assert!(!rules.contains(&"P2".to_string()), "{rules:?}");
-    assert!(!rules.contains(&"P3".to_string()), "{rules:?}");
-    assert_ne!(outcome, "KILL", "{outcome} {rules:?}");
-}
-
-#[test]
-fn a_bare_front_run_is_a_hold_and_operator_delay_still_kills() {
-    let dir = tmp();
-    let (soft, rules) = outcome_of(
-        &dir,
-        "fr.md",
-        "The attacker front-runs the update and captures the spread. Impact: 2 tokens.\n",
-    );
-    assert!(rules.contains(&"P3".to_string()), "{rules:?}");
-    assert_eq!(soft, "HOLD");
-    let (hard, rules) = outcome_of_strict(
-        &dir,
-        "delay.md",
-        "The attacker front-runs the update. The operator delay gives a window of several blocks.\n",
-    );
-    assert!(rules.contains(&"P3".to_string()), "{rules:?}");
-    assert_eq!(hard, "KILL");
-}
-
-#[test]
-fn p26_does_not_fire_on_every_report_unless_asked() {
-    let dir = tmp();
-    let body = "An unprivileged attacker drains 4 tokens. Preconditions: the vault holds funds. The victim depositor must withdraw. Suggested severity: High.\n";
-    let (_, rules) = outcome_of(&dir, "sev.md", body);
+    // A PDF whose text is in a compressed stream: the literal scrape finds
+    // nothing, and pdftotext may be missing (as it is on the target machine).
+    let mut pdf = b"%PDF-1.4\n1 0 obj\n<< /Length 8 /Filter /FlateDecode >>\nstream\n".to_vec();
+    pdf.extend_from_slice(&[0x78, 0x9c, 0x01, 0x02, 0x00, 0xff, 0xfe, 0x01, 0x02]);
+    pdf.extend_from_slice(b"\nendstream\nendobj\ntrailer\n<<>>\n%%EOF\n");
+    tmp.write_bytes("program/audits/prior.pdf", &pdf);
+    let r = run(&["build", tmp.join("program").to_str().unwrap()]);
+    assert_eq!(r.code, 0, "a bad PDF must not fail the build: {}", r.stderr);
+    let combined = format!("{}{}", r.stdout, r.stderr);
     assert!(
-        !rules.contains(&"P26".to_string()),
-        "P26 is opt-in and must not spam the default run: {rules:?}"
+        combined.contains("no extractable text")
+            || combined.contains("pdftotext returned no text")
+            || combined.contains("pdftotext failed"),
+        "expected a clear PDF warning, got: {combined}"
     );
-    let f = write(&dir, "sev2.md", body);
-    let v = json(&vg(
-        &["check", f.to_str().unwrap(), "--severity-notes", "--json"],
-        &dir,
-    ));
-    let rules: Vec<_> = v["findings"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|f| f["rule"].as_str().unwrap().to_string())
-        .collect();
-    assert!(rules.contains(&"P26".to_string()), "{rules:?}");
-    let quiet = "An unprivileged attacker drains 4 tokens. Preconditions: the vault holds funds. The victim depositor must withdraw. Severity: High. This is direct theft of user funds.\n";
-    let f = write(&dir, "matrix.md", quiet);
-    let v = json(&vg(
-        &["check", f.to_str().unwrap(), "--severity-notes", "--json"],
-        &dir,
-    ));
-    let rules: Vec<_> = v["findings"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|f| f["rule"].as_str().unwrap().to_string())
-        .collect();
-    assert!(!rules.contains(&"P26".to_string()), "{rules:?}");
+    assert!(!combined.to_lowercase().contains("panicked"));
+}
+
+// ---------------------------------------------------------------- check
+
+#[test]
+fn check_prints_three_labelled_sections_with_a_whole_sentence_quote() {
+    let tmp = TempDir::new("check-text");
+    let dossier = demo_dossier(&tmp);
+    let finding = demo_finding(&tmp);
+    let r = run(&["check", &finding, "--dossier", &dossier]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    for section in ["HAS THIS BEEN FOUND?", "IS IT EXCLUDED?", "CAN IT BE PAID?"] {
+        assert!(
+            r.stdout.contains(section),
+            "missing {section}: {}",
+            r.stdout
+        );
+    }
+    assert!(
+        r.stdout
+            .contains("reading list only. priorart does not decide duplicates"),
+        "retrieval-only framing is missing: {}",
+        r.stdout
+    );
+    assert!(
+        r.stdout.contains("to read (shares >=2 symbol identifiers)"),
+        "reading-list headline is missing: {}",
+        r.stdout
+    );
+    assert!(
+        !r.stdout.contains("0/64") && !r.stdout.contains("43.3%"),
+        "benchmark numbers must not be printed by the tool: {}",
+        r.stdout
+    );
+    // D1: the quote is the whole sentence, not a fixed-length cut.
+    assert!(
+        r.stdout
+            .contains("when the stable reserve is smaller than the summed debt"),
+        "quote was truncated: {}",
+        r.stdout
+    );
+    assert!(!r.stdout.contains("BalanceSheet\"\n"), "{}", r.stdout);
+    // D2: "no role" must not become a privileged precondition.
+    assert!(!r.stdout.contains("privileged_role"), "{}", r.stdout);
+    // D3/D4: coverage and scope are recognised by contract name.
+    assert!(
+        r.stdout.contains("cited identifier VaultEngine"),
+        "{}",
+        r.stdout
+    );
+    assert!(
+        r.stdout.contains("VaultEngine (in src/VaultEngine.sol)"),
+        "{}",
+        r.stdout
+    );
 }
 
 #[test]
-fn claim_rules_route_by_default_and_strict_restores_the_kill() {
-    let dir = tmp();
-    let f = write(
-        &dir,
-        "admin.md",
-        "An admin can set the pause flag and brick the vault.\n",
+fn check_json_is_valid_against_the_shipped_schema() {
+    let tmp = TempDir::new("check-json");
+    let dossier = demo_dossier(&tmp);
+    let finding = demo_finding(&tmp);
+    let r = run(&["check", &finding, "--dossier", &dossier, "--json"]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let report: Value = serde_json::from_str(&r.stdout).unwrap();
+    let errors = validate(&schema("check.schema.json"), &report);
+    assert!(errors.is_empty(), "{errors:#?}");
+    assert_eq!(report["schema"], "priorart.check/v1");
+    assert_eq!(report["tool_version"], "0.1.0");
+    assert_eq!(report["payout"]["payable"], true);
+    // D5: "No oracle ... is needed" must not become a mechanism claim.
+    assert!(report["finding"]["mechanism_class"].is_null(), "{}", report);
+    for item in report["prior_art"].as_array().unwrap() {
+        assert!(item["shared_identifiers"].as_array().unwrap().len() >= 2);
+        assert!(item["page"].as_u64().unwrap() >= 1);
+    }
+}
+
+#[test]
+fn check_top_k_is_bounded() {
+    let tmp = TempDir::new("topk");
+    let dossier = demo_dossier(&tmp);
+    let finding = demo_finding(&tmp);
+    let ok = run(&["check", &finding, "--dossier", &dossier, "--top-k", "1"]);
+    assert_eq!(ok.code, 0, "{}", ok.stderr);
+    for bad in ["0", "51"] {
+        let r = run(&["check", &finding, "--dossier", &dossier, "--top-k", bad]);
+        assert_eq!(r.code, 2, "--top-k {bad} should be a usage error");
+        assert!(r.stderr.contains("--top-k"), "{}", r.stderr);
+    }
+}
+
+#[test]
+fn check_discovers_the_only_dossier_beside_the_finding() {
+    let tmp = TempDir::new("discover");
+    let dossier = demo_dossier(&tmp);
+    let _ = dossier;
+    let finding = demo_finding(&tmp);
+    // Both finding and dossier in the temp dir: discovery must find it.
+    let r = run(&["check", &finding]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+}
+
+#[test]
+fn check_without_a_dossier_is_a_usage_error() {
+    let tmp = TempDir::new("no-dossier");
+    tmp.write("finding.md", "# A finding\n");
+    let r = run(&["check", tmp.join("finding.md").to_str().unwrap()]);
+    assert_eq!(r.code, 2);
+    assert!(r.stderr.contains("no dossier"), "{}", r.stderr);
+}
+
+#[test]
+fn check_rejects_a_malformed_or_foreign_dossier() {
+    let tmp = TempDir::new("bad-dossier");
+    let finding = demo_finding(&tmp);
+    let malformed = tmp.write("bad.dossier", "{not json");
+    let r = run(&["check", &finding, "--dossier", malformed.to_str().unwrap()]);
+    assert_eq!(r.code, 2, "{}", r.stdout);
+    assert!(r.stderr.contains("not a dossier JSON"), "{}", r.stderr);
+
+    let foreign = tmp.write("foreign.dossier", "{\"schema\":\"something.else/v9\"}");
+    let r = run(&["check", &finding, "--dossier", foreign.to_str().unwrap()]);
+    assert_eq!(r.code, 2);
+    assert!(
+        r.stderr.contains("is not priorart.dossier/v1"),
+        "{}",
+        r.stderr
     );
-    // Default: a claim-heuristic hard rule is a verification question.
-    let v = json(&vg(&["check", f.to_str().unwrap(), "--json"], &dir));
-    assert_eq!(v["outcome"], "ROUTE-TO-VERIFY", "{v}");
-    assert!(v["funnel"].as_bool().unwrap());
-    assert!(v["viability_score"].as_u64().unwrap() < 100);
-    let o = vg(&["check", f.to_str().unwrap(), "--fail-on-kill"], &dir);
+}
+
+#[test]
+fn check_missing_finding_is_a_usage_error() {
+    let tmp = TempDir::new("missing-finding");
+    let dossier = demo_dossier(&tmp);
+    let r = run(&[
+        "check",
+        tmp.join("nope.md").to_str().unwrap(),
+        "--dossier",
+        &dossier,
+    ]);
+    assert_eq!(r.code, 2);
+    assert!(r.stderr.contains("cannot read finding"), "{}", r.stderr);
+}
+
+fn write_finding(tmp: &TempDir, name: &str, body: &str) -> String {
+    tmp.write(name, body).to_str().unwrap().to_string()
+}
+
+#[test]
+fn fail_on_excluded_exits_one_only_when_a_clause_matches() {
+    let tmp = TempDir::new("fail-excluded");
+    let dossier = demo_dossier(&tmp);
+    let finding = write_finding(
+        &tmp,
+        "excluded.md",
+        "# Operator can freeze distributions\n\nSeverity: High\n\n## Summary\n\nThe operator can call `VaultEngine.open` with a stale reserve so `BalanceSheet.distributeSurplus` reverts for every depositor.\n",
+    );
+    let plain = run(&["check", &finding, "--dossier", &dossier]);
     assert_eq!(
-        o.status.code(),
-        Some(0),
-        "a route is not a kill: {}",
-        stderr(&o)
+        plain.code, 0,
+        "evidence is not a verdict by default: {}",
+        plain.stderr
     );
-    // --strict is the pre-0.8.0 hard stop.
-    let v = json(&vg(
-        &["check", f.to_str().unwrap(), "--strict", "--json"],
-        &dir,
-    ));
-    assert_eq!(v["outcome"], "KILL", "{v}");
-    assert!(!v["funnel"].as_bool().unwrap());
-    let o = vg(
-        &["check", f.to_str().unwrap(), "--strict", "--fail-on-kill"],
-        &dir,
-    );
-    assert_eq!(o.status.code(), Some(1), "{}", stderr(&o));
-    // The old flag is still accepted as an alias of the default.
-    let v = json(&vg(
-        &["check", f.to_str().unwrap(), "--funnel", "--json"],
-        &dir,
-    ));
-    assert_eq!(v["outcome"], "ROUTE-TO-VERIFY", "{v}");
+    assert!(plain.stdout.contains("privileged_role"), "{}", plain.stdout);
+    let strict = run(&[
+        "check",
+        &finding,
+        "--dossier",
+        &dossier,
+        "--fail-on-excluded",
+    ]);
+    assert_eq!(strict.code, 1, "{}", strict.stdout);
+}
 
-    // Structured hard failures kill in every mode.
-    let sha = pin_vault(&dir, "contract Other {}\n");
-    let fake = write(
-        &dir,
-        "fake.md",
-        "An unprivileged attacker drains 4 tokens in src/Vault.sol at line 214.\n",
+#[test]
+fn fail_on_unpayable_exits_one_below_the_floor() {
+    let tmp = TempDir::new("fail-unpayable");
+    let dossier = demo_dossier(&tmp);
+    let finding = write_finding(
+        &tmp,
+        "low.md",
+        "# Rounding drift in share accounting\n\nSeverity: Low\n\n## Summary\n\nAny user can shift `BalanceSheet.distributeSurplus` rounding by one wei per call in `src/VaultEngine.sol`.\n",
     );
-    for mode in [None, Some("--strict"), Some("--funnel")] {
-        let mut args = vec![
-            "check",
-            fake.to_str().unwrap(),
-            "--target",
-            dir.to_str().unwrap(),
-            "--commit",
-            &sha,
-            "--json",
-        ];
-        if let Some(m) = mode {
-            args.push(m);
-        }
-        let v = json(&vg(&args, &dir));
-        assert_eq!(v["outcome"], "KILL", "a missing file stays a kill: {v}");
+    let plain = run(&["check", &finding, "--dossier", &dossier]);
+    assert_eq!(plain.code, 0, "{}", plain.stderr);
+    assert!(plain.stdout.contains("below the floor"), "{}", plain.stdout);
+    let strict = run(&[
+        "check",
+        &finding,
+        "--dossier",
+        &dossier,
+        "--fail-on-unpayable",
+    ]);
+    assert_eq!(strict.code, 1, "{}", strict.stdout);
+}
+
+#[test]
+fn unicode_and_crlf_findings_are_handled() {
+    let tmp = TempDir::new("encodings");
+    let dossier = demo_dossier(&tmp);
+    let unicode = write_finding(
+        &tmp,
+        "unicode.md",
+        "# Réserve — trésorerie\n\nSeverity: High\n\nLe défaut est dans `BalanceSheet.distributeSurplus` où la réserve « gelée » dépasse le plafond.\n",
+    );
+    let r = run(&["check", &unicode, "--dossier", &dossier]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    assert!(
+        r.stdout.contains("BalanceSheet.distributeSurplus"),
+        "the finding's identifiers must survive non-ASCII text: {}",
+        r.stdout
+    );
+
+    let lf = "# CRLF finding\n\nSeverity: High\n\n`BalanceSheet.distributeSurplus` and `ReserveBackingShortfall` in `src/VaultEngine.sol`.\n";
+    let crlf = lf.replace('\n', "\r\n");
+    let lf_path = write_finding(&tmp, "lf.md", lf);
+    let crlf_path = write_finding(&tmp, "crlf.md", &crlf);
+    let a = run(&["check", &lf_path, "--dossier", &dossier, "--json"]);
+    let b = run(&["check", &crlf_path, "--dossier", &dossier, "--json"]);
+    assert_eq!(a.code, 0, "{}", a.stderr);
+    assert_eq!(b.code, 0, "{}", b.stderr);
+    let ja: Value = serde_json::from_str(&a.stdout).unwrap();
+    let jb: Value = serde_json::from_str(&b.stdout).unwrap();
+    assert_eq!(ja["finding"]["identifiers"], jb["finding"]["identifiers"]);
+    assert_eq!(ja["prior_art"], jb["prior_art"]);
+}
+
+#[test]
+fn a_finding_with_no_identifiers_ranks_nothing_and_says_so() {
+    let tmp = TempDir::new("no-idents");
+    let dossier = demo_dossier(&tmp);
+    let finding = write_finding(
+        &tmp,
+        "prose.md",
+        "The protocol has a bug in the accounting somewhere that nobody can quite describe.\n",
+    );
+    let r = run(&["check", &finding, "--dossier", &dossier]);
+    assert_eq!(r.code, 0);
+    assert!(
+        r.stdout.contains("no prior item can be ranked"),
+        "{}",
+        r.stdout
+    );
+    assert!(
+        r.stdout.contains("fewer than 2 symbol identifiers"),
+        "{}",
+        r.stdout
+    );
+}
+
+// ---------------------------------------------------------------- ledger
+
+const LEDGER: &str = "examples/ledger.example.yaml";
+const SHAPES: &str = "examples/tier-shapes.example.yaml";
+
+#[test]
+fn ledger_validate_accepts_the_shipped_examples() {
+    let r = run(&["ledger", "validate", LEDGER]);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    assert!(r.stdout.contains("1 entry, 0 error(s)"), "{}", r.stdout);
+    assert!(r.stdout.contains("placeholder host"), "{}", r.stdout);
+
+    let both = run(&["ledger", "validate", LEDGER, SHAPES]);
+    assert_eq!(both.code, 0, "{}", both.stdout);
+    assert!(both.stdout.contains("6 entries"), "{}", both.stdout);
+}
+
+#[test]
+fn ledger_validate_json_has_the_python_validators_keys() {
+    let r = run(&["ledger", "validate", "--json", LEDGER, SHAPES]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let report: Value = serde_json::from_str(&r.stdout).unwrap();
+    for key in [
+        "schema_version",
+        "ok",
+        "strict",
+        "ledgers",
+        "entries",
+        "errors",
+        "warnings",
+    ] {
+        assert!(report.get(key).is_some(), "missing key {key}");
     }
-
-    let ki = write(
-        &dir,
-        "ki.yaml",
-        "- id: KI-1\n  summary: dust\n  patterns: [\"dust.{0,20}stuck\"]\n",
+    assert_eq!(report["schema_version"], 1);
+    assert_eq!(report["ok"], true);
+    assert_eq!(report["entries"], 6);
+    assert_eq!(report["ledgers"].as_array().unwrap().len(), 2);
+    assert!(
+        report.get("ledger").is_none(),
+        "multi-file runs must not set ledger"
     );
-    let known = write(&dir, "dust.md", "Dust is left stuck in the router.\n");
-    for mode in [None, Some("--strict"), Some("--funnel")] {
-        let mut args = vec![
-            "check",
-            known.to_str().unwrap(),
-            "--known-issues",
-            ki.to_str().unwrap(),
-            "--json",
-        ];
-        if let Some(m) = mode {
-            args.push(m);
-        }
-        let v = json(&vg(&args, &dir));
-        assert_eq!(v["outcome"], "KILL", "{v}");
+    assert!(report["warnings"].as_array().unwrap().len() >= 10);
+}
+
+#[test]
+fn ledger_validate_reports_errors_and_exits_one() {
+    let tmp = TempDir::new("ledger-errors");
+    let bad = tmp.write(
+        "bad.yaml",
+        "- id: real-program\n  tier_shape: critical_only\n  floor_status: documented\n  floor_severity: critical\n  source_url: https://example.invalid/rewards\n  retrieved: 2026-10-01\n  exclusionz: []\n",
+    );
+    let r = run(&["ledger", "validate", bad.to_str().unwrap()]);
+    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    assert!(r.stderr.contains("exclusionz"), "{}", r.stderr);
+    assert!(r.stderr.contains("placeholder host"), "{}", r.stderr);
+
+    let json = run(&["ledger", "validate", "--json", bad.to_str().unwrap()]);
+    assert_eq!(json.code, 1);
+    let report: Value = serde_json::from_str(&json.stdout).unwrap();
+    assert_eq!(report["ok"], false);
+    assert!(!report["errors"].as_array().unwrap().is_empty());
+}
+
+#[test]
+fn ledger_validate_is_strict_on_request() {
+    let r = run(&["ledger", "validate", "--strict", LEDGER]);
+    assert_eq!(r.code, 1, "{}", r.stdout);
+    let json = run(&["ledger", "validate", "--json", "--strict", LEDGER]);
+    assert_eq!(json.code, 1);
+    let report: Value = serde_json::from_str(&json.stdout).unwrap();
+    assert_eq!(report["ok"], false);
+    assert!(report["errors"].as_array().unwrap().is_empty());
+    assert!(!report["warnings"].as_array().unwrap().is_empty());
+}
+
+#[test]
+fn ledger_validate_rejects_malformed_and_missing_inputs() {
+    let tmp = TempDir::new("ledger-bad");
+    let broken = tmp.write("broken.yaml", "- id: [unclosed\n");
+    let r = run(&["ledger", "validate", broken.to_str().unwrap()]);
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+
+    let two = tmp.write(
+        "two.yaml",
+        "- id: one\n  tier_shape: unknown\n  floor_status: unstated\n  source_url: https://docs.real-program.org/one\n  retrieved: \"2026-10-01\"\n---\n- id: two\n  tier_shape: unknown\n  floor_status: unstated\n  source_url: https://docs.real-program.org/two\n  retrieved: \"2026-10-01\"\n",
+    );
+    let r = run(&["ledger", "validate", "--json", two.to_str().unwrap()]);
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    assert!(
+        format!("{}{}", r.stdout, r.stderr).contains("single YAML document"),
+        "{} {}",
+        r.stdout,
+        r.stderr
+    );
+
+    let missing = run(&[
+        "ledger",
+        "validate",
+        tmp.join("nope.yaml").to_str().unwrap(),
+    ]);
+    assert_eq!(missing.code, 2);
+    assert!(missing.stderr.contains("not found"), "{}", missing.stderr);
+
+    let none = run(&["ledger", "validate"]);
+    assert_eq!(none.code, 2);
+}
+
+#[test]
+fn ledger_taxonomy_json_has_five_and_fourteen() {
+    let r = run(&["ledger", "validate", "--taxonomy", "--json"]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let payload: Value = serde_json::from_str(&r.stdout).unwrap();
+    assert_eq!(payload["tier_shapes"]["count"], 5);
+    assert_eq!(payload["clause_classes"]["count"], 14);
+    assert_eq!(payload["tier_shapes"]["items"].as_array().unwrap().len(), 5);
+    assert_eq!(
+        payload["clause_classes"]["items"].as_array().unwrap().len(),
+        14
+    );
+}
+
+#[test]
+fn the_ledger_schema_is_the_shipped_v1_contract() {
+    let s = schema("ledger.schema.json");
+    assert_eq!(s["title"], "Private program ledger (schema v1)");
+    assert_eq!(s["type"], "array");
+    let shapes = s["items"]["properties"]["tier_shape"]["enum"]
+        .as_array()
+        .unwrap();
+    assert_eq!(shapes.len(), 5, "five tier shapes, no 'any'");
+    let classes = s["items"]["properties"]["exclusions"]["items"]["properties"]["class"]["enum"]
+        .as_array()
+        .unwrap();
+    assert_eq!(classes.len(), 14, "fourteen clause classes");
+    assert_eq!(s["items"]["additionalProperties"], false);
+}
+
+// ---------------------------------------------------------------- vocab / explain
+
+#[test]
+fn vocab_list_has_five_shapes_and_fourteen_classes() {
+    let r = run(&["vocab", "list"]);
+    assert_eq!(r.code, 0);
+    assert!(r.stdout.contains("tier shapes (5)"), "{}", r.stdout);
+    assert!(r.stdout.contains("clause classes (14)"), "{}", r.stdout);
+    for id in [
+        "privileged_role",
+        "dos_no_extraction",
+        "scope_boundary",
+        "critical_only",
+        "low_and_above",
+    ] {
+        assert!(r.stdout.contains(id), "missing {id}");
     }
 }
 
 #[test]
-fn a_path_that_looks_like_a_flag_is_rejected() {
-    let dir = tmp();
-    let o = vg(&["check", "--", "--skip"], &dir);
-    assert_eq!(o.status.code(), Some(2), "{}", stdout(&o));
-    assert!(stderr(&o).contains("starts with"), "{}", stderr(&o));
-    let o = vg(&["--rules=-evil", "rules"], &dir);
-    assert_eq!(o.status.code(), Some(2), "{}", stderr(&o));
-    assert!(stderr(&o).contains("starts with"), "{}", stderr(&o));
-    let f = write(&dir, "f.md", "An unprivileged attacker drains 1 token.\n");
-    let o = vg(
-        &[
-            "check",
-            f.to_str().unwrap(),
-            "--target",
-            dir.to_str().unwrap(),
-            "--commit",
-            "HEAD",
-        ],
-        &dir,
+fn vocab_show_and_json_agree() {
+    for name in ["tier-shapes", "clause-classes", "gate-crossref"] {
+        let text = run(&["vocab", "show", name]);
+        assert_eq!(text.code, 0, "{}: {}", name, text.stderr);
+        let json = run(&["vocab", "show", name, "--json"]);
+        assert_eq!(json.code, 0, "{}: {}", name, json.stderr);
+        let value: Value = serde_json::from_str(&json.stdout).unwrap();
+        assert!(value.is_object(), "{name} json");
+    }
+    let classes: Value =
+        serde_json::from_str(&run(&["vocab", "show", "clause-classes", "--json"]).stdout).unwrap();
+    assert_eq!(classes["classes"].as_array().unwrap().len(), 14);
+    let shapes: Value =
+        serde_json::from_str(&run(&["vocab", "show", "tier-shapes", "--json"]).stdout).unwrap();
+    assert_eq!(shapes["shapes"].as_array().unwrap().len(), 5);
+
+    let list = run(&["vocab", "list", "--json"]);
+    assert_eq!(list.code, 0);
+    let value: Value = serde_json::from_str(&list.stdout).unwrap();
+    assert_eq!(value["tier_shapes"]["count"], 5);
+    assert_eq!(value["clause_classes"]["count"], 14);
+
+    let unknown = run(&["vocab", "show", "nope"]);
+    assert_eq!(unknown.code, 2);
+    assert!(unknown.stderr.contains("tier-shapes"), "{}", unknown.stderr);
+}
+
+#[test]
+fn explain_covers_a_clause_a_gate_and_a_shape() {
+    let clause = run(&["explain", "privileged_role"]);
+    assert_eq!(clause.code, 0);
+    assert!(clause.stdout.contains("escape:"), "{}", clause.stdout);
+    let gate = run(&["explain", "G2"]);
+    assert_eq!(gate.code, 0);
+    assert!(gate.stdout.contains("Is it excluded?"), "{}", gate.stdout);
+    let shape = run(&["explain", "medium_and_above"]);
+    assert_eq!(shape.code, 0);
+    assert!(shape.stdout.contains("pays:"), "{}", shape.stdout);
+    let unknown = run(&["explain", "nope"]);
+    assert_eq!(unknown.code, 2);
+    assert!(unknown.stderr.contains("vocab list"), "{}", unknown.stderr);
+}
+
+// ---------------------------------------------------------------- init / rejections
+
+#[test]
+fn init_scaffolds_and_refuses_to_overwrite_without_force() {
+    let tmp = TempDir::new("init");
+    let r = run_in(
+        &manifest_dir(),
+        &["init", tmp.join("prog").to_str().unwrap()],
     );
-    assert_eq!(o.status.code(), Some(2), "{}", stderr(&o));
-    assert!(stderr(&o).contains("hex SHA"), "{}", stderr(&o));
-    let o = vg(&["check", f.to_str().unwrap(), "--commit=--output"], &dir);
-    assert_eq!(o.status.code(), Some(2), "{}", stderr(&o));
-    assert!(stderr(&o).contains("starts with"), "{}", stderr(&o));
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    for rel in [
+        "program.yaml",
+        "scope.md",
+        "known-issues.md",
+        "audits/README.md",
+    ] {
+        assert!(tmp.join(&format!("prog/{rel}")).is_file(), "{rel} missing");
+    }
+    // The scaffold must build and check without edits.
+    let build = run(&["build", tmp.join("prog").to_str().unwrap()]);
+    assert_eq!(build.code, 0, "{}", build.stderr);
+
+    let again = run(&["init", tmp.join("prog").to_str().unwrap()]);
+    assert_eq!(again.code, 2);
+    assert!(again.stderr.contains("--force"), "{}", again.stderr);
+    let forced = run(&["init", tmp.join("prog").to_str().unwrap(), "--force"]);
+    assert_eq!(forced.code, 0, "{}", forced.stderr);
+}
+
+#[test]
+fn rejections_summary_reports_the_shipped_dataset() {
+    let r = run(&["rejections", "summary"]);
+    assert_eq!(r.code, 0);
+    assert!(r.stdout.contains("113 logged submissions"), "{}", r.stdout);
+    assert!(r.stdout.contains("110 published"), "{}", r.stdout);
+    assert!(r.stdout.contains("55.8"), "{}", r.stdout);
+    assert!(r.stdout.contains("one researcher's log"), "{}", r.stdout);
+
+    let json = run(&["rejections", "summary", "--json"]);
+    assert_eq!(json.code, 0);
+    let payload: Value = serde_json::from_str(&json.stdout).unwrap();
+    assert_eq!(payload["schema"], "priorart.rejections-summary/v1");
+    assert_eq!(payload["dataset"]["total"], 113);
+    assert_eq!(payload["dataset"]["published_rows"], 110);
+    assert_eq!(payload["provenance"]["dataset_version"], "0.6.1");
+    assert_eq!(payload["provenance"]["data_identical_to"], "0.6.0");
+}
+
+// ---------------------------------------------------------------- offline guarantee
+
+#[test]
+fn the_crate_has_no_http_client() {
+    let manifest = std::fs::read_to_string(manifest_dir().join("Cargo.toml")).unwrap();
+    for banned in [
+        "reqwest",
+        "ureq",
+        "hyper",
+        "isahc",
+        "curl",
+        "surf",
+        "attohttpc",
+        "minreq",
+        "awc",
+    ] {
+        assert!(
+            !manifest.contains(banned),
+            "Cargo.toml gained an HTTP client: {banned}"
+        );
+    }
+    let lock = std::fs::read_to_string(manifest_dir().join("Cargo.lock")).unwrap();
+    for banned in [
+        "reqwest",
+        "ureq",
+        "hyper",
+        "isahc",
+        "attohttpc",
+        "minreq",
+        "tokio",
+    ] {
+        assert!(
+            !lock.contains(&format!("name = \"{banned}\"")),
+            "Cargo.lock gained a network crate: {banned}"
+        );
+    }
+    // And no source file opens a socket.
+    let mut checked = 0;
+    for entry in walk(&manifest_dir().join("src")) {
+        let text = std::fs::read_to_string(&entry).unwrap();
+        for banned in ["TcpStream", "UdpSocket", "std::net::"] {
+            assert!(!text.contains(banned), "{} uses {banned}", entry.display());
+        }
+        checked += 1;
+    }
+    assert!(checked > 10, "walked only {checked} source files");
+}
+
+fn walk(dir: &Path) -> Vec<std::path::PathBuf> {
+    let mut out = Vec::new();
+    for entry in std::fs::read_dir(dir).unwrap().flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            out.extend(walk(&path));
+        } else if path.extension().and_then(|e| e.to_str()) == Some("rs") {
+            out.push(path);
+        }
+    }
+    out
 }

@@ -1,304 +1,134 @@
-name: ci
+name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
-
-permissions:
-  contents: read
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
-  # Pinned so a new compiler's lints cannot turn main red overnight. Bump
-  # deliberately, together with release.yml.
-  RUST_TOOLCHAIN: "1.98.0"
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  # ---------------------------------------------------------------- build & test
   test:
     name: test (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Install toolchain
-        shell: bash
-        run: |
-          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component clippy,rustfmt
-          rustup default "$RUST_TOOLCHAIN"
-
-      - name: Format check
+      - uses: actions/checkout@v4
+      - name: Install Rust 1.98.0
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.98.0
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
         run: cargo fmt --all -- --check
-
       - name: Clippy
         run: cargo clippy --locked --all-targets --all-features -- -D warnings
-
-      # Unit, fixture and end-to-end tests. tests/cli.rs drives the real
-      # binaries through every command the README documents.
       - name: Test
         run: cargo test --locked --release
-
-      - name: Build release binaries
+      - name: Build
         run: cargo build --locked --release
-
-      - name: Both binary names are produced
-        shell: bash
-        run: |
-          set -eu
-          test -f target/release/vg || test -f target/release/vg.exe
-          test -f target/release/viability-gate || test -f target/release/viability-gate.exe
-
       - name: Smoke test
         shell: bash
         run: |
-          set -eu
-          ./target/release/vg --version
-          ./target/release/vg rules
-          ./target/release/vg explain P18
+          set -euo pipefail
+          bin="./target/release/priorart"
+          [ -x "$bin" ] || bin="./target/release/priorart.exe"
+          "$bin" --version
+          "$bin" rules
+          "$bin" vocab list
+          "$bin" build examples/dossier-demo
+          "$bin" check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
+          "$bin" ledger validate examples/ledger.example.yaml
+          "$bin" rejections summary
+          "$bin" explain privileged_role
 
-  # --------------------------------------------------------------------- MSRV
   msrv:
-    name: msrv
+    name: msrv (1.89.0)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.89.0"
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --locked
+      - run: cargo test --locked --release
 
-      - name: Read the declared MSRV
-        id: msrv
-        shell: bash
-        run: |
-          set -eu
-          version=$(grep -E '^rust-version' Cargo.toml | head -n1 | sed -E 's/.*"(.*)".*/\1/')
-          if [ -z "$version" ]; then
-            echo "::error::Cargo.toml declares no rust-version"
-            exit 1
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "MSRV from Cargo.toml: $version"
-
-      - name: Install MSRV toolchain
-        run: rustup toolchain install ${{ steps.msrv.outputs.version }} --profile minimal
-
-      - name: Build on MSRV
-        run: cargo +${{ steps.msrv.outputs.version }} build --locked --release
-
-      - name: Test on MSRV
-        run: cargo +${{ steps.msrv.outputs.version }} test --locked --release
-
-  # ------------------------------------------------------------- supply chain
-  deny:
+  cargo-deny:
     name: cargo-deny
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
         with:
           command: check
-          arguments: --all-features
 
-  audit:
+  cargo-audit:
     name: cargo-audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install toolchain
-        run: |
-          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
-          rustup default "$RUST_TOOLCHAIN"
-
-      - name: Install cargo-audit
-        uses: taiki-e/install-action@11159df2d5c1d751f9a9f8834551c03af0f42a20 # cargo-audit
-
-      - name: Audit
-        run: cargo audit
-
-  # ------------------------------------------------------- the no-network claim
-  no-network:
-    name: no network code
+  no network:
+    name: no network
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Install toolchain
+      - uses: actions/checkout@v4
+      # The crate must stay offline: no HTTP client, no socket in src/.
+      - name: No HTTP client in manifest or lockfile
         run: |
-          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
-          rustup default "$RUST_TOOLCHAIN"
-
-      # The claim is a property, not a promise: the dependency graph must carry
-      # no network client, and src/ must contain no socket or request code.
-      # See docs/no-network.md.
-      - name: Dependency graph carries no network crate
-        shell: bash
-        run: |
-          set -eu
-          cargo tree --edges normal --prefix none --no-dedupe \
-            | awk '{print $1}' | sort -u > /tmp/packages.txt
-          echo "packages in the normal dependency graph: $(wc -l < /tmp/packages.txt)"
-          deny='reqwest|hyper|ureq|curl|isahc|surf|attohttpc|tokio|async-std|native-tls|rustls|openssl|tungstenite'
-          if grep -E "^($deny)(-|$)" /tmp/packages.txt; then
-            echo "::error::viability-gate must not depend on a network crate"
-            exit 1
-          fi
-          if grep -E '^(reqwest|hyper|ureq|curl|isahc|surf|attohttpc)' Cargo.toml; then
-            echo "::error::viability-gate must not depend on a network crate"
-            exit 1
-          fi
-          echo "no network crate in the dependency graph"
-
-      - name: No socket or request code in src/
-        shell: bash
-        run: |
-          set -eu
-          if grep -rniE '(TcpStream|UdpSocket|TcpListener|std::net|reqwest|hyper|ureq|attohttpc|isahc)' src/ ; then
-            echo "::error::network code found in src/"
-            exit 1
-          fi
-          echo "no network code present in src/"
-
-      - name: Binary carries no HTTP client symbols
-        shell: bash
-        run: |
-          set -eu
-          cargo build --locked --release
-          for name in reqwest hyper ureq rustls native_tls openssl; do
-            if grep -a -o "$name" target/release/vg | head -n1 | grep -q .; then
-              echo "::error::the release binary mentions $name"
+          set -euo pipefail
+          for banned in reqwest ureq hyper isahc curl surf attohttpc minreq awc; do
+            if grep -q "\b${banned}\b" Cargo.toml || grep -q "name = \"${banned}\"" Cargo.lock; then
+              echo "HTTP client dependency found: ${banned}" >&2
               exit 1
             fi
           done
-          echo "the release binary mentions no HTTP client"
-
-  # ------------------------------------------------------------- repo hygiene
-  tripwires:
-    name: tripwires
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-
-      - name: Install PyYAML
-        run: python -m pip install --disable-pip-version-check pyyaml
-
-      - name: Private strings, pack balance, token confinement
-        run: python scripts/check_tripwires.py
-
-      # The matcher's boundaries, pinned in both directions: ordinary English
-      # that contains a token must pass, and the token itself must fail.
-      - name: The token matcher uses word boundaries
-        run: python scripts/check_tripwires.py --self-test
-
-  generated-docs:
-    name: generated docs are current
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-
-      - name: Install PyYAML
-        run: python -m pip install --disable-pip-version-check pyyaml
-
-      - name: Install toolchain
+      - name: No sockets in source
         run: |
-          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
-          rustup default "$RUST_TOOLCHAIN"
-
-      # The rejection log is vendored at data/rejection-taxonomy (tag recorded
-      # in SOURCE.md and PINNED_TAXONOMY_TAG). check_readme.py reads that copy.
-      # A new release of the source repository does not move this checkout.
-      - name: Rule pages match the catalog
-        run: python scripts/gen_rule_docs.py --check
-
-      - name: README matches the catalog, calibration write-up, and taxonomy counts
-        run: python scripts/check_readme.py --require-dataset
-
-      # The example output in README.md is generated by running the binary, so a
-      # rule change cannot leave the README showing output the tool no longer
-      # prints.
-      - name: README example block is current
-        run: |
-          cargo build --locked --release
-          bash scripts/regen-readme-examples.sh --check
-
-  # --------------------------------------------------- the measurement harness
-  calibration:
-    name: calibration fixture
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-
-      - name: Install PyYAML
-        run: python -m pip install --disable-pip-version-check pyyaml
-
-      - name: Install toolchain
-        run: |
-          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
-          rustup default "$RUST_TOOLCHAIN"
-
-      - name: Build
-        run: cargo build --locked --release
-
-      - name: Dry run — inspect the row <-> file pairing
-        run: |
-          python tools/calibrate/calibrate.py \
-            --log examples/calibration/labels.csv \
-            --findings-dir examples/calibration/findings \
-            --dry-run
-
-      # Fails if a rule change moves the fixture's strict/lenient/miss counts.
-      # That is deliberate: a change to the catalog should be a decision.
-      - name: Score the fixture and compare against the pinned result
-        run: |
-          python tools/calibrate/calibrate.py \
-            --log examples/calibration/labels.csv \
-            --findings-dir examples/calibration/findings \
-            --vg target/release/vg \
-            --expect examples/calibration/expected.json
-
-      - name: Bench fixture runs
-        run: |
-          target/release/vg bench \
-            --rejected examples/bench/rejected \
-            --accepted examples/bench/accepted \
-            --labels examples/bench/labels.csv
-
-  # -------------------------------------------------------- shipped rules stay generic
-  generic-rules:
-    name: shipped rules name no target
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      # A rule that names a target is a disclosure. The test suite asserts this
-      # too; repeating it here makes a failure visible at the workflow level.
-      - name: Rules name no target or platform
-        shell: bash
-        run: |
-          set -eu
-          hits=$(grep -riE '(hackenproof|immunefi|cantina|sherlock|code4rena|github\.com/|gitlab\.com/)' rules/ || true)
-          # A link to this project's OWN repositories is provenance, not a target:
-          # the catalog cites the published rejection dataset it was calibrated
-          # against. Any OTHER host or organisation in rules/ is a disclosure.
-          offenders=$(printf '%s\n' "$hits" | grep -v 'github\.com/KhomDev/' | grep -v '^$' || true)
-          if [ -n "$offenders" ]; then
-            printf '%s\n' "$offenders"
-            echo "::error::a shipped rule names a target or platform"
+          set -euo pipefail
+          if grep -rn --include='*.rs' -E 'TcpStream|UdpSocket|std::net::' src/; then
+            echo "A source file opens a socket" >&2
             exit 1
           fi
-          echo "rules are generic (only this project's own repositories are cited)"
+
+  examples:
+    name: examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.98.0
+      - uses: Swatinem/rust-cache@v2
+      - name: README example is generated, not hand-copied
+        run: bash scripts/regen-readme-examples.sh --check
+      - name: Fixtures build and check
+        run: |
+          set -euo pipefail
+          cargo build --locked
+          ./target/debug/priorart build examples/dossier-demo
+          ./target/debug/priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
+          ./target/debug/priorart ledger validate examples/ledger.example.yaml examples/tier-shapes.example.yaml
+
+  links:
+    name: links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Relative links in markdown resolve
+        run: python3 scripts/check_links.py

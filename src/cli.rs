@@ -1,1274 +1,455 @@
-//! vg — score a draft audit finding against 22 documented rejection anti-patterns
-//! and 7 pre-hunt gates plus the D1 known-issues gate.
-//!
-//! Offline, deterministic, no API key. Ships rules, not data: no program names, no
-//! chains, no reward tables. Every target-specific input arrives at runtime.
+//! The command line. Every flag here is documented in docs/cli.md, and every
+//! command and exit code is exercised by tests/cli.rs.
 
-use crate::{bench, engine, import, init, model, render};
-
+use crate::check;
+use crate::dossier::{build, load};
+use crate::error::EVIDENCE_EXIT;
+use crate::ledger;
+use crate::matching::{DEFAULT_TOP_K, MAX_TOP_K};
+use crate::model::Dossier;
+use crate::render::{json, text};
+use crate::{init, rejections, vocab};
 use clap::{CommandFactory, FromArgMatches, Parser, Subcommand};
-use engine::{CompiledRule, GateInputs, Severity};
-use model::*;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-/// Rules are embedded so the installed binary is self-contained; --rules points
-/// at a directory to override them.
-const EMBEDDED_ANTI_PATTERNS: &str = include_str!("../rules/anti-patterns.yaml");
-const EMBEDDED_GATES: &str = include_str!("../rules/gates.yaml");
-
 const VERSION: &str = env!("CARGO_PKG_VERSION");
-
-const DISCLAIMER: &str = "Advisory, never authoritative. This tool produces an outcome \
-with reasons; it does not decide, and it cannot read your target's live rules. \
-Over-filtering is its own failure mode - the catalog is a prioritiser, not a \
-kill-switch. A triage rejection is not a final verdict. CLEAR means only that no \
-known blocker was found by this tool.";
-
-/// Default path for the local own-history log. Gitignored by design.
-pub const DEFAULT_LOG: &str = ".vg-history.yaml";
-
-/// Total bytes `--tests` reads from a directory.
-const TEST_BUDGET: usize = 4_000_000;
-
-/// Directories `--tests` never descends into: VCS metadata and build output.
-const SKIP_DIRS: [&str; 9] = [
-    ".git",
-    ".hg",
-    ".svn",
-    "node_modules",
-    "target",
-    "out",
-    "cache",
-    "dist",
-    "build",
-];
 
 #[derive(Parser)]
 #[command(
-    name = "vg",
+    name = "priorart",
     version,
-    about = "Score a draft audit finding against documented rejection anti-patterns",
-    long_about = "Before you spend a day writing a PoC for something that cannot be paid, \
-                  run the finding through the catalog.\n\n\
-                  Ships rules, not data: no program names, no chains, no reward tables. \
-                  Target-specific input is supplied by you at runtime and never leaves \
-                  your machine.\n\n\
-                  NOTE ON THE NAME: vg is also the name of an unrelated bioinformatics \
-                  tool. This crate installs BOTH a vg and a viability-gate binary so you \
-                  can pick whichever does not collide on your PATH."
+    about = "Offline prior-art dossiers for audit findings: has this been found, is it excluded, can it be paid?",
+    long_about = "priorart answers three questions about a finding with quoted evidence and page\n\
+                  numbers, never with a verdict:\n\n\
+                  1. Has this been found?  ranked prior items sharing at least two strong code\n\
+                     identifiers with your finding.\n\
+                  2. Is it excluded?      the program's own exclusion clauses, classified into\n\
+                     the 14 clause classes, against your preconditions.\n\
+                  3. Can it be paid?      your claimed severity against the program's payout\n\
+                     tier shape and floor.\n\n\
+                  Everything is read from files you saved. The tool never touches the network.\n\
+                  Build a dossier once per program (priorart build), then run every finding\n\
+                  against it (priorart check)."
 )]
 struct Cli {
-    /// Directory holding anti-patterns.yaml and gates.yaml (default: embedded)
-    #[arg(long, global = true, value_name = "DIR")]
-    rules: Option<PathBuf>,
-
     #[command(subcommand)]
     command: Command,
 }
 
-/// Target and program inputs shared by `check` and `gates`.
-#[derive(clap::Args, Clone, Default)]
-struct TargetArgs {
-    /// Your private program ledger (enables G1, G2 and part of G4)
-    #[arg(long)]
-    ledger: Option<PathBuf>,
-
-    /// The ledger entry to use when the ledger holds more than one program
-    #[arg(long, value_name = "ID")]
-    program: Option<String>,
-
-    /// The severity of your thesis: critical, high, medium or low. Defaults to a
-    /// "Severity:" line in the finding. G1 compares it with the payout floor.
-    #[arg(long)]
-    severity: Option<String>,
-
-    /// In-scope file list, one path, directory/ or glob per line
-    #[arg(long)]
-    scope: Option<PathBuf>,
-
-    /// Prior-audit references, one per line
-    #[arg(long)]
-    prior_audits: Option<PathBuf>,
-
-    /// Path to the target's test suite (a directory or file)
-    #[arg(long)]
-    tests: Option<PathBuf>,
-
-    /// Upstream project this target forks, or "none"
-    #[arg(long)]
-    fork_of: Option<String>,
-
-    /// Known-issues corpus for this program (YAML). Drives gate D1. This is a
-    /// KNOWN-ISSUE MATCHER: it can only see what you transcribed, so it cannot
-    /// catch a concurrent duplicate.
-    #[arg(long)]
-    known_issues: Option<PathBuf>,
-
-    /// Prior-finding index (index.yaml from `vg import`, or a directory of
-    /// markdown). D1 ranks the draft against it by code identifiers, not by
-    /// word overlap.
-    #[arg(long)]
-    index: Option<PathBuf>,
-
-    /// Your own submission history (YAML). Enables gate G7, which flags
-    /// probable repeats of a family you already submitted.
-    #[arg(long)]
-    log: Option<PathBuf>,
-
-    /// Target source tree. Gate A1 opens it and checks cited files, lines, and
-    /// functions. Without it those citations are not read.
-    #[arg(long, value_name = "DIR")]
-    target: Option<PathBuf>,
-
-    /// Audited commit, as a hex SHA. A1 does not pass without this pin. The
-    /// files are read from the commit, not from a dirty working tree.
-    #[arg(long, value_name = "SHA")]
-    commit: Option<String>,
-}
-
 #[derive(Subcommand)]
 enum Command {
-    /// Score one or more draft findings against the anti-pattern catalog
+    /// Build one deterministic dossier from a folder of saved, offline inputs
+    Build {
+        /// Folder holding scope.md, known-issues.*, audits/* and optional program.yaml
+        program_dir: PathBuf,
+        /// Output file (default: <program-dir>/<program-id>.dossier)
+        #[arg(long, value_name = "FILE")]
+        out: Option<PathBuf>,
+        /// Program id override (default: program.yaml id, else the folder name)
+        #[arg(long, value_name = "ID")]
+        program: Option<String>,
+        /// Print the dossier JSON to stdout instead of the summary
+        #[arg(long)]
+        json: bool,
+    },
+    /// Report quoted evidence for one finding against a dossier
     Check {
-        /// Path(s) to the finding (markdown). Use - for stdin.
-        #[arg(required = true, num_args = 1..)]
-        findings: Vec<String>,
-
-        /// Machine-readable output (an object for one finding, an array for several)
+        /// The finding to check, as markdown
+        finding: PathBuf,
+        /// Dossier built by priorart build (default: the single .dossier beside the finding)
+        #[arg(long, value_name = "FILE")]
+        dossier: Option<PathBuf>,
+        /// How many ranked prior items to show
+        #[arg(long, value_name = "N", default_value_t = DEFAULT_TOP_K)]
+        top_k: usize,
+        /// Print priorart.check/v1 JSON instead of text
         #[arg(long)]
         json: bool,
-
-        /// Score threshold below which the outcome is HOLD (default 50).
-        /// The score is an uncalibrated heuristic, not a probability.
-        #[arg(long, default_value_t = 50, value_parser = clap::value_parser!(u32).range(0..=100))]
-        min_score: u32,
-
-        /// One row per rule, table format
+        /// Exit 1 when any exclusion clause class matches
         #[arg(long)]
-        table: bool,
-
-        /// Exit non-zero when any outcome is KILL. ROUTE-TO-VERIFY does not
-        /// trip this; that outcome is a verification question.
+        fail_on_excluded: bool,
+        /// Exit 1 when the claimed severity is below the program's floor
         #[arg(long)]
-        fail_on_kill: bool,
-
-        /// Pre-0.8.0 behaviour: a claim-heuristic hard rule (P1–P26) is a hard
-        /// KILL instead of the default ROUTE-TO-VERIFY. A known-issue match and
-        /// a failed citation anchor stay KILL in either mode.
-        #[arg(long, conflicts_with = "funnel")]
-        strict: bool,
-
-        /// Deprecated alias. Routing claim-heuristic hard rules to
-        /// ROUTE-TO-VERIFY is the default since 0.8.0; this flag is accepted for
-        /// scripts that still pass it.
-        #[arg(long, hide = true)]
-        funnel: bool,
-
-        /// Run opt-in notes. P26 is opt-in because it fired on every report
-        /// in the public bench and carried no signal.
-        #[arg(long)]
-        severity_notes: bool,
-
-        #[command(flatten)]
-        target: TargetArgs,
+        fail_on_unpayable: bool,
     },
-
-    /// Run only the pre-hunt gates
-    Gates {
-        /// A draft finding to test the gates against. Without one, G1-G5 check
-        /// only that their input is complete and well-formed.
-        #[arg(long)]
-        finding: Option<PathBuf>,
-        #[arg(long)]
-        json: bool,
-        /// Show each gate's individual checks
-        #[arg(long)]
-        verbose: bool,
-        #[command(flatten)]
-        target: TargetArgs,
+    /// Validate a private program ledger against schema v1
+    Ledger {
+        #[command(subcommand)]
+        action: LedgerAction,
     },
-
-    /// Explain one anti-pattern, with its detection patterns
-    Explain { id: String },
-
-    /// List the catalog
-    Rules,
-
-    /// Scaffold the input files a new target needs
+    /// Inspect the compiled vocabularies
+    Vocab {
+        #[command(subcommand)]
+        action: VocabAction,
+    },
+    /// Scaffold a program folder that priorart build can read
     Init {
-        /// Directory to write into (created if missing)
-        #[arg(default_value = "target")]
-        dir: PathBuf,
-        /// Overwrite existing files
+        /// Folder to scaffold (default: the current directory)
+        dir: Option<PathBuf>,
+        /// Overwrite files that already exist
         #[arg(long)]
         force: bool,
     },
-
-    /// Manage your own submission history (gate G7)
-    Log {
-        #[command(subcommand)]
-        action: LogAction,
+    /// Explain a clause class, gate or tier shape
+    Explain {
+        /// A clause-class id, a gate id (G1-G4) or a tier-shape id
+        id: String,
     },
-
-    /// Transcribe local hunt inputs into the ledger, scope, and known-issues
-    /// files the gates read. Offline: nothing is fetched.
-    Import {
+    /// Print the shipped rejection dataset's summary
+    Rejections {
         #[command(subcommand)]
-        action: ImportAction,
+        action: RejectionsAction,
     },
+    /// What the gates check, on one page
+    Rules,
+}
 
-    /// Rank a draft against a local index of prior findings
-    Match {
-        /// The draft finding
-        finding: PathBuf,
-        /// index.yaml, or a directory of markdown / text
+#[derive(Subcommand)]
+enum LedgerAction {
+    /// Validate one or more ledger YAML files
+    Validate {
+        /// Ledger files; a shell glob works
+        ledgers: Vec<PathBuf>,
+        /// Print the report as JSON
         #[arg(long)]
-        index: PathBuf,
-        /// Emit machine-readable output
+        json: bool,
+        /// Treat warnings as errors
+        #[arg(long)]
+        strict: bool,
+        /// Relax the placeholder-host check (auto for *.example.yaml)
+        #[arg(long)]
+        example_mode: bool,
+        /// Print the shipped vocabularies instead of validating
+        #[arg(long)]
+        taxonomy: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum VocabAction {
+    /// List the 5 tier shapes, 14 clause classes and the gate cross-reference
+    List {
+        /// Print JSON instead of text
         #[arg(long)]
         json: bool,
     },
-
-    /// Measure the catalog against a labelled set of findings
-    Bench {
-        /// Directory of findings that were rejected
-        #[arg(long)]
-        rejected: PathBuf,
-        /// Directory of findings that were accepted or paid
-        #[arg(long)]
-        accepted: Option<PathBuf>,
-        /// CSV of labels, `filename,label` with label `rejected` or `accepted`.
-        /// A label overrides the directory a file sits in.
-        #[arg(long)]
-        labels: Option<PathBuf>,
-        /// Emit machine-readable output
+    /// Show one vocabulary in full: tier-shapes, clause-classes or gate-crossref
+    Show {
+        /// tier-shapes | clause-classes | gate-crossref
+        name: String,
+        /// Print JSON instead of text
         #[arg(long)]
         json: bool,
     },
 }
 
 #[derive(Subcommand)]
-enum ImportAction {
-    /// An engagement file (audit.yaml): exclusion_clauses, known_issues,
-    /// severity_floor, scope
-    Audit {
-        /// The engagement file
-        file: PathBuf,
-        /// Directory to write ledger.yaml, scope.txt, known-issues.yaml, index.yaml
+enum RejectionsAction {
+    /// Print the dataset summary: totals, triage, gates, provenance
+    Summary {
+        /// Print the dataset JSON (summary.json plus provenance) instead of text
         #[arg(long)]
-        out: PathBuf,
-        /// Overwrite existing files
-        #[arg(long)]
-        force: bool,
-    },
-    /// A program page saved locally as HTML or markdown
-    Program {
-        /// The saved page
-        file: PathBuf,
-        /// Directory to write into
-        #[arg(long)]
-        out: PathBuf,
-        /// Overwrite existing files
-        #[arg(long)]
-        force: bool,
-    },
-    /// Prior-audit reports (markdown, text, or PDF) into an index
-    Prior {
-        /// A file or a directory
-        path: PathBuf,
-        /// Directory to write index.yaml into
-        #[arg(long)]
-        out: PathBuf,
-        /// Overwrite existing files
-        #[arg(long)]
-        force: bool,
-    },
-}
-
-#[derive(Subcommand)]
-enum LogAction {
-    /// Record one submitted finding
-    Add {
-        /// The bug family label, as you write it
-        #[arg(long)]
-        family: String,
-        /// The outcome: paid | rejected | duplicate | oos | informational | pending
-        #[arg(long)]
-        outcome: String,
-        /// A free-text note
-        #[arg(long)]
-        note: Option<String>,
-        /// ISO date (YYYY-MM-DD). Defaults to today.
-        #[arg(long)]
-        date: Option<String>,
-        /// The log file (default: .vg-history.yaml)
-        #[arg(long)]
-        file: Option<PathBuf>,
-    },
-    /// Check a draft finding against your own history
-    Check {
-        /// The draft finding to check
-        finding: PathBuf,
-        /// The log file (default: .vg-history.yaml)
-        #[arg(long)]
-        file: Option<PathBuf>,
+        json: bool,
     },
 }
 
 pub fn main_entry() -> ExitCode {
-    main_entry_named("vg")
-}
-
-/// Entry point for a binary installed under `name`, so `--version`, `--help`
-/// and error prefixes say `viability-gate` when that is what the user ran.
-pub fn main_entry_named(name: &'static str) -> ExitCode {
-    let matches = Cli::command().name(name).bin_name(name).get_matches();
+    let matches = Cli::command().get_matches();
     let cli = Cli::from_arg_matches(&matches).unwrap_or_else(|e| e.exit());
     match run(cli) {
         Ok(code) => code,
-        Err(msg) => {
-            eprintln!("{name}: {}", render::sanitize(&msg));
-            ExitCode::from(2)
+        Err(message) => {
+            eprintln!("priorart: {}", text::sanitize(&message));
+            ExitCode::from(crate::error::USAGE_EXIT)
         }
     }
-}
-
-/// Print text that may carry user-supplied strings, without control characters.
-fn emit(s: &str) {
-    print!("{}", render::sanitize(s));
-}
-
-fn load_rules(dir: Option<&Path>) -> Result<(Vec<CompiledRule>, Vec<Gate>), String> {
-    let (ap_text, gate_text) = match dir {
-        Some(d) => {
-            reject_flag_shaped("--rules", &d.to_string_lossy())?;
-            let ap = std::fs::read_to_string(d.join("anti-patterns.yaml"))
-                .map_err(|e| format!("cannot read {}/anti-patterns.yaml: {e}", d.display()))?;
-            let g = std::fs::read_to_string(d.join("gates.yaml"))
-                .map_err(|e| format!("cannot read {}/gates.yaml: {e}", d.display()))?;
-            (ap, g)
-        }
-        None => (
-            EMBEDDED_ANTI_PATTERNS.to_string(),
-            EMBEDDED_GATES.to_string(),
-        ),
-    };
-
-    let parsed: RuleFile =
-        serde_saphyr::from_str(&ap_text).map_err(|e| format!("anti-patterns.yaml: {e}"))?;
-    let gates: GateFile =
-        serde_saphyr::from_str(&gate_text).map_err(|e| format!("gates.yaml: {e}"))?;
-    for (file, version) in [
-        ("anti-patterns.yaml", parsed.version),
-        ("gates.yaml", gates.version),
-    ] {
-        if version != CATALOG_VERSION {
-            return Err(format!(
-                "{file}: version {version} is not supported (this build reads version \
-                 {CATALOG_VERSION})"
-            ));
-        }
-    }
-
-    let compiled = parsed
-        .rules
-        .into_iter()
-        .map(CompiledRule::new)
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| e.to_string())?;
-
-    Ok((compiled, gates.gates))
-}
-
-fn read_text(path: &str) -> Result<String, String> {
-    if path == "-" {
-        use std::io::Read;
-        let mut buf = String::new();
-        std::io::stdin()
-            .read_to_string(&mut buf)
-            .map_err(|e| format!("stdin: {e}"))?;
-        return Ok(strip_bom(buf));
-    }
-    let text = std::fs::read_to_string(path).map_err(|e| format!("cannot read {path}: {e}"))?;
-    Ok(strip_bom(text))
-}
-
-/// A path or id that starts with `-` is an option, not a value. Agents that
-/// splice a model-controlled string into argv will otherwise turn `--skip` or
-/// `--rules` into a flag. Stdin stays available as the single argument `-`.
-fn reject_flag_shaped(flag: &str, value: &str) -> Result<(), String> {
-    if value.starts_with('-') {
-        return Err(format!(
-            "{flag} value {value:?} starts with '-'. A path, commit, or id is not an option. \
-             Pass '--' before positional findings. This is what stops a crafted path from \
-             selecting flags the caller did not mean to set."
-        ));
-    }
-    if value.chars().any(|c| c.is_control()) {
-        return Err(format!("{flag} value contains a control character"));
-    }
-    Ok(())
-}
-
-/// Strip a UTF-8 BOM. Windows editors add one, and it corrupts the first
-/// evidence line in the report.
-fn strip_bom(s: String) -> String {
-    match s.strip_prefix('\u{feff}') {
-        Some(rest) => rest.to_string(),
-        None => s,
-    }
-}
-
-fn read_file(p: &Path) -> Result<String, String> {
-    std::fs::read_to_string(p)
-        .map(strip_bom)
-        .map_err(|e| format!("cannot read {}: {e}", p.display()))
-}
-
-fn read_lines(path: &Option<PathBuf>) -> Result<Option<Vec<String>>, String> {
-    let Some(p) = path else { return Ok(None) };
-    let text = read_file(p)?;
-    Ok(Some(
-        text.lines()
-            .map(str::trim)
-            .filter(|l| !l.is_empty() && !l.starts_with('#'))
-            .map(str::to_string)
-            .collect(),
-    ))
-}
-
-fn read_ledger(path: &Option<PathBuf>) -> Result<Option<Vec<LedgerEntry>>, String> {
-    let Some(p) = path else { return Ok(None) };
-    let text = read_file(p)?;
-    let entries: Vec<LedgerEntry> =
-        serde_saphyr::from_str(&text).map_err(|e| format!("{}: {e}", p.display()))?;
-    Ok(Some(entries))
-}
-
-/// Load a known-issues corpus: a bare list, or a mapping with a known_issues:
-/// key.
-fn read_known_issues(path: &Option<PathBuf>) -> Result<Option<Vec<KnownIssue>>, String> {
-    let Some(p) = path else { return Ok(None) };
-    let text = read_file(p)?;
-    if let Ok(list) = serde_saphyr::from_str::<Vec<KnownIssue>>(&text) {
-        return Ok(Some(list));
-    }
-    #[derive(serde::Deserialize)]
-    #[serde(deny_unknown_fields)]
-    struct Wrapper {
-        known_issues: Vec<KnownIssue>,
-    }
-    let w: Wrapper = serde_saphyr::from_str(&text).map_err(|e| format!("{}: {e}", p.display()))?;
-    Ok(Some(w.known_issues))
-}
-
-/// Read the researcher's own submission history: a bare list, or a mapping
-/// with a submissions: key. A path you named that does not exist is an error,
-/// not a silent "unknown".
-fn read_log(path: &Option<PathBuf>) -> Result<Option<Vec<LogEntry>>, String> {
-    let Some(p) = path else { return Ok(None) };
-    if !p.exists() {
-        return Err(format!(
-            "no history log at {}. Run 'vg log add ...' to create one",
-            p.display()
-        ));
-    }
-    let text = read_file(p)?;
-    init::parse_log(&text)
-        .map(Some)
-        .map_err(|e| format!("{}: {e}", p.display()))
-}
-
-/// Read a test suite: a single file, or every UTF-8 file under a directory.
-///
-/// Deterministic: files are read in sorted path order, VCS and build
-/// directories are skipped, symbolic links are not followed, and the total is
-/// capped at TEST_BUDGET bytes, cut on a character boundary.
-fn read_tests(path: &Option<PathBuf>) -> Result<Option<Vec<(String, String)>>, String> {
-    let Some(root) = path else { return Ok(None) };
-    if root.is_file() {
-        return Ok(Some(vec![(root.display().to_string(), read_file(root)?)]));
-    }
-    if !root.is_dir() {
-        return Err(format!(
-            "--tests {}: not a file or directory",
-            root.display()
-        ));
-    }
-    let mut files: Vec<PathBuf> = Vec::new();
-    let mut stack = vec![root.clone()];
-    while let Some(dir) = stack.pop() {
-        let Ok(rd) = std::fs::read_dir(&dir) else {
-            continue;
-        };
-        for entry in rd.flatten() {
-            let Ok(meta) = std::fs::symlink_metadata(entry.path()) else {
-                continue;
-            };
-            let name = entry.file_name().to_string_lossy().to_string();
-            if meta.file_type().is_symlink() {
-                continue;
-            } else if meta.is_dir() {
-                if !SKIP_DIRS.contains(&name.as_str()) {
-                    stack.push(entry.path());
-                }
-            } else if meta.is_file() {
-                files.push(entry.path());
-            }
-        }
-    }
-    files.sort();
-    let mut out = Vec::new();
-    let mut budget = TEST_BUDGET;
-    for f in files {
-        if budget == 0 {
-            break;
-        }
-        let Ok(text) = std::fs::read_to_string(&f) else {
-            continue;
-        };
-        let mut cut = text.len().min(budget);
-        while !text.is_char_boundary(cut) {
-            cut -= 1;
-        }
-        budget -= cut;
-        let rel = f
-            .strip_prefix(root)
-            .unwrap_or(&f)
-            .to_string_lossy()
-            .replace('\\', "/");
-        out.push((rel, text[..cut].to_string()));
-    }
-    Ok(Some(out))
-}
-
-/// Everything read from the target arguments, owned.
-struct Target {
-    ledger: Option<Vec<LedgerEntry>>,
-    program: Option<String>,
-    severity: Option<Severity>,
-    scope: Option<Vec<String>>,
-    prior: Option<Vec<String>>,
-    tests: Option<Vec<(String, String)>>,
-    fork_of: Option<String>,
-    known: Option<Vec<KnownIssue>>,
-    index: Option<Vec<IndexedFinding>>,
-    log: Option<Vec<LogEntry>>,
-    root: Option<PathBuf>,
-    commit: Option<String>,
-}
-
-impl Target {
-    fn read(a: &TargetArgs) -> Result<Self, String> {
-        let ledger = read_ledger(&a.ledger)?;
-        if let Some(id) = &a.program {
-            match &ledger {
-                None => return Err("--program needs --ledger".into()),
-                Some(entries) if !entries.iter().any(|e| &e.id == id) => {
-                    return Err(format!("no program {id:?} in the ledger"));
-                }
-                Some(_) => {}
-            }
-        }
-        let severity =
-            match &a.severity {
-                None => None,
-                Some(s) => Some(Severity::parse(s).ok_or_else(|| {
-                    format!("--severity {s:?}: use critical, high, medium or low")
-                })?),
-            };
-        if let Some(dir) = &a.target {
-            reject_flag_shaped("--target", &dir.to_string_lossy())?;
-        }
-        if let Some(commit) = &a.commit {
-            reject_flag_shaped("--commit", commit)?;
-            if a.target.is_none() {
-                return Err("--commit needs --target".into());
-            }
-        }
-        for (flag, path) in [
-            ("--ledger", &a.ledger),
-            ("--scope", &a.scope),
-            ("--prior-audits", &a.prior_audits),
-            ("--tests", &a.tests),
-            ("--known-issues", &a.known_issues),
-            ("--index", &a.index),
-            ("--log", &a.log),
-        ] {
-            if let Some(p) = path {
-                reject_flag_shaped(flag, &p.to_string_lossy())?;
-            }
-        }
-        if let Some(id) = &a.program {
-            reject_flag_shaped("--program", id)?;
-        }
-        if let Some(fork) = &a.fork_of {
-            reject_flag_shaped("--fork-of", fork)?;
-        }
-        Ok(Self {
-            ledger,
-            program: a.program.clone(),
-            severity,
-            scope: read_lines(&a.scope)?,
-            prior: read_lines(&a.prior_audits)?,
-            tests: read_tests(&a.tests)?,
-            fork_of: a.fork_of.clone(),
-            known: read_known_issues(&a.known_issues)?,
-            index: read_index(&a.index)?,
-            log: read_log(&a.log)?,
-            root: a.target.clone(),
-            commit: a.commit.clone(),
-        })
-    }
-
-    fn inputs<'a>(
-        &'a self,
-        finding: Option<&'a str>,
-        anchor: Option<engine::AnchorGate<'a>>,
-    ) -> GateInputs<'a> {
-        GateInputs {
-            ledger: self.ledger.as_deref(),
-            program: self.program.as_deref(),
-            severity: self.severity,
-            scope: self.scope.as_deref(),
-            prior_audits: self.prior.as_deref(),
-            tests: self.tests.as_deref(),
-            fork_of: self.fork_of.as_deref(),
-            own_log: self.log.as_deref(),
-            known_issues: self.known.as_deref(),
-            index: self.index.as_deref(),
-            finding,
-            anchor,
-        }
-    }
-}
-
-struct CheckMode {
-    threshold: u32,
-    /// True unless --strict: claim-heuristic hard rules route instead of kill.
-    route_claim_rules: bool,
-    severity_notes: bool,
-}
-
-fn build_report(
-    subject: String,
-    text: &str,
-    rules: &[CompiledRule],
-    gates: &[Gate],
-    target: &Target,
-    manifest: Option<&FindingManifest>,
-    mode: CheckMode,
-) -> Result<Report, String> {
-    let anchor =
-        crate::anchor::assess_tree(text, target.root.as_deref(), target.commit.as_deref())?;
-    let anchor_status = anchor.status;
-    let anchor_detail = anchor.detail.clone();
-    let (mut findings, mut passed) = engine::evaluate_with(rules, text, mode.severity_notes);
-
-    let mut ki_warnings: Vec<String> = Vec::new();
-    if let Some(m) = manifest {
-        let mut kept = Vec::new();
-        for f in findings {
-            if m.suppresses(&f.rule) {
-                ki_warnings.push(format!(
-                    "{} answered by the finding manifest; the note is suppressed",
-                    f.rule
-                ));
-                passed.push(f.rule);
-            } else {
-                kept.push(f);
-            }
-        }
-        findings = kept;
-        if !FindingManifest::filled(&m.prior_audit_check) {
-            ki_warnings.push(
-                "manifest records no prior-audit check. A blank field is not a check.".into(),
-            );
-        }
-        if !FindingManifest::filled(&m.duplicate_check) {
-            ki_warnings
-                .push("manifest records no duplicate check. A blank field is not a check.".into());
-        }
-        if let Some(status) = m.status.as_deref() {
-            ki_warnings.push(format!(
-                "manifest status: {status}. The tool does not treat that as an outcome."
-            ));
-        }
-        if m.impact_usd.is_some_and(|n| n == 0.0) {
-            ki_warnings.push(
-                "manifest impact_usd is 0, so it does not satisfy a quantified impact".into(),
-            );
-        }
-    }
-
-    if let Some(index) = &target.index {
-        for row in crate::index::rank(text, index)
-            .into_iter()
-            .filter(|r| r.fails)
-        {
-            let ids = row.shared_identifiers.join(", ");
-            findings.push(Finding {
-                rule: format!("DUP:{}", crate::engine::collapse(&row.finding.id)),
-                title: format!("Identifier overlap {:.2} with a prior finding", row.score),
-                group: "K".into(),
-                verdict: Verdict::Soft,
-                weight: 0,
-                evidence: vec![format!("score {:.2}; shared identifiers: {ids}", row.score)],
-                matched_sentences: if row.quotes.is_empty() {
-                    vec![crate::engine::collapse(&row.finding.title)]
-                } else {
-                    row.quotes.clone()
-                },
-                fix: "Read the quoted lines. The score is an uncalibrated overlap of code \
-                      identifiers, not a decision that the bugs are the same."
-                    .into(),
-                doc: "docs/duplicate-matching.md".into(),
-                evidence_kind: Evidence::None,
-                origin_rows: 0,
-            });
-        }
-    }
-
-    // Known-issue matches are merged in before the outcome is computed, because
-    // a known issue is a hard fail: it makes the finding Not Applicable rather
-    // than merely unpaid.
-    if let Some(issues) = &target.known {
-        let (ki_findings, warnings) = engine::match_known_issues(issues, text);
-        ki_warnings = warnings;
-        findings.extend(ki_findings);
-    }
-    if let Some(cite) = anchor.finding {
-        findings.push(cite);
-    }
-    // Hard fails first, then by weight, so the worst problem reads first.
-    findings.sort_by(|a, b| {
-        let rank = |v: Verdict| match v {
-            Verdict::Hard => 0,
-            Verdict::Soft => 1,
-            Verdict::Warn => 2,
-        };
-        rank(a.verdict)
-            .cmp(&rank(b.verdict))
-            .then(b.weight.cmp(&a.weight))
-    });
-
-    let anchor_gate = engine::AnchorGate {
-        status: anchor_status,
-        detail: &anchor_detail,
-    };
-    let gate_outcomes =
-        engine::evaluate_gates(gates, &target.inputs(Some(text), Some(anchor_gate)));
-    let (outcome, viability_score) = engine::decide(
-        &findings,
-        &gate_outcomes,
-        mode.threshold,
-        mode.route_claim_rules,
-    );
-    Ok(Report {
-        tool: "viability-gate".into(),
-        version: VERSION.into(),
-        subject,
-        outcome,
-        viability_score,
-        threshold: mode.threshold,
-        findings,
-        passed,
-        gates: gate_outcomes,
-        disclaimer: DISCLAIMER.into(),
-        warnings: ki_warnings,
-        funnel: mode.route_claim_rules,
-    })
 }
 
 fn run(cli: Cli) -> Result<ExitCode, String> {
-    // init and log add write local files and need no rules, so they run before
-    // the catalog is loaded - a user who has not yet read the docs should not hit
-    // a load error on their first command.
-    match &cli.command {
-        Command::Init { dir, force } => return init::run(dir, *force),
-        Command::Log { action } => return run_log(action, cli.rules.as_deref()),
-        Command::Import { action } => return run_import(action),
-        Command::Match {
-            finding,
-            index,
-            json,
-        } => {
-            reject_flag_shaped("finding", &finding.to_string_lossy())?;
-            reject_flag_shaped("--index", &index.to_string_lossy())?;
-            return run_match(finding, index, *json);
-        }
-        _ => {}
-    }
-
-    let (rules, gates) = load_rules(cli.rules.as_deref())?;
-
     match cli.command {
-        Command::Init { .. }
-        | Command::Log { .. }
-        | Command::Import { .. }
-        | Command::Match { .. } => unreachable!("handled above"),
-
-        Command::Rules => {
-            let plain: Vec<Rule> = rules.into_iter().map(|c| c.rule).collect();
-            emit(&render::rules_list(&plain));
-            println!(
-                "\n  {} rules. Run 'vg explain <ID>' for detection patterns.",
-                plain.len()
-            );
-            Ok(ExitCode::SUCCESS)
-        }
-
-        Command::Explain { id } => {
-            let want = id.to_uppercase();
-            match rules.iter().find(|c| c.rule.id.to_uppercase() == want) {
-                Some(c) => {
-                    emit(&render::explain(&c.rule));
-                    Ok(ExitCode::SUCCESS)
-                }
-                None => Err(format!("no rule {id:?}. Run 'vg rules' for the catalog.")),
-            }
-        }
-
-        Command::Bench {
-            rejected,
-            accepted,
-            labels,
+        Command::Build {
+            program_dir,
+            out,
+            program,
             json,
         } => {
-            reject_flag_shaped("--rejected", &rejected.to_string_lossy())?;
-            if let Some(d) = &accepted {
-                reject_flag_shaped("--accepted", &d.to_string_lossy())?;
-            }
-            if let Some(p) = &labels {
-                reject_flag_shaped("--labels", &p.to_string_lossy())?;
-            }
-            let rejected_findings = read_findings_dir(&rejected)?;
-            let accepted_findings = match &accepted {
-                Some(d) => read_findings_dir(d)?,
-                None => Vec::new(),
-            };
-            let report = bench::run(
-                &rules,
-                &rejected_findings,
-                &accepted_findings,
-                labels.as_deref(),
-            )?;
+            let outcome = build::build(&program_dir, out.as_deref(), program.as_deref())?;
             if json {
-                println!("{}", bench::to_json(&report));
+                print!("{}", json::pretty(&outcome.dossier)?);
+                for note in &outcome.notes {
+                    eprintln!("note: {}", text::sanitize(note));
+                }
             } else {
-                emit(&bench::to_text(&report));
+                print!("{}", text::dossier_summary(&outcome));
             }
             Ok(ExitCode::SUCCESS)
         }
-
-        Command::Gates {
-            finding,
-            json,
-            verbose,
-            target,
-        } => {
-            let target = Target::read(&target)?;
-            let finding_text = match &finding {
-                Some(path) => {
-                    reject_flag_shaped("--finding", &path.to_string_lossy())?;
-                    Some(read_text(&path.display().to_string())?)
-                }
-                None => None,
-            };
-            let anchor = crate::anchor::assess_tree(
-                finding_text.as_deref().unwrap_or(""),
-                target.root.as_deref(),
-                target.commit.as_deref(),
-            )?;
-            let anchor_gate = engine::AnchorGate {
-                status: anchor.status,
-                detail: &anchor.detail,
-            };
-            let outcomes = engine::evaluate_gates(
-                &gates,
-                &target.inputs(finding_text.as_deref(), Some(anchor_gate)),
-            );
-            if json {
-                println!(
-                    "{}",
-                    serde_json::to_string_pretty(&outcomes)
-                        .map_err(|e| format!("cannot serialise the gates: {e}"))?
-                );
-            } else {
-                println!("pre-hunt gates\n");
-                emit(&render::gates_text(&outcomes, verbose));
-                let unknown = outcomes
-                    .iter()
-                    .filter(|o| o.status == GateStatus::Unknown)
-                    .count();
-                if unknown > 0 {
-                    println!(
-                        "\n  {unknown} gate(s) could not run. Unknown is not pass: \
-                         a gate you could not run is a gate you have not run."
-                    );
-                }
-            }
-            let failed = outcomes.iter().any(|o| o.status == GateStatus::Fail);
-            Ok(if failed {
-                ExitCode::from(1)
-            } else {
-                ExitCode::SUCCESS
-            })
-        }
-
         Command::Check {
-            findings,
+            finding,
+            dossier,
+            top_k,
             json,
-            min_score,
-            table,
-            fail_on_kill,
-            strict,
-            funnel: _funnel,
-            severity_notes,
-            target,
-        } => {
-            if findings.iter().filter(|f| f.as_str() == "-").count() > 1 {
-                return Err("stdin (-) can be read only once".into());
-            }
-            for finding in &findings {
-                if finding != "-" {
-                    reject_flag_shaped("finding", finding)?;
-                }
-            }
-            let target = Target::read(&target)?;
-            let mut reports = Vec::new();
-            for finding in &findings {
-                let text = read_text(finding)?;
-                if text.trim().is_empty() {
-                    return Err(format!("{finding} is empty"));
-                }
-                let manifest = load_manifest(finding)?;
-                reports.push(build_report(
-                    finding.clone(),
-                    &text,
-                    &rules,
-                    &gates,
-                    &target,
-                    manifest.as_ref(),
-                    CheckMode {
-                        threshold: min_score,
-                        route_claim_rules: !strict,
-                        severity_notes,
-                    },
-                )?);
-            }
-
-            if json {
-                let out = if reports.len() == 1 {
-                    serde_json::to_string_pretty(&reports[0])
+            fail_on_excluded,
+            fail_on_unpayable,
+        } => run_check(
+            &finding,
+            dossier.as_deref(),
+            top_k,
+            json,
+            fail_on_excluded,
+            fail_on_unpayable,
+        ),
+        Command::Ledger { action } => match action {
+            LedgerAction::Validate {
+                ledgers,
+                json,
+                strict,
+                example_mode,
+                taxonomy,
+            } => run_ledger(&ledgers, json, strict, example_mode, taxonomy),
+        },
+        Command::Vocab { action } => match action {
+            VocabAction::List { json } => {
+                if json {
+                    let payload = serde_json::json!({
+                        "schema_version": 1,
+                        "tier_shapes": {
+                            "source": "vocab/tier-shapes.yaml",
+                            "count": vocab::tier_shapes().len(),
+                            "ids": vocab::tier_shape_ids(),
+                        },
+                        "clause_classes": {
+                            "source": "vocab/clause-classes.yaml",
+                            "count": vocab::clause_classes().len(),
+                            "ids": vocab::clause_class_ids(),
+                        },
+                        "gate_crossref": {
+                            "source": "vocab/gate-crossref.yaml",
+                            "answered_here": vocab::gate_crossref()
+                                .answered_here
+                                .iter()
+                                .map(|(gate, row)| (gate.clone(), row.catalog.clone()))
+                                .collect::<std::collections::BTreeMap<_, _>>(),
+                        },
+                    });
+                    print!("{}", json::pretty(&payload)?);
                 } else {
-                    serde_json::to_string_pretty(&reports)
-                };
-                println!(
-                    "{}",
-                    out.map_err(|e| format!("cannot serialise the report: {e}"))?
-                );
-            } else {
-                for (i, report) in reports.iter().enumerate() {
-                    if i > 0 {
-                        println!();
-                    }
-                    if table {
-                        emit(&render::table(report));
-                    } else {
-                        emit(&render::text(report));
-                    }
+                    print!("{}", text::vocab_list());
                 }
+                Ok(ExitCode::SUCCESS)
             }
-
-            let any_kill = reports.iter().any(|r| r.outcome == Outcome::Kill);
-            Ok(if fail_on_kill && any_kill {
-                ExitCode::from(1)
-            } else {
-                ExitCode::SUCCESS
-            })
+            VocabAction::Show { name, json } => {
+                if json {
+                    let payload = match name.as_str() {
+                        "tier-shapes" => serde_json::to_value(vocab::tier_shapes_doc()),
+                        "clause-classes" => serde_json::to_value(vocab::clause_classes_doc()),
+                        "gate-crossref" => serde_json::to_value(vocab::gate_crossref()),
+                        other => {
+                            return Err(format!(
+                                "no vocabulary named {other:?}. Use one of: tier-shapes, clause-classes, gate-crossref."
+                            ))
+                        }
+                    }
+                    .map_err(|e| format!("cannot serialise vocabulary: {e}"))?;
+                    print!("{}", json::pretty(&payload)?);
+                } else {
+                    print!("{}", text::vocab_show(&name)?);
+                }
+                Ok(ExitCode::SUCCESS)
+            }
+        },
+        Command::Init { dir, force } => {
+            let dir = dir.unwrap_or_else(|| PathBuf::from("."));
+            let wrote = init::run(&dir, force)?;
+            println!("priorart {} - scaffolded {}\n", VERSION, dir.display());
+            for rel in wrote {
+                println!("  {rel}");
+            }
+            println!("\nNext: save the program's real page over scope.md, then run");
+            println!("  priorart build {}", dir.display());
+            Ok(ExitCode::SUCCESS)
+        }
+        Command::Explain { id } => {
+            print!("{}", text::explain(&id)?);
+            Ok(ExitCode::SUCCESS)
+        }
+        Command::Rejections { action } => match action {
+            RejectionsAction::Summary { json } => {
+                if json {
+                    let payload = serde_json::json!({
+                        "schema": crate::model::REJECTIONS_SCHEMA,
+                        "dataset": rejections::summary(),
+                        "provenance": rejections::provenance(),
+                    });
+                    print!("{}", json::pretty(&payload)?);
+                } else {
+                    print!("{}", text::rejections_summary());
+                }
+                Ok(ExitCode::SUCCESS)
+            }
+        },
+        Command::Rules => {
+            print!("{}", text::rules());
+            Ok(ExitCode::SUCCESS)
         }
     }
 }
 
-/// Read every markdown file under a directory, keyed by its path relative to
-/// that directory and sorted, so the benchmark is deterministic.
-fn read_findings_dir(dir: &Path) -> Result<Vec<(String, String)>, String> {
-    let mut out: Vec<(String, String)> = Vec::new();
-    let mut stack = vec![dir.to_path_buf()];
-    while let Some(d) = stack.pop() {
-        let rd = std::fs::read_dir(&d).map_err(|e| format!("cannot read {}: {e}", d.display()))?;
-        for entry in rd.flatten() {
-            let path = entry.path();
-            if path.is_dir() {
-                stack.push(path);
-            } else if path.extension().and_then(|e| e.to_str()) == Some("md") {
-                let name = path
-                    .strip_prefix(dir)
-                    .unwrap_or(&path)
-                    .to_string_lossy()
-                    .replace('\\', "/");
-                out.push((name, read_file(&path)?));
-            }
-        }
-    }
-    out.sort_by(|a, b| a.0.cmp(&b.0));
-    Ok(out)
-}
-
-/// How many markdown files `--index <dir>` will read before refusing.
-const INDEX_FILE_CAP: usize = 2_000;
-
-fn read_index(path: &Option<PathBuf>) -> Result<Option<Vec<IndexedFinding>>, String> {
-    let Some(p) = path else {
-        return Ok(None);
-    };
-    if !p.exists() {
-        return Err(format!("no index at {}", p.display()));
-    }
-    if p.is_dir() {
-        return Ok(Some(index_directory(p)?));
-    }
-    let text = read_file(p)?;
-    if let Ok(file) = serde_saphyr::from_str::<IndexFile>(&text) {
-        if file.version != 1 {
-            return Err(format!(
-                "{}: index version {} is not supported (this build reads version 1)",
-                p.display(),
-                file.version
-            ));
-        }
-        return Ok(Some(file.entries));
-    }
-    let ext = p.extension().and_then(|e| e.to_str()).unwrap_or("");
-    if ext.eq_ignore_ascii_case("md")
-        || ext.eq_ignore_ascii_case("txt")
-        || ext.eq_ignore_ascii_case("markdown")
-    {
-        let id = p
-            .file_name()
-            .map(|s| s.to_string_lossy().into_owned())
-            .unwrap_or_else(|| "prior".into());
-        return Ok(Some(vec![crate::index::index_document(&id, &id, &text)]));
-    }
-    Err(format!(
-        "{}: not an index.yaml (version/entries) and not markdown",
-        p.display()
-    ))
-}
-
-fn index_directory(dir: &Path) -> Result<Vec<IndexedFinding>, String> {
-    let mut files = Vec::new();
-    let mut stack = vec![dir.to_path_buf()];
-    while let Some(d) = stack.pop() {
-        let rd = std::fs::read_dir(&d).map_err(|e| format!("cannot read {}: {e}", d.display()))?;
-        for entry in rd.flatten() {
-            let path = entry.path();
-            let name = entry.file_name().to_string_lossy().to_string();
-            if name.starts_with('.') || name == "node_modules" || name == "target" {
-                continue;
-            }
-            let Ok(meta) = std::fs::symlink_metadata(&path) else {
-                continue;
-            };
-            if meta.file_type().is_symlink() {
-                continue;
-            } else if meta.is_dir() {
-                stack.push(path);
-            } else if matches!(
-                path.extension()
-                    .and_then(|e| e.to_str())
-                    .map(|e| e.to_ascii_lowercase())
-                    .as_deref(),
-                Some("md" | "txt" | "markdown")
-            ) {
-                files.push(path);
-            }
-        }
-    }
-    files.sort();
-    if files.len() > INDEX_FILE_CAP {
+fn run_check(
+    finding: &Path,
+    dossier_path: Option<&Path>,
+    top_k: usize,
+    as_json: bool,
+    fail_on_excluded: bool,
+    fail_on_unpayable: bool,
+) -> Result<ExitCode, String> {
+    if top_k == 0 || top_k > MAX_TOP_K {
         return Err(format!(
-            "{} has {} markdown files; --index reads at most {INDEX_FILE_CAP}. Point it at a narrower directory or build an index with `vg import prior`.",
-            dir.display(),
-            files.len()
+            "--top-k must be between 1 and {MAX_TOP_K}, got {top_k}"
         ));
     }
-    let mut out = Vec::new();
-    for f in files {
-        let text = read_file(&f)?;
-        let id = f
-            .strip_prefix(dir)
-            .unwrap_or(&f)
-            .to_string_lossy()
-            .replace('\\', "/");
-        out.push(crate::index::index_document(&id, &id, &text));
-    }
-    Ok(out)
-}
-
-/// `<stem>.finding.yaml` wins over a directory-level `finding.yaml`.
-fn load_manifest(finding: &str) -> Result<Option<FindingManifest>, String> {
-    if finding == "-" {
-        return Ok(None);
-    }
-    let path = Path::new(finding);
-    let mut candidates = Vec::new();
-    if let (Some(parent), Some(stem)) = (path.parent(), path.file_stem()) {
-        let mut per = parent.join(stem);
-        per.set_extension("finding.yaml");
-        candidates.push(per);
-        candidates.push(parent.join("finding.yaml"));
-    }
-    for c in candidates {
-        if !c.exists() {
-            continue;
-        }
-        let text = read_file(&c)?;
-        let manifest: FindingManifest =
-            serde_saphyr::from_str(&text).map_err(|e| format!("{}: {e}", c.display()))?;
-        if let Some(status) = manifest.status.as_deref() {
-            if !MANIFEST_STATUSES.contains(&status) {
+    let (finding_text, finding_sha) = check::read_finding(finding)?;
+    let resolved: PathBuf = match dossier_path {
+        Some(p) => {
+            if !p.exists() {
                 return Err(format!(
-                    "{}: status {status:?} is not one of {}",
-                    c.display(),
-                    MANIFEST_STATUSES.join(", ")
+                    "{} does not exist. Build one with priorart build <program-dir>.",
+                    p.display()
                 ));
             }
+            p.to_path_buf()
         }
-        return Ok(Some(manifest));
-    }
-    Ok(None)
-}
-
-fn run_import(action: &ImportAction) -> Result<ExitCode, String> {
-    match action {
-        ImportAction::Audit { file, out, force } => {
-            import::run(import::Kind::Audit, file, out, *force)
-        }
-        ImportAction::Program { file, out, force } => {
-            import::run(import::Kind::Program, file, out, *force)
-        }
-        ImportAction::Prior { path, out, force } => {
-            import::run(import::Kind::Prior, path, out, *force)
-        }
-    }
-}
-
-fn run_match(finding: &Path, index: &Path, json: bool) -> Result<ExitCode, String> {
-    let text = read_text(&finding.display().to_string())?;
-    let rows = read_index(&Some(index.to_path_buf()))?.unwrap_or_default();
-    let ranked = crate::index::rank(&text, &rows);
-    if json {
-        let payload: Vec<serde_json::Value> = ranked
-            .iter()
-            .map(|r| {
-                serde_json::json!({
-                    "id": r.finding.id,
-                    "source": r.finding.source,
-                    "title": r.finding.title,
-                    "score": (r.score * 1000.0).round() / 1000.0,
-                    "fails": r.fails,
-                    "shared_identifiers": r.shared_identifiers,
-                    "shared_roots": r.shared_roots,
-                    "quotes": r.quotes,
-                })
-            })
-            .collect();
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&payload)
-                .map_err(|e| format!("cannot serialise the matches: {e}"))?
-        );
-    } else {
-        println!("viability-gate {VERSION}  —  {}\n", finding.display());
-        println!("  index     {} prior finding(s)", rows.len());
-        println!(
-            "  threshold fail at score >= {:.2} with >= {} shared code identifiers",
-            crate::index::FAIL_SCORE,
-            crate::index::MIN_SHARED_IDENTIFIERS
-        );
-        println!("            uncalibrated. Word overlap is not scored.\n");
-        if ranked.is_empty() {
-            println!("  no prior finding shares two code identifiers with this draft.");
-        }
-        for (i, row) in ranked.iter().enumerate() {
-            let mark = if row.fails { "FAIL" } else { "near" };
-            println!(
-                "  {n:>2}  {score:.2}  {mark}  {id}",
-                n = i + 1,
-                score = row.score,
-                id = row.finding.id
-            );
-            println!(
-                "      shared identifiers: {}",
-                if row.shared_identifiers.is_empty() {
-                    "(none)".into()
-                } else {
-                    row.shared_identifiers.join(", ")
-                }
-            );
-            if !row.shared_roots.is_empty() {
-                println!("      shared root-cause: {}", row.shared_roots.join(", "));
+        None => match load::discover_beside(finding)? {
+            Some(p) => p,
+            None => {
+                return Err(format!(
+                    "no dossier supplied and no .dossier file beside {}. Pass --dossier <file>, or build one with priorart build <program-dir>.",
+                    finding.display()
+                ))
             }
-            for q in &row.quotes {
-                println!("      quote: {q}");
-            }
-        }
-    }
-    let failed = ranked.iter().any(|r| r.fails);
-    Ok(if failed {
-        ExitCode::from(1)
+        },
+    };
+    let dossier: Dossier = load::load(&resolved)?;
+    let report = check::build(
+        finding,
+        &finding_text,
+        &finding_sha,
+        &resolved,
+        &dossier,
+        top_k,
+    );
+    if as_json {
+        print!("{}", json::pretty(&report)?);
     } else {
-        ExitCode::SUCCESS
+        print!("{}", text::check(&report, &dossier, &finding_text));
+    }
+    let code = check::failure_exit(&report, fail_on_excluded, fail_on_unpayable);
+    Ok(match code {
+        Some(code) => ExitCode::from(code),
+        None => ExitCode::SUCCESS,
     })
 }
 
-fn log_path(file: &Option<PathBuf>) -> PathBuf {
-    file.clone().unwrap_or_else(|| PathBuf::from(DEFAULT_LOG))
+fn run_ledger(
+    ledgers: &[PathBuf],
+    as_json: bool,
+    strict: bool,
+    example_mode: bool,
+    taxonomy: bool,
+) -> Result<ExitCode, String> {
+    if taxonomy {
+        if as_json {
+            print!("{}", json::pretty(&ledger::taxonomy_payload()?)?);
+        } else {
+            print!("{}", text::vocab_list());
+        }
+        return Ok(ExitCode::SUCCESS);
+    }
+    if ledgers.is_empty() {
+        return Err(
+            "a ledger path is required (or pass --taxonomy). Pass at least one YAML file."
+                .to_string(),
+        );
+    }
+    let report = ledger::validate(ledgers, strict, example_mode)?;
+    if as_json {
+        print!("{}", json::pretty(&report)?);
+    } else {
+        for warning in &report.warnings {
+            println!("WARN  {}", text::sanitize(warning));
+        }
+        for error in &report.errors {
+            eprintln!("ERROR {}", text::sanitize(error));
+        }
+        println!();
+        if report.ledgers.len() > 1 {
+            for entry in &report.ledgers {
+                println!(
+                    "{}: {} {}, {} error(s), {} warning(s)",
+                    entry.ledger,
+                    entry.entries,
+                    if entry.entries == 1 {
+                        "entry"
+                    } else {
+                        "entries"
+                    },
+                    entry.errors.len(),
+                    entry.warnings.len()
+                );
+            }
+            println!();
+        }
+        println!(
+            "{} {}, {} error(s), {} warning(s)",
+            report.entries,
+            if report.entries == 1 {
+                "entry"
+            } else {
+                "entries"
+            },
+            report.errors.len(),
+            report.warnings.len()
+        );
+    }
+    Ok(if report.ok {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::from(EVIDENCE_EXIT)
+    })
 }
 
-fn run_log(action: &LogAction, rules_dir: Option<&Path>) -> Result<ExitCode, String> {
-    match action {
-        LogAction::Add {
-            family,
-            outcome,
-            note,
-            date,
-            file,
-        } => {
-            let path = log_path(file);
-            init::log_add(&path, family, outcome, note.as_deref(), date.as_deref())?;
-            emit(&format!("recorded {family:?} in {}\n", path.display()));
-            println!(
-                "\n  This file is LOCAL and gitignored. It contains your own bug \
-                 families and must never be published."
-            );
-            Ok(ExitCode::SUCCESS)
-        }
-        LogAction::Check { finding, file } => {
-            let path = log_path(file);
-            let (_rules, gates) = load_rules(rules_dir)?;
-            let text = read_text(&finding.display().to_string())?;
-            let history = read_log(&Some(path))?;
-            let inputs = GateInputs {
-                own_log: history.as_deref(),
-                finding: Some(&text),
-                ..Default::default()
-            };
-            let outcomes = engine::evaluate_gates(&gates, &inputs);
-            match outcomes.iter().find(|o| o.gate == "G7") {
-                Some(o) if o.status == GateStatus::Fail => {
-                    emit(&format!("REPEAT  {}\n", o.detail));
-                    Ok(ExitCode::from(1))
-                }
-                Some(o) => {
-                    emit(&format!("OK      {}\n", o.detail));
-                    Ok(ExitCode::SUCCESS)
-                }
-                None => Err("no G7 gate is defined in the catalog".into()),
-            }
-        }
+/// Re-exported so the binary and integration tests agree on the usage exit.
+pub const USAGE_EXIT: u8 = crate::error::USAGE_EXIT;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_clap_surface_is_valid() {
+        Cli::command().debug_assert();
+    }
+
+    #[test]
+    fn top_k_bounds_are_enforced() {
+        assert!(run_check(
+            Path::new("does-not-exist.md"),
+            Some(Path::new("does-not-exist.dossier")),
+            0,
+            false,
+            false,
+            false
+        )
+        .is_err());
+        assert!(run_check(
+            Path::new("does-not-exist.md"),
+            Some(Path::new("does-not-exist.dossier")),
+            MAX_TOP_K + 1,
+            false,
+            false,
+            false
+        )
+        .is_err());
     }
 }

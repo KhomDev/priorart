@@ -1,0 +1,52 @@
+# Gate cross-reference - which catalog answers which priorart gate.
+#
+# This file closes the loop between the two questions a program page decides:
+# given a gate, which catalog tells you how to READ the page so the gate never
+# fires for a reason you could have seen first.
+#
+# The mapping is DATA and contains no program data. It names only priorart's
+# gate ids and this repo's own catalog ids. It is a judgement about which
+# catalog answers a gate, authored from the semantics of each gate and each
+# catalog - not a re-derivation against any dataset.
+#
+# History: this file was moved from bounty-economics v0.6.1, where it named
+# viability-gate's P1-P22 anti-patterns. priorart deleted that engine, so the
+# rows that referenced deleted rule ids are gone and the gate ids are
+# priorart's G1-G4. The structure (answered_here / not_program_terms) is
+# unchanged.
+
+version: 1
+
+# Gates decided by the program's published terms. Each names the catalog that
+# classifies the relevant part of the page, and what you read.
+answered_here:
+  G1_severity_floor:
+    catalog: tier-shapes
+    read: >-
+      The reward table resolves to one tier_shape + floor_status. A finding
+      under the floor is worth zero before you write the PoC.
+  program_ceiling:
+    catalog: tier-shapes
+    read: >-
+      A program-wide severity ceiling is the critical_only / high_and_above
+      shape; it is the same tier_shape judgement, applied to the whole program.
+  G2_exclusion_clause:
+    catalog: clause-classes
+    read: >-
+      The scope page's out-of-scope list resolves to one of the 14 exclusion
+      clause classes, each with its escape hatch.
+  G4_prior_audit:
+    catalog: prior-audit-surface
+    read: >-
+      The program's published audits are its prior-audit surface. The dossier
+      indexes them by finding and quotes the sections that share identifiers
+      with yours; an audit list cannot be published generically without
+      naming the program, so it lives in the dossier, not in a catalog file.
+
+# Gates NOT decided by the program's terms, so this repo does not answer them.
+# The signal lives elsewhere; the note says where, so the cross-reference is
+# honest about its edges rather than pretending to cover every gate.
+not_program_terms:
+  G3_scope_tree: the scoped file tree in the repository, not the terms page
+  duplicate_check: the program's known-issues list and prior reports, not its terms page
+  realism: attacker-model and configuration realism, read from the finding and the PoC, not the program page

@@ -2,72 +2,63 @@
 
 ## What counts as a security issue here
 
-This is an **offline, deterministic, advisory tool**. It ships no data, makes no
-network calls and stores nothing. That rules out most of the usual categories and
-leaves three that matter.
+priorart is an **offline, deterministic, evidence-only tool**. It ships no
+program data, makes no network calls and stores nothing. That rules out most of
+the usual categories and leaves three that matter.
 
-### 1. A shipped rule discloses a target
+### 1. A tracked file discloses a target
 
-**This is the most serious report you can file.** The catalog is generic by
-design: it carries no program names, no chains, no reward tables, and no
-repository paths. A rule, pattern, docstring, example or test fixture that names
-a real target — or narrows a candidate set to one — is a disclosure, and the
-affected text is already published.
-
-Report it by email rather than in a public issue if the disclosure is specific
-enough to identify a program.
+The vocabularies are generic by design, and the benchmark stores pointers and
+labels only (`repo@commit` plus a path). A clause, example, fixture or doc that
+names a private target — or narrows a candidate set to one — is a disclosure, and
+the affected text is already published. Report it by email rather than in a
+public issue if the text identifies a program.
 
 ### 2. A private-workspace string reaches a tracked file
 
-The repository is checked by [`scripts/check_tripwires.py`](../scripts/check_tripwires.py),
-which fails on any private-workspace path prefix. If you find one that got
-through, report it the same way.
+This is the leak class the release checklist exists to catch: absolute local
+paths, private classifier output, blocklist tokens or private log rows in a
+tracked file or in git history. The scans and the commands are in
+[CONTRIBUTING.md](CONTRIBUTING.md) ("Releasing", step 6). If one got through,
+report it the same way as a disclosure.
 
 ### 3. Something in the tool reaches the network
 
-The no-network property is a hard guarantee, not a preference — target-specific
-input is supplied at runtime and must never leave the machine. It is verified in
-CI by `cargo tree`, a source grep and a binary string check; see
-[`docs/no-network.md`](../docs/no-network.md). A way to make the tool open a
-socket is a security issue.
-
-## 4. A path argument is parsed as an option
-
-`vg` rejects a path, commit, or id that starts with `-` (stdin remains `-`).
-Pass `--` before positional findings. A `--commit` value must be a 7 to 64
-digit hex SHA, and git is invoked with `--end-of-options` and an argument
-list, not a shell. This crate has no MCP server. A model-controlled string
-spliced into argv must not become `--rules` or another flag.
+The offline property is a hard guarantee, not a preference: everything priorart
+reads is a file you saved, and a dossier must not leave the machine. It is
+enforced by `tests/cli.rs::the_crate_has_no_http_client` (no HTTP client crate
+in `Cargo.toml` or `Cargo.lock`, no `std::net` or socket call in `src/`) and
+explained in [docs/no-network.md](docs/no-network.md). A way to make the tool
+open a socket, or a dependency that brings one in, is a security issue.
 
 ## What does not count
 
-- **A wrong verdict.** The tool is a heuristic with an unmeasured false-positive
-  rate. It will be wrong. File that as a
-  [bug](https://github.com/KhomDev/viability-gate/issues/new/choose) or a
-  [rule proposal](https://github.com/KhomDev/viability-gate/issues/new/choose),
+- **A wrong prior item, a missed duplicate, a wrong gate reading.** The matcher
+  and the gates are heuristics with published error rates
+  ([docs/benchmark.md](docs/benchmark.md), [docs/limitations.md](docs/limitations.md)).
+  File that as a [bug](https://github.com/KhomDev/priorart/issues/new/choose),
   not as a security issue.
-- **A false positive.** Same answer. Every rule page has a "known
-  false-positive modes" section; if yours is not listed, that is a documentation
-  bug worth reporting.
-- **A dependency advisory.** Dependabot and `cargo audit` cover those.
+- **A dependency advisory.** Dependabot and `cargo deny` cover those.
+- **A deliberate design choice** that a gate reports evidence instead of a
+  verdict. That is the product, not a vulnerability.
 
 ## Reporting
 
-Report privately through GitHub: open the repository's **Security** tab and choose
-**Report a vulnerability**
-(<https://github.com/KhomDev/viability-gate/security/advisories/new>). The report
-is visible only to the maintainer until an advisory is published.
+Report privately through GitHub: open the repository's **Security** tab and
+choose **Report a vulnerability**
+(<https://github.com/KhomDev/priorart/security/advisories/new>). The report is
+visible only to the maintainer until an advisory is published.
 
-Do not open a public issue for a disclosure report: a public issue republishes the
-text you are reporting.
+Do not open a public issue for a disclosure report: a public issue republishes
+the text you are reporting.
 
 ## What to include
 
-- The file and line, or the rule id.
+- The file and line, or the release tag and the exact string.
 - Why you believe it is a disclosure, a leak or a network path — not just that it
   looks odd.
-- If it is a disclosure: whether the affected text is in the current release, and
-  in which version it first appeared.
+- If it is a disclosure: whether the text is in the current release, which
+  version first carried it, and whether it is in git history.
 
 ## Response
 
@@ -77,8 +68,9 @@ the policy says so rather than implying otherwise.
 For a disclosure report, the maintainer will:
 
 1. Confirm or dispute the disclosure within a reasonable period.
-2. If confirmed, remove the text, cut a release, and note the removal in
+2. If confirmed, remove the text, cut a patch release, and note the removal in
    `CHANGELOG.md` **without repeating the removed text**.
-3. Note that removing it from `main` does not unpublish it: git history and any
-   released binary retain it. That is stated plainly because it affects how
-   urgent a fix is and because pretending otherwise would be dishonest.
+3. Note that removing it from `main` does not unpublish it: git history, the
+   crates.io tarball, the GitHub release and the binary retain it. That is stated
+   plainly because it affects how urgent a fix is, and because pretending
+   otherwise would be dishonest. Published versions are never yanked.

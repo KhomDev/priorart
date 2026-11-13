@@ -1,0 +1,18 @@
+priorart 0.1.0 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+
+HAS THIS BEEN FOUND?  1 prior item to read (shares >=2 symbol identifiers)
+  [audit: internal-review.md p.1, section H-02 Reserve backing check]  "The backing check in `BalanceSheet.distributeSurplus` reverts with `ReserveBackingShortfall` when the stable reserve is smaller than the summed debt of fee-exempt collateral types."
+     shared: balancesheet, balancesheet.distributesurplus, pegstabilitymodule, pegstabilitymodule.sellstable, reservebackingshortfall, vaultengine, vaultengine.open
+     their mechanism: accounting_order_of_operations
+  -> reading list only. priorart does not decide duplicates; see docs/benchmark.md
+
+IS IT EXCLUDED?       no clause class matches your preconditions (attacker: any user; oracle: none)
+
+CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable (cited: https://example.invalid/rain/rewards, section Rewards)
+  "High: 10,000 USD"
+  High is at or above the floor (Medium)
+
+NOTES
+  - G4 prior audits: Internal review covers src/VaultEngine.sol (cited identifier VaultEngine), src/BalanceSheet.sol (cited identifier BalanceSheet) - read that report's findings for this function
+  - G3 scope: the finding cites scoped code: VaultEngine (in src/VaultEngine.sol), BalanceSheet (in src/BalanceSheet.sol), PegStabilityModule (in src/PegStabilityModule.sol)
+  - priorart does not decide duplicates, exclusion, or payment. Read the quoted lines.

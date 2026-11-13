@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/KhomDev/priorart/schemas/v1/check.schema.json",
+  "title": "priorart check report (schema v1)",
+  "description": "The evidence for one finding against one dossier. There is no verdict and no score: prior items are ranked by shared strong identifiers, exclusions are clause classes that the finding's preconditions may trip, and the payout field reports whether the claimed severity reaches the program's floor. All three can be null, which means 'not checkable from this dossier' - never 'clear'.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "tool_version", "finding", "dossier", "prior_art", "exclusions", "payout", "notes"],
+  "properties": {
+    "schema": { "type": "string", "const": "priorart.check/v1" },
+    "tool_version": { "type": "string", "minLength": 1 },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "identifiers", "claimed_severity", "mechanism_class"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "identifiers": { "type": "array", "items": { "type": "string", "minLength": 2 } },
+        "claimed_severity": { "type": ["string", "null"], "enum": ["critical", "high", "medium", "low", "informational", null] },
+        "mechanism_class": { "type": ["string", "null"] }
+      }
+    },
+    "dossier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "schema", "program_id"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "schema": { "type": "string", "const": "priorart.dossier/v1" },
+        "program_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "prior_art": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item_id", "source_id", "source_kind", "source_title", "path", "page", "section", "quote", "shared_identifiers", "mechanism_class"],
+        "properties": {
+          "item_id": { "type": "string", "minLength": 1 },
+          "source_id": { "type": "string", "minLength": 1 },
+          "source_kind": { "type": "string", "minLength": 1 },
+          "source_title": { "type": ["string", "null"] },
+          "path": { "type": "string" },
+          "page": { "type": "integer", "minimum": 1 },
+          "section": { "type": ["string", "null"] },
+          "quote": { "type": "string", "minLength": 1 },
+          "shared_identifiers": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+          "mechanism_class": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["clause_class", "precondition", "clause", "item_id", "source_id", "page", "section"],
+        "properties": {
+          "clause_class": { "type": ["string", "null"] },
+          "precondition": { "type": "string", "minLength": 1 },
+          "clause": { "type": "string", "minLength": 1 },
+          "item_id": { "type": "string", "minLength": 1 },
+          "source_id": { "type": "string", "minLength": 1 },
+          "page": { "type": "integer", "minimum": 1 },
+          "section": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "payout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier_shape", "floor", "claimed_severity", "payable", "citation", "section", "quote", "detail"],
+      "properties": {
+        "tier_shape": { "type": ["string", "null"] },
+        "floor": { "type": ["string", "null"] },
+        "claimed_severity": { "type": ["string", "null"] },
+        "payable": { "type": ["boolean", "null"] },
+        "citation": { "type": ["string", "null"] },
+        "section": { "type": ["string", "null"] },
+        "quote": { "type": ["string", "null"] },
+        "detail": { "type": ["string", "null"] }
+      }
+    },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  }
+}

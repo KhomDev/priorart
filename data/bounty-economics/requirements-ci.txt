@@ -1,6 +1,0 @@
-# Exact versions CI installs, so a new release of a tool cannot turn main red
-# overnight. Dependabot (pip, "/") proposes the bumps.
-PyYAML==6.0.3
-jsonschema==4.26.0
-pytest==9.1.1
-ruff==0.17.0

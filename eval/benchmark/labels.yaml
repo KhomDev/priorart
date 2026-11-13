@@ -1,0 +1,209 @@
+# Labels for the priorart public benchmark (eval/benchmark/manifest.yaml).
+#
+# Store pointers and labels only; never a finding body.
+#
+# label values
+#   known_prior    the judge excluded the finding AND the text repeats the claim
+#                  of one specific prior item; prior_ref names it.
+#   invalid_unmapped the judge excluded the finding but no prior item reproduces
+#                  its claim. This is not a claim that the finding is wrong; it
+#                  is the absence of a prior-item grounding.
+#   unique_valid   judged paid Medium/High and not a duplicate (platform label,
+#                  applied to every accepted directory; no reader involved).
+#
+# method: reader (a person/AI read the text, 2026-11-12) or platform (the
+# judge's own label). confidence: high | medium | low. See BENCHMARK.md for the
+# rubric, the dead ends that forced this label design, and the agreement check.
+version: 1
+schema: priorart.benchmark.labels/v1
+seed: "priorart-bench-2026-11-12"
+reader: "bench-eval (one AI reader, 2026-11-12); not ground truth, see BENCHMARK.md"
+
+findings:
+  inv:001:
+    label: known_prior
+    prior_ref: ki-2024-02:1
+    method: reader
+    confidence: medium
+    provenance: "invalid/001.md is about a zero-address check; the contest README known-issue answer is KI-1 Zero address check"
+    notes: "the finding claims the zero-address check is bypassable, which is broader than KI-1; a judge could also have excluded it as a quality call. Kept as the only positive and reported alone, not as a rate."
+  inv:002:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/002.md has no summary, impact or code; nothing to ground"
+    notes: "contentless submission"
+  inv:003:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/003.md: missing authorization in _addCollateral; closest prior item H-54 is allowance-less buying through multiHop, a different function and mechanism"
+    notes: "topic overlap with H-54; the claim does not reproduce it"
+  inv:004:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/004.md: collateralShare underflow in _updateBorrowAndCollateralShare; closest prior items H-03 and H-24 value debt/collateral differently"
+    notes: "same file, different claim"
+  inv:005:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/005.md: interest truncation in _accrueView; prior H-30 is about utilization in _getInterestRate"
+    notes: "different formula and impact"
+  inv:006:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/006.md speculates about EXCHANGE_RATE_PRECISION and FEE_PRECISION constants; prior H-04 is a concrete collateralizationRate/share error"
+    notes: "no concrete claim to match"
+  inv:007:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/007.md: yieldBox.transfer may not move the recorded share; no prior item makes this claim"
+    notes: ""
+  inv:009:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/009.md is an informational note about Solidity 0.8.22 unchecked loop increments; no prior item"
+    notes: "informational"
+  inv:010:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/010.md: IZeroXSwapper.swap has no deadline; no prior item"
+    notes: ""
+  inv:022:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/022.md: excess ether in mTOFT.wrap; prior H-48 is triggerSendFrom forwarding destination ETH"
+    notes: "same area, different function"
+  inv:027:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/027.md: hardcoded minMintFeeStart above maxMintFeeStart; no prior item"
+    notes: ""
+  inv:028:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/028.md: penrose fee balance can revert MinLimit; no prior item"
+    notes: ""
+  inv:038:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/038.md: Origins.sol has no add-participant function; a design observation, no prior item"
+    notes: "centralisation/informational"
+  inv:076:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/076.md: a missing return in _toftCustomComposeReceiver; no prior item"
+    notes: ""
+  inv:077:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/077.md: flashMintFee initialised to 1; no prior item"
+    notes: ""
+  inv:083:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/083.md: ERC4494 permit structHash; no prior item"
+    notes: ""
+  inv:095:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/095.md: front-running TOFTVault ownership during deployment; the README excludes front-running, no prior item"
+    notes: "excluded shape, not a prior item"
+  inv:104:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/104.md: collateralizationRate left zero by setMarketConfig; prior H-04 and H-21 use the rate but do not make this claim"
+    notes: ""
+  inv:106:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/106.md: ERC20 tokens that revert on zero transfer; no prior item"
+    notes: "informational"
+  inv:107:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/107.md: wrap does not compare msg.value, so native balance is stealable; prior H-11/H-12/H-13 earn their theft through a different entry point"
+    notes: "theme overlap with the H-11..H-13 group; claim differs"
+  inv:108:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/108.md: mTOFT.wrap/unwrap onlyBalancer restriction; no prior item"
+    notes: ""
+  inv:131:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/131.md: Penrose computeTotalDebt uses && instead of ||; no prior item"
+    notes: ""
+  inv:143:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/143.md: _extractModule checks address zero; no prior item"
+    notes: ""
+  inv:invalid-001:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/invalid-001/132-best.md: excess native funds in receiveWithParamsReceiver; prior H-48 and H-16 are different entry points"
+    notes: ""
+  inv:invalid-002:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/invalid-002: skim-mode theft; prior H-05 increases collateral share through a different path"
+    notes: ""
+  inv:invalid-003:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/invalid-003: bad-debt borrow via SGLBorrow; no prior item makes this claim"
+    notes: ""
+
+# The agreement check is a second, blinded pass over a seeded sample of the
+# reader labels above. That pass saw only the finding title and the prior-item
+# titles, never the bodies. It measures label stability, not correctness.
+agreement:
+  method: "blinded title-only second pass vs the full-text labels, same reader"
+  sample: [inv:002, inv:083, inv:010, inv:027, inv:003, inv:004, inv:131, inv:009,
+           inv:001, inv:005, inv:028, inv:143, inv:107, inv:108, inv:038, inv:077,
+           inv:invalid-001, inv:076, inv:invalid-003, inv:006]
+  blind:
+    inv:002: invalid_unmapped
+    inv:083: invalid_unmapped
+    inv:010: invalid_unmapped
+    inv:027: invalid_unmapped
+    inv:003: known_prior
+    inv:004: known_prior
+    inv:131: invalid_unmapped
+    inv:009: invalid_unmapped
+    inv:001: known_prior
+    inv:005: known_prior
+    inv:028: invalid_unmapped
+    inv:143: invalid_unmapped
+    inv:107: known_prior
+    inv:108: invalid_unmapped
+    inv:038: invalid_unmapped
+    inv:077: invalid_unmapped
+    inv:invalid-001: invalid_unmapped
+    inv:076: invalid_unmapped
+    inv:invalid-003: invalid_unmapped
+    inv:006: known_prior

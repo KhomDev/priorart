@@ -1,103 +1,69 @@
 # Install
 
-Three ways. All three install the same code.
+One binary, named `priorart` (`priorart.exe` on Windows). There is no second
+alias: the old `vg` and `viability-gate` binaries are gone, and the crate that
+carried them is frozen at 0.9.0.
 
-## 1. From crates.io
+## From crates.io
 
-```bash
-cargo install viability-gate
+```sh
+cargo install priorart
+# or, if you have cargo-binstall:
+cargo binstall priorart
+priorart --version   # priorart 0.1.0
 ```
 
-Published from 0.3.0 through 0.5.0. **0.6.0 is not on crates.io.** Install that
-release from git (method 2) or from a checkout. The crate version of a
-published release matches the `v*` tag it was published from.
+Or straight from the release tag on GitHub:
 
-## 2. From the repository
-
-```bash
-cargo install --git https://github.com/KhomDev/viability-gate
+```sh
+cargo install --git https://github.com/KhomDev/priorart --tag v0.1.0
 ```
 
-Every method installs **both** binaries, `vg` and `viability-gate`. They are the same
-program; see [the name collision](#the-vg-name-collision) below.
+Rust 1.89 or newer (`rust-version` in `Cargo.toml`). No system dependencies: the
+vocabularies and the rejection dataset are compiled into the binary with
+`include_str!`, and the crate has no HTTP client. `pdftotext` is optional and
+only needed for compressed PDFs ([dossier.md](dossier.md)).
 
-Methods 1 and 2 compile from source and require **Rust 1.89 or newer**. The
-MSRV is declared in `Cargo.toml` and checked in CI. The floor is set by the
-YAML parser, `serde-saphyr`, which declares 1.89. It was 1.85 up to 0.3.0, when
-the parser was `serde_yaml`. A release binary (method 3) needs no Rust at all.
+## From a release
 
-To install from a local checkout instead:
+Each GitHub release carries archives for Linux, macOS and Windows with SHA256
+sums. Unpack, put the binary on your PATH, and check it:
 
-```bash
-git clone https://github.com/KhomDev/viability-gate
-cd viability-gate
-cargo install --path .
+```sh
+priorart --version
+priorart vocab list      # 5 tier shapes, 14 clause classes
 ```
 
-## 3. From a release binary
+## From source
 
-Releases are published on tags matching `v*`. Each release carries prebuilt
-binaries for Linux, macOS and Windows, a `SHA256SUMS` file, and a build
-provenance attestation.
-
-```bash
-# pick the asset for your platform from the release page, then:
-sha256sum -c SHA256SUMS --ignore-missing
+```sh
+git clone https://github.com/KhomDev/priorart
+cd priorart
+cargo build --release
+./target/release/priorart --version
 ```
 
-On macOS and Windows, `shasum -a 256` and `Get-FileHash -Algorithm SHA256` are
-the equivalents. Verify the checksum before running the binary; that is what the
-file is for.
+## Verifying an install
 
-The attestation (`gh attestation verify`) ties the binary to the workflow run
-that built it. It proves the binary came from this repository's release
-workflow — it does not prove the source is good, which is what
-[`docs/calibration.md`](calibration.md) is for.
-
-## The `vg` name collision
-
-`vg` is already the name of an unrelated and widely packaged bioinformatics
-tool — a variation-graph toolkit, distributed through Homebrew, conda and most
-Linux distributions. If you have ever installed anything in that space, your
-`PATH` may already have a `vg`, and `cargo install` will put this one somewhere
-that shadows it or is shadowed by it.
-
-That is why this crate ships **two binaries with the same code**:
-
-| Binary | When to use it |
-|---|---|
-| `viability-gate` | Always safe. No known collision. Use this in scripts and CI |
-| `vg` | Shorter, and matches every example in the docs. Use it if you have checked `which vg` |
-
-```bash
-which vg          # if this is not the tool you expect, use viability-gate
-viability-gate check finding.md
+```sh
+cargo test --locked          # unit + integration tests, offline
+priorart rejections summary  # reads its own compiled data
+priorart ledger validate examples/ledger.example.yaml
 ```
 
-Every command in the documentation takes either name.
+## Upgrading and uninstalling
 
-## After installing
-
-The rules are **embedded in the binary**, so there is no data directory to
-populate and nothing to download. To point the tool at your own catalog instead:
-
-```bash
-vg --rules ./my-rules check finding.md
+```sh
+cargo install priorart --force   # upgrade in place
+cargo uninstall priorart         # uninstall
 ```
 
-Start with:
+Dossiers built by an older 0.1.x still load: the schema is `priorart.dossier/v1`
+and `v1` is additive-only ([schema.md](schema.md)). A dossier does not need
+rebuilding for a new binary unless the inputs changed.
 
-```bash
-vg init my-target/
-```
+## Moving from viability-gate
 
-which scaffolds the four input files a new target needs. See the
-[`vg init` section of the README](../README.md#vg-init--start-here).
-
-## Uninstall
-
-```bash
-cargo uninstall viability-gate
-```
-
-This removes both binaries, since they come from the same crate.
+The `viability-gate` crate still installs at 0.9.0 and still works; it prints a
+one-line stderr notice and is not yanked. See [MIGRATION.md](../MIGRATION.md) for
+the command-by-command mapping.

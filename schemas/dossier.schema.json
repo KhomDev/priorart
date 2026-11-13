@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/KhomDev/priorart/schemas/v1/dossier.schema.json",
+  "title": "priorart dossier (schema v1)",
+  "description": "One deterministic index of a program's saved, offline inputs: its page, known issues and prior audits. Built by 'priorart build', read by 'priorart check'. Quotes are verbatim excerpts of the source file; the tool never invents content.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "tool", "program", "sources", "items"],
+  "properties": {
+    "schema": { "type": "string", "const": "priorart.dossier/v1" },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "const": "priorart" },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "program": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "platform", "url", "scope_url", "payout", "prior_audits"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+        "name": { "type": ["string", "null"] },
+        "platform": { "type": ["string", "null"] },
+        "url": { "type": ["string", "null"] },
+        "scope_url": { "type": ["string", "null"] },
+        "payout": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["tier_shape", "floor_status", "floor_severity", "source_url", "retrieved", "section", "quote"],
+          "properties": {
+            "tier_shape": {
+              "type": "string",
+              "enum": ["critical_only", "high_and_above", "medium_and_above", "low_and_above", "unknown"]
+            },
+            "floor_status": { "type": ["string", "null"], "enum": ["documented", "unstated", "conflicting", null] },
+            "floor_severity": { "type": ["string", "null"], "enum": ["critical", "high", "medium", "low", null] },
+            "source_url": { "type": ["string", "null"] },
+            "retrieved": { "type": ["string", "null"] },
+            "section": { "type": ["string", "null"] },
+            "quote": { "type": ["string", "null"] }
+          }
+        },
+        "prior_audits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["firm", "url", "covers", "known_issues"],
+            "properties": {
+              "firm": { "type": ["string", "null"] },
+              "url": { "type": ["string", "null"] },
+              "covers": { "type": "array", "items": { "type": "string" } },
+              "known_issues": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "title", "path", "sha256", "pages"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^src-[0-9]{4}$" },
+          "kind": { "type": "string", "enum": ["program-page", "known-issues", "audit"] },
+          "title": { "type": ["string", "null"] },
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "pages": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "source_id", "kind", "title", "section", "page", "quote", "identifiers", "mechanism_class", "clause_class", "text"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^item-[0-9]{4}$" },
+          "source_id": { "type": "string", "pattern": "^src-[0-9]{4}$" },
+          "kind": {
+            "type": "string",
+            "enum": ["audit-finding", "audit-section", "known-issue", "scope-clause", "scope-path", "payout-tier", "page-section"]
+          },
+          "title": { "type": ["string", "null"] },
+          "section": { "type": ["string", "null"] },
+          "page": { "type": "integer", "minimum": 1 },
+          "quote": { "type": "string", "minLength": 1 },
+          "identifiers": { "type": "array", "items": { "type": "string", "minLength": 2 } },
+          "mechanism_class": { "type": ["string", "null"] },
+          "clause_class": { "type": ["string", "null"] },
+          "text": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

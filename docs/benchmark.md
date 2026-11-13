@@ -1,129 +1,170 @@
-# Public-corpus benchmark
+# Benchmark: corpus, protocol, three runs, and the release decision
 
-Re-scored 2026-11-09 with `vg` 0.7.0 on the same manifest `eval/run.py fetch` wrote for 0.6.0 (`eval/dataset.manifest.yaml` did not change). Bodies stay in `eval/cache/`, which is gitignored. This repository commits the manifest and the results, not the reports.
+priorart's benchmark is public and multi-researcher. It is not the author's
+rejection log (that is the descriptive layer, see [rejections.md](rejections.md)):
+it is a judged contest that published its prior audit and a later contest's
+judging on the same code. Everything is stored as pointers and labels:
+`repo@commit` plus a path or issue id, never finding text.
 
-**0.8.0 changes the consequence, not the hits.** The per-rule hits below are unchanged. Since 0.8.0 a claim-heuristic hard rule is ROUTE-TO-VERIFY by default; the hard KILL column is the `--strict` (pre-0.8.0) behaviour. The default table is in the next section. The 2026-11-10 review is why: a hard stop that is wrong 48% of the time and hits 5.5% of paid findings should not be the default.
+The committed source of truth is
+[`eval/benchmark/BENCHMARK.md`](../eval/benchmark/BENCHMARK.md) and
+[`eval/benchmark/results.json`](../eval/benchmark/results.json). This page
+summarises them on 2026-11-13; if they disagree, the eval files win.
 
-This is one corpus of judged, human-written contest reports. It is not a property of the rules, and it is not the false-positive rate on model-written hypotheses. The author's own log has no paid findings. See [control-set.md](control-set.md).
+**Status: FINAL.** Measured on the shipped 0.1.0 build, binary sha256
+`dabfcc0c...`. The deciding run was made on `2ec4c3c9...`; `176f1986...`
+(matcher identical, wording only) and then `dabfcc0c...` (one last stale-prose
+sweep) reproduced the same numbers. Only `dabfcc0c...` is quoted. Three matcher
+revisions were measured with the same harness, seed, manifest and dossiers. All
+three are printed below; only the third decides the release.
 
-## What was scored
+## Corpus
 
-`eval/sources.yaml` names 16 Sherlock judging repositories and 8 Code4rena
-findings repositories. `eval/run.py` reads GitHub issue labels and bodies. The
-selection rule:
+One judged contest pair on one codebase, which is what makes a prior item
+retrievable at all: Tapioca was audited by Code4rena in 2023-07 and judged by
+Sherlock in 2024-02.
 
-| Class | Rule | Kept |
-|---|---|---:|
-| accepted | Sherlock: High or Medium, and Reward, and not Duplicate. Code4rena: selected for report, and a High or Med label, and not a duplicate, and not downgraded, and not invalid | 110 Sherlock + 110 Code4rena |
-| invalid | Sherlock label Invalid, or Code4rena label invalid or out of scope | 80 |
-| wontfix | Sherlock label Won't Fix | 40 |
-| informative | Sherlock label Low/Info, and not Reward | 60 |
-| qa | Code4rena QA, and not selected for report | 60 |
+| Role | Pointer | What it provides |
+|---|---|---|
+| prior audit | `code-423n4/2023-07-tapioca-findings` @ `4193111261e3cf8de27c15857babecaa2519d67c`, `report.md` | 60 High/Medium findings, one file per finding |
+| known issues | `sherlock-audit/2024-02-tapioca` @ `dc2464f420927409a67763de6ec60fe5c028ab0e`, `README.md` | the sponsor's answer to "list any known issues" (1 item: zero-address check) |
+| judging | `sherlock-audit/2024-02-tapioca-judging` @ `9e52685cd447417a1d9d5c96fb1492d8773eab8a` | 60 accepted findings, 26 excluded findings, 64 submissions grouped as duplicates |
 
-414 accepted issues matched before the per-platform cap of 110. The cap is
-applied in repository order, then issue number, so it does not depend on API
-order. Code4rena's "unsatisfactory" label is not used: one contest had over a
-thousand of them, and they would have been the whole negative class.
+Counts, from `manifest.yaml`: 61 prior items (60 audit + 1 known issue); 86
+judged findings (60 paid Medium/High, 26 excluded); 64 judge-grouped duplicate
+submissions; 1 finding with a defensible known-prior grounding. Dossier **A** is
+built from the prior audit plus the sponsor's known issues, dossier **B** from
+the judged primary submissions. Neither is committed; `fetch.py` and
+`priorart build` recreate them.
 
-Accepted severities in the capped set: 101 High, 119 Medium.
+## Protocol
 
-`vg` saw the body and not the label. Labels were applied after.
+- **Recall@5 on known-prior findings.** Positive = a finding the judge excluded
+  *and* whose text repeats one named prior item. A hit = that item in the top 5
+  of `priorart check --top-k 5 --json`. This is the plan's headline metric and it
+  cannot be measured at adequate n here: the judging repo publishes no exclusion
+  reasons, and only one excluded finding grounds in a prior item. **n = 1, 0
+  hits. This is not a rate.**
+- **False-alarm rate (FAR) on judged paid and unique findings.** Denominator =
+  the 60 accepted Medium/High findings; none duplicates another accepted finding
+  and none was called known. An alarm = `check` returns at least one prior item.
+  By the matcher's own rule (>=2 specific symbol identifiers) any returned item
+  is a claim of shared prior art, so the alarm definition is the tool's.
+- **Duplicate recall@5 (supplementary).** Denominator = the 64 judge-grouped
+  duplicates (54 in accepted groups, 10 in excluded groups). A hit = the group's
+  representative in the top 5 from a dossier of the 86 judged representatives.
+  This is retrieval of a judged label, not the plan's known-issue metric.
+- **Intervals:** Wilson score, 95%, z = 1.959964, computed in `run.py`.
+- **Seed and freeze:** seed `priorart-bench-2026-11-12` is committed in
+  `sources.yaml`/`labels.yaml` and drives the dev/held-out split, the duplicate
+  sample and the agreement sample. `run.py --split dev` writes `freeze.json`
+  (manifest sha256 `554207452495d9d2...`, labels sha256, harness sha256, seed,
+  k=5). `--split heldout` and `--split all` refuse to run without it and refuse
+  if the manifest changed. The reported run used `--split all`, so the held-out
+  half was opened after the freeze; `results.json.frozen.heldout_opened` says so.
+  No rule was tuned on it.
+- **Tool errors:** a per-query crash is recorded as a tool error. The final run
+  reports 0.
 
-## Headline
+## The three runs
 
-A **hard KILL** is the outcome that would have stopped a submission. 0.7.0, default flags, no ledger, no target tree. A1 is unknown on every row. P26 does not run.
+| Run | Matcher revision | FAR on 60 paid+unique | Duplicate recall@5 | Known-prior | Tool errors |
+|---|---|---|---|---|---|
+| `22648e33...` | pre-fix: paths counted as identifiers; source-order ties | 18/60 = 30.0% [19.9-42.5] | 36/64 = 56.3% [44.1-67.7] | n=1, 0 hits | 0 |
+| `da176bc8...` | symbol identifiers only; generic symbols (>20% of items) excluded; negation-aware | 15/60 = 25.0% [15.8-37.2] | 33/64 = 51.6% [39.6-63.4] | n=1, 0 hits | 0 |
+| `dabfcc0c...` **FINAL** (matcher identical to the `2ec4c3c9...` deciding run) | paths never count toward >=2; ties by specificity/rarity/identifier order; tighter negation window; identifiers kept in original case | **26/60 = 43.3% [31.6-55.9]** | **39/64 = 60.9% [48.7-71.9]** | n=1, 0 hits | 0 |
 
-**0.8.0 default** (claim-heuristic hard hits are ROUTE-TO-VERIFY):
+Sha history for the same numbers: `22648e33...` (pre-fix) ->
+`da176bc8...` (intermediate) -> `2ec4c3c9...` (the run that decided the release)
+-> `176f1986...` (declared, then superseded after one stale NOTES sentence) ->
+`dabfcc0c...` (frozen; the row above, and the only one quoted). The matcher was
+identical across the last three; only output wording changed.
 
-| Set | N | ROUTE-TO-VERIFY | Rate | Hard KILL |
-|---|---:|---:|---:|---:|
-| Paid Medium/High | 220 | 12 | 5.5% | 0 |
-| Invalid + won't-fix | 120 | 13 | 10.8% | 0 |
-| Code4rena QA | 60 | 11 | 18.3% | 0 |
-| Sherlock Low/Info | 60 | 9 | 15.0% | 0 |
+Label agreement is unchanged: a blinded second pass on a seeded 20-item sample
+of the 26 excluded findings agreed with the full-text label on **15/20 = 75.0%
+[53.1-88.8]**. A fourth build, `a973818a...`, is not a row: it panicked on one
+input (a char-boundary slice on a curly apostrophe), so its harness run is not
+comparable; it is recorded in the errata only.
 
-**`--strict` / 0.7.0** (the same hits, as hard stops):
+Final-run diagnostics: the top-1 candidate was the judged representative in
+27/64 queries; 35/64 top-1 candidates shared at least one file-level identifier
+with the query; the median shared-identifier count was 7; 6 queries returned no
+prior item at all, because paths alone no longer qualify and those submissions
+carry no qualifying symbol identifiers. The remaining failures are ranking on
+shared symbols plus path-only queries with no symbol overlap. That is a defect
+report for the matcher, not a property of the corpus.
 
-| Set | N | Hard KILL | Rate | 0.6.0 |
-|---|---:|---:|---:|---:|
-| Paid Medium/High | 220 | 12 | 5.5% | 19 (8.6%) |
-| Invalid + won't-fix | 120 | 13 | 10.8% | 19 (15.8%) |
-| Code4rena QA | 60 | 11 | 18.3% | 14 (23.3%) |
-| Sherlock Low/Info | 60 | 9 | 15.0% | 10 (16.7%) |
+## Errata, 2026-11-13
 
-Of the 25 default routes on paid or invalid/won't-fix, 12 are paid findings and 13 are invalid/won't-fix. The paid share is **12/25 (48%)**; the precision of "this route marks a finding the platform did not pay" is **13/25 (52%)**. The base rate of invalid/won't-fix in that pair is 120/340 (35%). The route rate on the unpaid side divided by the route rate on the paid side is 10.8 / 5.5 ≈ **2.0**. On 0.6.0 that ratio was 15.8 / 8.6 ≈ 1.8, and the precision was 19/38 (50%).
+An earlier interim report said duplicate recall@5 was **0/64**. That was the
+harness, not the matcher: `run.py` compared the judged id `acc:001-M` with the
+dossier item `acc-001-M.md` without normalising `:` to `-`, so every correct
+retrieval was scored as a miss. The same binary scored 36/64 after the locator
+fix; later matchers measured 33/64 and then 39/64 on the final build. The
+`duplicate-diagnostic.json` was unaffected because it normalised the id when it
+was written. The harness also found a crash in an intermediate matcher; that is
+fixed and the final run reports 0 tool errors.
 
-Softening P3 moved paid hard kills from 19 to 12 and invalid hard kills from 19 to 13. The separator is still weak. A route is not evidence the finding is invalid, and a hard kill is not either. Do not read 5.5% as "the tool is safe 94% of the time." Twelve paid findings are routed, and under `--strict` they would have been hard-killed.
+No benchmark number is printed by `priorart check` in 0.1.0; the numbers live
+here and in `results.json`, so there is one place to update and one place to be
+wrong.
 
-Which rules did the killing, on the paid set: **P2 on 9, P19 on 2, P15 on 1.** P3 fired on 7 paid findings and on 7 invalid/won't-fix findings, and **none of those fires were hard**. The 0.6.0 paid kills that were P3 (7) are holds now. P2 did not move: still 9 paid and 10 invalid/won't-fix, precision 0.53. The negation fix and the unprivileged-yield suppression are covered by fixtures. This corpus does not contain those wordings, so the bench cannot show them.
+## Release decision: retrieval only
 
-P18 fired on **0** of 460 items, same as 0.6.0. The phrases added in 0.7.0 ("already been reported", "previously disclosed", "acknowledged as a known issue") are not in these bodies either. Judged contest writeups do not admit a prior issue in the words the rule keys on. Matching a bare "prior audit" was tried in an earlier catalog and removed, because "the prior audit missed this" is the opposite claim. The duplicate a report does not mention is `--index`, not P18. The CMP-04 fixture is the admission this rule does catch. This benchmark does not measure that fixture.
+The plan's kill criterion, quoted: *"If priorart's false-alarm rate on unique
+findings is above 30%, it ships with retrieval only (no 'share identifiers'
+warning) until the matcher is fixed."*
 
-P26 is absent from the table below because the default score does not run it. On 0.6.0 it fired on 340/340 of paid plus invalid/won't-fix, and on the QA and Low/Info sets as well. A note that is true of every row is not a signal, so 0.7.0 leaves it off unless `--severity-notes`. That is a demotion, not a measured gain in precision. The bench was not re-scored with the flag on.
+- Final point estimate: **43.3%**, above 30%.
+- 95% interval: **31.6-55.9%**, which does not cross 30%.
+- Intervening estimates: 30.0% (pre-fix) and 25.0% (intermediate matcher).
 
-## Per rule
+**priorart 0.1.0 therefore ships in retrieval-only mode.** It ranks prior items
+and prints them as a reading list with their source, page, section, quote and
+shared identifiers; it prints no duplicate warning and implies no duplication.
+The 25.0% release decision taken on an intermediate build is superseded by this
+one, and the benchmark does not soften that. The next release must fix the
+matcher and re-measure before the warning can return; the denominator is one
+contest pair (60 judged findings), so a fresh held-out split is required before
+the threshold is treated as settled. Quote the FAR with n and the interval,
+never 43.3% alone.
 
-A fire on an invalid finding is not evidence the rule named the reason the platform closed it. There is no per-rule ground truth in the labels. Precision here means: of the times the rule fired on paid or invalid/won't-fix, how often the finding was in the invalid/won't-fix set. A rule that never fired has no precision. Rates are `fires / N`.
+## What this benchmark does not claim
 
-| Rule | Paid fires (hard) | Invalid+won't-fix fires | Precision |
-|---|---:|---:|---:|
-| P2 | 9 (9) | 10 | 0.53 |
-| P3 | 7 (0) | 7 | 0.50 |
-| P15 | 1 (1) | 2 | 0.67 |
-| P17 | 22 (0) | 9 | 0.29 |
-| P19 | 2 (2) | 0 | 0.00 |
-| P4 | 4 (0) | 2 | 0.33 |
-| P12 | 3 (0) | 1 | 0.25 |
-| P10 | 1 (0) | 0 | 0.00 |
-| P14 | 0 | 1 | 1.00 |
-| P18 | 0 | 0 | — |
-| P26 | not run | not run | — |
+- It does not measure whether priorart finds bugs; the corpus is judged human
+  findings.
+- It does not measure precision outside this corpus, or on programs whose audits
+  are not public.
+- A top-5 hit is not necessarily the right prior item: the judged representative
+  is one label.
+- The duplicate-retrieval number is retrieval of judged group representatives,
+  not known-issue detection, and is not comparable to recall@5 on a prior audit.
+- n=1 known-prior observation is not a rate, in either direction.
+- 43.3% is not a population estimate for "unique findings".
+- No held-out tuning happened, but the matcher was not designed against this
+  corpus either: this is a retrospective measurement.
 
-P14's precision of 1.00 is one fire. That is not a measurement of P14. P3's 0.50 is the same coin flip as 0.6.0, and it no longer hard-kills.
+## Reproducing
 
-### Claim checks (weight 0)
+Network is needed once, by `fetch.py`; everything after the cache exists is
+offline.
 
-P23–P25 are notes. They do not kill. They also do not separate the classes. P26 is the same kind of note and is opt-in; it is not in these counts.
-
-| Rule | Paid | Invalid+won't-fix | QA | Low/Info |
-|---|---:|---:|---:|---:|
-| P23 attacker | 168/220 | 89/120 | 53/60 | 51/60 |
-| P24 preconditions / victim | 214/220 | 114/120 | 60/60 | 57/60 |
-| P25 quantified impact | 187/220 | 100/120 | 59/60 | 58/60 |
-| P26 severity rule quoted | not run | not run | not run | not run |
-
-Outcomes on the paid set, with no ledger and no target tree (every gate unknown, including A1): under 0.8.0 default, ROUTE-TO-VERIFY 12, HOLD 27, NOTE 5, INCOMPLETE 176, KILL 0. Under `--strict`, KILL 12 instead of the routes. INCOMPLETE is the common outcome because unknown gates outrank a zero-weight note. A paid finding with no hard rule and no ledger is not CLEAR, and it should not be. A1 cannot pass on this corpus: the bench does not supply a checkout or a commit, so the anchor is unmeasured here. The fixture for a missing `src/Vault.sol:214` is in `tests/cli.rs`.
-
-The corpus is judged human writeups. A model hypothesis that says "owner can" and "front-run" next to a real bug is what the P2/P3 changes and `--funnel` are for. This table does not contain that text. Expect the bench to understate how often those rules would have fired on model output, and do not treat 5.5% as that rate.
-
-## In-sample reference, not this measurement
-
-The classified log this catalog was derived from is vendored at
-[data/rejection-taxonomy/](../data/rejection-taxonomy/) (snapshot of
-[rejection-taxonomy](https://github.com/KhomDev/rejection-taxonomy) v0.6.0,
-113 rows, rejections only). Its own generated table, not this benchmark, is
-the class mix of that log: 43 duplicate, 26 out of scope, 24 informational,
-16 intentional design, 3 below the payout floor, 1 spam. There is no paid row
-in it. The strict 14/59 recall was measured on an older catalog against a
-private subset of that log and was not re-run. See
-[calibration.md](calibration.md).
-
-A separate private triage database of 125 rows (47 of them duplicate) and
-`bounty_outcomes.csv` have no report bodies. They were not scored. Scoring a
-triage summary would measure the summary.
-
-## Reproduce
-
-```bash
-# needs gh auth, and a release binary
-python eval/run.py fetch
-cargo build --release
-python eval/run.py score --vg target/release/vg
-python eval/run.py check
+```sh
+cd priorart
+python eval/benchmark/fetch.py             # pinned inputs; writes cache.lock.json
+python eval/benchmark/fetch.py --check     # cache matches the committed lock
+cargo build
+python eval/benchmark/run.py --priorart target/debug/priorart.exe --split dev   # writes freeze.json
+python eval/benchmark/run.py --priorart target/debug/priorart.exe --split all   # writes results.json
+python eval/benchmark/run.py --check       # recomputes the label agreement
+python eval/benchmark/run.py --self-test   # fixture corpus + fake binary; no network, no priorart
 ```
 
-The committed `eval/results/` are the 0.7.0 per-rule hits. The 0.8.0 default table is the same hits with the default outcome rule applied; `--strict` reproduces the 0.7.0 KILL column.
+`--check` recomputes labels and agreement, not the tool measurements: those need
+the same binary, whose sha256 is in `results.json`.
 
-`fetch` uses the network. `score` does not. `check` recomputes the headline
-from `eval/results/per-item.jsonl` and fails if `summary.json` has drifted.
-The per-item file stores rule ids and outcomes, not the bodies.
+**Durable provenance.** The measurement is pinned to the release commit/tag, not
+to a binary hash: the published release-profile binary hashes differently again,
+so its sha256 is not the one above. The debug-build sha256 in `results.json` is
+recorded so a reader can reproduce the run with the same harness and the same
+per-query rows; it identifies the measured artifact, not the one you install.

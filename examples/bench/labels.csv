@@ -1,9 +1,0 @@
-filename,label
-privileged-role-gated.md,rejected
-griefing-no-attacker-profit.md,rejected
-testnet-only.md,rejected
-front-run-operator.md,rejected
-atomic-unprivileged-drain.md,accepted
-quantified-accounting-delta.md,accepted
-persisted-lock-demonstrated.md,accepted
-paid-dos-with-measured-liveness-loss.md,accepted

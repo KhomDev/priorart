@@ -1,0 +1,2883 @@
+version: 1
+schema: priorart.benchmark.manifest/v1
+seed: priorart-bench-2026-11-12
+note: 'Pointers and labels only: repo@commit + path per finding, plus the prior-item
+  locators it is labelled against. No finding body is stored here. The bodies are
+  fetched into eval/cache/benchmark/ by fetch.py. A label without method ''reader''
+  is a platform label or the frozen rubric, not a person''s judgement; see eval/benchmark/BENCHMARK.md.'
+sources:
+  prior_audit:
+    id: c4-2023-07-tapioca-audit
+    repo: code-423n4/2023-07-tapioca-findings
+    commit: 4193111261e3cf8de27c15857babecaa2519d67c
+    path: report.md
+  known_issues:
+    id: sherlock-2024-02-tapioca-contest
+    repo: sherlock-audit/2024-02-tapioca
+    commit: dc2464f420927409a67763de6ec60fe5c028ab0e
+    path: README.md
+    section: 'Q: Please list any known issues/acceptable risks'
+prior_items:
+  prior_audit_and_known:
+  - id: c4-2023-07:H-01
+    source: c4-2023-07-tapioca-audit
+    locator: H-01
+    title: TOFT in (m)TapiocaOft contracts can be stolen by calling removeCollateral()
+      with a malicious removeP
+  - id: c4-2023-07:H-02
+    source: c4-2023-07-tapioca-audit
+    locator: H-02
+    title: '`exitPosition` in `TapiocaOptionBroker` may incorrectly inflate position
+      weights'
+  - id: c4-2023-07:H-03
+    source: c4-2023-07-tapioca-audit
+    locator: H-03
+    title: The amount of debt removed during `liquidation` may be worth more than
+      the account's collateral
+  - id: c4-2023-07:H-04
+    source: c4-2023-07-tapioca-audit
+    locator: H-04
+    title: Incorrect solvency check because it multiplies collateralizationRate by
+      share not amount when calcul
+  - id: c4-2023-07:H-05
+    source: c4-2023-07-tapioca-audit
+    locator: H-05
+    title: Ability to steal user funds and increase collateral share infinitely in
+      BigBang and Singularity
+  - id: c4-2023-07:H-06
+    source: c4-2023-07-tapioca-audit
+    locator: H-06
+    title: BalancerStrategy `_withdraw` uses `BPT_IN_FOR_EXACT_TOKENS_OUT` which can
+      be attack to cause loss to
+  - id: c4-2023-07:H-07
+    source: c4-2023-07-tapioca-audit
+    locator: H-07
+    title: Usage of `BalancerStrategy.updateCache` will cause single sided Loss, discount
+      to Depositor and to O
+  - id: c4-2023-07:H-08
+    source: c4-2023-07-tapioca-audit
+    locator: H-08
+    title: '`LidoEthStrategy._currentBalance` is subject to price manipulation, allows
+      overborrowing and liquida'
+  - id: c4-2023-07:H-09
+    source: c4-2023-07-tapioca-audit
+    locator: H-09
+    title: '`TricryptoLPStrategy.compoundAmount` always returns 0 because it''s using
+      staticall vs call'
+  - id: c4-2023-07:H-10
+    source: c4-2023-07-tapioca-audit
+    locator: H-10
+    title: Liquidated USDO from BigBang not being burned after liquidation inflates
+      USDO supply and can threate
+  - id: c4-2023-07:H-11
+    source: c4-2023-07-tapioca-audit
+    locator: H-11
+    title: TOFT `exerciseOption` can be used to steal all underlying erc20 tokens
+  - id: c4-2023-07:H-12
+    source: c4-2023-07-tapioca-audit
+    locator: H-12
+    title: TOFT `removeCollateral` can be used to steal all the balance
+  - id: c4-2023-07:H-13
+    source: c4-2023-07-tapioca-audit
+    locator: H-13
+    title: TOFT `triggerSendFrom` can be used to steal all the balance
+  - id: c4-2023-07:H-14
+    source: c4-2023-07-tapioca-audit
+    locator: H-14
+    title: 'All assets of (m)TapiocaOFT can be stealed by depositing to strategy cross
+      chain call with 1 amount '
+  - id: c4-2023-07:H-15
+    source: c4-2023-07-tapioca-audit
+    locator: H-15
+    title: Attacker can specify any `receiver` in `USD0.flashLoan()` to drain `receiver`
+      balance
+  - id: c4-2023-07:H-16
+    source: c4-2023-07-tapioca-audit
+    locator: H-16
+    title: Attacker can block LayerZero channel due to variable gas cost of saving
+      payload
+  - id: c4-2023-07:H-17
+    source: c4-2023-07-tapioca-audit
+    locator: H-17
+    title: Attacker can block LayerZero channel due to missing check of minimum gas
+      passed
+  - id: c4-2023-07:H-18
+    source: c4-2023-07-tapioca-audit
+    locator: H-18
+    title: '`multiHopSellCollateral()` will fail due to call on an invalid market
+      address causing bridged collat'
+  - id: c4-2023-07:H-19
+    source: c4-2023-07-tapioca-audit
+    locator: H-19
+    title: '`twTAP.participate()` can be permanently frozen due to lack of access
+      control on host-chain-only ope'
+  - id: c4-2023-07:H-20
+    source: c4-2023-07-tapioca-audit
+    locator: H-20
+    title: '`_liquidateUser()` should not re-use the same minimum swap amount out
+      for multiple liquidation'
+  - id: c4-2023-07:H-21
+    source: c4-2023-07-tapioca-audit
+    locator: H-21
+    title: Incorrect liquidation reward computation causes excess liquidator rewards
+      to be given
+  - id: c4-2023-07:H-22
+    source: c4-2023-07-tapioca-audit
+    locator: H-22
+    title: Lack of safety buffer between liquidation threshold and LTV ratio for borrowers
+      to prevent unfair li
+  - id: c4-2023-07:H-23
+    source: c4-2023-07-tapioca-audit
+    locator: H-23
+    title: Refund mechanism for failed cross-chain transactions does not work
+  - id: c4-2023-07:H-24
+    source: c4-2023-07-tapioca-audit
+    locator: H-24
+    title: Incorrect formula used in function `Market.computeClosingFactor()`
+  - id: c4-2023-07:H-25
+    source: c4-2023-07-tapioca-audit
+    locator: H-25
+    title: Overflow risk in Market contract
+  - id: c4-2023-07:H-26
+    source: c4-2023-07-tapioca-audit
+    locator: H-26
+    title: Not enough TAP tokens to exercise if a user participates and exercises
+      in the same epoch
+  - id: c4-2023-07:H-27
+    source: c4-2023-07-tapioca-audit
+    locator: H-27
+    title: Attacker can pass duplicated reward token addresses to steal the reward
+      of contract `twTAP.sol`
+  - id: c4-2023-07:H-28
+    source: c4-2023-07-tapioca-audit
+    locator: H-28
+    title: TOFT and USDO Modules Can Be Selfdestructed
+  - id: c4-2023-07:H-29
+    source: c4-2023-07-tapioca-audit
+    locator: H-29
+    title: Exercise option cross chain message in the (m)TapiocaOFT will always revert
+      in the destination, losi
+  - id: c4-2023-07:H-30
+    source: c4-2023-07-tapioca-audit
+    locator: H-30
+    title: '`utilization` for `_getInterestRate()` does not factor in interest'
+  - id: c4-2023-07:H-31
+    source: c4-2023-07-tapioca-audit
+    locator: H-31
+    title: Collateral can be locked in BigBang contract when `debtStartPoint` is nonzero
+  - id: c4-2023-07:H-32
+    source: c4-2023-07-tapioca-audit
+    locator: H-32
+    title: Reentrancy in `USDO.flashLoan()`, enabling an attacker to borrow unlimited
+      USDO exceeding the max bo
+  - id: c4-2023-07:H-33
+    source: c4-2023-07-tapioca-audit
+    locator: H-33
+    title: '`BaseTOFTLeverageModule.sol`: `leverageDownInternal` tries to burn tokens
+      from wrong address'
+  - id: c4-2023-07:H-34
+    source: c4-2023-07-tapioca-audit
+    locator: H-34
+    title: '`BaseTOFT.sol`: `retrieveFromStrategy` can be used to manipulate other
+      user''s positions due to absen'
+  - id: c4-2023-07:H-35
+    source: c4-2023-07-tapioca-audit
+    locator: H-35
+    title: '`BaseTOFT.sol`: `removeCollateral` can be used to manipulate other user''s
+      positions and steal tokens'
+  - id: c4-2023-07:H-36
+    source: c4-2023-07-tapioca-audit
+    locator: H-36
+    title: '`twTAP.sol`: Reward tokens stored in index 0 can be stolen'
+  - id: c4-2023-07:H-37
+    source: c4-2023-07-tapioca-audit
+    locator: H-37
+    title: Liquidation transactions can potentially fail for all markets
+  - id: c4-2023-07:H-38
+    source: c4-2023-07-tapioca-audit
+    locator: H-38
+    title: Magnetar contract has no approval checking
+  - id: c4-2023-07:H-39
+    source: c4-2023-07-tapioca-audit
+    locator: H-39
+    title: '`AaveStrategy.sol`: Changing swapper breaks the contract'
+  - id: c4-2023-07:H-40
+    source: c4-2023-07-tapioca-audit
+    locator: H-40
+    title: '`BalancerStrategy.sol`: `_withdraw` withdraws insufficient tokens'
+  - id: c4-2023-07:H-41
+    source: c4-2023-07-tapioca-audit
+    locator: H-41
+    title: Rewards compounded in AaveStrategy are unredeemable
+  - id: c4-2023-07:H-42
+    source: c4-2023-07-tapioca-audit
+    locator: H-42
+    title: Attacker can steal victim's oTAP position contents via `MagnetarMarketModule#_exitPositionAndRemoveC
+  - id: c4-2023-07:H-43
+    source: c4-2023-07-tapioca-audit
+    locator: H-43
+    title: Accounted balance of GlpStrategy does not match withdrawable balance, allowing
+      for attackers to stea
+  - id: c4-2023-07:H-44
+    source: c4-2023-07-tapioca-audit
+    locator: H-44
+    title: '`BigBang::repay` and `Singularity::repay` spend more than allowed amount'
+  - id: c4-2023-07:H-45
+    source: c4-2023-07-tapioca-audit
+    locator: H-45
+    title: '`SGLLiquidation::_computeAssetAmountToSolvency`, `Market::_isSolvent`
+      and `Market::_computeMaxBorrow'
+  - id: c4-2023-07:H-46
+    source: c4-2023-07-tapioca-audit
+    locator: H-46
+    title: TOFT leverageDown always fails if TOFT is a wrapper for native tokens
+  - id: c4-2023-07:H-47
+    source: c4-2023-07-tapioca-audit
+    locator: H-47
+    title: User's assets can be stolen when removing them from the Singularity market
+      through the Magnetar cont
+  - id: c4-2023-07:H-48
+    source: c4-2023-07-tapioca-audit
+    locator: H-48
+    title: triggerSendFrom() will send all the ETH in the destination chain where
+      sendFrom() is called to the r
+  - id: c4-2023-07:H-49
+    source: c4-2023-07-tapioca-audit
+    locator: H-49
+    title: User can give himself approval for all assets held by `MagnetarV2` contract
+  - id: c4-2023-07:H-50
+    source: c4-2023-07-tapioca-audit
+    locator: H-50
+    title: CompoundStrategy attempts to transfer out a greater amount of ETH than
+      will actually be withdrawn, l
+  - id: c4-2023-07:H-51
+    source: c4-2023-07-tapioca-audit
+    locator: H-51
+    title: Funds are locked because borrowFee is not correctly implemented in BigBang
+  - id: c4-2023-07:H-52
+    source: c4-2023-07-tapioca-audit
+    locator: H-52
+    title: Attacker can prevent rewards from being issued to gauges for a given epoch
+      in TapiocaOptionBroker
+  - id: c4-2023-07:H-53
+    source: c4-2023-07-tapioca-audit
+    locator: H-53
+    title: Potential 99.5% loss in `emergencyWithdraw()` of two Yieldbox strategies
+  - id: c4-2023-07:H-54
+    source: c4-2023-07-tapioca-audit
+    locator: H-54
+    title: Anybody can buy collateral on behalf of other users without having any
+      allowance using the multiHopB
+  - id: c4-2023-07:H-55
+    source: c4-2023-07-tapioca-audit
+    locator: H-55
+    title: '`_sendToken` implementation in `Balancer.sol` is wrong which will make
+      the underlying erc20 be send '
+  - id: c4-2023-07:H-56
+    source: c4-2023-07-tapioca-audit
+    locator: H-56
+    title: Tokens can be stolen from other users who have approved Magnetar
+  - id: c4-2023-07:H-57
+    source: c4-2023-07-tapioca-audit
+    locator: H-57
+    title: twAML::participate - reentrancy via _safeMint can be used to brick reward
+      distribution
+  - id: c4-2023-07:H-58
+    source: c4-2023-07-tapioca-audit
+    locator: H-58
+    title: A user with a TapiocaOFT allowance >0 could steal all the underlying ERC20
+      tokens of the owner
+  - id: c4-2023-07:H-59
+    source: c4-2023-07-tapioca-audit
+    locator: H-59
+    title: The BigBang contract take more fees than it should
+  - id: c4-2023-07:H-60
+    source: c4-2023-07-tapioca-audit
+    locator: H-60
+    title: twTAP.claimAndSendRewards() will claim the wrong amount for each reward
+      token due to the use of wron
+  - id: ki-2024-02:1
+    source: sherlock-2024-02-tapioca-contest
+    locator: KI-1
+    text: Zero address check
+    aliases:
+    - zero address check
+  judged_primary:
+  - id: acc:001-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:001-M
+    title: BBLeverage::sellCollateral is unusable due to wrong asset deposit attempt
+      in YieldBox
+    variant: judged_primary
+  - id: acc:002-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:002-H
+    title: Unupdated totalBorrow After BigBang Liquidation
+    variant: judged_primary
+  - id: acc:003-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:003-M
+    title: Multiple contracts cannot be paused
+    variant: judged_primary
+  - id: acc:004-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:004-M
+    title: Balancer rebalance operation is permanently blocked whenever owner assigns
+      `rebalancer` role to some
+    variant: judged_primary
+  - id: acc:005-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:005-H
+    title: Malicious MarketHelper contract can be used in TOFTMarketReceiverModule's
+      leverageUpReceiver and mar
+    variant: judged_primary
+  - id: acc:006-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:006-M
+    title: mTOFT's fees cannot be paid on native wrapping
+    variant: judged_primary
+  - id: acc:007-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:007-H
+    title: Unprotected `executeModule` function allows to steal the tokens
+    variant: judged_primary
+  - id: acc:008-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:008-M
+    title: DoS in BBLeverage and SGLLeverage due to using wrong leverage executor
+      interface
+    variant: judged_primary
+  - id: acc:009-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:009-M
+    title: buyCollateral() does not work properly
+    variant: judged_primary
+  - id: acc:010-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:010-H
+    title: Liquidation fees are permanently frozen on Penrose YB account
+    variant: judged_primary
+  - id: acc:011-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:011-M
+    title: Withdrawing to other chain when exercising options won’t work as expected,
+      leading to DoS
+    variant: judged_primary
+  - id: acc:012-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:012-H
+    title: Unverified `_srcChainSender` parameter allows to impersonate the sender
+    variant: judged_primary
+  - id: acc:013-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:013-M
+    title: Leverage borrowing with stale rate can atomically create bad debt with
+      no prior positions and no inv
+    variant: judged_primary
+  - id: acc:014-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:014-M
+    title: All ETH can be stolen during rebalancing for `mTOFTs` that hold native
+    variant: judged_primary
+  - id: acc:015-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:015-M
+    title: The borrowing approval of the market is risky for users, as the spender
+      can steal unlimited funds of
+    variant: judged_primary
+  - id: acc:016-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:016-H
+    title: TOFTOptionsReceiverModule will have the user lose the whole output TAP
+      when requested to exercise al
+    variant: judged_primary
+  - id: acc:017-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:017-H
+    title: '`_computeClosingFactor` function will return incorrect values, lower than
+      needed, because it uses `c'
+    variant: judged_primary
+  - id: acc:018-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:018-H
+    title: Operation residual is lost for the user of BBLeverage's and SGLLeverage's
+      `sellCollateral()`
+    variant: judged_primary
+  - id: acc:019-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:019-M
+    title: mTOFTReceiver MSG_XCHAIN_LEND_XCHAIN_LOCK unable to execute
+    variant: judged_primary
+  - id: acc:020-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:020-M
+    title: BBCommon::_accrue wrong value is used to prevent overflow
+    variant: judged_primary
+  - id: acc:021-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:021-M
+    title: Not considering fees when wrapping mtOFTs leads to DoS in leverage executors
+    variant: judged_primary
+  - id: acc:022-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:022-M
+    title: '`leverageAmount` is incorrect in `SGLLeverage.sellCollateral` function
+      due to calculation based on t'
+    variant: judged_primary
+  - id: acc:023-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:023-H
+    title: BBLeverage's and SGLLeverage's `buyCollateral()` remove the required funds
+      from the target twice
+    variant: judged_primary
+  - id: acc:024-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:024-M
+    title: Any Oft Token Holder Can be Forcefully Unwrapped
+    variant: judged_primary
+  - id: acc:025-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:025-H
+    title: Allowances is double spent in BBLeverage's and SGLLeverage's `sellCollateral()`
+    variant: judged_primary
+  - id: acc:026-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:026-H
+    title: Wrong parameter in remote transfer makes it possible to steal all USDO
+      balance from users
+    variant: judged_primary
+  - id: acc:027-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:027-M
+    title: BBLiquidation::_liquidateUser liquidator can bypass protocol fee on liquidation
+      by returning returne
+    variant: judged_primary
+  - id: acc:028-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:028-M
+    title: Secondary Big Bang market rates can be manipulated due to not triggering
+      penrose.reAccrueBigBangMark
+    variant: judged_primary
+  - id: acc:029-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:029-H
+    title: Recursive _lzCompose() call can be leveraged to steal all generated USDO
+      fees
+    variant: judged_primary
+  - id: acc:030-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:030-M
+    title: Composing approval with other messages is subject to DoS
+    variant: judged_primary
+  - id: acc:031-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:031-M
+    title: Singularity::removeAsset share can become zero due to rounding down, and
+      any user can be extracted s
+    variant: judged_primary
+  - id: acc:032-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:032-H
+    title: '`mTOFT` can be forced to receive the wrong ERC20 leading to token lockup'
+    variant: judged_primary
+  - id: acc:033-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:033-H
+    title: TOFTOptionsReceiverModule miss cross-chain transformation for deposit and
+      lock amounts
+    variant: judged_primary
+  - id: acc:034-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:034-H
+    title: SGL and BB repay do not round up both on allowance spending and elastic
+      amount
+    variant: judged_primary
+  - id: acc:035-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:035-M
+    title: decodeArrayOfYieldBoxPermitAssetMsg returns corrupted data
+    variant: judged_primary
+  - id: acc:036-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:036-M
+    title: WETH was never set in baseLeverageExecutor.sol
+    variant: judged_primary
+  - id: acc:037-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:037-H
+    title: Nesting remote transfer messages to steal tokens
+    variant: judged_primary
+  - id: acc:038-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:038-M
+    title: Incorrect `tapOft` Amounts Will Be Sent to Desired Chains on Certain Conditions
+    variant: judged_primary
+  - id: acc:039-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:039-H
+    title: BBLiquidation/SGLLiquidation::_updateBorrowAndCollateralShare liquidator
+      can bypass bad debt handlin
+    variant: judged_primary
+  - id: acc:040-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:040-M
+    title: Penrose::_depositFeesToTwTap can unexpectedly revert due to amount rounded
+      down
+    variant: judged_primary
+  - id: acc:041-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:041-H
+    title: exerciseOptionsReceiver() Lack of Ownership Check for oTAP, Allowing Anyone
+      to Use oTAPTokenID
+    variant: judged_primary
+  - id: acc:042-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:042-M
+    title: '`getCollateral` and `getAsset` functions of the AssetTotsDaiLeverageExecutor
+      contract decode data in'
+    variant: judged_primary
+  - id: acc:043-H
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:043-H
+    title: Pending allowances can be exploited
+    variant: judged_primary
+  - id: acc:044-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:044-M
+    title: Share computing for reward distribution is incorrect
+    variant: judged_primary
+  - id: acc:045-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:045-M
+    title: Stargate Pools conversion rate leads to token accumulation inside the Balancer
+      contract
+    variant: judged_primary
+  - id: acc:046-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:046-M
+    title: Gas parameters for Stargate swap are hardcoded leading to stuck messages
+    variant: judged_primary
+  - id: acc:047-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:047-M
+    title: Unpausing with accrue timestamp reset can remove the accrual between last
+      recorded accrue time and p
+    variant: judged_primary
+  - id: acc:048-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:048-M
+    title: Balancer using safeApprove may lead to revert.
+    variant: judged_primary
+  - id: acc:049-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:049-M
+    title: Not properly tracking debt accrual leads mintOpenInterestDebt() to lose
+      twTap rewards
+    variant: judged_primary
+  - id: acc:050-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:050-M
+    title: 'USDO’s MSG_TAP_EXERCISE compose messages where exercised options must
+      be withdrawn to another chain '
+    variant: judged_primary
+  - id: acc:051-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:051-M
+    title: '`TOFTMarketReceiverModule::marketBorrowReceiver` flow is broken'
+    variant: judged_primary
+  - id: acc:052-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:052-M
+    title: Singularity::setSingularityConfig Wrong liquidationCollateralizationRate
+      is set
+    variant: judged_primary
+  - id: acc:053-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:053-M
+    title: ERC4494.sol is not compatible with ERC-4494
+    variant: judged_primary
+  - id: acc:054-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:054-M
+    title: TOFTOptionsReceiverModule's and UsdoOptionReceiverModule's exerciseOptionsReceiver
+      can lose the opti
+    variant: judged_primary
+  - id: acc:055-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:055-M
+    title: 'Underflow Vulnerability in `Market::_allowedBorrow` Function: Oversight
+      with Pearlmit Allowance Hand'
+    variant: judged_primary
+  - id: acc:056-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:056-M
+    title: Airdopped tokens can be stolen by anyone
+    variant: judged_primary
+  - id: acc:057-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:057-M
+    title: SGL.borrow() the value of assets borrowed greater than the value of debts
+      recorded
+    variant: judged_primary
+  - id: acc:058-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:058-M
+    title: sellCollateral() using incorrect parameters when calling getAsset
+    variant: judged_primary
+  - id: acc:059-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:059-M
+    title: Variable opening fee will always be wrongly computed if collateral is not
+      a stablecoin
+    variant: judged_primary
+  - id: acc:060-M
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: acc:060-M
+    title: Big Bang debt rate is computed using an outdated total debt from the ETH
+      market
+    variant: judged_primary
+  - id: inv:001
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:001
+    title: Critical `_checkWhitelistStatus` Bypasses with Zero Address
+    variant: judged_primary
+  - id: inv:002
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:002
+    title: tapioca
+    variant: judged_primary
+  - id: inv:003
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:003
+    title: Insufficient Authorization Check Leading to Unauthorized Collateral Addition
+    variant: judged_primary
+  - id: inv:004
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:004
+    title: Liquidation Imbalance and Collateral Discrepancy in Smart Contract
+    variant: judged_primary
+  - id: inv:005
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:005
+    title: Accrued Interest Precision Issue Leading to Zero Interest for Small Decimal
+      Tokens
+    variant: judged_primary
+  - id: inv:006
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:006
+    title: Potential Precision Error Leads to Inflated Collateral Value and Erroneous
+      Solvency Determination
+    variant: judged_primary
+  - id: inv:007
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:007
+    title: Potential Insolvency due to Insufficient Balance Update after Transfer
+      in _addCollateral Function
+    variant: judged_primary
+  - id: inv:009
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:009
+    title: unchecked loop increments no valid in solidity v0.8.22
+    variant: judged_primary
+  - id: inv:010
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:010
+    title: lack of expiration timestamp in `IZeroXSwapper.swap()`
+    variant: judged_primary
+  - id: inv:022
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:022
+    title: Stuck Ether Can Easily Be Stolen
+    variant: judged_primary
+  - id: inv:027
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:027
+    title: 'Flawed Initialization in `BigBang` Contract: `minMintFeeStart` Exceeds
+      `maxMintFeeStart`'
+    variant: judged_primary
+  - id: inv:028
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:028
+    title: Fees accumulated in `singularity` that is stored on penrose's account may
+      be stuck in certain scenar
+    variant: judged_primary
+  - id: inv:038
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:038
+    title: Origins.sol no function to add allowedParticipants
+    variant: judged_primary
+  - id: inv:076
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:076
+    title: missing return in '_toftCustomComposeReceiver'
+    variant: judged_primary
+  - id: inv:077
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:077
+    title: Wrong value of flashMintFee in USDOFlashloanHelper.sol
+    variant: judged_primary
+  - id: inv:083
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:083
+    title: wrong implement of "permit"
+    variant: judged_primary
+  - id: inv:095
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:095
+    title: Griefing Attack on TOFT and mTOFT contract deployment
+    variant: judged_primary
+  - id: inv:104
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:104
+    title: uninitialize "collateralizationRate" and "liquidationCollateralizationRate"
+      in Market.sol.
+    variant: judged_primary
+  - id: inv:106
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:106
+    title: Some ERC20 can revert on a zero value transfer
+    variant: judged_primary
+  - id: inv:107
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:107
+    title: Unclaimed native tokens in TOFT contract can be stolen
+    variant: judged_primary
+  - id: inv:108
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:108
+    title: mTOFT.wrap/unwrap incorrect permission restriction
+    variant: judged_primary
+  - id: inv:131
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:131
+    title: computeTotalDebt() from the Penrose.sol uses the "&&" operator instead
+      of the "||" operator in its r
+    variant: judged_primary
+  - id: inv:143
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:143
+    title: Protocol might be inoperable because _extractModule checks for address
+      zero instead of setModule
+    variant: judged_primary
+  - id: inv:invalid-001
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:invalid-001
+    title: 'Any excess native token funds sent to TOFTGenericReceiverModule''s `receiveWithParamsReceiver()`
+      can '
+    variant: judged_primary
+  - id: inv:invalid-002
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:invalid-002
+    title: Stealing tokens added in `skim` mode
+    variant: judged_primary
+  - id: inv:invalid-003
+    source: sherlock-audit/2024-02-tapioca-judging
+    locator: inv:invalid-003
+    title: Malicious user can borrow and leave protocol in bad debt in SGLBorrow.sol
+    variant: judged_primary
+findings:
+- id: acc:001-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 001-M/042-best.md
+  group_files: 5
+  files:
+  - 001-M/042-best.md
+  - 001-M/056.md
+  - 001-M/058.md
+  - 001-M/101.md
+  - 001-M/117.md
+  title: BBLeverage::sellCollateral is unusable due to wrong asset deposit attempt
+    in YieldBox
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:002-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 002-H/049-best.md
+  group_files: 4
+  files:
+  - 002-H/034.md
+  - 002-H/049-best.md
+  - 002-H/055.md
+  - 002-H/149.md
+  title: Unupdated totalBorrow After BigBang Liquidation
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:003-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 003-M/064-best.md
+  group_files: 4
+  files:
+  - 003-M/024.md
+  - 003-M/064-best.md
+  - 003-M/066.md
+  - 003-M/118.md
+  title: Multiple contracts cannot be paused
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:004-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 004-M/089-best.md
+  group_files: 4
+  files:
+  - 004-M/052.md
+  - 004-M/074.md
+  - 004-M/089-best.md
+  - 004-M/123.md
+  title: Balancer rebalance operation is permanently blocked whenever owner assigns
+    `rebalancer` role to some
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:005-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 005-H/090-best.md
+  group_files: 4
+  files:
+  - 005-H/048.md
+  - 005-H/075.md
+  - 005-H/090-best.md
+  - 005-H/093.md
+  title: Malicious MarketHelper contract can be used in TOFTMarketReceiverModule's
+    leverageUpReceiver and mar
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:006-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 006-M/146-best.md
+  group_files: 4
+  files:
+  - 006-M/023.md
+  - 006-M/065.md
+  - 006-M/098.md
+  - 006-M/146-best.md
+  title: mTOFT's fees cannot be paid on native wrapping
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:007-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 007-H/134-best.md
+  group_files: 4
+  files:
+  - 007-H/017.md
+  - 007-H/050.md
+  - 007-H/110.md
+  - 007-H/134-best.md
+  title: Unprotected `executeModule` function allows to steal the tokens
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:008-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 008-M/115-best.md
+  group_files: 4
+  files:
+  - 008-M/044.md
+  - 008-M/062.md
+  - 008-M/078.md
+  - 008-M/115-best.md
+  title: DoS in BBLeverage and SGLLeverage due to using wrong leverage executor interface
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:009-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 009-M/100-best.md
+  group_files: 4
+  files:
+  - 009-M/047.md
+  - 009-M/059.md
+  - 009-M/100-best.md
+  - 009-M/116.md
+  title: buyCollateral() does not work properly
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:010-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 010-H/148-best.md
+  group_files: 3
+  files:
+  - 010-H/051.md
+  - 010-H/088.md
+  - 010-H/148-best.md
+  title: Liquidation fees are permanently frozen on Penrose YB account
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:011-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 011-M/125-best.md
+  group_files: 3
+  files:
+  - 011-M/015.md
+  - 011-M/092.md
+  - 011-M/125-best.md
+  title: Withdrawing to other chain when exercising options won’t work as expected,
+    leading to DoS
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:012-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 012-H/014-best.md
+  group_files: 3
+  files:
+  - 012-H/014-best.md
+  - 012-H/037.md
+  - 012-H/045.md
+  title: Unverified `_srcChainSender` parameter allows to impersonate the sender
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:013-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 013-M/079-best.md
+  group_files: 3
+  files:
+  - 013-M/011.md
+  - 013-M/030.md
+  - 013-M/079-best.md
+  title: Leverage borrowing with stale rate can atomically create bad debt with no
+    prior positions and no inv
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:014-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 014-M/069-best.md
+  group_files: 3
+  files:
+  - 014-M/068.md
+  - 014-M/069-best.md
+  - 014-M/121.md
+  title: All ETH can be stolen during rebalancing for `mTOFTs` that hold native
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:015-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 015-M/073-best.md
+  group_files: 2
+  files:
+  - 015-M/031.md
+  - 015-M/073-best.md
+  title: The borrowing approval of the market is risky for users, as the spender can
+    steal unlimited funds of
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:016-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 016-H/130-best.md
+  group_files: 2
+  files:
+  - 016-H/082.md
+  - 016-H/130-best.md
+  title: TOFTOptionsReceiverModule will have the user lose the whole output TAP when
+    requested to exercise al
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:017-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 017-H/053-best.md
+  group_files: 2
+  files:
+  - 017-H/035.md
+  - 017-H/053-best.md
+  title: '`_computeClosingFactor` function will return incorrect values, lower than
+    needed, because it uses `c'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:018-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 018-H/144-best.md
+  group_files: 2
+  files:
+  - 018-H/036.md
+  - 018-H/144-best.md
+  title: Operation residual is lost for the user of BBLeverage's and SGLLeverage's
+    `sellCollateral()`
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:019-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 019-M/063-best.md
+  group_files: 2
+  files:
+  - 019-M/063-best.md
+  - 019-M/122.md
+  title: mTOFTReceiver MSG_XCHAIN_LEND_XCHAIN_LOCK unable to execute
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:020-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 020-M/041-best.md
+  group_files: 2
+  files:
+  - 020-M/041-best.md
+  - 020-M/142.md
+  title: BBCommon::_accrue wrong value is used to prevent overflow
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:021-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 021-M/126-best.md
+  group_files: 2
+  files:
+  - 021-M/046.md
+  - 021-M/126-best.md
+  title: Not considering fees when wrapping mtOFTs leads to DoS in leverage executors
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:022-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 022-M/061-best.md
+  group_files: 2
+  files:
+  - 022-M/061-best.md
+  - 022-M/105.md
+  title: '`leverageAmount` is incorrect in `SGLLeverage.sellCollateral` function due
+    to calculation based on t'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:023-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 023-H/139-best.md
+  group_files: 2
+  files:
+  - 023-H/057.md
+  - 023-H/139-best.md
+  title: BBLeverage's and SGLLeverage's `buyCollateral()` remove the required funds
+    from the target twice
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:024-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 024-M/019-best.md
+  group_files: 2
+  files:
+  - 024-M/019-best.md
+  - 024-M/133.md
+  title: Any Oft Token Holder Can be Forcefully Unwrapped
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:025-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 025-H/141-best.md
+  group_files: 2
+  files:
+  - 025-H/060.md
+  - 025-H/141-best.md
+  title: Allowances is double spent in BBLeverage's and SGLLeverage's `sellCollateral()`
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:026-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 026-H/111-best.md
+  group_files: 2
+  files:
+  - 026-H/111-best.md
+  - 026-H/114.md
+  title: Wrong parameter in remote transfer makes it possible to steal all USDO balance
+    from users
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:027-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 027-M/033-best.md
+  group_files: 2
+  files:
+  - 027-M/033-best.md
+  - 027-M/085.md
+  title: BBLiquidation::_liquidateUser liquidator can bypass protocol fee on liquidation
+    by returning returne
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:028-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 028-M/128-best.md
+  group_files: 2
+  files:
+  - 028-M/128-best.md
+  - 028-M/145.md
+  title: Secondary Big Bang market rates can be manipulated due to not triggering
+    penrose.reAccrueBigBangMark
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:029-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 029-H/113-best.md
+  group_files: 2
+  files:
+  - 029-H/113-best.md
+  - 029-H/135.md
+  title: Recursive _lzCompose() call can be leveraged to steal all generated USDO
+    fees
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:030-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 030-M/067-best.md
+  group_files: 2
+  files:
+  - 030-M/067-best.md
+  - 030-M/109.md
+  title: Composing approval with other messages is subject to DoS
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:031-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 031-M/039-best.md
+  group_files: 1
+  files:
+  - 031-M/039-best.md
+  title: Singularity::removeAsset share can become zero due to rounding down, and
+    any user can be extracted s
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:032-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 032-H/070-best.md
+  group_files: 1
+  files:
+  - 032-H/070-best.md
+  title: '`mTOFT` can be forced to receive the wrong ERC20 leading to token lockup'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:033-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 033-H/087-best.md
+  group_files: 1
+  files:
+  - 033-H/087-best.md
+  title: TOFTOptionsReceiverModule miss cross-chain transformation for deposit and
+    lock amounts
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:034-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 034-H/150-best.md
+  group_files: 1
+  files:
+  - 034-H/150-best.md
+  title: SGL and BB repay do not round up both on allowance spending and elastic amount
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:035-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 035-M/008-best.md
+  group_files: 1
+  files:
+  - 035-M/008-best.md
+  title: decodeArrayOfYieldBoxPermitAssetMsg returns corrupted data
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:036-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 036-M/012-best.md
+  group_files: 1
+  files:
+  - 036-M/012-best.md
+  title: WETH was never set in baseLeverageExecutor.sol
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:037-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 037-H/136-best.md
+  group_files: 1
+  files:
+  - 037-H/136-best.md
+  title: Nesting remote transfer messages to steal tokens
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:038-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 038-M/018-best.md
+  group_files: 1
+  files:
+  - 038-M/018-best.md
+  title: Incorrect `tapOft` Amounts Will Be Sent to Desired Chains on Certain Conditions
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:039-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 039-H/032-best.md
+  group_files: 1
+  files:
+  - 039-H/032-best.md
+  title: BBLiquidation/SGLLiquidation::_updateBorrowAndCollateralShare liquidator
+    can bypass bad debt handlin
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:040-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 040-M/043-best.md
+  group_files: 1
+  files:
+  - 040-M/043-best.md
+  title: Penrose::_depositFeesToTwTap can unexpectedly revert due to amount rounded
+    down
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:041-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 041-H/102-best.md
+  group_files: 1
+  files:
+  - 041-H/102-best.md
+  title: exerciseOptionsReceiver() Lack of Ownership Check for oTAP, Allowing Anyone
+    to Use oTAPTokenID
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:042-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 042-M/084-best.md
+  group_files: 1
+  files:
+  - 042-M/084-best.md
+  title: '`getCollateral` and `getAsset` functions of the AssetTotsDaiLeverageExecutor
+    contract decode data in'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:043-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 043-H/140-best.md
+  group_files: 1
+  files:
+  - 043-H/140-best.md
+  title: Pending allowances can be exploited
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:044-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 044-M/097-best.md
+  group_files: 1
+  files:
+  - 044-M/097-best.md
+  title: Share computing for reward distribution is incorrect
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:045-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 045-M/071-best.md
+  group_files: 1
+  files:
+  - 045-M/071-best.md
+  title: Stargate Pools conversion rate leads to token accumulation inside the Balancer
+    contract
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:046-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 046-M/072-best.md
+  group_files: 1
+  files:
+  - 046-M/072-best.md
+  title: Gas parameters for Stargate swap are hardcoded leading to stuck messages
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:047-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 047-M/091-best.md
+  group_files: 1
+  files:
+  - 047-M/091-best.md
+  title: Unpausing with accrue timestamp reset can remove the accrual between last
+    recorded accrue time and p
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:048-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 048-M/094-best.md
+  group_files: 1
+  files:
+  - 048-M/094-best.md
+  title: Balancer using safeApprove may lead to revert.
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:049-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 049-M/120-best.md
+  group_files: 1
+  files:
+  - 049-M/120-best.md
+  title: Not properly tracking debt accrual leads mintOpenInterestDebt() to lose twTap
+    rewards
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:050-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 050-M/124-best.md
+  group_files: 1
+  files:
+  - 050-M/124-best.md
+  title: 'USDO’s MSG_TAP_EXERCISE compose messages where exercised options must be
+    withdrawn to another chain '
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:051-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 051-M/137-best.md
+  group_files: 1
+  files:
+  - 051-M/137-best.md
+  title: '`TOFTMarketReceiverModule::marketBorrowReceiver` flow is broken'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:052-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 052-M/040-best.md
+  group_files: 1
+  files:
+  - 052-M/040-best.md
+  title: Singularity::setSingularityConfig Wrong liquidationCollateralizationRate
+    is set
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:053-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 053-M/054-best.md
+  group_files: 1
+  files:
+  - 053-M/054-best.md
+  title: ERC4494.sol is not compatible with ERC-4494
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:054-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 054-M/147-best.md
+  group_files: 1
+  files:
+  - 054-M/147-best.md
+  title: TOFTOptionsReceiverModule's and UsdoOptionReceiverModule's exerciseOptionsReceiver
+    can lose the opti
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:055-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 055-M/029-best.md
+  group_files: 1
+  files:
+  - 055-M/029-best.md
+  title: 'Underflow Vulnerability in `Market::_allowedBorrow` Function: Oversight
+    with Pearlmit Allowance Hand'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:056-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 056-M/080-best.md
+  group_files: 1
+  files:
+  - 056-M/080-best.md
+  title: Airdopped tokens can be stolen by anyone
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:057-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 057-M/096-best.md
+  group_files: 1
+  files:
+  - 057-M/096-best.md
+  title: SGL.borrow() the value of assets borrowed greater than the value of debts
+    recorded
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:058-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 058-M/103-best.md
+  group_files: 1
+  files:
+  - 058-M/103-best.md
+  title: sellCollateral() using incorrect parameters when calling getAsset
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:059-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 059-M/119-best.md
+  group_files: 1
+  files:
+  - 059-M/119-best.md
+  title: Variable opening fee will always be wrongly computed if collateral is not
+    a stablecoin
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:060-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 060-M/127-best.md
+  group_files: 1
+  files:
+  - 060-M/127-best.md
+  title: Big Bang debt rate is computed using an outdated total debt from the ETH
+    market
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:001
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/001.md
+  group_files: 1
+  files:
+  - invalid/001.md
+  title: Critical `_checkWhitelistStatus` Bypasses with Zero Address
+  label: known_prior
+  label_method: reader
+  prior_ref: ki-2024-02:1
+  provenance: invalid/001.md is about a zero-address check; the contest README known-issue
+    answer is KI-1 Zero address check
+  confidence: medium
+  notes: the finding claims the zero-address check is bypassable, which is broader
+    than KI-1; a judge could also have excluded it as a quality call. Kept as the
+    only positive and reported alone, not as a rate.
+- id: inv:002
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/002.md
+  group_files: 1
+  files:
+  - invalid/002.md
+  title: tapioca
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: invalid/002.md has no summary, impact or code; nothing to ground
+  confidence: high
+  notes: contentless submission
+- id: inv:003
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/003.md
+  group_files: 1
+  files:
+  - invalid/003.md
+  title: Insufficient Authorization Check Leading to Unauthorized Collateral Addition
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/003.md: missing authorization in _addCollateral; closest prior
+    item H-54 is allowance-less buying through multiHop, a different function and
+    mechanism'
+  confidence: medium
+  notes: topic overlap with H-54; the claim does not reproduce it
+- id: inv:004
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/004.md
+  group_files: 1
+  files:
+  - invalid/004.md
+  title: Liquidation Imbalance and Collateral Discrepancy in Smart Contract
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/004.md: collateralShare underflow in _updateBorrowAndCollateralShare;
+    closest prior items H-03 and H-24 value debt/collateral differently'
+  confidence: medium
+  notes: same file, different claim
+- id: inv:005
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/005.md
+  group_files: 1
+  files:
+  - invalid/005.md
+  title: Accrued Interest Precision Issue Leading to Zero Interest for Small Decimal
+    Tokens
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/005.md: interest truncation in _accrueView; prior H-30 is about
+    utilization in _getInterestRate'
+  confidence: medium
+  notes: different formula and impact
+- id: inv:006
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/006.md
+  group_files: 1
+  files:
+  - invalid/006.md
+  title: Potential Precision Error Leads to Inflated Collateral Value and Erroneous
+    Solvency Determination
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: invalid/006.md speculates about EXCHANGE_RATE_PRECISION and FEE_PRECISION
+    constants; prior H-04 is a concrete collateralizationRate/share error
+  confidence: medium
+  notes: no concrete claim to match
+- id: inv:007
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/007.md
+  group_files: 1
+  files:
+  - invalid/007.md
+  title: Potential Insolvency due to Insufficient Balance Update after Transfer in
+    _addCollateral Function
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/007.md: yieldBox.transfer may not move the recorded share;
+    no prior item makes this claim'
+  confidence: medium
+  notes: ''
+- id: inv:009
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/009.md
+  group_files: 1
+  files:
+  - invalid/009.md
+  title: unchecked loop increments no valid in solidity v0.8.22
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: invalid/009.md is an informational note about Solidity 0.8.22 unchecked
+    loop increments; no prior item
+  confidence: high
+  notes: informational
+- id: inv:010
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/010.md
+  group_files: 1
+  files:
+  - invalid/010.md
+  title: lack of expiration timestamp in `IZeroXSwapper.swap()`
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/010.md: IZeroXSwapper.swap has no deadline; no prior item'
+  confidence: medium
+  notes: ''
+- id: inv:022
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/022.md
+  group_files: 1
+  files:
+  - invalid/022.md
+  title: Stuck Ether Can Easily Be Stolen
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/022.md: excess ether in mTOFT.wrap; prior H-48 is triggerSendFrom
+    forwarding destination ETH'
+  confidence: medium
+  notes: same area, different function
+- id: inv:027
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/027.md
+  group_files: 1
+  files:
+  - invalid/027.md
+  title: 'Flawed Initialization in `BigBang` Contract: `minMintFeeStart` Exceeds `maxMintFeeStart`'
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/027.md: hardcoded minMintFeeStart above maxMintFeeStart; no
+    prior item'
+  confidence: high
+  notes: ''
+- id: inv:028
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/028.md
+  group_files: 1
+  files:
+  - invalid/028.md
+  title: Fees accumulated in `singularity` that is stored on penrose's account may
+    be stuck in certain scenar
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/028.md: penrose fee balance can revert MinLimit; no prior item'
+  confidence: medium
+  notes: ''
+- id: inv:038
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/038.md
+  group_files: 1
+  files:
+  - invalid/038.md
+  title: Origins.sol no function to add allowedParticipants
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/038.md: Origins.sol has no add-participant function; a design
+    observation, no prior item'
+  confidence: high
+  notes: centralisation/informational
+- id: inv:076
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/076.md
+  group_files: 1
+  files:
+  - invalid/076.md
+  title: missing return in '_toftCustomComposeReceiver'
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/076.md: a missing return in _toftCustomComposeReceiver; no
+    prior item'
+  confidence: medium
+  notes: ''
+- id: inv:077
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/077.md
+  group_files: 1
+  files:
+  - invalid/077.md
+  title: Wrong value of flashMintFee in USDOFlashloanHelper.sol
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/077.md: flashMintFee initialised to 1; no prior item'
+  confidence: medium
+  notes: ''
+- id: inv:083
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/083.md
+  group_files: 1
+  files:
+  - invalid/083.md
+  title: wrong implement of "permit"
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/083.md: ERC4494 permit structHash; no prior item'
+  confidence: medium
+  notes: ''
+- id: inv:095
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/095.md
+  group_files: 1
+  files:
+  - invalid/095.md
+  title: Griefing Attack on TOFT and mTOFT contract deployment
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/095.md: front-running TOFTVault ownership during deployment;
+    the README excludes front-running, no prior item'
+  confidence: high
+  notes: excluded shape, not a prior item
+- id: inv:104
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/104.md
+  group_files: 1
+  files:
+  - invalid/104.md
+  title: uninitialize "collateralizationRate" and "liquidationCollateralizationRate"
+    in Market.sol.
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/104.md: collateralizationRate left zero by setMarketConfig;
+    prior H-04 and H-21 use the rate but do not make this claim'
+  confidence: medium
+  notes: ''
+- id: inv:106
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/106.md
+  group_files: 1
+  files:
+  - invalid/106.md
+  title: Some ERC20 can revert on a zero value transfer
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/106.md: ERC20 tokens that revert on zero transfer; no prior
+    item'
+  confidence: high
+  notes: informational
+- id: inv:107
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/107.md
+  group_files: 1
+  files:
+  - invalid/107.md
+  title: Unclaimed native tokens in TOFT contract can be stolen
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/107.md: wrap does not compare msg.value, so native balance
+    is stealable; prior H-11/H-12/H-13 earn their theft through a different entry
+    point'
+  confidence: medium
+  notes: theme overlap with the H-11..H-13 group; claim differs
+- id: inv:108
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/108.md
+  group_files: 1
+  files:
+  - invalid/108.md
+  title: mTOFT.wrap/unwrap incorrect permission restriction
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/108.md: mTOFT.wrap/unwrap onlyBalancer restriction; no prior
+    item'
+  confidence: high
+  notes: ''
+- id: inv:131
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/131.md
+  group_files: 1
+  files:
+  - invalid/131.md
+  title: computeTotalDebt() from the Penrose.sol uses the "&&" operator instead of
+    the "||" operator in its r
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/131.md: Penrose computeTotalDebt uses && instead of ||; no
+    prior item'
+  confidence: high
+  notes: ''
+- id: inv:143
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/143.md
+  group_files: 1
+  files:
+  - invalid/143.md
+  title: Protocol might be inoperable because _extractModule checks for address zero
+    instead of setModule
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/143.md: _extractModule checks address zero; no prior item'
+  confidence: high
+  notes: ''
+- id: inv:invalid-001
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-001/132-best.md
+  group_files: 3
+  files:
+  - invalid/invalid-001/081.md
+  - invalid/invalid-001/112.md
+  - invalid/invalid-001/132-best.md
+  title: 'Any excess native token funds sent to TOFTGenericReceiverModule''s `receiveWithParamsReceiver()`
+    can '
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-001/132-best.md: excess native funds in receiveWithParamsReceiver;
+    prior H-48 and H-16 are different entry points'
+  confidence: medium
+  notes: ''
+- id: inv:invalid-002
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-002/138-best.md
+  group_files: 6
+  files:
+  - invalid/invalid-002/016.md
+  - invalid/invalid-002/020.md
+  - invalid/invalid-002/021.md
+  - invalid/invalid-002/086.md
+  - invalid/invalid-002/099.md
+  - invalid/invalid-002/138-best.md
+  title: Stealing tokens added in `skim` mode
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-002: skim-mode theft; prior H-05 increases collateral
+    share through a different path'
+  confidence: medium
+  notes: ''
+- id: inv:invalid-003
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-003/013-best.md
+  group_files: 4
+  files:
+  - invalid/invalid-003/013-best.md
+  - invalid/invalid-003/025.md
+  - invalid/invalid-003/026.md
+  - invalid/invalid-003/129.md
+  title: Malicious user can borrow and leave protocol in bad debt in SGLBorrow.sol
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-003: bad-debt borrow via SGLBorrow; no prior item makes
+    this claim'
+  confidence: medium
+  notes: ''
+duplicates:
+- id: dup:001-M/056.md
+  expected: acc:001-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 001-M/056.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:001-M/058.md
+  expected: acc:001-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 001-M/058.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:001-M/101.md
+  expected: acc:001-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 001-M/101.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:001-M/117.md
+  expected: acc:001-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 001-M/117.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:002-H/034.md
+  expected: acc:002-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 002-H/034.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:002-H/055.md
+  expected: acc:002-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 002-H/055.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:002-H/149.md
+  expected: acc:002-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 002-H/149.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:003-M/024.md
+  expected: acc:003-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 003-M/024.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:003-M/066.md
+  expected: acc:003-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 003-M/066.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:003-M/118.md
+  expected: acc:003-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 003-M/118.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:004-M/052.md
+  expected: acc:004-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 004-M/052.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:004-M/074.md
+  expected: acc:004-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 004-M/074.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:004-M/123.md
+  expected: acc:004-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 004-M/123.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:005-H/048.md
+  expected: acc:005-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 005-H/048.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:005-H/075.md
+  expected: acc:005-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 005-H/075.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:005-H/093.md
+  expected: acc:005-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 005-H/093.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:006-M/023.md
+  expected: acc:006-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 006-M/023.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:006-M/065.md
+  expected: acc:006-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 006-M/065.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:006-M/098.md
+  expected: acc:006-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 006-M/098.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:007-H/017.md
+  expected: acc:007-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 007-H/017.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:007-H/050.md
+  expected: acc:007-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 007-H/050.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:007-H/110.md
+  expected: acc:007-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 007-H/110.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:008-M/044.md
+  expected: acc:008-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 008-M/044.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:008-M/062.md
+  expected: acc:008-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 008-M/062.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:008-M/078.md
+  expected: acc:008-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 008-M/078.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:009-M/047.md
+  expected: acc:009-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 009-M/047.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:009-M/059.md
+  expected: acc:009-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 009-M/059.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:009-M/116.md
+  expected: acc:009-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 009-M/116.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:010-H/051.md
+  expected: acc:010-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 010-H/051.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:010-H/088.md
+  expected: acc:010-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 010-H/088.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:011-M/015.md
+  expected: acc:011-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 011-M/015.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:011-M/092.md
+  expected: acc:011-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 011-M/092.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:012-H/037.md
+  expected: acc:012-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 012-H/037.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:012-H/045.md
+  expected: acc:012-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 012-H/045.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:013-M/011.md
+  expected: acc:013-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 013-M/011.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:013-M/030.md
+  expected: acc:013-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 013-M/030.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:014-M/068.md
+  expected: acc:014-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 014-M/068.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:014-M/121.md
+  expected: acc:014-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 014-M/121.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:015-M/031.md
+  expected: acc:015-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 015-M/031.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:016-H/082.md
+  expected: acc:016-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 016-H/082.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:017-H/035.md
+  expected: acc:017-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 017-H/035.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:018-H/036.md
+  expected: acc:018-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 018-H/036.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:019-M/122.md
+  expected: acc:019-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 019-M/122.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:020-M/142.md
+  expected: acc:020-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 020-M/142.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:021-M/046.md
+  expected: acc:021-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 021-M/046.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:022-M/105.md
+  expected: acc:022-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 022-M/105.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:023-H/057.md
+  expected: acc:023-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 023-H/057.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:024-M/133.md
+  expected: acc:024-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 024-M/133.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:025-H/060.md
+  expected: acc:025-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 025-H/060.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:026-H/114.md
+  expected: acc:026-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 026-H/114.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:027-M/085.md
+  expected: acc:027-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 027-M/085.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:028-M/145.md
+  expected: acc:028-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 028-M/145.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:029-H/135.md
+  expected: acc:029-H
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 029-H/135.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:030-M/109.md
+  expected: acc:030-M
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: 030-M/109.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-001/081.md
+  expected: inv:invalid-001
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-001/081.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-001/112.md
+  expected: inv:invalid-001
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-001/112.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-002/016.md
+  expected: inv:invalid-002
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-002/016.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-002/020.md
+  expected: inv:invalid-002
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-002/020.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-002/021.md
+  expected: inv:invalid-002
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-002/021.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-002/086.md
+  expected: inv:invalid-002
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-002/086.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-002/099.md
+  expected: inv:invalid-002
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-002/099.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-003/025.md
+  expected: inv:invalid-003
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-003/025.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-003/026.md
+  expected: inv:invalid-003
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-003/026.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-003/129.md
+  expected: inv:invalid-003
+  pointer:
+    repo: sherlock-audit/2024-02-tapioca-judging
+    commit: 9e52685cd447417a1d9d5c96fb1492d8773eab8a
+    path: invalid/invalid-003/129.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+evaluation:
+  known_prior_recall:
+    dossier: prior_audit_and_known
+    queries: findings labelled known_prior
+    expected: the prior item in prior_ref
+    k: 5
+  false_alarm_rate:
+    dossier: prior_audit_and_known
+    queries: findings labelled unique_valid (judged paid Medium/High, unique)
+    alarm: any returned prior_art item (the matcher requires >= 2 strong identifiers)
+  duplicate_recall:
+    dossier: judged_primary
+    queries: duplicates[] entries
+    expected: the duplicate's expected judged representative
+    k: 5
+    note: 'supplementary: judged within-contest duplicate retrieval, not the plan''s
+      known-issue metric'
+counts:
+  prior_items: 61
+  findings: 86
+  accepted: 60
+  invalid: 26
+  duplicates: 64
+  known_prior: 1
+  reader_labelled: 26
