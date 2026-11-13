@@ -78,7 +78,11 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: priorart-${{ matrix.target }}
-          path: dist/*
+          # Only the archives: the unpacked directory is still in dist/ and
+          # would otherwise be merged into the release download as a directory.
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
           if-no-files-found: error
 
   release:
