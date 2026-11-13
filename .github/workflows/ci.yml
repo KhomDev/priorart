@@ -83,7 +83,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  no network:
+  no-network:
     name: no network
     runs-on: ubuntu-latest
     steps:
