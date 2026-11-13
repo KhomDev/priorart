@@ -102,11 +102,14 @@ jobs:
       - name: Release notes from CHANGELOG
         run: |
           version="${GITHUB_REF_NAME#v}"
+          # Literal regexes are not double-escaped: /^## \[/ is a bracket
+          # expression, not an escaped bracket. Stop at the next release heading.
           awk -v v="$version" '
             $0 ~ "^## \\[" v "\\]" {found=1}
-            found && /^## \\[/ && !/\(v\)/ && seen {exit}
+            found && /^## \[/ && seen {exit}
             found {print; seen=1}
           ' CHANGELOG.md > notes.md
+          test -s notes.md
           cat notes.md
       - name: Publish
         if: ${{ !inputs.dry_run }}
