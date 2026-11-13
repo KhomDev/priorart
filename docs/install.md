@@ -10,7 +10,7 @@ carried them is frozen at 0.9.0.
 cargo install priorart
 # or, if you have cargo-binstall:
 cargo binstall priorart
-priorart --version   # priorart 0.1.0
+priorart --version   # priorart 0.1.1
 ```
 
 Or straight from the release tag on GitHub:

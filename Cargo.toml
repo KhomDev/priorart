@@ -1,6 +1,6 @@
 [package]
 name = "priorart"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Offline, deterministic prior-art dossiers for smart-contract audit findings: has this been found, is it excluded, and can it be paid?"
 license = "MIT"
@@ -10,6 +10,17 @@ keywords = ["bug-bounty", "smart-contract", "audit", "prior-art", "triage"]
 categories = ["command-line-utilities", "development-tools"]
 readme = "README.md"
 rust-version = "1.89"
+
+# cargo-binstall: where the release workflow puts each archive and what is in it.
+# Archive names carry a "v" before the version (priorart-v0.1.1-<target>).
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-{ target }.tar.gz"
+bin-dir = "{ name }-v{ version }-{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-{ target }.zip"
+pkg-fmt = "zip"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }

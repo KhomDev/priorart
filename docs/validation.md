@@ -18,6 +18,7 @@ this release withdraws.
 | Label agreement is 15/20 = 75.0% [53.1-88.8] | `eval/benchmark/labels.yaml` agreement sample | 2026-11-13 | validated (published) |
 | The two earlier matcher revisions measured 18/60 = 30.0% and 15/60 = 25.0% FAR | `BENCHMARK.md` three-run table | 2026-11-13 | validated (provenance) |
 | The final FAR is above the plan's 30% trigger, so 0.1.0 ships retrieval-only | `CONSOLIDATION-PLAN` §4 kill criteria + `BENCHMARK.md` "Application of the plan's rule" | 2026-11-13 | validated (published) |
+| 0.1.1 changes no matcher, gate or schema code, so the 0.1.0 benchmark numbers describe 0.1.1 | `git diff v0.1.0 v0.1.1 -- src/match src/gates schemas` shows only test-string and doc-comment renames | 2026-11-13 | validated |
 | The ledger validator preserves schema v1 semantics | `src/ledger/mod.rs` tests ported from bounty-economics `tests/test_validate.py`; golden files `examples/ledger.example.yaml` (1 entry) + `examples/tier-shapes.example.yaml` (5 entries) | 2026-11-13 | validated |
 | The ledger schema is byte-identical to bounty-economics v0.6.1 | `schemas/ledger.schema.json`, sha256 `403324A1...` | 2026-11-13 | validated |
 | `ledger validate` on the golden files prints 6 entries, 0 errors | `priorart ledger validate examples/ledger.example.yaml examples/tier-shapes.example.yaml` | 2026-11-13 | validated |

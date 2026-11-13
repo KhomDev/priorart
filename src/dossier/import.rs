@@ -981,7 +981,7 @@ mod tests {
 
     #[test]
     fn slug_is_stable_and_rejects_empty_input() {
-        assert_eq!(slug("RAIN USDR"), Some("rain-usdr".into()));
+        assert_eq!(slug("EXAMPLE LEND"), Some("example-lend".into()));
         assert_eq!(slug("  "), None);
         assert_eq!(slug("../.."), None);
         assert_eq!(slug("a.b_c-d"), Some("a.b_c-d".into()));

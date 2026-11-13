@@ -29,7 +29,7 @@ A payable result, quoted from `priorart check examples/finding-demo.md` against
 `examples/dossier-demo`:
 
 ```text
-CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable (cited: https://example.invalid/rain/rewards, section Rewards)
+CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable (cited: https://example.invalid/lend/rewards, section Rewards)
   "High: 10,000 USD"
   High is at or above the floor (Medium)
 ```
@@ -37,7 +37,7 @@ CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, f
 A below-floor result, from a Low finding against the same dossier:
 
 ```text
-CAN IT BE PAID?       tier shape: medium_and_above (floor medium); Low is below the floor and pays nothing (cited: https://example.invalid/rain/rewards, section Rewards)
+CAN IT BE PAID?       tier shape: medium_and_above (floor medium); Low is below the floor and pays nothing (cited: https://example.invalid/lend/rewards, section Rewards)
   "High: 10,000 USD"
   Low is below the floor (Medium): it pays nothing under this tier shape
 ```
@@ -109,13 +109,13 @@ Traces the code the finding cites into the program's in-scope list.
 - Paths cited in the finding are checked against `scope-path` entries with glob
   support (`src/*.sol`, `src/`, `**/Vault.sol`).
 - A contract or function name is accepted too: if the finding says
-  `VaultEngine.open`, the scope entry `src/VaultEngine.sol` covers it, and the
-  output says `VaultEngine (in src/VaultEngine.sol)`.
+  `LoanBook.close`, the scope entry `src/LoanBook.sol` covers it, and the
+  output says `LoanBook (in src/LoanBook.sol)`.
 
 From the demo finding, in `NOTES`:
 
 ```text
-- G3 scope: the finding cites scoped code: VaultEngine (in src/VaultEngine.sol), BalanceSheet (in src/BalanceSheet.sol), PegStabilityModule (in src/PegStabilityModule.sol)
+- G3 scope: the finding cites scoped code: LoanBook (in src/LoanBook.sol), FeeLedger (in src/FeeLedger.sol), SwapDesk (in src/SwapDesk.sol)
 ```
 
 A cited path that is not in scope is shown, not hidden:
@@ -140,16 +140,18 @@ Two pieces of evidence, both quotes:
 From the demo finding, in `NOTES`:
 
 ```text
-- G4 prior audits: Internal review covers src/VaultEngine.sol (cited identifier VaultEngine), src/BalanceSheet.sol (cited identifier BalanceSheet) - read that report's findings for this function
+- G4 prior audits: Internal review covers src/LoanBook.sol (cited identifier LoanBook), src/FeeLedger.sol (cited identifier FeeLedger) - read that report's findings for this function
 ```
 
-And the ranked item itself, in `HAS THIS BEEN FOUND?`:
+And the ranked items themselves, in `HAS THIS BEEN FOUND?`:
 
 ```text
-HAS THIS BEEN FOUND?  1 prior item to read (shares >=2 symbol identifiers)
-  [audit: internal-review.md p.1, section H-02 Reserve backing check]  "The backing check in `BalanceSheet.distributeSurplus` reverts with `ReserveBackingShortfall` when the stable reserve is smaller than the summed debt of fee-exempt collateral types."
-     shared: balancesheet, balancesheet.distributesurplus, pegstabilitymodule, pegstabilitymodule.sellstable, reservebackingshortfall, vaultengine, vaultengine.open
-     their mechanism: accounting_order_of_operations
+HAS THIS BEEN FOUND?  2 prior items to read (share >=2 symbol identifiers)
+  [audit: internal-review.md p.1, section M-03 Fee index rounding]  "The consistency check in `FeeLedger.distributeFees` reverts with `FeeAccountingMismatch` when the fee index rounds up past the collected balance."
+     shared: feeaccountingmismatch, feeledger, feeledger.distributefees
+     their mechanism: rounding_direction   yours: accounting_order_of_operations
+  [known-issues: known-issues.md p.1, section Known issues]  "`SwapDesk.swapIn` can reach its cap during high volume; acknowledged, by design."
+     shared: swapdesk, swapdesk.swapin
   -> reading list only. priorart does not decide duplicates; see docs/benchmark.md
 ```
 

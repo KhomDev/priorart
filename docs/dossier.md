@@ -60,10 +60,10 @@ prior_audits:
   - firm: Internal review
     url: https://example.invalid/audit
     covers:                      # the files/contracts the report claims to cover
-      - src/VaultEngine.sol
-      - src/BalanceSheet.sol
+      - src/LoanBook.sol
+      - src/FeeLedger.sol
     known_issues:
-      - "shortfall via direct ledger writes in the reserve backing check"
+      - "fee index rounding in the fee accounting check"
 ```
 
 - `payout.tier_shape` outside the five shapes is a **build error** listing the
@@ -82,17 +82,17 @@ prior_audits:
 ```json
 {
   "schema": "priorart.dossier/v1",
-  "tool": {"name": "priorart", "version": "0.1.0"},
-  "program": {"id": "dossier-demo", "name": "Rain", "platform": "HardenedProof",
-              "url": "https://example.invalid/rain",
-              "scope_url": "https://example.invalid/rain/scope",
+  "tool": {"name": "priorart", "version": "0.1.1"},
+  "program": {"id": "dossier-demo", "name": "Example Lend", "platform": "ExamplePlatform",
+              "url": "https://example.invalid/lend",
+              "scope_url": "https://example.invalid/lend/scope",
               "payout": {"tier_shape": "medium_and_above", "floor_status": "documented",
-                         "floor_severity": "medium", "source_url": "https://example.invalid/rain/rewards",
+                         "floor_severity": "medium", "source_url": "https://example.invalid/lend/rewards",
                          "retrieved": "2026-09-01", "section": "Rewards",
                          "quote": "High: 10,000 USD"},
-              "prior_audits": [{"firm": "Internal review", "url": "https://example.invalid/rain/internal-review",
-                                "covers": ["src/VaultEngine.sol", "src/BalanceSheet.sol"],
-                                "known_issues": ["shortfall via direct ledger writes in the reserve backing check"]}]},
+              "prior_audits": [{"firm": "Internal review", "url": "https://example.invalid/lend/internal-review",
+                                "covers": ["src/LoanBook.sol", "src/FeeLedger.sol"],
+                                "known_issues": ["fee index rounding in the fee accounting check"]}]},
   "sources": [{"id": "src-0001", "kind": "program-page", "title": "scope.md",
                "path": "scope.md", "sha256": "<64 hex>", "pages": 1}],
   "items": [{"id": "item-0001", "source_id": "src-0001", "kind": "payout-tier",

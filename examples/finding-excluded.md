@@ -5,7 +5,7 @@ Severity: High
 ## Summary
 
 The `admin` can call `setFeeBps` in `src/Vault.sol` with a value above the
-maximum, which makes every `distributeSurplus` call revert.
+maximum, which makes every `distributeFees` call revert.
 
 ## Impact
 

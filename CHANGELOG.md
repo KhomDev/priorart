@@ -11,6 +11,31 @@ appears here only if it came from a command that can be re-run.
 
 ## priorart
 
+## [0.1.1] - 2026-11-13
+
+Documentation, fixtures and install metadata. The matcher, the gates, the
+schemas and the benchmark are unchanged, so the benchmark numbers in
+`docs/benchmark.md` still describe this build.
+
+### Fixed
+
+- **The demo program is now fictional all the way down.** `examples/dossier-demo`
+  and `examples/finding-demo.md` reused the contract, error and token names of
+  a real disclosed finding (RAINUSDR-1622) and listed that finding's mechanism
+  as an acknowledged known issue and a prior-audit item. The fixture never
+  described a real audit, but read next to the public case study it implied the
+  finding had been known before it was reported. The demo is now an unrelated,
+  invented bug (`LoanBook.close`, `FeeLedger.distributeFees`,
+  `SwapDesk.swapIn`) whose prior-audit item has a different mechanism, so the
+  output also shows `their mechanism` against `yours`. The README, `docs/cli.md`,
+  `docs/gates.md`, `docs/dossier.md`, `docs/matching.md` and the unit and CLI
+  tests use the same invented names.
+- **`cargo binstall priorart` resolves the release archives.** Added
+  `[package.metadata.binstall]`: archive names carry a `v` before the version,
+  which binstall's defaults do not guess.
+- Removed two stray files that were committed with 0.1.0 and referenced by
+  nothing: `.h.out` and `examples/dossier-demo/sample-vault.dossier`.
+
 ## [0.1.0] - 2026-11-13
 
 First release under the name **priorart**, from the repository that was

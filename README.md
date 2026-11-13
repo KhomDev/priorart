@@ -6,11 +6,11 @@ and never with a verdict. It is offline and deterministic: everything it reads
 is a file you already saved.
 
 ```text
-priorart check finding.md --dossier rain-usdr.dossier
+priorart check finding.md --dossier example-lend.dossier
 
-HAS THIS BEEN FOUND?  2 prior items to read (share >=2 symbol identifiers)
-  [audit: Internal review 2026-08, p.14, section H-02]  "backing check ... distributeSurplus ..."
-     shared: BalanceSheet.distributeSurplus, ReserveBackingShortfall
+HAS THIS BEEN FOUND?  1 prior item to read (shares >=2 symbol identifiers)
+  [audit: internal-review.md p.1, section M-03 Fee index rounding]  "The consistency check in `FeeLedger.distributeFees` ..."
+     shared: FeeLedger.distributeFees, FeeAccountingMismatch
   -> reading list only. priorart does not decide duplicates; see docs/benchmark.md
 IS IT EXCLUDED?       no clause class matches your preconditions (attacker: any user; oracle: none)
 CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable
@@ -22,7 +22,7 @@ the committed fixture by `scripts/regen-readme-examples.sh` and checked by
 
 ## Status: 0.1.0 ships retrieval-only
 
-priorart 0.1.0 ranks prior items to read. It does **not** warn that a finding is
+priorart 0.1 ranks prior items to read. It does **not** warn that a finding is
 a duplicate: the plan's kill criterion is a 30% false-alarm rate on judged
 unique findings, and the release-candidate matcher measured **26/60 = 43.3%**
 (Wilson 95% CI 31.6-55.9) - above the criterion, with the interval entirely
@@ -76,37 +76,39 @@ priorart check finding.md --dossier my-program/my-program.dossier
 
 <!-- BEGIN GENERATED EXAMPLE (scripts/regen-readme-examples.sh) -->
 $ priorart build examples/dossier-demo
-priorart 0.1.0 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.1.1 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
   3 source(s), 13 item(s)
     audit-finding    1
     known-issue      2
     payout-tier      3
     scope-clause     4
     scope-path       3
-  [src-0001] program-page  scope.md  p.1  sha256 ecf837516e94
-  [src-0002] known-issues  known-issues.md  p.1  sha256 46534c52f77f
-  [src-0003] audit  audits/internal-review.md  p.1  sha256 79e56ab10021
+  [src-0001] program-page  scope.md  p.1  sha256 b63b6be9771d
+  [src-0002] known-issues  known-issues.md  p.1  sha256 a145ccf17597
+  [src-0003] audit  audits/internal-review.md  p.1  sha256 64bff58ef788
   note: 3 source(s) indexed (1 audit(s)); 13 item(s) extracted
 Next: priorart check <finding.md> --dossier examples/dossier-demo/dossier-demo.dossier
 
 $ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
-priorart 0.1.0 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.1.1 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
 
-HAS THIS BEEN FOUND?  1 prior item to read (shares >=2 symbol identifiers)
-  [audit: internal-review.md p.1, section H-02 Reserve backing check]  "The backing check in `BalanceSheet.distributeSurplus` reverts with `ReserveBackingShortfall` when the stable reserve is smaller than the summed debt of fee-exempt collateral types."
-     shared: balancesheet, balancesheet.distributesurplus, pegstabilitymodule, pegstabilitymodule.sellstable, reservebackingshortfall, vaultengine, vaultengine.open
-     their mechanism: accounting_order_of_operations
+HAS THIS BEEN FOUND?  2 prior items to read (share >=2 symbol identifiers)
+  [audit: internal-review.md p.1, section M-03 Fee index rounding]  "The consistency check in `FeeLedger.distributeFees` reverts with `FeeAccountingMismatch` when the fee index rounds up past the collected balance."
+     shared: feeaccountingmismatch, feeledger, feeledger.distributefees
+     their mechanism: rounding_direction   yours: accounting_order_of_operations
+  [known-issues: known-issues.md p.1, section Known issues]  "`SwapDesk.swapIn` can reach its cap during high volume; acknowledged, by design."
+     shared: swapdesk, swapdesk.swapin
   -> reading list only. priorart does not decide duplicates; see docs/benchmark.md
 
 IS IT EXCLUDED?       no clause class matches your preconditions (attacker: any user; oracle: none)
 
-CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable (cited: https://example.invalid/rain/rewards, section Rewards)
+CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable (cited: https://example.invalid/lend/rewards, section Rewards)
   "High: 10,000 USD"
   High is at or above the floor (Medium)
 
 NOTES
-  - G4 prior audits: Internal review covers src/VaultEngine.sol (cited identifier VaultEngine), src/BalanceSheet.sol (cited identifier BalanceSheet) - read that report's findings for this function
-  - G3 scope: the finding cites scoped code: VaultEngine (in src/VaultEngine.sol), BalanceSheet (in src/BalanceSheet.sol), PegStabilityModule (in src/PegStabilityModule.sol)
+  - G4 prior audits: Internal review covers src/LoanBook.sol (cited identifier LoanBook), src/FeeLedger.sol (cited identifier FeeLedger) - read that report's findings for this function
+  - G3 scope: the finding cites scoped code: LoanBook (in src/LoanBook.sol), FeeLedger (in src/FeeLedger.sol), SwapDesk (in src/SwapDesk.sol)
   - priorart does not decide duplicates, exclusion, or payment. Read the quoted lines.
 <!-- END GENERATED EXAMPLE -->
 
