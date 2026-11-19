@@ -1,7 +1,7 @@
 # Architecture
 
 This page explains how priorart is put together: why each part exists, what crosses each
-boundary, and what the user sees when a part fails. It describes `main` after 0.1.1. Where it
+boundary, and what the user sees when a part fails. It describes `main` after 0.1.2. Where it
 disagrees with the source, the source wins.
 
 ## Three questions, one dossier

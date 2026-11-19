@@ -76,7 +76,7 @@ priorart check finding.md --dossier my-program/my-program.dossier
 
 <!-- BEGIN GENERATED EXAMPLE (scripts/regen-readme-examples.sh) -->
 $ priorart build examples/dossier-demo
-priorart 0.1.1 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.1.2 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
   3 source(s), 13 item(s)
     audit-finding    1
     known-issue      2
@@ -90,7 +90,7 @@ priorart 0.1.1 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossie
 Next: priorart check <finding.md> --dossier examples/dossier-demo/dossier-demo.dossier
 
 $ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
-priorart 0.1.1 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.1.2 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
 
 HAS THIS BEEN FOUND?  2 prior items to read (share >=2 symbol identifiers)
   [audit: internal-review.md p.1, section M-03 Fee index rounding]  "The consistency check in `FeeLedger.distributeFees` reverts with `FeeAccountingMismatch` when the fee index rounds up past the collected balance."

@@ -942,15 +942,15 @@ mod tests {
     fn shared_function_names_rank_and_plain_words_do_not() {
         let prior = item(
             "item-0001",
-            "The reduce_outflow helper credits only the current segment, so a refund that crosses the hour boundary is destroyed. add_outflow then aborts.",
+            "The settle_rebate helper rounds the rebate down twice, so a small rebate is paid as zero. claim_rebate then reports success.",
         );
-        let draft = "The same defect: reduce_outflow in limiter destroys the refund, and add_outflow still sums every segment.";
+        let draft = "The same defect: settle_rebate in the fee desk pays a small rebate as zero, and claim_rebate still succeeds.";
         let hits = rank(&[prior], draft, 5);
         assert_eq!(hits.len(), 1, "expected an identifier hit");
         assert!(hits[0]
             .shared_identifiers
             .iter()
-            .any(|s| s.contains("reduce_outflow")));
+            .any(|s| s.contains("settle_rebate")));
 
         let prose_a = "The attacker can withdraw funds from the vault and the user loses money because the protocol does not check the cached total before it updates the share price for the next depositor in the same block.";
         let prose_b = item("item-0002", "The user loses money because an attacker can withdraw funds from the vault when the protocol does not check the cached total before the share price updates for the next depositor.");
