@@ -31,6 +31,10 @@ in `Cargo.toml` or `Cargo.lock`, no `std::net` or socket call in `src/`) and
 explained in [docs/no-network.md](docs/no-network.md). A way to make the tool
 open a socket, or a dependency that brings one in, is a security issue.
 
+The attackers, trust boundaries and the test behind each guarantee are in
+[docs/threat-model.md](docs/threat-model.md). Its open items are the places
+where a report is most likely to be useful.
+
 ## What does not count
 
 - **A wrong prior item, a missed duplicate, a wrong gate reading.** The matcher
