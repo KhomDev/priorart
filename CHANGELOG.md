@@ -29,9 +29,9 @@ appears here only if it came from a command that can be re-run.
   three ways (`cargo install` from crates.io, the release archive checked against
   `SHA256SUMS`, and `cargo binstall`), checks `priorart --version`, and runs the
   demo build, check and ledger validation. It writes nothing.
-
 - **`fuzz/` cargo-fuzz crate** with seven targets: markdown and text import, the uncompressed PDF scrape, `program.yaml`, known-issues YAML, the ledger YAML, dossier JSON load (with the gates run over a loaded dossier) and the finding profile and matcher. The property is no panic. The targets live in `fuzz/src/targets.rs`, which `tests/fuzz_replay.rs` also compiles, so the committed seeds (from `examples/` and hostile edge inputs) replay through every target on each `cargo test` without nightly.
 - **Weekly fuzz workflow** (`.github/workflows/fuzz.yml`): five minutes per target on nightly, on a schedule and by hand. A crash fails its job and is uploaded as an artifact.
+- **Property tests** (`tests/properties.rs`, `proptest`, dev-dependency only): the dossier bytes do not depend on file creation order; the case of an audit's file name changes only its recorded path and title; `check --json` is identical across runs and validates against `check.schema.json`; the top-k is a prefix of the larger ranking; `--top-k N` returns at most N items. Two tests are `#[ignore]`d: adding an item that shares no identifiers can change the top-k, because the generic-symbol threshold depends on the item count.
 
 ### Security
 
@@ -52,7 +52,6 @@ appears here only if it came from a command that can be re-run.
   sharing violation on Windows. The start is now retried up to ten times, 20 ms apart,
   for those two errors only. It made `a_pdftotext_that_runs_past_the_timeout_is_killed`
   fail intermittently on ubuntu-latest.
-
 - A dry run dispatched on a branch whose name contains a slash no longer fails
   at upload: the archive names use the ref with `/` replaced by `-`. The release
   step now runs only on a tag, so a dispatch on a branch cannot create a release
