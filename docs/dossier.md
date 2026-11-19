@@ -148,6 +148,40 @@ A scanned (image-only) PDF has no text at all and needs the same conversion; OCR
 is not attempted. On Windows without `pdftotext`, that warning is the expected
 outcome for a compressed PDF, not a failure.
 
+`pdftotext` reads a file that may be hostile, so it runs under three limits:
+
+- **Found on `PATH`, absolute entries only.** priorart looks the executable up
+  itself. A relative `PATH` entry is skipped, and on Windows the current
+  directory is never searched.
+- **The PDF is passed by absolute path**, after `-layout -q`, so a file name that
+  starts with `-` cannot be read as an option.
+- **Time and output are bounded.** The child is killed after 60 seconds, or once
+  it has written 16 MiB of text. The source is then skipped with a warning and
+  the build still exits 0:
+
+```text
+note: <path>: pdftotext did not finish within 60 s; killed - source skipped
+note: <path>: pdftotext wrote more than 16 MiB of text; killed - source skipped
+```
+
+## Input limits
+
+A build reads at most these, and refuses a folder over one with **exit 2** before
+it reads the files. The error names the limit and the file or folder that broke
+it:
+
+| Limit | Value | Error names |
+|---|---|---|
+| Size of one input file (`program.yaml` and every document) | 64 MiB | the file and its size |
+| Documents read from one folder (scope, known issues and every audit) | 1000 | the count |
+| Total size of the documents | 512 MiB | the total |
+| Directory depth under `audits/` | 16 folders | the folder |
+| Directory entries visited under `audits/`, files and folders | 10 000 | the limit |
+
+The values are constants in `src/dossier/import.rs` (`MAX_INPUT_BYTES` and the
+others). They are not command-line flags: a larger audit should be converted to
+text or split into smaller program folders.
+
 ## What `build` does not do
 
 - **It does not fetch anything.** A page is a file you saved. There is no URL

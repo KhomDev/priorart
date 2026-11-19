@@ -216,3 +216,58 @@ fn check(
         }
     }
 }
+
+/// Write a stand-in for pdftotext whose body is a shell script, and return the
+/// directory to put first on PATH.
+///
+/// On Unix the stand-in is `pdftotext`, an executable script. Windows cannot
+/// execute a shell script, so the stand-in is `pdftotext.bat`, which runs
+/// `pdftotext.sh` under bash, as realism-gate's fake forge does. The script is
+/// written under a temporary name and renamed into place, so nothing executes
+/// a file that is still open for writing.
+#[allow(dead_code)]
+pub fn fake_pdftotext(dir: &Path, body: &str) -> PathBuf {
+    std::fs::create_dir_all(dir).expect("create fake bin dir");
+    let script = dir.join(if cfg!(windows) {
+        "pdftotext.sh"
+    } else {
+        "pdftotext"
+    });
+    let tmp = dir.join("script.tmp");
+    std::fs::write(&tmp, format!("#!/bin/sh\n{body}\n")).expect("write fake");
+    std::fs::rename(&tmp, &script).expect("rename fake");
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let perms = std::fs::Permissions::from_mode(0o755);
+        std::fs::set_permissions(&script, perms).expect("chmod fake");
+        script
+    }
+    #[cfg(windows)]
+    {
+        let bash = [
+            "C:\\Program Files\\Git\\bin\\bash.exe",
+            "C:\\Program Files\\Git\\usr\\bin\\bash.exe",
+        ]
+        .into_iter()
+        .find(|p| Path::new(p).is_file())
+        .unwrap_or("bash");
+        let bat = dir.join("pdftotext.bat");
+        std::fs::write(
+            &bat,
+            format!(
+                "@echo off\r\nset \"d=%~dp0\"\r\nset \"d=%d:\\=/%\"\r\n\"{bash}\" \"%d%pdftotext.sh\" %*\r\n"
+            ),
+        )
+        .expect("write bat");
+        bat
+    }
+}
+
+/// The current PATH with `dir` in front, for a child process.
+#[allow(dead_code)]
+pub fn path_with_first(dir: &Path) -> std::ffi::OsString {
+    let rest = std::env::var_os("PATH").unwrap_or_default();
+    std::env::join_paths(std::iter::once(dir.to_path_buf()).chain(std::env::split_paths(&rest)))
+        .expect("PATH entries have no separator")
+}

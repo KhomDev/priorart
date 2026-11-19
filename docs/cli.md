@@ -60,7 +60,8 @@ Reads a folder you saved and writes one deterministic dossier
 | `--json` | Print the dossier JSON to stdout instead of the summary. Notes go to stderr. |
 
 Exit 0 on success, even when a PDF could not be read (that is a warning, and the
-source is skipped). Exit 2 when the folder does not exist or holds no inputs.
+source is skipped). Exit 2 when the folder does not exist, holds no inputs, or is
+over an input limit ([dossier.md](dossier.md#input-limits)).
 
 ```text
 $ priorart build examples/dossier-demo

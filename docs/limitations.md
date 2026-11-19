@@ -45,7 +45,9 @@ An uncompressed PDF is scraped for text literals; otherwise `pdftotext` is
 required. Without it a compressed PDF is skipped with a warning and the build
 still succeeds. A scanned, image-only PDF has no text at all: OCR is not
 attempted, and the file must be converted outside priorart. The exact warning is
-in [dossier.md](dossier.md).
+in [dossier.md](dossier.md). A `pdftotext` that runs past 60 seconds or writes
+more than 16 MiB is killed and its source skipped; the limits and the reason for
+them are in [dossier.md](dossier.md#input-limits).
 
 ## No live rules, no update channel
 
