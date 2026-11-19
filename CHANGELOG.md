@@ -55,6 +55,10 @@ appears here only if it came from a command that can be re-run.
   step now runs only on a tag, so a dispatch on a branch cannot create a release
   or a tag.
 
+### Tests
+
+- **`tests/adversarial.rs`**: inputs built to fool or break priorart, run through the real binary. A finding stuffed with every dossier identifier is ranked within the top-k bound and still reads as a reading list. A denied role does not trip the role exclusion, and exclusion clauses are quoted whole. A malformed `program.yaml` and a YAML alias bomb exit 2 or 0 without a panic, and the bomb is bounded in time. Identical audits keep distinct item ids and one digest. An image-only PDF is named as unread. A homoglyph identifier does not match its ASCII form. Terminal control characters in a quote never reach stdout. Three cases fail on `main` and are `#[ignore]`d with the bug named: a double negation is read as the opposite, a hand-edited quote that is in no source is not flagged, and a page past the source's page count is accepted.
+
 ## [0.1.1] - 2026-11-13
 
 Documentation, fixtures and install metadata. The matcher, the gates, the
