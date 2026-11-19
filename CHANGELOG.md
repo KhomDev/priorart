@@ -33,6 +33,8 @@ appears here only if it came from a command that can be re-run.
 - **Weekly fuzz workflow** (`.github/workflows/fuzz.yml`): five minutes per target on nightly, on a schedule and by hand. A crash fails its job and is uploaded as an artifact.
 - **Property tests** (`tests/properties.rs`, `proptest`, dev-dependency only): the dossier bytes do not depend on file creation order; the case of an audit's file name changes only its recorded path and title; `check --json` is identical across runs and validates against `check.schema.json`; the top-k is a prefix of the larger ranking; `--top-k N` returns at most N items. Two tests are `#[ignore]`d: adding an item that shares no identifiers can change the top-k, because the generic-symbol threshold depends on the item count.
 
+- **`docs/test-quality.md`**: `cargo mutants` over `src/match`, `src/gates` and `src/dossier` (571 mutants: 389 caught, 158 missed, 6 timeouts, 18 unviable; survival 28.6%) and one `cargo llvm-cov` run (87.34% line coverage), with the ten most important surviving mutants. Linked from CONTRIBUTING.md. Not gated in CI.
+
 ### Security
 
 - **`pdftotext` runs under limits.** It is killed after 60 seconds or after
