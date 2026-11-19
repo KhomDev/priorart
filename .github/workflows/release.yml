@@ -177,8 +177,18 @@ jobs:
           cat SHA256SUMS
           test "$(wc -l < SHA256SUMS)" = 6
       - name: Release notes from CHANGELOG
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          # The version is the one Cargo.toml declares. On a tag it must be that
+          # tag; a dry run from a branch reads the same section, so it can be
+          # checked end to end before a tag exists.
+          version=$(grep -E '^version' Cargo.toml | head -n1 | sed -E 's/.*"(.*)".*/\1/')
+          if [ "$REF_TYPE" = tag ] && [ "v$version" != "$REF_NAME" ]; then
+            echo "::error::tag $REF_NAME does not match Cargo.toml version $version"
+            exit 1
+          fi
           # Literal regexes are not double-escaped: /^## \[/ is a bracket
           # expression, not an escaped bracket. Stop at the next release heading.
           awk -v v="$version" '
