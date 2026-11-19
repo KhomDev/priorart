@@ -1,0 +1,3 @@
+- id: KI-2
+  summary: Cap reached at high volume
+  text: SwapDesk.swapIn can reach its cap.

@@ -1,0 +1,5 @@
+name: Example
+platform: ExamplePlatform
+payout:
+  tier_shape: 7
+  floor_severity: [1, 2]

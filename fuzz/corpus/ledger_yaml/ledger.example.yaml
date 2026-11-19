@@ -1,0 +1,43 @@
+# FICTIONAL EXAMPLE — not a real program.
+#
+# This file exists to show the shape of a private ledger. Every value is
+# invented: the program does not exist, the URL is reserved for documentation
+# use, and no real program's terms appear anywhere in this repository.
+#
+# Copy this file OUTSIDE the repo, replace it with your own transcription, and
+# keep it private. Your ledger will contain real program names, and your
+# judgement about them is not something to publish.
+
+- id: example-lending-v2
+  schema_version: 1            # ledger format version; absent means 1
+  tier_shape: medium_and_above
+  floor_status: documented     # documented | unstated | conflicting
+  floor_severity: medium
+  source_url: https://example.invalid/rewards
+  retrieved: "2026-10-01"
+  conflicts:
+    - "Scope table labels the oracle adapter Critical; the rewards table pays it at High. Rewards table governs."
+  exclusions:
+    - class: privileged_role
+      clause: "Attacks requiring access to privileged addresses or roles"
+      pattern: "(owner|admin|guardian|operator|capability|role)\\b"
+    - class: dos_no_extraction
+      clause: "Denial-of-service conditions that do not enable direct extraction of funds"
+      pattern: "(dos|denial of service|freeze|frozen|lock|liveness|grief)"
+    - class: best_practice
+      clause: "Best-practice critiques and optimisation suggestions"
+      pattern: "(best practice|gas optimisation|style|convention|should use)"
+    - class: scope_boundary
+      clause: "Only contracts under sources/ are in scope"
+      pattern: "(script|deploy|test|mock|periphery|utils)\\.[a-z]+"   # the extension list is yours to fill in
+  prior_audits:
+    - firm: Example Audit Co
+      url: https://example.invalid/audit.pdf
+      covers:
+        - "sources/Vault.sol"
+        - "sources/Oracle.sol"
+      known_issues:
+        - "Rounding in share calculation favours the protocol; accepted."
+        - "Admin may pause withdrawals; intended."
+  post_audit_delta: "<module> +878 lines, <module> +182 lines since the audited commit"
+  notes: "Floor is Medium. A High-class thesis is required to be paid well here."

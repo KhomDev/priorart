@@ -1,0 +1,67 @@
+[package]
+name = "priorart-fuzz"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "cargo-fuzz targets for priorart. Outside the default build: stable builds never compile this crate."
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+priorart = { path = ".." }
+serde_json = "1"
+libfuzzer-sys = "0.4"
+
+# Keeps this crate out of the root package workspace and off the stable build.
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "markdown_import"
+path = "fuzz_targets/markdown_import.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "pdf_scrape"
+path = "fuzz_targets/pdf_scrape.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "program_yaml"
+path = "fuzz_targets/program_yaml.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "known_issues_yaml"
+path = "fuzz_targets/known_issues_yaml.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "ledger_yaml"
+path = "fuzz_targets/ledger_yaml.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "dossier_json"
+path = "fuzz_targets/dossier_json.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "finding_profile"
+path = "fuzz_targets/finding_profile.rs"
+test = false
+doc = false
+bench = false
