@@ -2,7 +2,7 @@
 //! classes, and the gate cross-reference.
 //!
 //! The YAML is moved verbatim from bounty-economics v0.6.1 (MIT) and compiled
-//! into the binary with `include_str!%%, so the vocabulary cannot drift from the
+//! into the binary with `include_str!`, so the vocabulary cannot drift from the
 //! code and the tool needs no data directory at runtime. The one edited file is
 //! `gate-crossref.yaml`: its rows named viability-gate's P1-P22 engine, which
 //! priorart deletes, so those rows are gone. See docs/vocab.md.
