@@ -18,6 +18,12 @@ appears here only if it came from a command that can be re-run.
 - **`docs/threat-model.md`**: assets, attackers, trust boundaries and the test or
   CI job behind each guarantee, with file and line references. Open items are
   marked unverified or read-only. `SECURITY.md` and `docs/no-network.md` link to it.
+- **Release provenance.** Each release archive carries a build provenance
+  attestation, checked with `gh attestation verify <archive> --repo KhomDev/priorart`
+  ([install.md](docs/install.md#verifying-a-release-archive)). A CycloneDX
+  software bill of materials, `priorart-vX.Y.Z.cdx.json`, is attached to each
+  release and listed in `SHA256SUMS`. Attestations are made on version-tag runs
+  only, never on a dry run.
 
 ### Security
 
@@ -31,6 +37,12 @@ appears here only if it came from a command that can be re-run.
   more than 10 000 directory entries is refused with exit 2 before the files are
   read. The error names the limit.
 
+### Fixed
+
+- A dry run dispatched on a branch whose name contains a slash no longer fails
+  at upload: the archive names use the ref with `/` replaced by `-`. The release
+  step now runs only on a tag, so a dispatch on a branch cannot create a release
+  or a tag.
 
 ## [0.1.1] - 2026-11-13
 
