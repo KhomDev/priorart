@@ -11,6 +11,14 @@ appears here only if it came from a command that can be re-run.
 
 ## priorart
 
+## [Unreleased]
+
+### Added
+
+- **`docs/threat-model.md`**: assets, attackers, trust boundaries and the test or
+  CI job behind each guarantee, with file and line references. Open items are
+  marked unverified or read-only. `SECURITY.md` and `docs/no-network.md` link to it.
+
 ## [0.1.1] - 2026-11-13
 
 Documentation, fixtures and install metadata. The matcher, the gates, the
