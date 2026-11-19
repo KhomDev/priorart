@@ -75,6 +75,12 @@ A change to the 5 tier shapes or the 14 clause classes starts upstream in
 bounty-economics and is moved in with its provenance and byte-identity check. Do
 not edit `vocab/*.yaml` in place without updating `docs/vocab.md`.
 
+## Test quality
+
+Mutation survival and line coverage are measured, not gated, in
+[docs/test-quality.md](docs/test-quality.md). Run `cargo mutants` on a module you
+change; a surviving mutant in a gate or the matcher is a missing test.
+
 ## Documentation rules
 
 - `README.md`'s generated example block is written by
