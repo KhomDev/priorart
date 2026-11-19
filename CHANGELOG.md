@@ -30,6 +30,9 @@ appears here only if it came from a command that can be re-run.
   `SHA256SUMS`, and `cargo binstall`), checks `priorart --version`, and runs the
   demo build, check and ledger validation. It writes nothing.
 
+- **`fuzz/` cargo-fuzz crate** with seven targets: markdown and text import, the uncompressed PDF scrape, `program.yaml`, known-issues YAML, the ledger YAML, dossier JSON load (with the gates run over a loaded dossier) and the finding profile and matcher. The property is no panic. The targets live in `fuzz/src/targets.rs`, which `tests/fuzz_replay.rs` also compiles, so the committed seeds (from `examples/` and hostile edge inputs) replay through every target on each `cargo test` without nightly.
+- **Weekly fuzz workflow** (`.github/workflows/fuzz.yml`): five minutes per target on nightly, on a schedule and by hand. A crash fails its job and is uploaded as an artifact.
+
 ### Security
 
 - **`pdftotext` runs under limits.** It is killed after 60 seconds or after

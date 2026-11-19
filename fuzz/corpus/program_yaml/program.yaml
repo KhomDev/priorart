@@ -1,0 +1,24 @@
+# Saved by the user; read by priorart build.
+
+name: Example Lend
+platform: ExamplePlatform
+url: https://example.invalid/lend
+scope_url: https://example.invalid/lend/scope
+
+payout:
+  tier_shape: medium_and_above
+  floor_status: documented
+  floor_severity: medium
+  source_url: https://example.invalid/lend/rewards
+  retrieved: "2026-09-01"
+  section: Rewards
+  quote: "High: 10,000 USD"
+
+prior_audits:
+  - firm: Internal review
+    url: https://example.invalid/lend/internal-review
+    covers:
+      - src/LoanBook.sol
+      - src/FeeLedger.sol
+    known_issues:
+      - "fee index rounding in the fee accounting check"

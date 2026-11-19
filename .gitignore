@@ -63,3 +63,7 @@ eval/cache/
 .idea/
 .DS_Store
 Thumbs.db
+
+# --- cargo-fuzz (see .github/workflows/fuzz.yml) ----------------------------
+fuzz/artifacts/
+fuzz/coverage/

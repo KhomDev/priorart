@@ -1,0 +1,131 @@
+# Worked example — the five tier shapes, and what each one means for you.
+#
+# FICTIONAL. Every program here is invented, every URL uses the reserved
+# `.invalid` TLD, and no real program's terms appear anywhere in this repository.
+#
+# The point of this file is the CONTRAST between shapes. Read it once and you can
+# classify any reward table you meet.
+#
+# Note there is no `any` entry, and note entry 5: a page that states NO floor is
+# `unknown` with `floor_status: unstated`, not `low_and_above`.
+
+# ---------------------------------------------------------------------------
+# 1. critical_only — everything below Critical is worth exactly zero.
+# ---------------------------------------------------------------------------
+- id: example-perps-critical-only
+  schema_version: 1
+  tier_shape: critical_only
+  floor_status: documented
+  floor_severity: critical
+  source_url: https://example.invalid/perps/rewards
+  retrieved: "2026-10-01"
+  conflicts:
+    - "Scope table labels the oracle adapter Critical; the rewards table pays it at High. The rewards table governs."
+  exclusions:
+    - class: privileged_role
+      clause: "Attacks requiring access to privileged addresses or roles"
+      pattern: "(owner|admin|guardian|operator|capability)\\b"
+    - class: dos_no_extraction
+      clause: "Denial-of-service conditions that do not enable direct extraction of funds"
+      pattern: "(dos|denial of service|freeze|frozen|lock|liveness)"
+  prior_audits:
+    - firm: Example Audit Co
+      url: https://example.invalid/perps-audit.pdf
+      covers:
+        - "sources/Exchange.sol"
+        - "sources/Clearinghouse.sol"
+      known_issues:
+        - "Funding payment rounding favours the protocol; accepted."
+  post_audit_delta: "the exchange module grew ~880 lines after the audited commit"
+  notes: >-
+    DECISION: do not hunt here with a Medium-class thesis. A value misallocation
+    between two counterparties is a real bug and worth $0. Either find a
+    Critical-class root cause or spend the hours elsewhere.
+
+# ---------------------------------------------------------------------------
+# 2. high_and_above — Medium and below unpaid.
+# ---------------------------------------------------------------------------
+- id: example-vault-high-and-above
+  tier_shape: high_and_above
+  floor_status: documented
+  floor_severity: high
+  source_url: https://example.invalid/vault/rewards
+  retrieved: "2026-10-01"
+  exclusions:
+    - class: design_issue
+      clause: "Design issues that are not necessarily a security risk"
+      pattern: "(by design|intended behaviou?r|design (choice|trade))"
+    - class: scope_boundary
+      clause: "Only contracts under sources/ are in scope"
+      pattern: "(script|deploy|test|mock|periphery|utils)\\.[a-z]+"   # the extension list is yours to fill in
+  notes: >-
+    A confirmed Medium with a working proof earns nothing here. Before building a
+    proof, ask whether the mechanism can be composed to reach High.
+
+# ---------------------------------------------------------------------------
+# 3. medium_and_above — the most common shape, and the safest to hunt.
+# ---------------------------------------------------------------------------
+- id: example-lending-medium-and-above
+  tier_shape: medium_and_above
+  floor_status: documented
+  floor_severity: medium
+  source_url: https://example.invalid/lending/rewards
+  retrieved: "2026-10-01"
+  exclusions:
+    - class: best_practice
+      clause: "Best-practice critiques and optimisation suggestions"
+      pattern: "(best practice|convention|style|optimis|optimiz)"
+    - class: admin_input
+      clause: "Issues requiring administrator input validation"
+      pattern: "(admin|owner|governance) (input|parameter|config)"
+  prior_audits:
+    - firm: Example Security
+      url: https://example.invalid/lending-audit.pdf
+      covers:
+        - "sources/Pool.sol"
+      known_issues:
+        - "Interest accrual index updates on re-enable; intended for determinism."
+  notes: >-
+    The default hunting shape. Note the Medium amount — it sets whether the work
+    pays. If Medium is a token amount, treat this as high_and_above in practice.
+
+# ---------------------------------------------------------------------------
+# 4. low_and_above — Low is the lowest tier that pays.
+#
+# This shape requires a reward table with a Low row carrying a non-zero amount.
+# It is NOT where a program lands when the page states no floor. An unstated
+# floor is not evidence that Low pays; it is evidence the page has not been
+# read. That case is entry 5 below.
+# ---------------------------------------------------------------------------
+- id: example-dex-low-and-above
+  tier_shape: low_and_above
+  floor_status: documented
+  floor_severity: low
+  source_url: https://example.invalid/dex/rewards
+  retrieved: "2026-10-01"
+  exclusions:
+    - class: non_standard_token
+      clause: "Issues related to fee-on-transfer or rebasing tokens"
+      pattern: "(fee[- ]on[- ]transfer|rebasing|non[- ]standard token)"
+  notes: >-
+    A wide floor attracts volume, so duplicate risk is higher here than on a
+    narrow-floor program. Spend the saved pre-hunt time on the duplicate surface
+    instead.
+
+# ---------------------------------------------------------------------------
+# 5. unknown — NOT permissive. The dangerous value.
+#
+# floor_status: unstated is the honest record for a page that states no floor.
+# It is not a licence to write low_and_above: nothing has been read yet.
+# ---------------------------------------------------------------------------
+- id: example-untranscribed
+  tier_shape: unknown
+  floor_status: unstated
+  floor_severity: null
+  source_url: https://example.invalid/unread/scope
+  retrieved: "2026-10-01"
+  exclusions: []
+  notes: >-
+    DECISION: do not hunt until the rewards page has been read. This is a gap in
+    the ledger, not a property of the program. Treating "unknown" as "pays
+    everything" is how an unhedged bet feels like due diligence.

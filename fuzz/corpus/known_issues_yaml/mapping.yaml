@@ -1,0 +1,4 @@
+known_issues:
+  - id: KI-1
+    summary: Fee index rounding
+    text: Rounding in distributeFees is acknowledged.
