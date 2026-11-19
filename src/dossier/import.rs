@@ -659,15 +659,15 @@ pub fn run_pdftotext(
     max_output: usize,
 ) -> Result<String, String> {
     let abs = std::path::absolute(pdf).map_err(|e| format!("cannot resolve the path: {e}"))?;
-    let mut child = Command::new(program)
-        .arg("-layout")
+    let mut cmd = Command::new(program);
+    cmd.arg("-layout")
         .arg("-q")
         .arg(&abs)
         .arg("-")
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
+        .stderr(Stdio::piped());
+    let mut child = spawn_with_retry(&mut cmd)
         .map_err(|e| format!("could not start {}: {e}", program.display()))?;
     let stdout = child.stdout.take().expect("stdout is piped");
     let stderr = child.stderr.take().expect("stderr is piped");
@@ -741,6 +741,31 @@ pub fn run_pdftotext(
     } else {
         Ok(text)
     }
+}
+
+/// Start the child, retrying a few times when the executable is busy.
+///
+/// Executing a file that was written a moment earlier can fail with ETXTBSY
+/// (os error 26) on Linux, or a sharing violation (os error 32) on Windows,
+/// when another thread forked while the file was still open for writing: the
+/// forked child holds the write handle until it execs. The test suite does
+/// exactly that (it writes a fake `pdftotext` and runs it while other tests
+/// spawn processes), and so can any tool that installs `pdftotext` while a
+/// build runs. Only those two errors are retried, ten times, 20 ms apart; any
+/// other error is returned at once.
+fn spawn_with_retry(cmd: &mut Command) -> std::io::Result<std::process::Child> {
+    let mut last = None;
+    for _ in 0..10 {
+        match cmd.spawn() {
+            Ok(child) => return Ok(child),
+            Err(e) if matches!(e.raw_os_error(), Some(26) | Some(32)) => {
+                thread::sleep(Duration::from_millis(20));
+                last = Some(e);
+            }
+            Err(e) => return Err(e),
+        }
+    }
+    Err(last.expect("a retryable error was recorded"))
 }
 
 /// Read a pipe to its end, keeping at most `max` bytes. Past `max`, the
