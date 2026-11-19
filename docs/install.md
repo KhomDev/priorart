@@ -34,6 +34,29 @@ priorart --version
 priorart vocab list      # 5 tier shapes, 14 clause classes
 ```
 
+### Verifying a release archive
+
+Each archive has a build provenance attestation: a signed statement, made by
+GitHub's workflow for this repository, that names the archive's SHA-256 and the
+commit and workflow that built it. Check it with the GitHub CLI:
+
+```sh
+gh attestation verify priorart-v0.1.2-x86_64-unknown-linux-gnu.tar.gz --repo KhomDev/priorart
+```
+
+The release also carries `SHA256SUMS` and a CycloneDX software bill of materials
+(`priorart-vX.Y.Z.cdx.json`, the crate's dependency list at that tag). To check
+the archives against the sums, run the check in the directory you downloaded
+them to:
+
+```sh
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+Attestations exist only for releases made from a version tag. An archive from a
+dry run, or a copy built on your own machine, has none, and `gh attestation
+verify` says so.
+
 ## From source
 
 ```sh
