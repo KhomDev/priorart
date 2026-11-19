@@ -13,6 +13,16 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-19
+
+Security hardening, release provenance and tests. The matcher, the gates,
+the schemas, the vocabularies and the benchmark harness are unchanged
+(`git diff v0.1.1 v0.1.2 -- src/match src/gates schemas vocab eval` shows
+only test-fixture strings), so the benchmark numbers in `docs/benchmark.md`
+still describe this build. Five adversarial and property cases priorart gets
+wrong today are committed as ignored tests with their inputs
+(`cargo test -- --ignored`).
+
 ### Added
 
 - **`docs/threat-model.md`**: assets, attackers, trust boundaries and the test or
@@ -49,6 +59,11 @@ appears here only if it came from a command that can be re-run.
 
 ### Fixed
 
+- **Two unit-test fixtures no longer paraphrase a real finding.** The
+  identifier-matching and PDF-scrape tests used a limiter-refund mechanism
+  taken from the author's private log. They now use an invented rebate bug
+  (`settle_rebate`, `claim_rebate`). The old text remains in earlier releases
+  and in git history.
 - **`pdftotext` is retried when the executable is busy.** Starting a file that was
   written a moment earlier can fail with "text file busy" (ETXTBSY) on Linux or a
   sharing violation on Windows. The start is now retried up to ten times, 20 ms apart,

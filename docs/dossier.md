@@ -82,7 +82,7 @@ prior_audits:
 ```json
 {
   "schema": "priorart.dossier/v1",
-  "tool": {"name": "priorart", "version": "0.1.1"},
+  "tool": {"name": "priorart", "version": "0.1.2"},
   "program": {"id": "dossier-demo", "name": "Example Lend", "platform": "ExamplePlatform",
               "url": "https://example.invalid/lend",
               "scope_url": "https://example.invalid/lend/scope",

@@ -1295,10 +1295,10 @@ mod tests {
 
     #[test]
     fn audit_findings_are_split_on_issue_headings() {
-        let text = "# Audit report\n## H-01 Limiter refund\nThe reduce_outflow helper destroys the refund.\n## M-02 Oracle\nThe oracle price can be stale.\n";
+        let text = "# Audit report\n## H-01 Rebate rounding\nThe settle_rebate helper rounds the rebate down twice.\n## M-02 Oracle\nThe oracle price can be stale.\n";
         let items = extract_audit(text, "src-0001", "audit.md");
         assert_eq!(items.len(), 2, "{items:?}");
-        assert_eq!(items[0].section.as_deref(), Some("H-01 Limiter refund"));
+        assert_eq!(items[0].section.as_deref(), Some("H-01 Rebate rounding"));
         assert_eq!(items[0].kind, "audit-finding");
     }
 
@@ -1316,9 +1316,9 @@ mod tests {
 
     #[test]
     fn an_uncompressed_pdf_literal_is_scraped() {
-        let pdf = b"BT (reduce_outflow credits the current segment only) Tj ET";
+        let pdf = b"BT (settle_rebate rounds the rebate down twice) Tj ET";
         let text = scrape_pdf_literals(pdf);
-        assert!(text.contains("reduce_outflow"), "{text}");
+        assert!(text.contains("settle_rebate"), "{text}");
     }
 
     /// A fresh directory for one test's files.
