@@ -19,6 +19,19 @@ appears here only if it came from a command that can be re-run.
   CI job behind each guarantee, with file and line references. Open items are
   marked unverified or read-only. `SECURITY.md` and `docs/no-network.md` link to it.
 
+### Security
+
+- **`pdftotext` runs under limits.** It is killed after 60 seconds or after
+  16 MiB of output, and the source is skipped with a warning, as for any PDF
+  without text. priorart finds it on `PATH` itself: relative `PATH` entries and,
+  on Windows, the current directory are never searched. The PDF is passed by
+  absolute path, so a file name beginning with `-` cannot be read as an option.
+- **Input limits on a build.** A folder with a file over 64 MiB, more than 1000
+  documents, more than 512 MiB of documents, `audits/` nested past 16 levels or
+  more than 10 000 directory entries is refused with exit 2 before the files are
+  read. The error names the limit.
+
+
 ## [0.1.1] - 2026-11-13
 
 Documentation, fixtures and install metadata. The matcher, the gates, the

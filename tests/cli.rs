@@ -789,3 +789,62 @@ fn walk(dir: &Path) -> Vec<std::path::PathBuf> {
     }
     out
 }
+
+// ------------------------------------------------------------ input limits
+
+#[test]
+fn build_refuses_more_documents_than_the_limit_with_exit_two() {
+    let tmp = TempDir::new("doc-limit");
+    for i in 0..1001 {
+        tmp.write(&format!("program/audits/report-{i:04}.md"), "# Finding\n");
+    }
+    let r = run(&["build", tmp.join("program").to_str().unwrap()]);
+    assert_eq!(r.code, 2, "{}", r.stderr);
+    assert!(r.stderr.contains("1001 input documents"), "{}", r.stderr);
+    assert!(r.stderr.contains("at most 1000"), "{}", r.stderr);
+}
+
+#[test]
+fn build_refuses_audits_nested_past_the_depth_limit_with_exit_two() {
+    let tmp = TempDir::new("depth-limit");
+    let mut rel = String::from("program/audits");
+    for level in 0..17 {
+        rel.push_str(&format!("/d{level}"));
+    }
+    tmp.write(&format!("{rel}/deep.md"), "# Finding\n");
+    let r = run(&["build", tmp.join("program").to_str().unwrap()]);
+    assert_eq!(r.code, 2, "{}", r.stderr);
+    assert!(r.stderr.contains("nested more than 16"), "{}", r.stderr);
+}
+
+#[test]
+fn a_pdftotext_that_floods_its_output_is_killed_and_the_build_goes_on() {
+    let tmp = TempDir::new("pdftotext-flood");
+    tmp.write(
+        "program/scope.md",
+        "# Rewards\n\n- High: $10,000\n\n## In scope\n\n- src/Vault.sol\n",
+    );
+    // The same compressed-stream PDF as a_pdf_without_extractable_text, so the
+    // literal scrape finds nothing and pdftotext is run.
+    let mut pdf = b"%PDF-1.4\n1 0 obj\n<< /Length 8 /Filter /FlateDecode >>\nstream\n".to_vec();
+    pdf.extend_from_slice(&[0x78, 0x9c, 0x01, 0x02, 0x00, 0xff, 0xfe, 0x01, 0x02]);
+    pdf.extend_from_slice(b"\nendstream\nendobj\ntrailer\n<<>>\n%%EOF\n");
+    tmp.write_bytes("program/audits/prior.pdf", &pdf);
+    let bin_dir = tmp.join("bin");
+    support::fake_pdftotext(&bin_dir, "exec yes 0123456789abcdef");
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_priorart"))
+        .args(["build", tmp.join("program").to_str().unwrap()])
+        .env("PATH", support::path_with_first(&bin_dir))
+        .output()
+        .expect("run priorart");
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+    assert_eq!(output.status.code(), Some(0), "{stderr}");
+    // Notes are printed to stdout with the summary; a skipped source is a note.
+    let combined = format!("{stdout}{stderr}");
+    assert!(combined.contains("wrote more than 16 MiB"), "{combined}");
+    assert!(combined.contains("source skipped"), "{combined}");
+    assert!(!combined.to_lowercase().contains("panicked"), "{combined}");
+    assert!(combined.contains("source(s) indexed"), "{combined}");
+}

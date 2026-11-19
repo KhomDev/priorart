@@ -9,8 +9,37 @@ use crate::dossier::sha256;
 use crate::matching::{collapse, evidence_quote, mechanism_of, Profile};
 use crate::model::{Item, Payout, PriorAudit, Program, Source};
 use crate::vocab;
+use std::ffi::OsStr;
 use std::fs;
+use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{mpsc, Arc};
+use std::thread;
+use std::time::{Duration, Instant};
+
+/// Limits on one build. A folder over a limit is a usage error (exit 2) that
+/// names the limit; the build never reads without bound. They are constants,
+/// not flags: a larger audit is converted or split, and docs/dossier.md says so.
+pub const MAX_INPUT_BYTES: u64 = 64 * 1024 * 1024;
+/// Documents read from one program folder, across scope, known issues and audits.
+pub const MAX_INPUT_FILES: usize = 1_000;
+/// Total bytes of the documents read from one program folder.
+pub const MAX_TOTAL_BYTES: u64 = 512 * 1024 * 1024;
+/// Directory depth under audits/.
+pub const MAX_WALK_DEPTH: usize = 16;
+/// Directory entries visited under audits/, files and folders alike.
+pub const MAX_WALK_ENTRIES: usize = 10_000;
+
+/// pdftotext runs for at most this long, then is killed. A source that times
+/// out is skipped with a warning, like any other PDF that yields no text.
+pub const PDFTOTEXT_TIMEOUT: Duration = Duration::from_secs(60);
+/// pdftotext may write this many bytes to stdout. More and it is killed.
+pub const PDFTOTEXT_MAX_OUTPUT: usize = 16 * 1024 * 1024;
+/// Stderr kept for an error message. The rest is read and discarded, so a
+/// chatty child cannot block on a full pipe.
+const PDFTOTEXT_MAX_STDERR: usize = 4096;
 
 /// One program folder, read.
 #[derive(Debug)]
@@ -85,12 +114,12 @@ pub fn read_program_dir(dir: &Path, program_override: Option<&str>) -> Result<Im
     let program_file = read_program_file(dir, &mut notes)?;
     let program = program_of(dir, program_override, program_file.as_ref())?;
 
-    let mut inputs: Vec<Input> = Vec::new();
     // Order is fixed: program page, known issues, then audits by file name.
     // The dossier's item order and ids follow it, so two builds on the same
     // folder are byte-identical.
+    let mut found: Vec<(PathBuf, &str)> = Vec::new();
     if let Some(path) = find_one(dir, &["scope.md", "scope.html", "scope.txt"], &mut notes)? {
-        inputs.push(Input::new(&path, "program-page", dir)?);
+        found.push((path, "program-page"));
     }
     if let Some(path) = find_one(
         dir,
@@ -102,31 +131,35 @@ pub fn read_program_dir(dir: &Path, program_override: Option<&str>) -> Result<Im
         ],
         &mut notes,
     )? {
-        inputs.push(Input::new(&path, "known-issues", dir)?);
+        found.push((path, "known-issues"));
     }
     let audits_dir = dir.join("audits");
     if audits_dir.is_dir() {
-        let mut files = Vec::new();
-        collect_files(&audits_dir, &mut files)?;
+        let mut walk = Walk::default();
+        collect_files(&audits_dir, &mut walk, WalkLimits::DEFAULT)?;
+        let mut files = walk.docs;
         // A README in audits/ is scaffolding, not a prior audit.
         files.retain(|p| {
             !p.file_name()
                 .is_some_and(|n| n.to_string_lossy().eq_ignore_ascii_case("README.md"))
         });
         files.sort();
-        for path in files {
-            inputs.push(Input::new(&path, "audit", dir)?);
-        }
+        found.extend(files.into_iter().map(|p| (p, "audit")));
     } else if dir.join("audits").exists() {
         notes.push("audits exists but is not a directory; ignored".into());
     }
 
-    if inputs.is_empty() {
+    if found.is_empty() {
         return Err(format!(
             "no inputs found in {}. Expected scope.md (or .html/.txt), known-issues.md/.yaml/.txt, or audits/*.md/.txt/.pdf. Run priorart init to scaffold the layout.",
             dir.display()
         ));
     }
+    check_input_limits(&found, MAX_INPUT_FILES, MAX_INPUT_BYTES, MAX_TOTAL_BYTES)?;
+    let inputs: Vec<Input> = found
+        .iter()
+        .map(|(path, kind)| Input::new(path, kind, dir))
+        .collect::<Result<_, _>>()?;
 
     let mut sources = Vec::new();
     let mut items = Vec::new();
@@ -204,6 +237,7 @@ fn read_program_file(dir: &Path, notes: &mut Vec<String>) -> Result<Option<Progr
     if !path.exists() {
         return Ok(None);
     }
+    check_file_size(&path, file_len(&path)?, MAX_INPUT_BYTES)?;
     let text = read_text(&path)?;
     let parsed: ProgramFile = serde_saphyr::from_str(&text).map_err(|e| {
         format!(
@@ -350,9 +384,53 @@ fn display_name(path: &Path) -> String {
         .unwrap_or_else(|| path.display().to_string())
 }
 
-fn collect_files(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), String> {
+/// What the walk under audits/ has seen so far.
+#[derive(Default)]
+struct Walk {
+    docs: Vec<PathBuf>,
+    entries: usize,
+}
+
+/// The walk's limits, a parameter so a test can exercise them with small values.
+#[derive(Clone, Copy)]
+struct WalkLimits {
+    depth: usize,
+    entries: usize,
+}
+
+impl WalkLimits {
+    const DEFAULT: Self = Self {
+        depth: MAX_WALK_DEPTH,
+        entries: MAX_WALK_ENTRIES,
+    };
+}
+
+fn collect_files(dir: &Path, walk: &mut Walk, limits: WalkLimits) -> Result<(), String> {
+    collect_at_depth(dir, 0, walk, limits)
+}
+
+fn collect_at_depth(
+    dir: &Path,
+    depth: usize,
+    walk: &mut Walk,
+    limits: WalkLimits,
+) -> Result<(), String> {
+    if depth > limits.depth {
+        return Err(format!(
+            "{} is nested more than {} folders deep under audits/. priorart stops at that depth; flatten the folder.",
+            dir.display(),
+            limits.depth
+        ));
+    }
     let rd = fs::read_dir(dir).map_err(|e| format!("cannot read {}: {e}", dir.display()))?;
     for entry in rd.flatten() {
+        walk.entries += 1;
+        if walk.entries > limits.entries {
+            return Err(format!(
+                "audits/ holds more than {} entries. priorart stops there; move the rest out of the program folder.",
+                limits.entries
+            ));
+        }
         let path = entry.path();
         let name = entry.file_name().to_string_lossy().to_string();
         if name.starts_with('.') {
@@ -365,12 +443,64 @@ fn collect_files(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), String> {
             continue;
         }
         if meta.is_dir() {
-            collect_files(&path, out)?;
+            collect_at_depth(&path, depth + 1, walk, limits)?;
         } else if is_doc(&path) {
-            out.push(path);
+            walk.docs.push(path);
         }
     }
     Ok(())
+}
+
+fn file_len(path: &Path) -> Result<u64, String> {
+    fs::metadata(path)
+        .map(|m| m.len())
+        .map_err(|e| format!("cannot read {}: {e}", path.display()))
+}
+
+/// Refuse a folder over the count, per-file or total size limits, before any
+/// file is read. The error names the limit and the file that broke it.
+fn check_input_limits(
+    found: &[(PathBuf, &str)],
+    max_files: usize,
+    max_file_bytes: u64,
+    max_total_bytes: u64,
+) -> Result<(), String> {
+    if found.len() > max_files {
+        return Err(format!(
+            "{} input documents found; priorart reads at most {max_files} per program folder. Move the rest out of the folder, or build them in smaller folders.",
+            found.len()
+        ));
+    }
+    let mut total = 0u64;
+    for (path, _) in found {
+        let len = file_len(path)?;
+        check_file_size(path, len, max_file_bytes)?;
+        total = total.saturating_add(len);
+    }
+    if total > max_total_bytes {
+        return Err(format!(
+            "the input documents total {}; priorart reads at most {} per program folder. Split the folder.",
+            mib(total),
+            mib(max_total_bytes)
+        ));
+    }
+    Ok(())
+}
+
+fn check_file_size(path: &Path, len: u64, max: u64) -> Result<(), String> {
+    if len > max {
+        return Err(format!(
+            "{} is {}; priorart reads each input up to {}. Convert or split it, then build again.",
+            path.display(),
+            mib(len),
+            mib(max)
+        ));
+    }
+    Ok(())
+}
+
+fn mib(bytes: u64) -> String {
+    format!("{:.1} MiB", bytes as f64 / (1024.0 * 1024.0))
 }
 
 fn is_doc(path: &Path) -> bool {
@@ -480,31 +610,172 @@ pub fn pdf_to_text(path: &Path) -> Result<String, String> {
     if letters > 40 {
         return Ok(scraped);
     }
-    match std::process::Command::new("pdftotext")
-        .arg("-layout")
-        .arg("-q")
-        .arg(path)
-        .arg("-")
-        .output()
-    {
-        Ok(out) if out.status.success() => {
-            let text = String::from_utf8_lossy(&out.stdout).to_string();
-            if text.trim().is_empty() {
-                Err(format!("{}: pdftotext returned no text", path.display()))
-            } else {
-                Ok(text)
-            }
-        }
-        Ok(out) => Err(format!(
-            "{}: pdftotext failed ({})",
-            path.display(),
-            String::from_utf8_lossy(&out.stderr).trim()
-        )),
-        Err(_) => Err(format!(
+    let Some(program) = find_on_path(std::env::var_os("PATH").as_deref()) else {
+        return Err(format!(
             "{}: no extractable text (the uncompressed scrape found nothing and pdftotext is not installed). Convert it with pdftotext -layout and pass the .txt.",
             path.display()
-        )),
+        ));
+    };
+    run_pdftotext(&program, path, PDFTOTEXT_TIMEOUT, PDFTOTEXT_MAX_OUTPUT)
+        .map_err(|e| format!("{}: {e}", path.display()))
+}
+
+/// The pdftotext executable on PATH, or None. Only absolute PATH entries are
+/// searched. A relative entry is the current directory in disguise, and on
+/// Windows `Command::new` would also search the current directory first, so
+/// the lookup is done here and the child is started by its full path.
+pub fn find_on_path(path_var: Option<&OsStr>) -> Option<PathBuf> {
+    let names: &[&str] = if cfg!(windows) {
+        &["pdftotext.exe", "pdftotext.bat", "pdftotext.cmd"]
+    } else {
+        &["pdftotext"]
+    };
+    for dir in std::env::split_paths(path_var?) {
+        if !dir.is_absolute() {
+            continue;
+        }
+        for name in names {
+            let candidate = dir.join(name);
+            if candidate.is_file() {
+                return Some(candidate);
+            }
+        }
     }
+    None
+}
+
+/// Run `pdftotext -layout -q <pdf> -` with a time limit and an output limit.
+///
+/// The PDF is passed as an absolute path. An absolute path never starts with
+/// `-`, so pdftotext cannot read a file name as an option, and it does not
+/// depend on the current directory. A child that runs past `timeout`, or
+/// writes more than `max_output` bytes to stdout, is killed and this returns
+/// an error. Reader threads are not joined after a kill: a grandchild that
+/// still holds the pipe must not block the build.
+pub fn run_pdftotext(
+    program: &Path,
+    pdf: &Path,
+    timeout: Duration,
+    max_output: usize,
+) -> Result<String, String> {
+    let abs = std::path::absolute(pdf).map_err(|e| format!("cannot resolve the path: {e}"))?;
+    let mut child = Command::new(program)
+        .arg("-layout")
+        .arg("-q")
+        .arg(&abs)
+        .arg("-")
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| format!("could not start {}: {e}", program.display()))?;
+    let stdout = child.stdout.take().expect("stdout is piped");
+    let stderr = child.stderr.take().expect("stderr is piped");
+
+    let overflow = Arc::new(AtomicBool::new(false));
+    let (out_tx, out_rx) = mpsc::channel();
+    let flag = Arc::clone(&overflow);
+    thread::spawn(move || {
+        let _ = out_tx.send(read_capped(stdout, max_output, &flag));
+    });
+    let (err_tx, err_rx) = mpsc::channel();
+    thread::spawn(move || {
+        let _ = err_tx.send(read_head(stderr, PDFTOTEXT_MAX_STDERR));
+    });
+
+    let started = Instant::now();
+    let status = loop {
+        if overflow.load(Ordering::SeqCst) {
+            let _ = child.kill();
+            let _ = child.wait();
+            return Err(format!(
+                "pdftotext wrote more than {} MiB of text; killed",
+                max_output / (1024 * 1024)
+            ));
+        }
+        match child.try_wait() {
+            Ok(Some(status)) => break status,
+            Ok(None) => {}
+            Err(e) => {
+                let _ = child.kill();
+                return Err(format!("could not wait for pdftotext: {e}"));
+            }
+        }
+        if started.elapsed() >= timeout {
+            let _ = child.kill();
+            let _ = child.wait();
+            return Err(format!(
+                "pdftotext did not finish within {} s; killed",
+                timeout.as_secs()
+            ));
+        }
+        thread::sleep(Duration::from_millis(10));
+    };
+
+    // The child has exited. Its stdout is read to the end by the thread; a
+    // pipe still held by a grandchild is reported, not waited on forever.
+    let received = out_rx.recv_timeout(Duration::from_secs(5));
+    if overflow.load(Ordering::SeqCst) {
+        return Err(format!(
+            "pdftotext wrote more than {} MiB of text",
+            max_output / (1024 * 1024)
+        ));
+    }
+    let bytes = match received {
+        Ok(Ok(bytes)) => bytes,
+        Ok(Err(e)) => return Err(format!("could not read pdftotext output: {e}")),
+        Err(_) => return Err("pdftotext output did not end".into()),
+    };
+    if !status.success() {
+        let err = err_rx
+            .recv_timeout(Duration::from_secs(1))
+            .unwrap_or_default();
+        return Err(format!(
+            "pdftotext failed ({})",
+            String::from_utf8_lossy(&err).trim()
+        ));
+    }
+    let text = String::from_utf8_lossy(&bytes).to_string();
+    if text.trim().is_empty() {
+        Err("pdftotext returned no text".into())
+    } else {
+        Ok(text)
+    }
+}
+
+/// Read a pipe to its end, keeping at most `max` bytes. Past `max`, the
+/// reader sets the flag and stops; the caller kills the child.
+fn read_capped(mut pipe: impl Read, max: usize, overflow: &AtomicBool) -> Result<Vec<u8>, String> {
+    let mut out = Vec::new();
+    let mut chunk = [0u8; 8192];
+    loop {
+        match pipe.read(&mut chunk) {
+            Ok(0) => return Ok(out),
+            Ok(n) => {
+                if out.len() + n > max {
+                    overflow.store(true, Ordering::SeqCst);
+                    return Err("output limit reached".into());
+                }
+                out.extend_from_slice(&chunk[..n]);
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::Interrupted => {}
+            Err(e) => return Err(e.to_string()),
+        }
+    }
+}
+
+/// Read a pipe to its end, keeping the first `max` bytes and discarding the rest.
+fn read_head(mut pipe: impl Read, max: usize) -> Vec<u8> {
+    let mut kept = Vec::new();
+    let mut chunk = [0u8; 1024];
+    while let Ok(n) = pipe.read(&mut chunk) {
+        if n == 0 {
+            break;
+        }
+        let room = max.saturating_sub(kept.len()).min(n);
+        kept.extend_from_slice(&chunk[..room]);
+    }
+    kept
 }
 
 /// Pull literal strings out of an uncompressed PDF. Compressed streams are
@@ -1023,5 +1294,202 @@ mod tests {
         let pdf = b"BT (reduce_outflow credits the current segment only) Tj ET";
         let text = scrape_pdf_literals(pdf);
         assert!(text.contains("reduce_outflow"), "{text}");
+    }
+
+    /// A fresh directory for one test's files.
+    fn scratch(label: &str) -> PathBuf {
+        static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let n = N.fetch_add(1, Ordering::SeqCst);
+        let dir =
+            std::env::temp_dir().join(format!("priorart-unit-{}-{label}-{n}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    /// Write a stand-in for pdftotext whose body is a shell script, and return
+    /// the program to run. Unix: an executable script. Windows: a .bat that runs
+    /// the script under bash, as realism-gate's fake forge does. Written under a
+    /// temporary name and renamed into place, so nothing execs a file still open
+    /// for writing.
+    fn fake_pdftotext(dir: &Path, body: &str) -> PathBuf {
+        let script = dir.join(if cfg!(windows) {
+            "pdftotext.sh"
+        } else {
+            "pdftotext"
+        });
+        let tmp = dir.join("script.tmp");
+        fs::write(&tmp, format!("#!/bin/sh\n{body}\n")).unwrap();
+        fs::rename(&tmp, &script).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            fs::set_permissions(&script, fs::Permissions::from_mode(0o755)).unwrap();
+            script
+        }
+        #[cfg(windows)]
+        {
+            let bash = [
+                "C:\\Program Files\\Git\\bin\\bash.exe",
+                "C:\\Program Files\\Git\\usr\\bin\\bash.exe",
+            ]
+            .into_iter()
+            .find(|p| Path::new(p).is_file())
+            .unwrap_or("bash");
+            let bat = dir.join("pdftotext.bat");
+            fs::write(
+                &bat,
+                format!(
+                    "@echo off\r\nset \"d=%~dp0\"\r\nset \"d=%d:\\=/%\"\r\n\"{bash}\" \"%d%pdftotext.sh\" %*\r\n"
+                ),
+            )
+            .unwrap();
+            bat
+        }
+    }
+
+    #[test]
+    fn pdftotext_is_looked_up_on_absolute_path_entries_only() {
+        let dir = scratch("path");
+        let name = if cfg!(windows) {
+            "pdftotext.exe"
+        } else {
+            "pdftotext"
+        };
+        fs::write(dir.join(name), b"not run").unwrap();
+        // A relative entry that holds a pdftotext is never used.
+        let rel = PathBuf::from("target").join(format!("priorart-rel-{}", std::process::id()));
+        fs::create_dir_all(&rel).unwrap();
+        fs::write(rel.join(name), b"not run").unwrap();
+
+        let path_var = std::env::join_paths([rel.as_path(), dir.as_path()]).unwrap();
+        assert_eq!(
+            find_on_path(Some(path_var.as_os_str())),
+            Some(dir.join(name))
+        );
+
+        let only_relative = std::env::join_paths([rel.as_path()]).unwrap();
+        assert_eq!(find_on_path(Some(only_relative.as_os_str())), None);
+        assert_eq!(find_on_path(None), None);
+        let _ = fs::remove_dir_all(&rel);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn the_pdf_path_reaches_pdftotext_absolute_and_never_as_an_option() {
+        let dir = scratch("args");
+        // Echo the arguments, one per line. The text is then non-empty, so the
+        // call succeeds and the test can read what pdftotext was given.
+        let program = fake_pdftotext(&dir, "printf '%s\\n' \"$@\"");
+        let pdf = Path::new("-evil.pdf");
+        let text = run_pdftotext(&program, pdf, Duration::from_secs(30), 1 << 20)
+            .expect("the fake echoes its arguments");
+        let lines: Vec<&str> = text.lines().collect();
+        assert_eq!(&lines[..2], ["-layout", "-q"], "{text}");
+        let given = Path::new(lines[2]);
+        assert!(given.is_absolute(), "not absolute: {}", lines[2]);
+        assert_eq!(given.file_name().unwrap(), "-evil.pdf");
+        assert_eq!(lines[3], "-");
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_pdftotext_that_runs_past_the_timeout_is_killed() {
+        let dir = scratch("timeout");
+        let program = fake_pdftotext(&dir, "exec sleep 30");
+        let started = Instant::now();
+        let err = run_pdftotext(
+            &program,
+            Path::new("a.pdf"),
+            Duration::from_secs(1),
+            1 << 20,
+        )
+        .expect_err("it must time out");
+        assert!(err.contains("did not finish within 1 s"), "{err}");
+        assert!(
+            started.elapsed() < Duration::from_secs(20),
+            "the timeout did not stop the wait: {:?}",
+            started.elapsed()
+        );
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_pdftotext_that_floods_stdout_is_killed_at_the_cap() {
+        let dir = scratch("flood");
+        let program = fake_pdftotext(&dir, "exec yes 0123456789abcdef");
+        let err = run_pdftotext(
+            &program,
+            Path::new("a.pdf"),
+            Duration::from_secs(60),
+            1 << 20,
+        )
+        .expect_err("it must hit the output cap");
+        assert!(err.contains("wrote more than 1 MiB"), "{err}");
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_failing_pdftotext_reports_its_stderr() {
+        let dir = scratch("fail");
+        let program = fake_pdftotext(&dir, "echo broken-pdf >&2; exit 3");
+        let err = run_pdftotext(
+            &program,
+            Path::new("a.pdf"),
+            Duration::from_secs(30),
+            1 << 20,
+        )
+        .expect_err("exit 3 is a failure");
+        assert!(err.contains("pdftotext failed (broken-pdf)"), "{err}");
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn input_size_is_checked_per_file_and_in_total() {
+        let dir = scratch("sizes");
+        let a = dir.join("a.md");
+        let b = dir.join("b.md");
+        fs::write(&a, [b'x'; 10]).unwrap();
+        fs::write(&b, [b'y'; 10]).unwrap();
+        let one = vec![(a.clone(), "audit")];
+        let err = check_input_limits(&one, 10, 5, 100).expect_err("10 bytes over a 5-byte cap");
+        assert!(err.contains("a.md") && err.contains("up to"), "{err}");
+        let two = vec![(a, "audit"), (b, "audit")];
+        let err = check_input_limits(&two, 10, 100, 15).expect_err("20 bytes over a 15-byte total");
+        assert!(err.contains("total"), "{err}");
+        let err =
+            check_input_limits(&two, 1, 100, 100).expect_err("two documents over a count of one");
+        assert!(err.contains("2 input documents"), "{err}");
+        assert!(check_input_limits(&two, 2, 10, 20).is_ok());
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn the_audits_walk_stops_at_its_depth_and_entry_limits() {
+        let dir = scratch("walk");
+        let deep = dir.join("a").join("b").join("c");
+        fs::create_dir_all(&deep).unwrap();
+        fs::write(deep.join("x.md"), "x").unwrap();
+        let mut walk = Walk::default();
+        let limits = WalkLimits {
+            depth: 2,
+            entries: 100,
+        };
+        let err = collect_files(&dir, &mut walk, limits).expect_err("depth 3 is over a limit of 2");
+        assert!(err.contains("nested more than 2"), "{err}");
+
+        let flat = scratch("walk-flat");
+        for i in 0..5 {
+            fs::write(flat.join(format!("{i}.md")), "x").unwrap();
+        }
+        let mut walk = Walk::default();
+        let limits = WalkLimits {
+            depth: 16,
+            entries: 3,
+        };
+        let err = collect_files(&flat, &mut walk, limits).expect_err("5 entries over a limit of 3");
+        assert!(err.contains("more than 3 entries"), "{err}");
+        let _ = fs::remove_dir_all(&dir);
+        let _ = fs::remove_dir_all(&flat);
     }
 }
