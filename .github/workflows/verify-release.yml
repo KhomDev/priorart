@@ -1,0 +1,177 @@
+name: verify release
+
+# Installs a published release the three ways the README documents, on Linux,
+# macOS and Windows, and runs the binary on the demo fixtures. It writes
+# nothing: no release, no crate, no tag.
+#
+# Runs when a GitHub release is published, and by hand for any version:
+#   gh workflow run verify-release.yml -R KhomDev/priorart -f version=0.1.1
+# The release and the crate must already exist. The preflight job fails once,
+# plainly, if they do not, instead of letting every install fail.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to verify, e.g. 0.1.1 (the tag is v<version>)
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: release and crate are published
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      version: ${{ steps.tag.outputs.version }}
+    steps:
+      - name: Tag and version
+        id: tag
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -eu
+          if [ "$EVENT" = release ]; then
+            tag="$RELEASE_TAG"
+          else
+            tag="v${INPUT_VERSION#v}"
+          fi
+          version="${tag#v}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "verifying $tag"
+
+      - name: GitHub release has its archives and SHA256SUMS
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -eu
+          assets=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name') || {
+            echo "::error::no GitHub release $TAG yet; run this after the release workflow finishes"; exit 1; }
+          echo "$assets"
+          grep -qx SHA256SUMS <<<"$assets" || { echo "::error::release $TAG has no SHA256SUMS"; exit 1; }
+          for target in x86_64-unknown-linux-gnu aarch64-apple-darwin x86_64-pc-windows-msvc; do
+            ext=tar.gz; [ "$target" = x86_64-pc-windows-msvc ] && ext=zip
+            grep -qx "priorart-$TAG-$target.$ext" <<<"$assets" || {
+              echo "::error::release $TAG has no archive for $target"; exit 1; }
+          done
+
+      - name: crates.io has the version
+        shell: bash
+        env:
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          set -eu
+          code=$(curl -sS -o /dev/null -w '%{http_code}' -A "priorart-verify-release (github.com/KhomDev/priorart)" \
+            "https://crates.io/api/v1/crates/priorart/$VERSION")
+          [ "$code" = 200 ] || { echo "::error::priorart $VERSION is not on crates.io yet (HTTP $code); publish it first"; exit 1; }
+          echo "priorart $VERSION is on crates.io"
+
+  install:
+    name: install (${{ matrix.os }})
+    needs: preflight
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive: tar.gz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive: tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: zip
+    env:
+      TAG: ${{ needs.preflight.outputs.tag }}
+      VERSION: ${{ needs.preflight.outputs.version }}
+      TARGET: ${{ matrix.target }}
+      ARCHIVE: ${{ matrix.archive }}
+    steps:
+      # The fixtures come from the tag, so the smoke test runs the release's own demo.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.preflight.outputs.tag }}
+
+      - name: Install cargo-binstall
+        uses: taiki-e/install-action@75a7c0f87bd666af3cdb75c5b9e9d03ab6044e6f # v2.90.6
+        with:
+          tool: cargo-binstall
+
+      # 1. From crates.io: compile the published crate, locked, into its own root.
+      - name: cargo install from crates.io
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo install priorart --version "$VERSION" --locked --root "$RUNNER_TEMP/from-crates"
+          bin="$RUNNER_TEMP/from-crates/bin/priorart"
+          [ -x "$bin" ] || bin="$bin.exe"
+          echo "PRIORART_BIN=$bin" >> "$GITHUB_ENV"
+
+      # 2. The plain archive from the GitHub release, checked against SHA256SUMS.
+      - name: Plain archive, SHA256SUMS, unpack
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/archive"
+          mkdir -p "$dir"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "SHA256SUMS" --pattern "priorart-$TAG-$TARGET.$ARCHIVE" --dir "$dir"
+          cd "$dir"
+          if command -v sha256sum >/dev/null; then
+            sha256sum -c SHA256SUMS --ignore-missing
+          else
+            shasum -a 256 -c SHA256SUMS --ignore-missing
+          fi
+          if [ "$ARCHIVE" = zip ]; then
+            7z x -y "priorart-$TAG-$TARGET.zip" > /dev/null
+          else
+            tar -xzf "priorart-$TAG-$TARGET.tar.gz"
+          fi
+          bin="$dir/priorart-$TAG-$TARGET/priorart"
+          [ -x "$bin" ] || bin="$bin.exe"
+          echo "ARCHIVE_BIN=$bin" >> "$GITHUB_ENV"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      # 3. cargo binstall: the metadata in Cargo.toml, read from crates.io, picks
+      #    the same archive. Installed into its own folder.
+      - name: cargo binstall from crates.io
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo binstall --no-confirm --force --install-path "$RUNNER_TEMP/binstall" "priorart@$VERSION"
+          bin="$RUNNER_TEMP/binstall/priorart"
+          [ -x "$bin" ] || bin="$bin.exe"
+          echo "BINSTALL_BIN=$bin" >> "$GITHUB_ENV"
+
+      # Each binary: the right version, and the demo builds and checks.
+      - name: Version and demo smoke test, for each install
+        shell: bash
+        run: |
+          set -euo pipefail
+          for label in crates archive binstall; do
+            case "$label" in
+              crates) bin="$PRIORART_BIN" ;;
+              archive) bin="$ARCHIVE_BIN" ;;
+              binstall) bin="$BINSTALL_BIN" ;;
+            esac
+            echo "== $label: $bin"
+            got=$("$bin" --version)
+            test "$got" = "priorart $VERSION" || { echo "::error::$label printed '$got'"; exit 1; }
+            out="$RUNNER_TEMP/demo-$label.dossier"
+            "$bin" build examples/dossier-demo --out "$out"
+            "$bin" check examples/finding-demo.md --dossier "$out" > /dev/null
+            "$bin" ledger validate examples/ledger.example.yaml > /dev/null
+          done

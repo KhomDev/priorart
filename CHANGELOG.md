@@ -24,6 +24,11 @@ appears here only if it came from a command that can be re-run.
   software bill of materials, `priorart-vX.Y.Z.cdx.json`, is attached to each
   release and listed in `SHA256SUMS`. Attestations are made on version-tag runs
   only, never on a dry run.
+- **`verify-release` workflow.** Runs when a GitHub release is published, and by
+  hand for a given version. It installs that release on Linux, macOS and Windows
+  three ways (`cargo install` from crates.io, the release archive checked against
+  `SHA256SUMS`, and `cargo binstall`), checks `priorart --version`, and runs the
+  demo build, check and ledger validation. It writes nothing.
 
 ### Security
 
