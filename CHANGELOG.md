@@ -44,6 +44,12 @@ appears here only if it came from a command that can be re-run.
 
 ### Fixed
 
+- **`pdftotext` is retried when the executable is busy.** Starting a file that was
+  written a moment earlier can fail with "text file busy" (ETXTBSY) on Linux or a
+  sharing violation on Windows. The start is now retried up to ten times, 20 ms apart,
+  for those two errors only. It made `a_pdftotext_that_runs_past_the_timeout_is_killed`
+  fail intermittently on ubuntu-latest.
+
 - A dry run dispatched on a branch whose name contains a slash no longer fails
   at upload: the archive names use the ref with `/` replaced by `-`. The release
   step now runs only on a tag, so a dispatch on a branch cannot create a release
