@@ -1,5 +1,8 @@
 # Contributing
 
+Start with [ARCHITECTURE.md](ARCHITECTURE.md): the components, what crosses each
+boundary, and where to change things.
+
 The most valuable contribution is **a case where priorart was wrong, with the
 file and the re-runnable command**. The second is a documentation fix where the
 docs and the binary disagree. Both are more useful than a new feature.
