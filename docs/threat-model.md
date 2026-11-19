@@ -1,7 +1,7 @@
 # Threat model
 
 A short, STRIDE-light model of priorart. Every statement names the code or the
-test that backs it. Line numbers are for commit `9841b86` on `main`; they move
+test that backs it. Line numbers are for commit `5b58846` on `main`; they move
 when the code moves, so the names are the stable reference.
 
 Each guarantee has a status:
@@ -38,13 +38,13 @@ Each row is a point where bytes from an attacker-influenced file are parsed.
 |---|---|---|---|
 | Program page, known issues, audits (text) | Lossy UTF-8, then line and heading scan | `src/dossier/import.rs:398-444`, `:429` | None: the whole file is read |
 | PDF, uncompressed | Byte scan for literal strings, in process | `src/dossier/import.rs:513-568` | None |
-| PDF, compressed | Subprocess `pdftotext -layout -q <path> -` | `src/dossier/import.rs:476-508` | No timeout, no output cap; resolved through `PATH` by `Command::new` (`:483`); no `--` before the path |
-| `program.yaml` | `serde_saphyr::from_str`, unknown keys ignored | `src/dossier/import.rs:202-213` | None: `read_text` reads the whole file (`:465-468`) |
+| PDF, compressed | Subprocess `pdftotext -layout -q <absolute path> -` | `src/dossier/import.rs` `find_on_path`, `run_pdftotext` | Killed after `PDFTOTEXT_TIMEOUT` (60 s) or `PDFTOTEXT_MAX_OUTPUT` (16 MiB); found on absolute `PATH` entries only, never the current directory; the PDF is passed as an absolute path, so it can't be read as an option |
+| `program.yaml` | `serde_saphyr::from_str`, unknown keys ignored | `src/dossier/import.rs` `read_program_file` | `MAX_INPUT_BYTES` (64 MiB) per file |
 | Known issues as YAML | `serde_saphyr::from_str` | `src/dossier/import.rs:888-893` | None |
 | Ledger | `serde_saphyr::from_str` on one YAML document | `src/ledger/mod.rs:122-133` | None |
 | Finding (markdown) | Lossy UTF-8 | `src/check.rs:105-116` | None |
 | Dossier JSON | `serde_json`, schema id checked before the struct | `src/dossier/load.rs:9-28` | None |
-| Directory walk of `audits/` | `read_dir`, recursion | `src/dossier/import.rs:353-374` | No file-count or depth limit |
+| Directory walk of `audits/` | `read_dir`, recursion | `src/dossier/import.rs` `collect_at_depth`, `check_input_limits` | Depth `MAX_WALK_DEPTH` (16), `MAX_WALK_ENTRIES` (10 000) entries, `MAX_INPUT_FILES` (1000) documents, `MAX_TOTAL_BYTES` (512 MiB); exit 2 naming the limit |
 | Vocabularies and rejection data | Compiled in with `include_str!` | `src/vocab/mod.rs:82`, `src/rejections/mod.rs:19,27` | Trusted: part of the build |
 | Terminal output | Control characters stripped | `src/render/text.rs:10-15` | JSON output is escaped by `serde_json` |
 
@@ -64,20 +64,31 @@ Each row is a point where bytes from an attacker-influenced file are parsed.
 | G10 | Terminal output cannot carry control characters from input | `src/render/text.rs:10-15` | Read. No test. |
 | G11 | Dependencies are checked for advisories, yanked versions, licences and duplicate versions | CI jobs `cargo-deny` and `cargo-audit`; `deny.toml` (`yanked = "deny"`, `multiple-versions = "deny"`) | Tested in CI |
 | G12 | Format, lint and tests gate every change | CI `test` job runs `cargo fmt --check`, `clippy -D warnings`, `cargo test --locked --release` on three OSes | Tested in CI |
-| G13 | A release archive can be checked against its digest | `.github/workflows/release.yml` writes `SHA256SUMS` | Read. Release archives are not attested; see the open items. |
+| G13 | A release archive can be checked against its digest and its build provenance | `.github/workflows/release.yml` writes `SHA256SUMS` (archives and SBOM) and attests each archive and the SBOM on tag runs; `.github/workflows/verify-release.yml` installs a release three ways and checks `SHA256SUMS` | Tested for the digest. The attestation step has not run on a real tag yet: the first one is the next release. |
 
 ## Open items
 
 Each item is a hypothesis or a known gap. None is a confirmed exploit.
 
-1. **`pdftotext` has no timeout and no output cap** (`src/dossier/import.rs:483-502`).
-   A hostile PDF can hang the build or write without limit. *Unverified.*
-2. **`pdftotext` is found through `PATH`, and the path is not protected from being read as an option.**
-   The path is passed without `--` or an absolute prefix (`:484-486`). On Windows,
-   `Command::new` may also search the current directory. *Unverified; to be checked
-   against the Rust standard library's Windows behaviour.*
-3. **No input limits.** File size, file count and directory depth are unbounded
-   (`src/dossier/import.rs:353-374`, `:400`, `:466`, `:477`). *Read.*
+1. ~~**`pdftotext` has no timeout and no output cap.**~~ *Closed* (Unreleased, PR #23):
+   the child is killed after 60 s or 16 MiB, and the source is skipped with a warning.
+   Tests: `a_pdftotext_that_runs_past_the_timeout_is_killed`,
+   `a_pdftotext_that_floods_stdout_is_killed_at_the_cap` (unit) and
+   `a_pdftotext_that_floods_its_output_is_killed_and_the_build_goes_on` (CLI).
+2. ~~**`pdftotext` is found through `PATH`, and the path is not protected from being read as an option.**~~
+   *Closed* (Unreleased, PR #23): `find_on_path` searches absolute `PATH` entries only,
+   and the child is started by its full path, so the current directory is never searched
+   on Windows. The PDF is passed as an absolute path, which can't start with `-`.
+   Tests: `pdftotext_is_looked_up_on_absolute_path_entries_only`,
+   `the_pdf_path_reaches_pdftotext_absolute_and_never_as_an_option`. On Windows a
+   `pdftotext.bat` or `.cmd` on `PATH` is accepted too; Rust's standard library escapes
+   batch-file arguments and refuses ones it can't escape.
+3. ~~**No input limits.**~~ *Closed* (Unreleased, PR #23): per-file size, document
+   count, total size, walk depth and walk entries are capped before any file is read.
+   Tests: `the_audits_walk_stops_at_its_depth_and_entry_limits` (unit),
+   `build_refuses_more_documents_than_the_limit_with_exit_two`,
+   `build_refuses_audits_nested_past_the_depth_limit_with_exit_two` (CLI), and
+   `input_size_is_checked_per_file_and_in_total` (unit) for the per-file, total and count limits.
 4. **Symlinks and dot-files under `audits/` are skipped** (`src/dossier/import.rs:358-366`).
    No test covers this. *Read, untested.*
 5. **Parser robustness is not measured.** No fuzzing or property tests exist for the
@@ -91,9 +102,11 @@ Each item is a hypothesis or a known gap. None is a confirmed exploit.
    printed verbatim. An agent reading the output may treat quoted text as
    instructions. priorart executes nothing from input content, and the output carries
    page numbers and source paths, but no test models an agent. *Unverified in practice.*
-8. **Releases are not attested and no install verification is documented.** The
-   release workflow writes `SHA256SUMS` only (`.github/workflows/release.yml`).
-   *Read.* Planned in the release PRs.
+8. **Release attestation is in place but not yet exercised.** Since PR #24, tag runs
+   attest each archive and the CycloneDX SBOM, and docs/install.md documents
+   `gh attestation verify`. Since PR #25, `verify-release.yml` installs a release from
+   crates.io, from the archives and through `cargo binstall`. *Read.* The attestation
+   step runs on the next tag; until then no priorart release carries one.
 9. **No reproducible-build check.** Nothing builds a tag twice and compares digests. *Read.*
 
 ## Cross-references
