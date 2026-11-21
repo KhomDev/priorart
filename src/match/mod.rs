@@ -25,9 +25,10 @@ pub const DEFAULT_TOP_K: usize = 5;
 /// The largest --top-k accepted; larger values are a usage error.
 pub const MAX_TOP_K: usize = 50;
 
-/// A symbol that appears in more than this share of dossier items is treated
-/// as generic and never counts toward the threshold. An identifier that
-/// appears once is always specific, however small the dossier.
+/// A symbol that appears in more than this share of the items sharing a symbol
+/// with the finding is treated as generic and never counts toward the
+/// threshold. An identifier that appears once is always specific, however
+/// small the dossier.
 pub const GENERIC_DF_PERCENT: usize = 20;
 
 /// Language keywords and names that appear in almost every report. They are
@@ -115,49 +116,6 @@ const STOP_IDENTS: &[&str] = &[
     "tests",
     "src",
     "lib",
-];
-
-/// Root-cause stems. They never match on their own; they only appear in the
-/// comparison beside identifiers that already overlap.
-const ROOT_CAUSES: &[&str] = &[
-    "reentrancy",
-    "overflow",
-    "underflow",
-    "rounding",
-    "precision",
-    "truncation",
-    "slippage",
-    "deadline",
-    "oracle",
-    "stale",
-    "staleness",
-    "signature",
-    "replay",
-    "authorization",
-    "unchecked",
-    "inflation",
-    "dilution",
-    "liquidation",
-    "accounting",
-    "refund",
-    "invariant",
-    "callback",
-    "nonce",
-    "grief",
-    "griefing",
-    "freeze",
-    "collateral",
-    "allowance",
-    "permit",
-    "sandwich",
-    "frontrun",
-    "twap",
-    "netting",
-    "outflow",
-    "segment",
-    "share",
-    "fee",
-    "reward",
 ];
 
 // The inline-code delimiter is written as \x60 so this source file contains no
@@ -261,7 +219,6 @@ pub struct Profile {
     /// but never enough on their own: in the public benchmark, path-only matches
     /// grouped unrelated findings that merely lived in the same repository.
     pub paths: BTreeSet<String>,
-    pub roots: BTreeSet<String>,
     /// The identifier as it was written, keyed by its lowercased form, so a
     /// dossier stores FeeLedger rather than feeledger and a rebuilt
     /// profile still recognises it as a symbol.
@@ -283,21 +240,14 @@ impl Profile {
                 profile.insert(ident);
             }
         }
-        profile.roots = root_causes(text);
         profile
     }
 
-    pub fn from_parts(identifiers: &[String], roots: &[String]) -> Self {
+    pub fn from_parts(identifiers: &[String]) -> Self {
         let mut profile = Self::default();
         for id in identifiers {
             if let Some(ident) = classify_ident(id) {
                 profile.insert(ident);
-            }
-        }
-        for r in roots {
-            let n = r.to_lowercase();
-            if ROOT_CAUSES.contains(&n.as_str()) {
-                profile.roots.insert(n);
             }
         }
         profile
@@ -404,15 +354,6 @@ fn candidates(text: &str) -> Vec<String> {
     out
 }
 
-fn root_causes(text: &str) -> BTreeSet<String> {
-    let low = text.to_lowercase();
-    ROOT_CAUSES
-        .iter()
-        .filter(|w| low.split(|c: char| !c.is_alphanumeric()).any(|t| t == **w))
-        .map(|w| (*w).to_string())
-        .collect()
-}
-
 /// Collapse whitespace and cap at a length, so a quote stays quotable.
 pub fn collapse(s: &str) -> String {
     let one = s.split_whitespace().collect::<Vec<_>>().join(" ");
@@ -427,30 +368,47 @@ pub fn collapse(s: &str) -> String {
 pub const MAX_QUOTE_CHARS: usize = 320;
 
 /// Words that flip the meaning of a match when they precede it in its clause.
-const NEGATION_CUES: [&str; 16] = [
-    "no", "not", "never", "without", "cannot", "nor", "neither", "none", "zero", "non", "isn",
-    "aren", "wasn", "weren", "doesn", "didn",
+/// The apostrophe forms are listed explicitly because `tokens` keeps an ASCII
+/// apostrophe inside a word: without them, `isn't` would not match `isn`.
+const NEGATION_CUES: [&str; 28] = [
+    "no",
+    "not",
+    "never",
+    "without",
+    "cannot",
+    "nor",
+    "neither",
+    "none",
+    "zero",
+    "non",
+    "isn",
+    "aren",
+    "wasn",
+    "weren",
+    "doesn",
+    "didn",
+    "isn't",
+    "aren't",
+    "wasn't",
+    "weren't",
+    "doesn't",
+    "didn't",
+    "can't",
+    "won't",
+    "don't",
+    "couldn't",
+    "shouldn't",
+    "wouldn't",
 ];
 
 /// Negation that follows a match: "X is not used", "X isn't reachable". Only
 /// explicit not-forms count here, so "stale but there is no pause" does not
 /// negate "stale".
-const POST_NEGATION_CUES: [&str; 10] = [
-    "not", "never", "without", "cannot", "isn", "aren", "wasn", "weren", "doesn", "didn",
+const POST_NEGATION_CUES: [&str; 21] = [
+    "not", "never", "without", "cannot", "isn", "aren", "wasn", "weren", "doesn", "didn", "isn't",
+    "aren't", "wasn't", "weren't", "doesn't", "didn't", "can't", "won't", "don't", "couldn't",
+    "wouldn't",
 ];
-
-/// The clause fragment before a match, at most 24 characters, stopping at
-/// clause punctuation.
-fn before_window(low: &str, start: usize) -> &str {
-    let mut left = start;
-    for (i, c) in low[..start].char_indices().rev() {
-        if start - i > 24 || is_clause_break(c) {
-            break;
-        }
-        left = i;
-    }
-    &low[left..start]
-}
 
 /// The clause fragment after a match, at most 16 characters, stopping at
 /// clause punctuation.
@@ -475,6 +433,59 @@ fn is_clause_break(c: char) -> bool {
     matches!(c, '.' | ';' | ',' | ':' | '!' | '?')
 }
 
+/// Tokens before a match with their byte offset, so a cue outside the narrow
+/// window can still be paired with a "without" inside it.
+fn tokens_with_pos(window: &str) -> Vec<(String, usize)> {
+    let mut out = Vec::new();
+    let mut start: Option<usize> = None;
+    for (i, c) in window.char_indices() {
+        if c.is_alphanumeric() || c == '\'' {
+            start.get_or_insert(i);
+        } else if let Some(s) = start.take() {
+            out.push((window[s..i].to_lowercase(), s));
+        }
+    }
+    if let Some(s) = start {
+        out.push((window[s..].to_lowercase(), s));
+    }
+    out
+}
+
+/// Whether a negation cue before the match flips its meaning.
+///
+/// The narrow window is 24 characters, but the idiom "not without X" can put
+/// `not` just outside it. A cue outside the window is therefore considered
+/// only when it is paired with a `without` inside the window; a lone "no" about
+/// something else in the clause stays ignored.
+fn clause_negates(low: &str, start: usize) -> bool {
+    let mut left = 0usize;
+    for (i, c) in low[..start].char_indices().rev() {
+        if is_clause_break(c) {
+            left = i + c.len_utf8();
+            break;
+        }
+    }
+    let clause = &low[left..start];
+    let toks = tokens_with_pos(clause);
+    let visible_from = start.saturating_sub(24);
+    let mut i = 0usize;
+    while i < toks.len() {
+        let (token, at) = &toks[i];
+        if NEGATION_CUES.contains(&token.as_str()) {
+            let paired_without =
+                token == "without" && i > 0 && NEGATION_CUES.contains(&toks[i - 1].0.as_str())
+                    || toks
+                        .get(i + 1)
+                        .is_some_and(|next| token != "without" && next.0 == "without");
+            if !paired_without && left + at >= visible_from {
+                return true;
+            }
+        }
+        i += 1;
+    }
+    false
+}
+
 /// Is the match at [start, end) negated by a cue in its own clause?
 ///
 /// Cues before the match count, and so do explicit not-forms after it. The
@@ -488,8 +499,7 @@ pub fn negated_near(low: &str, start: usize, end: usize) -> bool {
     {
         return false;
     }
-    let before = before_window(low, start);
-    if tokens(before).any(|token| NEGATION_CUES.contains(&token.as_str())) {
+    if clause_negates(low, start) {
         return true;
     }
     let after = after_window(low, end);
@@ -544,11 +554,13 @@ pub fn evidence_quote(text: &str) -> String {
         .iter()
         .find_map(|s| {
             let low = s.to_lowercase();
-            profile
-                .symbols
-                .iter()
-                .find(|id| low.contains(id.as_str()))
-                .map(|id| (*s, low.find(id.as_str())))
+            profile.symbols.iter().find_map(|id| {
+                low.find(id.as_str()).map(|byte| {
+                    // `anchor` is used as a character index below, so convert
+                    // the byte offset; with non-ASCII text they differ.
+                    (*s, Some(low[..byte].chars().count()))
+                })
+            })
         })
         .or_else(|| {
             sentences
@@ -563,11 +575,16 @@ pub fn evidence_quote(text: &str) -> String {
     let chars: Vec<char> = candidate.chars().collect();
     let anchor = anchor.unwrap_or(0).min(chars.len());
     let mut from = anchor.saturating_sub(120);
-    while from > 0 && !chars[from - 1].is_whitespace() {
+    // Move to a word boundary, but only a little: a long run with no
+    // whitespace (a base64 blob, a repeated character) must not drag the
+    // window back to the start of the sentence and blow the quote limit.
+    let from_floor = from.saturating_sub(20);
+    while from > from_floor && !chars[from - 1].is_whitespace() {
         from -= 1;
     }
     let mut to = (anchor + 200).min(chars.len());
-    while to < chars.len() && !chars[to].is_whitespace() {
+    let to_ceiling = (to + 18).min(chars.len());
+    while to < to_ceiling && !chars[to].is_whitespace() {
         to += 1;
     }
     let mut out = String::new();
@@ -630,17 +647,27 @@ pub fn extract_paths(text: &str) -> Vec<String> {
 
 fn glob_match(pattern: &str, path: &str) -> bool {
     let mut re = String::from("^");
-    let mut chars = pattern.chars().peekable();
-    while let Some(c) = chars.next() {
-        match c {
-            '*' if chars.peek() == Some(&'*') => {
-                chars.next();
+    let chars: Vec<char> = pattern.chars().collect();
+    let mut i = 0usize;
+    while i < chars.len() {
+        match chars[i] {
+            '*' if chars.get(i + 1) == Some(&'*') => {
+                // `**/` is zero or more whole directories: `src/**/*.sol`
+                // matches `src/Vault.sol` as well as `src/a/Vault.sol`.
+                if chars.get(i + 2) == Some(&'/') {
+                    re.push_str("(?:.*/)?");
+                    i += 3;
+                    continue;
+                }
                 re.push_str(".*");
+                i += 2;
+                continue;
             }
             '*' => re.push_str("[^/]*"),
             '?' => re.push_str("[^/]"),
             other => re.push_str(&regex::escape(&other.to_string())),
         }
+        i += 1;
     }
     re.push('$');
     Regex::new(&re).is_ok_and(|r| r.is_match(path))
@@ -686,28 +713,41 @@ pub struct Ranked {
     pub shared_symbols: usize,
     pub specific_symbols: usize,
     pub shared_paths: usize,
-    pub shared_roots: Vec<String>,
-    /// Sum of (items - df + 1) over the shared specific symbols: higher means
-    /// the overlap rests on rarer names.
+    /// Sum of (relevant items - df + 1) over the shared specific symbols:
+    /// higher means the overlap rests on rarer names.
     pub rarity: u64,
 }
 
 /// Rank dossier items against the finding. Only items with at least
-/// MIN_SHARED_IDENTIFIERS shared strong identifiers are returned; the sort is
-/// shared-identifier count descending, then item order ascending (which is the
-/// dossier's stable document order). Word overlap is never scored.
+/// MIN_SHARED_IDENTIFIERS shared specific symbols are returned; the sort is
+/// specific-symbol count descending, then rarity, then symbol count, then
+/// shared paths, then the identifiers themselves. Word overlap is never
+/// scored, and document order is never a tie-break.
 pub fn rank(items: &[Item], finding_text: &str, top_k: usize) -> Vec<Ranked> {
     let mine = Profile::from_text(finding_text);
+    rank_with_profile(items, &mine, top_k)
+}
+
+/// The ranking, with the finding's profile already parsed.
+pub fn rank_with_profile(items: &[Item], mine: &Profile, top_k: usize) -> Vec<Ranked> {
     if mine.symbols.len() < MIN_SHARED_IDENTIFIERS {
         return Vec::new();
     }
-    // Document frequency of every symbol across the dossier, so an identifier
-    // that appears in most items (a shared file's only contract, a common
-    // helper) cannot carry a match on its own.
-    let total = items.len();
+    let profiles: Vec<Profile> = items
+        .iter()
+        .map(|item| Profile::from_parts(&item.identifiers))
+        .collect();
+    // The share that decides whether a symbol is generic is measured over the
+    // items that could be prior art for this finding: those sharing at least
+    // one symbol with it. An item that shares nothing can never rank, and
+    // letting it change the denominator would make the ranking depend on
+    // unrelated files in the dossier.
+    let relevant_total = profiles
+        .iter()
+        .filter(|theirs| !mine.symbols.is_disjoint(&theirs.symbols))
+        .count();
     let mut df: std::collections::BTreeMap<String, usize> = std::collections::BTreeMap::new();
-    for item in items {
-        let theirs = Profile::from_parts(&item.identifiers, &[]);
+    for theirs in &profiles {
         for symbol in &theirs.symbols {
             *df.entry(symbol.clone()).or_insert(0) += 1;
         }
@@ -716,13 +756,10 @@ pub fn rank(items: &[Item], finding_text: &str, top_k: usize) -> Vec<Ranked> {
         let count = df.get(id).copied().unwrap_or(0);
         // A symbol named by at most two items is rare in absolute terms, which
         // keeps the rule usable on small dossiers (an audit plus its index).
-        // This is the specificity floor the 0.1.0 benchmark was measured on;
-        // it is not tuned after seeing the deciding corpus.
-        count <= 2 || count * 100 <= total * GENERIC_DF_PERCENT
+        count <= 2 || count * 100 <= relevant_total * GENERIC_DF_PERCENT
     };
     let mut rows: Vec<Ranked> = Vec::new();
-    for (index, item) in items.iter().enumerate() {
-        let theirs = Profile::from_parts(&item.identifiers, &[]);
+    for (index, theirs) in profiles.iter().enumerate() {
         let shared_symbols: Vec<String> = mine
             .symbols
             .intersection(&theirs.symbols)
@@ -737,7 +774,7 @@ pub fn rank(items: &[Item], finding_text: &str, top_k: usize) -> Vec<Ranked> {
         }
         let rarity: u64 = specific
             .iter()
-            .map(|id| (total + 1 - df.get(id.as_str()).copied().unwrap_or(0)) as u64)
+            .map(|id| (relevant_total + 1 - df.get(id.as_str()).copied().unwrap_or(0)) as u64)
             .sum();
         let shared_paths: Vec<String> = mine.paths.intersection(&theirs.paths).cloned().collect();
         let mut shared: Vec<String> = specific.iter().map(|s| (*s).clone()).collect();
@@ -748,14 +785,12 @@ pub fn rank(items: &[Item], finding_text: &str, top_k: usize) -> Vec<Ranked> {
                 .cloned(),
         );
         shared.extend(shared_paths.iter().cloned());
-        let shared_roots: Vec<String> = mine.roots.intersection(&theirs.roots).cloned().collect();
         rows.push(Ranked {
             index,
             shared_symbols: shared_symbols.len(),
             specific_symbols: specific.len(),
             shared_paths: shared_paths.len(),
             shared_identifiers: shared,
-            shared_roots,
             rarity,
         });
     }
@@ -1142,5 +1177,93 @@ mod tests {
         assert!(contains_unnegated(&text.to_lowercase(), "oracle"));
         assert!(contains_unnegated(&text.to_lowercase(), "any user"));
         assert!(!contains_unnegated(&text.to_lowercase(), "privileged"));
+    }
+
+    #[test]
+    fn ascii_apostrophe_contractions_are_negation_cues() {
+        for text in [
+            "The reserve isn't funded.",
+            "The reserve doesn't exist.",
+            "The reserve can't be reached.",
+            "The reserve won't be funded.",
+        ] {
+            assert!(
+                !contains_unnegated(&text.to_lowercase(), "reserve"),
+                "{text}"
+            );
+        }
+        assert!(contains_unnegated("The reserve is funded.", "reserve"));
+    }
+
+    #[test]
+    fn not_without_is_a_requirement_not_a_denial() {
+        let text = "The attacker is not without a privileged role in this design.";
+        assert!(contains_unnegated(&text.to_lowercase(), "role"), "{text}");
+        assert!(
+            contains_unnegated(&text.to_lowercase(), "privileged"),
+            "{text}"
+        );
+        let pair = "This is never without an admin call.";
+        assert!(contains_unnegated(&pair.to_lowercase(), "admin"), "{pair}");
+        // A plain "without" still denies.
+        assert!(!contains_unnegated(
+            "the attacker is without a privileged role",
+            "role"
+        ));
+    }
+
+    #[test]
+    fn a_quote_window_uses_character_positions_not_byte_offsets() {
+        // 300 non-ASCII characters put the byte offset far ahead of the
+        // character offset; the window must still land on the identifier.
+        let prefix = "\u{e9}".repeat(300);
+        let long = format!("{prefix} FeeAccountingMismatch {}", "tail ".repeat(100));
+        let quote = evidence_quote(&long);
+        assert!(quote.contains("FeeAccountingMismatch"), "{}", &quote[..]);
+        assert!(
+            quote.chars().count() <= MAX_QUOTE_CHARS + 40,
+            "window drifted: {} chars",
+            quote.chars().count()
+        );
+    }
+
+    #[test]
+    fn a_double_star_matches_zero_or_more_directories() {
+        assert!(in_scope("src/Vault.sol", "src/**/*.sol"));
+        assert!(in_scope("src/a/Vault.sol", "src/**/*.sol"));
+        assert!(in_scope("src/a/b/Vault.sol", "src/**/*.sol"));
+        assert!(in_scope("src/Vault.t.sol", "src/**/*.t.sol"));
+        assert!(!in_scope("test/Vault.sol", "src/**/*.sol"));
+        assert!(!in_scope("src/a/Vault.txt", "src/**/*.sol"));
+    }
+
+    #[test]
+    fn adding_an_item_that_shares_nothing_does_not_change_the_top_k() {
+        let mut items = Vec::new();
+        for i in 0..2 {
+            items.push(item(
+                &format!("item-{:04}", i + 1),
+                "Pool0.call0 and Pool1.call0 are both used.",
+            ));
+        }
+        for i in 0..8 {
+            items.push(item(
+                &format!("noise-{i}"),
+                &format!("Filler{i}.call{i} is unrelated."),
+            ));
+        }
+        let finding = "# Finding\n\n`Pool0.call0` and `Pool1.call0` both fail.\n";
+        let before = rank(&items, finding, DEFAULT_TOP_K);
+        for i in 0..4 {
+            items.push(item(
+                &format!("extra-{i}"),
+                &format!("Unrelated{i}.run{i} appears here."),
+            ));
+        }
+        let after = rank(&items, finding, DEFAULT_TOP_K);
+        assert_eq!(
+            before.iter().map(|r| r.index).collect::<Vec<_>>(),
+            after.iter().map(|r| r.index).collect::<Vec<_>>()
+        );
     }
 }

@@ -101,7 +101,7 @@ pub fn validate(paths: &[PathBuf], strict: bool, example_mode: bool) -> Result<R
         .flat_map(|r| r.warnings.iter().map(move |m| label(&r.ledger, m)))
         .collect();
     let entries = ledgers.iter().map(|r| r.entries).sum();
-    let ok = all_errors.is_empty() && !(strict && !all_warnings.is_empty());
+    let ok = all_errors.is_empty() && (all_warnings.is_empty() || !strict);
     Ok(Report {
         schema_version: SCHEMA_VERSION,
         ok,
@@ -638,7 +638,7 @@ pub fn dialect_problem(pattern: &str) -> Option<String> {
             }
             continue;
         }
-        if pattern[i..].starts_with("(?") {
+        if c == '(' && chars.get(i + 1) == Some(&'?') {
             let rest: String = chars[i + 2..].iter().collect();
             if rest.starts_with('=')
                 || rest.starts_with('!')
@@ -1065,6 +1065,18 @@ mod tests {
                 regex_problem(good)
             );
         }
+    }
+
+    #[test]
+    fn a_non_ascii_pattern_is_checked_without_panicking() {
+        // The dialect scan walked characters but sliced the pattern by a
+        // character index as if it were a byte offset; a multi-byte character
+        // before `(?` made that slice panic.
+        for pattern in ["caf\u{e9}(?=x)", "\u{e9}(?<!x)", "\u{4e2d}\u{6587}(?#note)"] {
+            let problem = regex_problem(pattern);
+            assert!(problem.is_some(), "{pattern:?}");
+        }
+        assert!(regex_problem("caf\u{e9}.*owner").is_none());
     }
 
     #[test]

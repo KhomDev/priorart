@@ -480,7 +480,7 @@ pub fn rules() -> String {
         ));
     }
     out.push_str(&format!(
-        "\nHow a prior item is ranked: >= {} shared symbol identifiers (function, error, contract,\n  qualified names, snake_case, camelCase, backticked spans) move it into the list. Paths are\n  evidence and tie-break only; symbols named by more than 20% of dossier items are generic\n  and never qualify. Word overlap is not scored (measured Jaccard about 0.024). Top-k is\n  specificity, then rarity, then identifier order - never document order.\n",
+        "\nHow a prior item is ranked: >= {} shared symbol identifiers (function, error, contract,\n  qualified names, snake_case, camelCase, backticked spans) move it into the list. Paths are\n  evidence and tie-break only; symbols named by more than 20% of the items that share a\n  symbol with the finding are generic and never qualify. Word overlap is not scored\n  (measured Jaccard about 0.024). Top-k is specificity, then rarity, then identifier order\n  - never document order.\n",
         matching::MIN_SHARED_IDENTIFIERS
     ));
     out.push_str(&format!(

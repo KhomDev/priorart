@@ -10,7 +10,7 @@ carried them is frozen at 0.9.0.
 cargo install priorart
 # or, if you have cargo-binstall:
 cargo binstall priorart
-priorart --version   # priorart 0.1.2
+priorart --version   # priorart 0.1.3
 ```
 
 Or straight from the release tag on GitHub:
@@ -41,7 +41,7 @@ GitHub's workflow for this repository, that names the archive's SHA-256 and the
 commit and workflow that built it. Check it with the GitHub CLI:
 
 ```sh
-gh attestation verify priorart-v0.1.2-x86_64-unknown-linux-gnu.tar.gz --repo KhomDev/priorart
+gh attestation verify priorart-v0.1.3-x86_64-unknown-linux-gnu.tar.gz --repo KhomDev/priorart
 ```
 
 The release also carries `SHA256SUMS` and a CycloneDX software bill of materials

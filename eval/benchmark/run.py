@@ -387,23 +387,33 @@ RUN_HISTORY = [
         "duplicate_recall": {"n": 64, "hits": 39, "recall": 0.6094, "wilson95": [0.4869, 0.7194]},
         "known_prior_recall": {"n": 1, "hits": 0},
         "tool_errors": 0,
-        "note": "number of record; the plan's >30% rule applies to this run",
+        "note": "number of record for 0.1.0; the plan's >30% rule applies to this run",
+    },
+    {
+        "binary_sha256": "be3739736afdaee6de26a3a3dda50f5549714ce2a05a34d46da9626b538531de",
+        "label": "0.1.3: specificity share measured over items that share a symbol with the finding",
+        "date": "2026-11-21",
+        "far": {"n": 60, "alarms": 15, "rate": 0.25, "wilson95": [0.1578, 0.3723]},
+        "duplicate_recall": {"n": 64, "hits": 36, "recall": 0.5625, "wilson95": [0.4409, 0.6771]},
+        "known_prior_recall": {"n": 1, "hits": 0},
+        "tool_errors": 0,
+        "note": "re-measured on the full public corpus after the held-out split was already opened for 0.1.0; not a fresh out-of-sample result",
     },
 ]
 
-# The debug binary is what this harness measured. It is not the crates.io or
-# release artefact: those are release-profile builds with different hashes. The
-# durable provenance is the source commit (and tag) the release is cut from, so
-# the fields are recorded here once the Lead tags, and are null until then.
+# The measured binary is a local build, not the crates.io or release artefact.
+# The durable provenance is the source commit (and tag) the release is cut from,
+# so those fields are recorded here once the release is tagged, and are null
+# until then.
 RELEASE_PROVENANCE = {
-    "measured_binary_sha256": "dabfcc0ca197ee35b40772cb7db666f17105c5c36faa7f9da7ef783a9a78e12a",
+    "measured_binary_sha256": "be3739736afdaee6de26a3a3dda50f5549714ce2a05a34d46da9626b538531de",
     "release_binary_sha256": None,
     "source_commit": None,
     "tag": None,
-    "status": "pending: the release tree is uncommitted at the time of measurement "
-              "(priorart HEAD f715c07 with 226 changed/untracked paths), so no commit "
-              "or tag exists yet. Record the commit and tag here when the Lead cuts the "
-              "release; the release-profile binary hash will differ from the debug hash.",
+    "status": "pending: 0.1.3 was measured with a local release-profile build "
+              "before the tag. Record the published release binary hash, source "
+              "commit and tag here when the release is cut; the release build's "
+              "hash will differ from the measured one.",
 }
 
 NOT_CLAIMED = [
@@ -411,7 +421,7 @@ NOT_CLAIMED = [
     "not a false-positive rate on model-written hypotheses",
     "not a duplicate-detector score for submissions against public reports: the duplicate variant is a reading list and never a duplicate verdict",
     "the known-prior positives are one reader's grounding, not the judge's published reason",
-    "no held-out split was opened",
+    "the held-out split was opened for the 0.1.0 run; the 0.1.3 number is a re-measurement on the full public corpus, not a fresh out-of-sample result",
 ]
 
 

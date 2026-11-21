@@ -36,10 +36,13 @@ path-only matches grouped unrelated findings ([benchmark.md](benchmark.md)).
 
 ## The 20% generic filter
 
-An identifier is **generic** when it appears in more than 20% of the dossier's
-items, unless it is named by at most two items. A symbol named by one or two
-items is rare in absolute terms, which keeps the rule usable on a dossier that
-holds one audit and its index. Generic symbols never count toward the threshold.
+An identifier is **generic** when it appears in more than 20% of the items that
+share at least one symbol with the finding, unless it is named by at most two
+items. Items that share nothing with the finding can never rank, so they are
+not part of the denominator; this is what makes the top-k independent of
+unrelated files in the dossier. A symbol named by one or two items is rare in
+absolute terms, which keeps the rule usable on a dossier that holds one audit
+and its index. Generic symbols never count toward the threshold.
 
 This is what stops a shared base contract (`LoanBook` in every finding of
 one repo) from making every pair of findings look related. It does not remove
@@ -50,8 +53,8 @@ the problem; it reduces it.
 Candidates are sorted, in order:
 
 1. more shared **specific** symbols;
-2. higher **rarity** - the sum of `items - df + 1` over those symbols, so an
-   overlap resting on rarer names wins;
+2. higher **rarity** - the sum of `relevant items - df + 1` over those symbols,
+   so an overlap resting on rarer names wins;
 3. more shared symbols overall (including generic ones);
 4. more shared paths;
 5. the shared identifiers themselves, lexically.
@@ -63,13 +66,15 @@ defaults to 5 and accepts 1-50.
 ## What a hit means
 
 A hit is a **reading-list entry**, not a duplicate finding and not a warning.
-On the final public benchmark the false-alarm rate on judged-paid unique
-findings is **26/60 = 43.3%** (Wilson 95% CI 31.6-55.9) and duplicate recall@5
-is **39/64 = 60.9%** (48.7-71.9); known-prior recall is n=1 and is not a rate.
-43.3% is above the plan's 30% trigger, so **0.1.0 ships retrieval-only**: it
-ranks prior items and shows them with quotes, and prints no duplicate warning,
-until the matcher is fixed. The next release must re-measure before the warning
-can return. All three runs (30.0%, 25.0%, 43.3%) are in
+The 0.1.3 matcher measures **15/60 = 25.0%** false alarms on judged-paid unique
+findings (Wilson 95% CI 15.8-37.2) and **36/64 = 56.3%** duplicate recall@5
+(44.1-67.7); known-prior recall is n=1 and is not a rate. The 0.1.0-0.1.2
+numbers were 26/60 = 43.3% and 39/64 = 60.9%, measured on the same corpus and
+seed. The 0.1.3 false-alarm rate is below the plan's 30% trigger, but 0.1.3
+still **ships retrieval-only**: it ranks prior items and shows them with
+quotes, and prints no duplicate warning. That framing is a product decision,
+not a matcher result, and re-measuring was the prerequisite for revisiting it.
+Every run (30.0%, 25.0%, 43.3%, 25.0%) is in
 [benchmark.md](benchmark.md).
 
 ## Errata: the 0/64 that was a harness bug

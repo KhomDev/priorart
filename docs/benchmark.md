@@ -9,14 +9,17 @@ judging on the same code. Everything is stored as pointers and labels:
 The committed source of truth is
 [`eval/benchmark/BENCHMARK.md`](../eval/benchmark/BENCHMARK.md) and
 [`eval/benchmark/results.json`](../eval/benchmark/results.json). This page
-summarises them on 2026-11-13; if they disagree, the eval files win.
+summarises them on 2026-11-21; if they disagree, the eval files win.
 
-**Status: FINAL.** Measured on the shipped 0.1.0 build, binary sha256
-`dabfcc0c...`. The deciding run was made on `2ec4c3c9...`; `176f1986...`
-(matcher identical, wording only) and then `dabfcc0c...` (one last stale-prose
-sweep) reproduced the same numbers. Only `dabfcc0c...` is quoted. Three matcher
-revisions were measured with the same harness, seed, manifest and dossiers. All
-three are printed below; only the third decides the release.
+**Status: 0.1.0 final, 0.1.3 re-measured.** The 0.1.0 number of record is
+26/60 = 43.3% on binary `dabfcc0c...`. The deciding 0.1.0 run was made on
+`2ec4c3c9...`; `176f1986...` (matcher identical, wording only) and then
+`dabfcc0c...` (one last stale-prose sweep) reproduced the same numbers. 0.1.3
+changes the specificity denominator and was re-measured with the same seed,
+manifest, dossiers and measurement code: **15/60 = 25.0% [15.8-37.2]** false alarms and
+**36/64 = 56.3% [44.1-67.7]** duplicate recall@5. The held-out split was opened
+for 0.1.0, so the 0.1.3 number is a re-measurement on the full public corpus,
+not a fresh out-of-sample result. Four measured runs are printed below.
 
 ## Corpus
 
@@ -62,23 +65,29 @@ the judged primary submissions. Neither is committed; `fetch.py` and
   k=5). `--split heldout` and `--split all` refuse to run without it and refuse
   if the manifest changed. The reported run used `--split all`, so the held-out
   half was opened after the freeze; `results.json.frozen.heldout_opened` says so.
-  No rule was tuned on it.
+  No rule was tuned on it. `freeze.json` holds the 0.1.0 harness hash
+  (`57524916...`); the 0.1.3 results were produced by harness `4d9d9bc0...`,
+  which differs only in the 0.1.3 run-history/provenance text and the corrected
+  `not_claimed` line. The measurement path is unchanged.
 - **Tool errors:** a per-query crash is recorded as a tool error. The final run
   reports 0.
 
-## The three runs
+## The four runs
 
 | Run | Matcher revision | FAR on 60 paid+unique | Duplicate recall@5 | Known-prior | Tool errors |
 |---|---|---|---|---|---|
 | `22648e33...` | pre-fix: paths counted as identifiers; source-order ties | 18/60 = 30.0% [19.9-42.5] | 36/64 = 56.3% [44.1-67.7] | n=1, 0 hits | 0 |
 | `da176bc8...` | symbol identifiers only; generic symbols (>20% of items) excluded; negation-aware | 15/60 = 25.0% [15.8-37.2] | 33/64 = 51.6% [39.6-63.4] | n=1, 0 hits | 0 |
-| `dabfcc0c...` **FINAL** (matcher identical to the `2ec4c3c9...` deciding run) | paths never count toward >=2; ties by specificity/rarity/identifier order; tighter negation window; identifiers kept in original case | **26/60 = 43.3% [31.6-55.9]** | **39/64 = 60.9% [48.7-71.9]** | n=1, 0 hits | 0 |
+| `dabfcc0c...` **0.1.0 final** (matcher identical to the `2ec4c3c9...` deciding run) | paths never count toward >=2; ties by specificity/rarity/identifier order; tighter negation window; identifiers kept in original case | **26/60 = 43.3% [31.6-55.9]** | **39/64 = 60.9% [48.7-71.9]** | n=1, 0 hits | 0 |
+| `be373973...` **0.1.3** | the generic share is measured over the items that share a symbol with the finding, not over every dossier item | **15/60 = 25.0% [15.8-37.2]** | **36/64 = 56.3% [44.1-67.7]** | n=1, 0 hits | 0 |
 
 Sha history for the same numbers: `22648e33...` (pre-fix) ->
 `da176bc8...` (intermediate) -> `2ec4c3c9...` (the run that decided the release)
 -> `176f1986...` (declared, then superseded after one stale NOTES sentence) ->
-`dabfcc0c...` (frozen; the row above, and the only one quoted). The matcher was
-identical across the last three; only output wording changed.
+`dabfcc0c...` (0.1.0 final) -> `be373973...` (0.1.3, after the denominator
+change). The matcher was identical across the middle three; only output wording
+changed. The 0.1.3 run used the full public corpus after the held-out half had
+already been opened, so it is a re-measurement, not a held-out result.
 
 Label agreement is unchanged: a blinded second pass on a seeded 20-item sample
 of the 26 excluded findings agreed with the full-text label on **15/20 = 75.0%
@@ -129,6 +138,14 @@ contest pair (60 judged findings), so a fresh held-out split is required before
 the threshold is treated as settled. Quote the FAR with n and the interval,
 never 43.3% alone.
 
+**0.1.3 re-measures below the trigger.** The denominator change produces
+15/60 = 25.0% [15.8-37.2], below the plan's 30% line. The 0.1.3 release still
+ships retrieval-only: the output contract and the reading-list framing are
+unchanged, and whether to print a duplicate warning is a product decision, not
+something a single re-measurement on an already-open corpus settles. The 25.0%
+interval still reaches 37.2%, and it was measured on the same contest pair
+whose held-out half was opened for 0.1.0. Quote it with n and the interval.
+
 ## What this benchmark does not claim
 
 - It does not measure whether priorart finds bugs; the corpus is judged human
@@ -140,9 +157,11 @@ never 43.3% alone.
 - The duplicate-retrieval number is retrieval of judged group representatives,
   not known-issue detection, and is not comparable to recall@5 on a prior audit.
 - n=1 known-prior observation is not a rate, in either direction.
-- 43.3% is not a population estimate for "unique findings".
-- No held-out tuning happened, but the matcher was not designed against this
-  corpus either: this is a retrospective measurement.
+- 43.3% (0.1.0) and 25.0% (0.1.3) are not population estimates for "unique
+  findings".
+- The 0.1.3 denominator change was made to satisfy the unrelated-item
+  invariant, not tuned against the labels, but it was measured after the
+  held-out split had been opened: it is retrospective, like the 0.1.0 number.
 
 ## Reproducing
 

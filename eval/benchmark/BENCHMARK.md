@@ -11,11 +11,16 @@ bodies and PoC sources are **not** committed: they are fetched into
 `eval/cache/benchmark/`, which the repository gitignores. The repository holds
 pointers (repo@commit + path), labels and the generated results.
 
-Status: FROZEN, dated 2026-11-13, measured on the shipped priorart 0.1.0
+Status: 0.1.0 FROZEN, dated 2026-11-13, measured on the shipped priorart 0.1.0
 binary, sha256
 `dabfcc0ca197ee35b40772cb7db666f17105c5c36faa7f9da7ef783a9a78e12a`
 (priorart-core gate: fmt --check 0, clippy -D warnings clean, cargo test
 --locked 91 passed: 56 lib + 33 cli + 2 docs; README generated block current).
+**0.1.3 re-measured on 2026-11-21** after the specificity denominator changed:
+15/60 = 25.0% [15.8%, 37.2%] false alarms and 36/64 = 56.3% [44.1%, 67.7%]
+duplicate recall@5, 0 tool errors, measured binary
+`be3739736afdaee6de26a3a3dda50f5549714ce2a05a34d46da9626b538531de`. The
+0.1.0 measurement detail follows.
 Matcher: symbol identifiers only, file paths shown but never counted toward the
 >= 2 threshold, ties ordered by specificity/rarity/identifier order,
 negation-aware preconditions, whole-sentence quotes, char-boundary fix. The
@@ -115,21 +120,29 @@ fixed."
 
 ## Runs
 
-Three binaries were measured with the same harness, seed, manifest and dossiers.
-Only the third is the number of record; the earlier two are provenance.
+Four binaries were measured with the same seed, manifest, dossiers and
+measurement code (the harness differs only in the 0.1.3 provenance text). The
+third is the 0.1.0 number of record; the fourth is 0.1.3; the earlier two are
+provenance.
 
 | Run | Matcher revision | FAR on 60 paid+unique | Duplicate recall@5 | Known-prior recall@5 | Tool errors |
 |---|---|---|---|---|---|
 | `22648e33...` (2026-11-12) | pre-fix: paths counted as identifiers; source-order ties | 18/60 = 30.0% [19.9%, 42.5%] | 36/64 = 56.3% [44.1%, 67.7%] | n=1, 0 hits, not a rate | 0 |
 | `da176bc8...` (2026-11-13) | symbol identifiers only; generic symbols (>20% of items) excluded; negation-aware | 15/60 = 25.0% [15.8%, 37.2%] | 33/64 = 51.6% [39.6%, 63.4%] | n=1, 0 hits, not a rate | 0 |
-| `dabfcc0c...` FINAL (2026-11-13) | + paths never count toward >=2 (shown only); ties by specificity/rarity/identifier order; negation window tightened; identifiers stored in original case | **26/60 = 43.3% [31.6%, 55.9%]** | **39/64 = 60.9% [48.7%, 71.9%]** | n=1, 0 hits, not a rate | 0 |
+| `dabfcc0c...` 0.1.0 FINAL (2026-11-13) | + paths never count toward >=2 (shown only); ties by specificity/rarity/identifier order; negation window tightened; identifiers stored in original case | **26/60 = 43.3% [31.6%, 55.9%]** | **39/64 = 60.9% [48.7%, 71.9%]** | n=1, 0 hits, not a rate | 0 |
+| `be373973...` 0.1.3 (2026-11-21) | generic share measured over the items that share a symbol with the finding, not every dossier item | **15/60 = 25.0% [15.8%, 37.2%]** | **36/64 = 56.3% [44.1%, 67.7%]** | n=1, 0 hits, not a rate | 0 |
 
 The deciding run on `2ec4c3c9...`, the intermediate build `a2dfd8e0...` and
 the declared-then-superseded `176f1986...` produced the same numbers as the
-frozen row; only `dabfcc0c...` is quoted. A
+frozen 0.1.0 row; only `dabfcc0c...` is quoted for 0.1.0. A
 build `a973818a...` is not a row: it panicked on one input (a char-boundary
 slice on a curly apostrophe) and that harness run is not comparable; it is
-recorded in the provenance paragraph only.
+recorded in the provenance paragraph only. The 0.1.3 row is a re-measurement
+on the full public corpus after the held-out half was opened for 0.1.0; it is
+not a fresh out-of-sample result. `freeze.json` holds the 0.1.0 harness hash
+(`5752491659b1...`); the 0.1.3 run used harness `4d9d9bc0697f...`, which differs
+only in the run-history/provenance text and the corrected `not_claimed` line,
+not in the measurement code.
 
 **Why FAR moved from 25.0% to 43.3% (cause supplied by priorart-core).**
 Three matcher revisions increased qualifying overlap, and contract/token names
@@ -163,6 +176,16 @@ re-measure on a fresh held-out split before the threshold is treated as
 settled. The FAR must always be quoted with n and the interval, never 43.3%
 alone; this document supplies the numbers, and the release consequence follows
 from the plan's own rule.
+
+**0.1.3 re-measurement and the same rule.** The specificity denominator now
+counts only items that share at least one symbol with the finding. On the same
+corpus, seed, manifest and harness the measured FAR is 15/60 = 25.0%
+[15.8%, 37.2%], below the 30% trigger, and duplicate recall@5 is 36/64 = 56.3%
+[44.1%, 67.7%]. The 0.1.3 release still ships retrieval-only: the 30% line is a
+release rule, not a mandate to turn on a warning, and the interval still reaches
+37.2% on a corpus whose held-out half was opened for 0.1.0. A fresh held-out
+split is still required before either threshold is treated as settled. Quote
+the 0.1.3 FAR with n and the interval, never 25.0% alone.
 
 **supplementary: recall@5 on judged duplicate submissions.** Not the plan's
 metric, and labelled as such everywhere. Denominator = the 64 submissions the

@@ -20,32 +20,31 @@ That block is illustrative. The generated block further down is produced from
 the committed fixture by `scripts/regen-readme-examples.sh` and checked by
 `tests/docs.rs`, so it cannot drift.
 
-## Status: 0.1.0 ships retrieval-only
+## Status: retrieval-only (0.1.3 re-measured)
 
-priorart 0.1 ranks prior items to read. It does **not** warn that a finding is
-a duplicate: the plan's kill criterion is a 30% false-alarm rate on judged
-unique findings, and the release-candidate matcher measured **26/60 = 43.3%**
-(Wilson 95% CI 31.6-55.9) - above the criterion, with the interval entirely
-above it. The plan pre-committed to this case, so the prior-item section is a
-reading list and the duplicate caution is withheld until the matcher is fixed.
+priorart ranks prior items to read. It does **not** warn that a finding is a
+duplicate. The plan's kill criterion is a 30% false-alarm rate on judged unique
+findings. 0.1.3 changes the specificity denominator (the share is counted over
+items that share a symbol with the finding) and re-measures **15/60 = 25.0%**
+(Wilson 95% CI 15.8-37.2) on the same corpus and seed. That is below the
+criterion, but the warning still ships off: the interval reaches 37.2%, the
+corpus is one contest pair, and its held-out half was opened for 0.1.0, so this
+is a re-measurement rather than a fresh out-of-sample result.
 
-Final benchmark, frozen binary sha256 `dabfcc0c` (matcher identical to the deciding `2ec4c3c9` run; 0 tool errors):
+0.1.3 benchmark, measured binary sha256 `be373973` (0 tool errors):
 
 | Metric | Result | Wilson 95% CI |
 |---|---|---|
-| False-alarm rate, 60 judged paid+unique | **26/60 = 43.3%** | 31.6-55.9% |
-| Duplicate recall@5, 64 judged duplicates | **39/64 = 60.9%** | 48.7-71.9% |
+| False-alarm rate, 60 judged paid+unique | **15/60 = 25.0%** | 15.8-37.2% |
+| Duplicate recall@5, 64 judged duplicates | **36/64 = 56.3%** | 44.1-67.7% |
 | Known-prior recall@5 | n=1, 0 hits | not a rate |
 
-Three matcher revisions were measured, and all three runs are in
-[docs/benchmark.md](docs/benchmark.md): 18/60 = 30.0% [19.9-42.5] on the first
-build, 15/60 = 25.0% [15.8-37.2] after the symbols-only threshold and the
-corpus-rarity filter, and 26/60 = 43.3% [31.6-55.9] after identifiers kept their
-original case (so short camelCase contract names count) and the specificity
-floor and negation window were finalised. Recall rose with each revision
-(36/64, 33/64, 39/64); the false-alarm rate did not fall below the threshold, so
-the warning ships off. The next release re-measures on a fresh held-out split
-before the criterion is re-considered.
+Every run is in [docs/benchmark.md](docs/benchmark.md). The 0.1.0 number of
+record was 26/60 = 43.3% [31.6-55.9] false alarms and 39/64 = 60.9% [48.7-71.9]
+duplicate recall; before it, 30.0% and 25.0%. The 0.1.3 denominator change gives
+up some duplicate recall (39/64 to 36/64) to remove false alarms that rested on
+symbols shared by most of the relevant items. A fresh held-out split is still
+required before the criterion is treated as settled.
 
 ## Install
 
@@ -76,7 +75,7 @@ priorart check finding.md --dossier my-program/my-program.dossier
 
 <!-- BEGIN GENERATED EXAMPLE (scripts/regen-readme-examples.sh) -->
 $ priorart build examples/dossier-demo
-priorart 0.1.2 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.1.3 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
   3 source(s), 13 item(s)
     audit-finding    1
     known-issue      2
@@ -90,7 +89,7 @@ priorart 0.1.2 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossie
 Next: priorart check <finding.md> --dossier examples/dossier-demo/dossier-demo.dossier
 
 $ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
-priorart 0.1.2 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.1.3 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
 
 HAS THIS BEEN FOUND?  2 prior items to read (share >=2 symbol identifiers)
   [audit: internal-review.md p.1, section M-03 Fee index rounding]  "The consistency check in `FeeLedger.distributeFees` reverts with `FeeAccountingMismatch` when the fee index rounds up past the collected balance."
@@ -122,9 +121,9 @@ audit or finding is described.
 - **Has this been found?** Prior items that share at least two *symbol*
   identifiers with your finding: function, error, contract or qualified names,
   or backticked spans. A file path alone never qualifies an item, and a symbol
-  that appears in more than 20% of the dossier's items is treated as generic.
-  Results are ranked by specificity. This is a reading list, not a duplicate
-  warning: see the status section above.
+  that appears in more than 20% of the items sharing a symbol with the finding
+  is treated as generic. Results are ranked by specificity. This is a reading
+  list, not a duplicate warning: see the status section above.
 - **Is it excluded?** The program's own out-of-scope clauses, classified into
   14 clause classes, against the preconditions the finding states. A match is a
   prompt to read the clause, not a reject.
@@ -177,7 +176,7 @@ headline evidence. See [docs/rejections.md](docs/rejections.md).
 ## Benchmark status
 
 Public, multi-researcher corpus: judged contests that publish prior audits and
-known issues, stored as pointers and labels only. Protocol, both runs and the
+known issues, stored as pointers and labels only. Protocol, every run and the
 ship decision: [docs/benchmark.md](docs/benchmark.md). The numbers are stated
 once there, with n and Wilson 95% intervals, so there is one place to update and
 one place to be wrong.

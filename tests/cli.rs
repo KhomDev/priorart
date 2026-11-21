@@ -37,7 +37,7 @@ fn demo_finding(tmp: &TempDir) -> String {
 fn version_and_help_are_final() {
     let v = run(&["--version"]);
     assert_eq!(v.code, 0);
-    assert!(v.stdout.contains("priorart 0.1.2"), "{}", v.stdout);
+    assert!(v.stdout.contains("priorart 0.1.3"), "{}", v.stdout);
 
     let h = run(&["--help"]);
     assert_eq!(h.code, 0);
@@ -287,7 +287,7 @@ fn check_json_is_valid_against_the_shipped_schema() {
     let errors = validate(&schema("check.schema.json"), &report);
     assert!(errors.is_empty(), "{errors:#?}");
     assert_eq!(report["schema"], "priorart.check/v1");
-    assert_eq!(report["tool_version"], "0.1.2");
+    assert_eq!(report["tool_version"], "0.1.3");
     assert_eq!(report["payout"]["payable"], true);
     // D5: "No oracle ... is needed" must not become a mechanism claim. The demo
     // finding has its own mechanism (fees left unsettled on close), so the check

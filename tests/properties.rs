@@ -255,13 +255,9 @@ proptest! {
 
     /// Adding an item that shares no identifier with the finding never changes
     /// the top-k. The new item is appended, so existing indices are unchanged.
-    ///
-    /// This is the invariant the plan asks for. It is marked ignored because
-    /// it does not hold: the generic-symbol threshold is a share of the item
-    /// count, so one unrelated item can make a shared symbol specific. See the
-    /// reproducer below and the PR description.
+    /// The generic-symbol share is measured over the items that share at least
+    /// one symbol with the finding, so an unrelated item cannot move it.
     #[test]
-    #[ignore = "bug: adding an unrelated item changes the item count, so a shared symbol can cross the generic threshold and re-rank the top-k"]
     fn adding_an_unrelated_item_never_changes_the_top_k(
         items in dossier_strategy(),
         text in finding_text(),
@@ -278,38 +274,33 @@ proptest! {
     }
 }
 
-/// The deterministic reproducer for the failure above. Eleven items, of which
-/// three name `Pool0.call0` and eight name other symbols; the finding names
-/// `Pool0.call0` and `Pool1.call0`. With eleven items `Pool0.call0` is in 3 of
-/// 11 (27%), so it is generic and the match is lost. One unrelated item makes
-/// it 3 of 12 (25%), still generic. Growing the dossier to 15 items brings it
-/// to 20%, which the rule accepts, and the item ranks.
+/// A deterministic companion to the property: two items share the finding's
+/// two symbols and rank; appending items that share none of them leaves the
+/// ranked rows exactly as they were. Before the denominator was changed to the
+/// relevant items, enough appended noise pushed a generic symbol under the 20%
+/// share and made previously filtered items rank.
 #[test]
-#[ignore = "bug: adding an unrelated item changes the item count, so a shared symbol can cross the generic threshold and re-rank the top-k"]
-fn unrelated_item_flips_a_shared_symbol_to_specific() {
+fn unrelated_items_do_not_re_rank_a_nonempty_top_k() {
     let mut items: Vec<Item> = Vec::new();
-    for i in 0..3 {
+    for i in 0..2 {
         items.push(item(
             i,
             &["Pool0.call0".to_string(), "Pool1.call0".to_string()],
         ));
     }
-    for i in 3..11 {
+    for i in 2..10 {
         items.push(item(i, &[format!("Filler{i}.call{i}")]));
     }
     let finding = "# Finding\n\n`Pool0.call0` and `Pool1.call0` both fail.\n";
-    let before = matching::rank(&items, finding, DEFAULT_TOP_K);
+    let before = top_rows(&matching::rank(&items, finding, DEFAULT_TOP_K));
+    assert!(!before.is_empty(), "the fixture must rank something");
 
-    for i in 11..15 {
+    for i in 10..20 {
         items.push(item(i, &[format!("Unrelated{i}.run{i}")]));
     }
-    let after = matching::rank(&items, finding, DEFAULT_TOP_K);
+    let after = top_rows(&matching::rank(&items, finding, DEFAULT_TOP_K));
 
-    assert_eq!(
-        before.len(),
-        after.len(),
-        "adding unrelated items changed how many prior items rank"
-    );
+    assert_eq!(before, after, "unrelated items changed the ranked rows");
 }
 
 proptest! {
@@ -330,7 +321,35 @@ proptest! {
     }
 }
 
-// ------------------------------------------------------- property 4: top-k bound
+// ---------------------------------------------------- property 4: scope globs
+
+proptest! {
+    #![proptest_config(config(96))]
+
+    /// `**/` matches zero or more whole directories, while `*` stays inside
+    /// one. The two patterns differ exactly when the path has a directory
+    /// between `src/` and the file.
+    #[test]
+    fn double_star_crosses_directories_and_star_does_not(
+        dirs in proptest::collection::vec("[a-z]{1,8}", 0..4),
+    ) {
+        let mut path = String::from("src/");
+        for d in &dirs {
+            path.push_str(d);
+            path.push('/');
+        }
+        path.push_str("Vault.sol");
+        prop_assert!(matching::in_scope(&path, "src/**/*.sol"), "{}", path);
+        prop_assert_eq!(
+            matching::in_scope(&path, "src/*.sol"),
+            dirs.is_empty(),
+            "{}",
+            path
+        );
+    }
+}
+
+// ------------------------------------------------------- property 5: top-k bound
 
 proptest! {
     #![proptest_config(config(256))]

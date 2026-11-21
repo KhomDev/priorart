@@ -1,7 +1,7 @@
 # Architecture
 
 This page explains how priorart is put together: why each part exists, what crosses each
-boundary, and what the user sees when a part fails. It describes `main` after 0.1.2. Where it
+boundary, and what the user sees when a part fails. It describes `main` after 0.1.3. Where it
 disagrees with the source, the source wins.
 
 ## Three questions, one dossier
@@ -48,7 +48,7 @@ reads that dossier and a finding and assembles the evidence.
 | Build | `dossier/build.rs` | Sorts sources and items, assigns ids from those orders, and writes no wall-clock field. Two builds of one folder are byte-identical (tested in `tests/cli.rs`) | depend on file-system order or time |
 | Load | `dossier/load.rs` | Reads and validates a dossier against `priorart.dossier/v1` before anything uses it | accept a dossier with an unknown schema |
 | Model | `model.rs` | The two documents the tool emits (`Dossier`, `CheckReport`) and the inputs the gates read. The JSON Schemas in `schemas/` are enforced by tests | — |
-| Matcher | `match/mod.rs` | Ranks prior items by shared code identifiers (functions, errors, contracts, qualified names, backticked spans). An item needs at least `MIN_SHARED_IDENTIFIERS` (2) symbols. A symbol in more than `GENERIC_DF_PERCENT` (20%) of items is generic and doesn't count, unless only one or two items exist. Paths break ties but never qualify an item alone. Word overlap isn't scored | say two findings are the same |
+| Matcher | `match/mod.rs` | Ranks prior items by shared code identifiers (functions, errors, contracts, qualified names, backticked spans). An item needs at least `MIN_SHARED_IDENTIFIERS` (2) symbols. A symbol in more than `GENERIC_DF_PERCENT` (20%) of the items sharing a symbol with the finding is generic and doesn't count, unless only one or two items name it. Paths break ties but never qualify an item alone. Word overlap isn't scored | say two findings are the same |
 | Gates | `gates/mod.rs` | G1 payout, G2 exclusion, G3 scope, G4 prior audits. Each reports what it read and what it didn't | pass or fail a finding |
 | Assembly | `check.rs` | The one place that decides what `check` reports. It calls the matcher and each gate and collects their evidence, without collapsing it into a verdict | — |
 | Vocabularies | `vocab/` + `vocab/*.yaml` | 5 payout tier shapes, 14 clause classes and the gate cross-reference, compiled in with `include_str!` | change without a release |

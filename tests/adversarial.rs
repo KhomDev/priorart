@@ -1,9 +1,9 @@
 //! Adversarial inputs: a finding, a program folder or a dossier that is trying
 //! to fool priorart, or to break it.
 //!
-//! Each test states what the tool SHOULD do. A test that fails on the current
-//! `main` is marked `#[ignore = "bug: ..."]` and is listed in the PR. The
-//! ignored tests are the open work; they are not hidden failures.
+//! Each test states what the tool SHOULD do. Every case here passes as of
+//! 0.1.3; the cases that were once `#[ignore]`d bugs (the double negation, the
+//! hand-edited quote, the out-of-range page) are now regressions if they fail.
 //!
 //! Every fixture is fictional. The tests run the real binary, as tests/cli.rs
 //! does.
@@ -250,7 +250,6 @@ fn a_finding_that_denies_a_role_does_not_trip_the_role_exclusion() {
 }
 
 #[test]
-#[ignore = "bug: 'not without a privileged role' is read as no role, so the role precondition is lost"]
 fn a_double_negation_in_the_finding_is_read_as_the_positive_it_states() {
     let tmp = TempDir::new("adv-double-neg");
     let dossier = build_demo(&tmp);
@@ -369,7 +368,6 @@ fn a_dossier_with_a_foreign_schema_id_is_rejected() {
 }
 
 #[test]
-#[ignore = "bug: check prints a quote that no source file contains; nothing compares quotes with source bytes (threat-model G7)"]
 fn a_hand_edited_quote_that_is_in_no_source_is_flagged() {
     let tmp = TempDir::new("adv-fake-quote");
     let path = build_demo(&tmp);
@@ -391,7 +389,6 @@ fn a_hand_edited_quote_that_is_in_no_source_is_flagged() {
 }
 
 #[test]
-#[ignore = "bug: check accepts an item whose page number is past its source's page count"]
 fn a_page_number_past_the_source_page_count_is_flagged() {
     let tmp = TempDir::new("adv-page");
     let path = build_demo(&tmp);

@@ -13,6 +13,67 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-21
+
+A correctness release. The specificity denominator, negation reading, dossier
+validation and the quote window are fixed; the public benchmark was re-measured
+on the new matcher. The CLI, the two JSON schemas and the vocabularies are
+unchanged, so 0.1.2 dossiers still load (a dossier with a page past its
+source's page count is now refused).
+
+### Changed
+
+- **The generic-symbol share is measured over the items that share a symbol
+  with the finding**, not over every item in the dossier. An item that shares
+  nothing can never rank, so it no longer changes the denominator. This makes
+  the top-k independent of unrelated files, the invariant the property test
+  names. On the same public corpus and seed the matcher now measures
+  **15/60 = 25.0% [15.8-37.2]** false alarms (from 26/60 = 43.3%) and
+  **36/64 = 56.3% [44.1-67.7]** duplicate recall@5 (from 39/64 = 60.9%).
+  0.1.3 still ships retrieval-only.
+- **A dossier whose item cites a page past its source's page count, or names a
+  source the dossier does not contain, is refused with exit 2** instead of
+  being read as current. `check` also reports a quote that is not in the item
+  text the dossier records; it does not re-read the source bytes.
+
+### Fixed
+
+- **ASCII contractions are negation cues.** `isn't`, `doesn't`, `can't` and
+  `won't` were tokenised inside one word and did not match `isn`/`doesn`, so
+  "the reserve isn't funded" read as a positive statement. The apostrophe forms
+  are now listed explicitly.
+- **"not without a role" means a role is required.** The pair was read as a
+  denial, so the privileged-role precondition was lost. A cue just outside the
+  24-character window is now paired with a `without` inside it; a lone "no"
+  about something else in the clause stays ignored.
+- **The quote window treats the identifier's position as a character index.**
+  It was a byte offset, so non-ASCII text before the identifier could push the
+  window past it. The word-boundary expansion is also bounded, so a long run
+  with no whitespace cannot make a quote exceed the length limit.
+- **The ledger's regex-dialect scan no longer panics on a non-ASCII pattern**
+  such as `café(?=x)`. It sliced the pattern by a character index as if it were
+  a byte offset.
+- **`src/**/*.sol` matches `src/Vault.sol`.** `**/` now means zero or more whole
+  directories, as the scope lists published by programs use it.
+- Removed the unused root-cause scoring path and the second parse of every
+  item profile; `check` reuses the finding profile it already built. The
+  public helper `matching::Profile::from_parts` no longer takes the unused
+  root-cause slice; the library API is not a stability promise, but the
+  signature change is called out here.
+- Removed the stray tracked `.h.err` file that had been packaged into the crate.
+
+### Tests
+
+- The five `#[ignore]`d cases for these bugs are enabled: the double negation,
+  the hand-edited quote, the out-of-range page, the unrelated-item invariant
+  and its deterministic reproducer.
+- New unit tests: ASCII contractions; "not without"; a multibyte quote window;
+  `**/` scope matching; a non-ASCII ledger pattern.
+- New property tests: an unrelated item never changes the top-k; `**/` crosses
+  directories while `*` does not.
+- `docs/validation.md` and `docs/threat-model.md` record what is now validated
+  and what is still open.
+
 ## [0.1.2] - 2026-11-19
 
 Security hardening, release provenance and tests. The matcher, the gates,
@@ -813,7 +874,11 @@ The tree itself is unchanged except for the two fixes recorded here.
 - The rule catalog and gate definitions as data, embedded in the binary.
 - The fixture suite: one positive and one negative case per anti-pattern.
 
-[Unreleased]: https://github.com/KhomDev/viability-gate/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/KhomDev/priorart/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/KhomDev/priorart/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/KhomDev/priorart/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/KhomDev/priorart/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/KhomDev/priorart/releases/tag/v0.1.0
 [0.8.1]: https://github.com/KhomDev/viability-gate/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/KhomDev/viability-gate/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/KhomDev/viability-gate/compare/v0.6.0...v0.7.0

@@ -24,8 +24,36 @@ pub fn load(path: &Path) -> Result<Dossier, String> {
             path.display()
         ));
     }
-    serde_json::from_value(value)
-        .map_err(|e| format!("{}: not a valid {DOSSIER_SCHEMA} file: {e}", path.display()))
+    let dossier: Dossier = serde_json::from_value(value)
+        .map_err(|e| format!("{}: not a valid {DOSSIER_SCHEMA} file: {e}", path.display()))?;
+    // The page number is part of the evidence. A dossier whose item cites a
+    // page the source does not have has been edited or built by another
+    // version; reading it silently would turn a citation into a guess.
+    for item in &dossier.items {
+        let source = dossier
+            .sources
+            .iter()
+            .find(|s| s.id == item.source_id)
+            .ok_or_else(|| {
+                format!(
+                    "{}: item {} names source {}, which the dossier does not contain. Rebuild it with this priorart version.",
+                    path.display(),
+                    item.id,
+                    item.source_id
+                )
+            })?;
+        if item.page == 0 || item.page > source.pages {
+            return Err(format!(
+                "{}: item {} cites page {} but source {} has {} page(s). The dossier may have been edited; rebuild it with priorart build.",
+                path.display(),
+                item.id,
+                item.page,
+                source.id,
+                source.pages
+            ));
+        }
+    }
+    Ok(dossier)
 }
 
 /// Find the dossier to use when the user passed no --dossier: exactly one
@@ -42,7 +70,11 @@ pub fn discover_beside(finding: &Path) -> Result<Option<PathBuf>, String> {
     })?;
     for entry in entries.flatten() {
         let path = entry.path();
-        if path.extension().and_then(|e| e.to_str()) == Some("dossier") && path.is_file() {
+        let is_dossier = path
+            .extension()
+            .and_then(|e| e.to_str())
+            .is_some_and(|e| e.eq_ignore_ascii_case("dossier"));
+        if is_dossier && path.is_file() {
             candidates.push(path);
         }
     }

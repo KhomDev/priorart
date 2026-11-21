@@ -158,12 +158,12 @@ impl Preconditions {
             "privileged_role" => self.role.as_ref().map(|r| {
                 format!("the finding needs a privileged role ({r}), and the clause excludes those")
             }),
-            "human_error" => self.role.as_ref().filter(|_| {
-                self.role.is_some() && (self.design.is_some() || !self.any_user)
-            }).map(|r| format!("the finding's actor is a role ({r}); check whether it is admin error or a code defect")),
-            "admin_input" => self.role.as_ref().filter(|_| {
-                self.role.is_some()
-            }).map(|r| format!("the finding depends on a value supplied by {r}; check whether a non-privileged actor can reach it")),
+            "human_error" => self.role.as_ref().map(|r| {
+                format!("the finding's actor is a role ({r}); check whether it is admin error or a code defect")
+            }),
+            "admin_input" => self.role.as_ref().map(|r| {
+                format!("the finding depends on a value supplied by {r}; check whether a non-privileged actor can reach it")
+            }),
             "dos_no_extraction" => {
                 if self.dos && !self.fund_loss {
                     Some("the impact reads as a freeze or griefing without fund extraction; state a loss path if one exists".into())
@@ -497,16 +497,11 @@ pub fn prior_audit_coverage(dossier: &Dossier, finding_text: &str) -> Vec<String
 }
 
 /// Turn ranked matches into the JSON shape, resolving each item to its source.
-pub fn prior_art(
-    dossier: &Dossier,
-    ranked: &[matching::Ranked],
-    finding_mechanism: Option<&str>,
-) -> Vec<PriorArt> {
+pub fn prior_art(dossier: &Dossier, ranked: &[matching::Ranked]) -> Vec<PriorArt> {
     let mut out = Vec::new();
     for row in ranked {
         let item = &dossier.items[row.index];
         let source = dossier.sources.iter().find(|s| s.id == item.source_id);
-        let _ = finding_mechanism;
         out.push(PriorArt {
             item_id: item.id.clone(),
             source_id: item.source_id.clone(),

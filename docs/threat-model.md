@@ -56,9 +56,9 @@ Each row is a point where bytes from an attacker-influenced file are parsed.
 | G2 | Two builds of one folder are byte-identical | `tests/cli.rs::build_writes_one_deterministic_dossier` | Tested |
 | G3 | Output matches the shipped schemas | `tests/cli.rs::build_json_is_valid_against_the_shipped_schema`, `check_json_is_valid_against_the_shipped_schema`, `the_ledger_schema_is_the_shipped_v1_contract` | Tested |
 | G4 | Exit codes are 0, 1 and 2; exit 1 only from `--fail-on-excluded` or `--fail-on-unpayable` | `src/error.rs:15-18`; `tests/cli.rs::check_missing_finding_is_a_usage_error`, `fail_on_excluded_exits_one_only_when_a_clause_matches`, `fail_on_unpayable_exits_one_below_the_floor`, `ledger_validate_reports_errors_and_exits_one` | Tested |
-| G5 | A foreign or malformed dossier is rejected, not read as current | `tests/cli.rs::check_rejects_a_malformed_or_foreign_dossier`; schema check at `src/dossier/load.rs:16-26` | Tested |
+| G5 | A foreign, malformed or internally inconsistent dossier is rejected, not read as current | `tests/cli.rs::check_rejects_a_malformed_or_foreign_dossier`; `tests/adversarial.rs::a_page_number_past_the_source_page_count_is_flagged`; schema and page-range checks in `src/dossier/load.rs` | Tested |
 | G6 | A PDF with no readable text is a warning, never a panic, and the build still exits 0 | `tests/cli.rs::a_pdf_without_extractable_text_is_a_warning_not_a_panic` | Tested for one compressed-stream PDF. Other malformed PDFs are not tested. |
-| G7 | Quotes are verbatim text from a saved file, with a page number | `tests/cli.rs::check_prints_three_labelled_sections_with_a_whole_sentence_quote`; page numbering at `src/dossier/import.rs:578-590` | Partly tested. No test compares each quote with its source bytes. |
+| G7 | Quotes are text recorded from a saved file, with an in-range page number | `tests/cli.rs::check_prints_three_labelled_sections_with_a_whole_sentence_quote`; quote check in `src/check.rs`; page range in `src/dossier/load.rs`; `tests/adversarial.rs::a_hand_edited_quote_that_is_in_no_source_is_flagged`, `a_page_number_past_the_source_page_count_is_flagged` | Tested for quote-vs-recorded-text and page range. The recorded text is not re-read from the source, so a dossier that edits both is not detected (open item 6). |
 | G8 | The dossier records the SHA-256 of each source | `src/dossier/sha256.rs`, checked against NIST vectors (per `docs/dossier.md`); `src/dossier/import.rs:438` | Read. The vector test is the claim in `docs/dossier.md`; not re-checked here. |
 | G9 | The build writes only the dossier file, and a program id cannot name a path | `src/dossier/build.rs:45-48` (default path is `<program-dir>/<id>.dossier`); `src/dossier/import.rs:300-317` (`slug` keeps letters, digits, `.`, `-`, `_` only); `slug("../..")` is `None` at `src/dossier/import.rs:986` | Tested for `slug`. The write is tmp-then-rename (`src/dossier/build.rs:58-66`) with no test that a failed write leaves no partial file. |
 | G10 | Terminal output cannot carry control characters from input | `src/render/text.rs:10-15` | Read. No test. |
@@ -91,13 +91,18 @@ Each item is a hypothesis or a known gap. None is a confirmed exploit.
    `input_size_is_checked_per_file_and_in_total` (unit) for the per-file, total and count limits.
 4. **Symlinks and dot-files under `audits/` are skipped** (`src/dossier/import.rs:358-366`).
    No test covers this. *Read, untested.*
-5. **Parser robustness is not measured.** No fuzzing or property tests exist for the
-   YAML, JSON, markdown or PDF scrape paths. Behaviour on YAML alias expansion or
-   very large documents in `serde_saphyr` is not checked here. *Unverified.*
+5. **Parser robustness is sampled, not measured.** The seven `fuzz/` targets and
+   `tests/fuzz_replay.rs` replay committed seeds and hostile edges, and the weekly
+   workflow runs libFuzzer for five minutes per target. Coverage of the YAML, JSON,
+   markdown and PDF-scrape paths is not measured, and the weekly job's crash corpus
+   is not part of the release gate. *Partly checked.*
 6. **A planted dossier is trusted.** A `.dossier` beside a finding is read as
-   evidence (`src/dossier/load.rs:34-63`). There is no signature or hash binding it to
-   the source files. The `sha256` fields record the sources but nothing checks them
-   at `check` time. *Read. By design for now.*
+   evidence (`src/dossier/load.rs`). There is no signature or hash binding it to
+   the source files, and the `sha256` fields are not re-checked at `check` time.
+   Since 0.1.3 a quote that is not in the item text the dossier records is
+   reported, and a page past the source's page count is refused, but a dossier
+   that edits both the text and the quote consistently still passes. *Read. By
+   design for now.*
 7. **Prompt injection through quoted text.** Quotes from `audits/` and `scope.*` are
    printed verbatim. An agent reading the output may treat quoted text as
    instructions. priorart executes nothing from input content, and the output carries

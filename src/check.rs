@@ -21,14 +21,37 @@ pub fn build(
     let profile = matching::Profile::from_text(finding_text);
     let claimed = matching::claimed_severity(finding_text);
     let mechanism = matching::mechanism_of(finding_text);
-    let ranked = matching::rank(&dossier.items, finding_text, top_k);
-    let prior_art = gates::prior_art(dossier, &ranked, mechanism);
+    let ranked = matching::rank_with_profile(&dossier.items, &profile, top_k);
+    let prior_art = gates::prior_art(dossier, &ranked);
     let exclusions = gates::exclusions(dossier, finding_text);
     let payout = gates::payout(dossier, claimed);
     let scope_evidence = gates::scope(dossier, finding_text);
     let coverage = gates::prior_audit_coverage(dossier, finding_text);
 
     let mut notes = Vec::new();
+    // A dossier is a file a user or an agent can edit. A quote that is no
+    // longer a substring of the item text the dossier records is reported
+    // rather than printed as if it came from the source.
+    let mut mismatched = 0usize;
+    for item in &dossier.items {
+        let flat = item.text.split_whitespace().collect::<Vec<_>>().join(" ");
+        let quote = item.quote.trim_matches('\u{2026}').trim();
+        if !quote.is_empty() && !flat.contains(quote) {
+            mismatched += 1;
+            if mismatched <= 5 {
+                notes.push(format!(
+                    "item {}: the quote does not match the source text recorded in the dossier; the dossier may have been edited. Read the source before relying on it.",
+                    item.id
+                ));
+            }
+        }
+    }
+    if mismatched > 5 {
+        notes.push(format!(
+            "{} more dossier item(s) have a quote that does not match their recorded source text",
+            mismatched - 5
+        ));
+    }
     for line in coverage {
         notes.push(format!("G4 prior audits: {line}"));
     }
