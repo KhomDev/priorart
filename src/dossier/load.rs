@@ -1,13 +1,31 @@
 //! Load and validate a dossier file.
 
+use crate::dossier::import;
 use crate::model::{Dossier, DOSSIER_SCHEMA};
 use std::fs;
 use std::path::{Path, PathBuf};
 
+/// A dossier assembled from the largest allowed input set is far below this.
+/// A larger file is a usage error that names the limit, never read whole.
+pub const MAX_DOSSIER_BYTES: u64 = 64 * 1024 * 1024;
+
 /// Read a dossier. Rejects a file whose schema id is not DOSSIER_SCHEMA, so a
 /// stale or hand-written file cannot be read as if it were current.
+///
+/// The path must be a regular file, and the file must fit `MAX_DOSSIER_BYTES`;
+/// both are checked before the bytes are read.
 pub fn load(path: &Path) -> Result<Dossier, String> {
-    let text = fs::read_to_string(path).map_err(|e| {
+    let meta = import::require_regular_file_from(path, "dossier")
+        .map_err(|e| format!("{e}. Build one with priorart build <program-dir>."))?;
+    check_dossier_size(path, meta.len())?;
+    let bytes = fs::read(path).map_err(|e| {
+        format!(
+            "cannot read dossier {}: {e}. Build one with priorart build <program-dir>.",
+            path.display()
+        )
+    })?;
+    check_dossier_size(path, bytes.len() as u64)?;
+    let text = String::from_utf8(bytes).map_err(|e| {
         format!(
             "cannot read dossier {}: {e}. Build one with priorart build <program-dir>.",
             path.display()
@@ -56,12 +74,25 @@ pub fn load(path: &Path) -> Result<Dossier, String> {
     Ok(dossier)
 }
 
+fn check_dossier_size(path: &Path, len: u64) -> Result<(), String> {
+    if len > MAX_DOSSIER_BYTES {
+        return Err(format!(
+            "dossier {} is {}; priorart reads a dossier up to {} MiB. Rebuild it from a smaller program folder, or split the folder.",
+            path.display(),
+            import::mib(len),
+            MAX_DOSSIER_BYTES / (1024 * 1024)
+        ));
+    }
+    Ok(())
+}
+
 /// Find the dossier to use when the user passed no --dossier: exactly one
 /// .dossier file beside the finding. More than one is an error that names the
 /// candidates, because guessing would be worse.
 pub fn discover_beside(finding: &Path) -> Result<Option<PathBuf>, String> {
     let dir = finding.parent().unwrap_or_else(|| Path::new("."));
     let mut candidates = Vec::new();
+    let mut skipped = Vec::new();
     let entries = fs::read_dir(dir).map_err(|e| {
         format!(
             "cannot read {} to look for a dossier: {e}. Pass --dossier <file>.",
@@ -74,12 +105,22 @@ pub fn discover_beside(finding: &Path) -> Result<Option<PathBuf>, String> {
             .extension()
             .and_then(|e| e.to_str())
             .is_some_and(|e| e.eq_ignore_ascii_case("dossier"));
-        if is_dossier && path.is_file() {
-            candidates.push(path);
+        if !is_dossier {
+            continue;
+        }
+        match fs::symlink_metadata(&path) {
+            Ok(meta) if meta.file_type().is_file() => candidates.push(path),
+            Ok(_) => skipped.push(path),
+            Err(_) => {}
         }
     }
     candidates.sort();
     match candidates.len() {
+        0 if !skipped.is_empty() => Err(format!(
+            "{} beside {} is not a regular file; priorart reads regular files only. Pass --dossier with a regular file.",
+            skipped[0].display(),
+            finding.display()
+        )),
         0 => Ok(None),
         1 => Ok(candidates.pop()),
         _ => Err(format!(

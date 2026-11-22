@@ -11,6 +11,8 @@ use std::sync::Mutex;
 
 const BEGIN: &str = "<!-- BEGIN GENERATED EXAMPLE (scripts/regen-readme-examples.sh) -->";
 const END: &str = "<!-- END GENERATED EXAMPLE -->";
+const HTML_BEGIN: &str = "<!-- BEGIN GENERATED HTML EXAMPLE (scripts/regen-readme-examples.sh) -->";
+const HTML_END: &str = "<!-- END GENERATED HTML EXAMPLE -->";
 
 fn manifest_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -58,18 +60,39 @@ pub fn example_block() -> String {
     )
 }
 
+/// The generated HTML example, from the committed HTML fixture.
+pub fn html_example_block() -> String {
+    let _guard = FIXTURE_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let build = run(&["build", "tests/fixtures/html-program"]);
+    let check = run(&[
+        "check",
+        "tests/fixtures/html-finding.md",
+        "--dossier",
+        "tests/fixtures/html-program/html-program.dossier",
+    ]);
+    format!(
+        "$ priorart build tests/fixtures/html-program\n{build}\n\n$ priorart check tests/fixtures/html-finding.md --dossier tests/fixtures/html-program/html-program.dossier\n{check}"
+    )
+}
+
+fn generated_section(readme: &str, begin: &str, end: &str, what: &str) -> String {
+    let start = readme
+        .find(begin)
+        .unwrap_or_else(|| panic!("README is missing the {what} begin marker"));
+    let after_begin = start + begin.len();
+    let stop = readme[after_begin..]
+        .find(end)
+        .unwrap_or_else(|| panic!("README is missing the {what} end marker"))
+        + after_begin;
+    readme[after_begin..stop].trim_matches('\n').to_string()
+}
+
 #[test]
 fn readme_example_is_generated_from_the_fixture() {
     let readme = std::fs::read_to_string(manifest_dir().join("README.md")).expect("README.md");
-    let begin = readme
-        .find(BEGIN)
-        .expect("README is missing the begin marker");
-    let after_begin = begin + BEGIN.len();
-    let end = readme[after_begin..]
-        .find(END)
-        .expect("README is missing the end marker")
-        + after_begin;
-    let actual = readme[after_begin..end].trim_matches('\n');
+    let actual = generated_section(&readme, BEGIN, END, "example");
     let expected = example_block();
     assert_eq!(
         actual.trim_end(),
@@ -79,6 +102,19 @@ fn readme_example_is_generated_from_the_fixture() {
 }
 
 #[test]
+fn html_readme_example_is_generated_from_the_fixture() {
+    let readme = std::fs::read_to_string(manifest_dir().join("README.md")).expect("README.md");
+    let actual = generated_section(&readme, HTML_BEGIN, HTML_END, "HTML example");
+    let expected = html_example_block();
+    assert_eq!(
+        actual.trim_end(),
+        expected.trim_end(),
+        "README HTML example is stale. Regenerate it with scripts/regen-readme-examples.sh.\n\n--- expected ---\n{expected}\n--- end ---\n"
+    );
+}
+
+#[test]
 fn the_generated_block_is_deterministic() {
     assert_eq!(example_block(), example_block());
+    assert_eq!(html_example_block(), html_example_block());
 }

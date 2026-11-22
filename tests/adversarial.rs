@@ -2,7 +2,7 @@
 //! to fool priorart, or to break it.
 //!
 //! Each test states what the tool SHOULD do. Every case here passes as of
-//! 0.1.3; the cases that were once `#[ignore]`d bugs (the double negation, the
+//! 0.2.0; the cases that were once `#[ignore]`d bugs (the double negation, the
 //! hand-edited quote, the out-of-range page) are now regressions if they fail.
 //!
 //! Every fixture is fictional. The tests run the real binary, as tests/cli.rs

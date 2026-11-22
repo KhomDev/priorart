@@ -13,6 +13,8 @@
 //! Everything is read from files the user saved. The crate has no HTTP client
 //! and does not touch the network at runtime.
 
+#![forbid(unsafe_code)]
+
 pub mod check;
 pub mod cli;
 pub mod dossier;

@@ -4,7 +4,7 @@
 //! order, ids assigned from those orders, and no wall-clock field anywhere. Two
 //! builds over the same folder are byte-identical, which a test asserts.
 
-use crate::dossier::import::{self, Imported};
+use crate::dossier::import::{self, ImportOptions, Imported};
 use crate::model::{Dossier, ToolInfo, DOSSIER_SCHEMA};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -17,7 +17,8 @@ pub struct BuildOutcome {
     pub notes: Vec<String>,
 }
 
-/// Build a dossier from a program folder and write it.
+/// Build a dossier from a program folder and write it, with the default
+/// options (pdftotext enabled as a fallback).
 ///
 /// `out` overrides the output file; the default is
 /// `<program-dir>/<program-id>.dossier`.
@@ -26,12 +27,22 @@ pub fn build(
     out: Option<&Path>,
     program_id: Option<&str>,
 ) -> Result<BuildOutcome, String> {
+    build_with_options(program_dir, out, program_id, &ImportOptions::default())
+}
+
+/// Build a dossier with explicit import options.
+pub fn build_with_options(
+    program_dir: &Path,
+    out: Option<&Path>,
+    program_id: Option<&str>,
+    options: &ImportOptions,
+) -> Result<BuildOutcome, String> {
     let Imported {
         program,
         sources,
         items,
         notes,
-    } = import::read_program_dir(program_dir, program_id)?;
+    } = import::read_program_dir_with(program_dir, program_id, options)?;
     let dossier = Dossier {
         schema: DOSSIER_SCHEMA.to_string(),
         tool: ToolInfo {

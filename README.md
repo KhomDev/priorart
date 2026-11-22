@@ -20,7 +20,7 @@ That block is illustrative. The generated block further down is produced from
 the committed fixture by `scripts/regen-readme-examples.sh` and checked by
 `tests/docs.rs`, so it cannot drift.
 
-## Status: retrieval-only (0.1.3 re-measured)
+## Status: retrieval-only (0.2.0; matcher unchanged since 0.1.3)
 
 priorart ranks prior items to read. It does **not** warn that a finding is a
 duplicate. The plan's kill criterion is a 30% false-alarm rate on judged unique
@@ -29,7 +29,9 @@ items that share a symbol with the finding) and re-measures **15/60 = 25.0%**
 (Wilson 95% CI 15.8-37.2) on the same corpus and seed. That is below the
 criterion, but the warning still ships off: the interval reaches 37.2%, the
 corpus is one contest pair, and its held-out half was opened for 0.1.0, so this
-is a re-measurement rather than a fresh out-of-sample result.
+is a re-measurement rather than a fresh out-of-sample result. **0.2.0 changes
+no matcher, gate, schema or vocabulary code**, so the 0.1.3 numbers below
+describe this release.
 
 0.1.3 benchmark, measured binary sha256 `be373973` (0 tool errors):
 
@@ -61,8 +63,8 @@ dataset are compiled into the binary. Rust 1.89 or newer.
 ```sh
 # 1. Scaffold the folder priorart reads, once per program.
 priorart init my-program
-#    then overwrite scope.md with the saved program page, add known issues and
-#    audit PDFs/markdown under audits/, and fill in program.yaml.
+#    then save the program page as scope.md (or scope.html), add known issues
+#    and audit PDFs/markdown under audits/, and fill in program.yaml.
 
 # 2. Build the dossier. This is the product: one indexed local file per program.
 priorart build my-program
@@ -75,7 +77,7 @@ priorart check finding.md --dossier my-program/my-program.dossier
 
 <!-- BEGIN GENERATED EXAMPLE (scripts/regen-readme-examples.sh) -->
 $ priorart build examples/dossier-demo
-priorart 0.1.3 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.2.0 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
   3 source(s), 13 item(s)
     audit-finding    1
     known-issue      2
@@ -89,7 +91,7 @@ priorart 0.1.3 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossie
 Next: priorart check <finding.md> --dossier examples/dossier-demo/dossier-demo.dossier
 
 $ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
-priorart 0.1.3 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.2.0 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
 
 HAS THIS BEEN FOUND?  2 prior items to read (share >=2 symbol identifiers)
   [audit: internal-review.md p.1, section M-03 Fee index rounding]  "The consistency check in `FeeLedger.distributeFees` reverts with `FeeAccountingMismatch` when the fee index rounds up past the collected balance."
@@ -116,6 +118,45 @@ program with a rewards table, a scope list, two known issues and one prior
 audit. Every URL in it is reserved (`example.invalid`), and no real program,
 audit or finding is described.
 
+### HTML program pages, generated
+
+The second fixture is `tests/fixtures/html-program`: a saved page whose
+rewards, assets and exclusions are HTML lists, with a `<script>` and a
+`<style>` that must never be quoted. This block is generated from it by the
+same script and checked by `tests/docs.rs`.
+
+<!-- BEGIN GENERATED HTML EXAMPLE (scripts/regen-readme-examples.sh) -->
+$ priorart build tests/fixtures/html-program
+priorart 0.2.0 - dossier html-program (tests/fixtures/html-program/html-program.dossier)
+  1 source(s), 7 item(s)
+    payout-tier      3
+    scope-clause     2
+    scope-path       2
+  [src-0001] program-page  scope.html  p.1  sha256 27540f87d255
+  note: 1 source(s) indexed (0 audit(s)); 7 item(s) extracted
+Next: priorart check <finding.md> --dossier tests/fixtures/html-program/html-program.dossier
+
+$ priorart check tests/fixtures/html-finding.md --dossier tests/fixtures/html-program/html-program.dossier
+priorart 0.2.0 - tests/fixtures/html-finding.md against dossier html-program (tests/fixtures/html-program/html-program.dossier)
+
+HAS THIS BEEN FOUND?  nothing ranked (no prior item shares >=2 symbol identifiers)
+
+IS IT EXCLUDED?       1 clause class match your preconditions (attacker: role: operator; oracle: none)
+  [program-page: scope.html p.1, section Out of scope]  "Attacks requiring access to privileged roles"
+     clause class: privileged_role   your precondition: the finding needs a privileged role (operator), and the clause excludes those
+  -> a match is a prompt to read the clause, not a reject.
+
+CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable (cited: https://example.invalid/html/rewards, section Rewards)
+  "Medium: 2,000 USD"
+  High is at or above the floor (Medium)
+
+NOTES
+  - G4 prior audits: no prior-audit surface in this dossier
+  - G3 scope: the finding cites scoped code: Vault (in src/Vault.sol), FeeLedger (in src/FeeLedger.sol)
+  - no prior item shares two symbol identifiers with the finding. That is not evidence of novelty: the dossier only holds what you saved.
+  - priorart does not decide duplicates, exclusion, or payment. Read the quoted lines.
+<!-- END GENERATED HTML EXAMPLE -->
+
 ## What the three sections mean
 
 - **Has this been found?** Prior items that share at least two *symbol*
@@ -141,15 +182,39 @@ the same as clear.
 ```text
 my-program/
   program.yaml        # optional: name, platform, urls, payout, prior_audits
-  scope.md            # the saved program page (.html and .txt also work)
+  scope.md            # the saved program page (.html converts to text; .txt too)
   known-issues.md     # the program's own known issues (.yaml and .txt too)
   audits/*.md|*.txt|*.pdf
 ```
+
+A saved `scope.html` is converted to text by a small in-repo normalizer:
+headings become `#` lines, `<li>` becomes a bullet, block elements become line
+breaks, other tags are stripped, `<script>`/`<style>` content is dropped, and
+common entities are decoded. It is not a browser, so a page that needs CSS,
+JavaScript or attribute-only text should be saved as Markdown. The behavior and
+its limits are in [docs/dossier.md](docs/dossier.md#html-program-pages).
+
+Inputs must be regular files. A symlink, FIFO, device or directory named as an
+input is never followed or opened: `program.yaml`, a finding and an explicit
+dossier are refused with exit 2, while an optional `scope.*`/`known-issues.*`
+name or an `audits/` directory is skipped with a note that names it (and the
+build fails if no regular input is left).
 
 Output: `my-program/<program-id>.dossier`, schema `priorart.dossier/v1`
 ([schemas/dossier.schema.json](schemas/dossier.schema.json)). Two builds over the
 same folder are byte-identical; a test asserts it. Format reference:
 [docs/dossier.md](docs/dossier.md).
+
+### PDFs and the native parser
+
+An uncompressed PDF is scraped in-process. For a compressed PDF the fallback is
+`pdftotext` from poppler: a **native third-party parser started as the same
+user, with the same privileges, and without a sandbox**. It receives the PDF by
+absolute path and runs under a 60-second and 16 MiB output limit; it is found
+only on absolute `PATH` entries. `priorart build --no-pdftotext` never starts
+it, and a PDF the built-in scrape cannot read is then reported unread and
+skipped. See [docs/limitations.md](docs/limitations.md) and
+[ARCHITECTURE.md](ARCHITECTURE.md#trust-boundaries).
 
 ## Ledger, vocabularies, dataset
 

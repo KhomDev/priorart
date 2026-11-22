@@ -1,11 +1,12 @@
 //! Read a saved, offline program folder into sources and items.
 //!
 //! Nothing here fetches a URL and nothing invents content. A page is a file
-//! the user saved; a PDF is read from disk, with pdftotext as a fallback when
-//! the uncompressed scrape finds nothing. A PDF that cannot be read is a
-//! warning and a skipped source, never a panic.
+//! the user saved; a saved `.html` page is converted to text by
+//! [`crate::dossier::html`]; a PDF is read from disk, with pdftotext as a
+//! fallback when the uncompressed scrape finds nothing. A PDF that cannot be
+//! read is a warning and a skipped source, never a panic.
 
-use crate::dossier::sha256;
+use crate::dossier::{html, sha256};
 use crate::matching::{collapse, evidence_quote, mechanism_of, Profile};
 use crate::model::{Item, Payout, PriorAudit, Program, Source};
 use crate::vocab;
@@ -40,6 +41,23 @@ pub const PDFTOTEXT_MAX_OUTPUT: usize = 16 * 1024 * 1024;
 /// Stderr kept for an error message. The rest is read and discarded, so a
 /// chatty child cannot block on a full pipe.
 const PDFTOTEXT_MAX_STDERR: usize = 4096;
+
+/// Options for reading one program folder.
+#[derive(Debug, Clone, Copy)]
+pub struct ImportOptions {
+    /// Run `pdftotext` when the in-process scrape finds no text. `build
+    /// --no-pdftotext` turns this off, and then a PDF the built-in scrape
+    /// cannot read is reported unread, never handed to poppler.
+    pub use_pdftotext: bool,
+}
+
+impl Default for ImportOptions {
+    fn default() -> Self {
+        Self {
+            use_pdftotext: true,
+        }
+    }
+}
 
 /// One program folder, read.
 #[derive(Debug)]
@@ -101,9 +119,20 @@ struct PriorAuditFile {
     known_issues: Vec<String>,
 }
 
-/// Read a program directory. Returns a usage error only when the directory or
-/// its layout is unusable; a single unreadable input is a note.
+/// Read a program directory with the default options.
+///
+/// Returns a usage error only when the directory or its layout is unusable; a
+/// single unreadable input is a note.
 pub fn read_program_dir(dir: &Path, program_override: Option<&str>) -> Result<Imported, String> {
+    read_program_dir_with(dir, program_override, &ImportOptions::default())
+}
+
+/// Read a program directory with explicit options.
+pub fn read_program_dir_with(
+    dir: &Path,
+    program_override: Option<&str>,
+    options: &ImportOptions,
+) -> Result<Imported, String> {
     if !dir.is_dir() {
         return Err(format!(
             "{} is not a directory. Point priorart build at a folder of saved inputs; priorart init scaffolds one.",
@@ -134,31 +163,41 @@ pub fn read_program_dir(dir: &Path, program_override: Option<&str>) -> Result<Im
         found.push((path, "known-issues"));
     }
     let audits_dir = dir.join("audits");
-    if audits_dir.is_dir() {
-        let mut walk = Walk::default();
-        collect_files(&audits_dir, &mut walk, WalkLimits::DEFAULT)?;
-        let mut files = walk.docs;
-        // A README in audits/ is scaffolding, not a prior audit.
-        files.retain(|p| {
-            !p.file_name()
-                .is_some_and(|n| n.to_string_lossy().eq_ignore_ascii_case("README.md"))
-        });
-        files.sort();
-        found.extend(files.into_iter().map(|p| (p, "audit")));
-    } else if dir.join("audits").exists() {
-        notes.push("audits exists but is not a directory; ignored".into());
+    match fs::symlink_metadata(&audits_dir) {
+        Ok(meta) if meta.file_type().is_dir() => {
+            let mut walk = Walk::default();
+            collect_files(&audits_dir, &mut walk, WalkLimits::DEFAULT)?;
+            let mut files = walk.docs;
+            // A README in audits/ is scaffolding, not a prior audit.
+            files.retain(|p| {
+                !p.file_name()
+                    .is_some_and(|n| n.to_string_lossy().eq_ignore_ascii_case("README.md"))
+            });
+            files.sort();
+            found.extend(files.into_iter().map(|p| (p, "audit")));
+        }
+        Ok(meta) => notes.push(format!(
+            "audits is {}; priorart reads a regular directory and skipped it",
+            file_kind(&meta.file_type())
+        )),
+        Err(_) => {}
     }
 
     if found.is_empty() {
+        let skipped = if notes.is_empty() {
+            String::new()
+        } else {
+            format!(" Skipped: {}.", notes.join("; "))
+        };
         return Err(format!(
-            "no inputs found in {}. Expected scope.md (or .html/.txt), known-issues.md/.yaml/.txt, or audits/*.md/.txt/.pdf. Run priorart init to scaffold the layout.",
+            "no inputs found in {}. Expected scope.md (or .html/.txt), known-issues.md/.yaml/.txt, or audits/*.md/.txt/.pdf. Run priorart init to scaffold the layout.{skipped}",
             dir.display()
         ));
     }
     check_input_limits(&found, MAX_INPUT_FILES, MAX_INPUT_BYTES, MAX_TOTAL_BYTES)?;
     let inputs: Vec<Input> = found
         .iter()
-        .map(|(path, kind)| Input::new(path, kind, dir))
+        .map(|(path, kind)| Input::new(path, kind, dir, options))
         .collect::<Result<_, _>>()?;
 
     let mut sources = Vec::new();
@@ -234,11 +273,20 @@ pub fn read_program_dir(dir: &Path, program_override: Option<&str>) -> Result<Im
 
 fn read_program_file(dir: &Path, notes: &mut Vec<String>) -> Result<Option<ProgramFile>, String> {
     let path = dir.join("program.yaml");
-    if !path.exists() {
-        return Ok(None);
+    let meta = match fs::symlink_metadata(&path) {
+        Ok(meta) => meta,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(e) => return Err(format!("cannot read {}: {e}", path.display())),
+    };
+    if !meta.file_type().is_file() {
+        return Err(format!(
+            "{} is {}; priorart reads program.yaml only as a regular file. Replace it with a regular file.",
+            path.display(),
+            file_kind(&meta.file_type())
+        ));
     }
-    check_file_size(&path, file_len(&path)?, MAX_INPUT_BYTES)?;
-    let text = read_text(&path)?;
+    check_file_size(&path, meta.len(), MAX_INPUT_BYTES)?;
+    let text = read_regular_text(&path)?;
     let parsed: ProgramFile = serde_saphyr::from_str(&text).map_err(|e| {
         format!(
             "{}: not a program.yaml this build reads: {e}",
@@ -355,11 +403,21 @@ fn find_one(
     names: &[&str],
     notes: &mut Vec<String>,
 ) -> Result<Option<PathBuf>, String> {
-    let found: Vec<PathBuf> = names
-        .iter()
-        .map(|n| dir.join(n))
-        .filter(|p| p.is_file())
-        .collect();
+    let mut found: Vec<PathBuf> = Vec::new();
+    for name in names {
+        let path = dir.join(name);
+        match fs::symlink_metadata(&path) {
+            Ok(meta) if meta.file_type().is_file() => found.push(path),
+            // A symlink, FIFO or directory is not the file the user saved.
+            // Name it instead of following or reading it.
+            Ok(meta) => notes.push(format!(
+                "{} is {}; priorart reads regular files only and skipped it",
+                display_name(&path),
+                file_kind(&meta.file_type())
+            )),
+            Err(_) => {}
+        }
+    }
     match found.len() {
         0 => Ok(None),
         1 => Ok(Some(found[0].clone())),
@@ -452,9 +510,52 @@ fn collect_at_depth(
 }
 
 fn file_len(path: &Path) -> Result<u64, String> {
-    fs::metadata(path)
-        .map(|m| m.len())
-        .map_err(|e| format!("cannot read {}: {e}", path.display()))
+    Ok(require_regular_file(path)?.len())
+}
+
+/// The kind of file a `symlink_metadata` reports, for an error message.
+fn file_kind(ft: &fs::FileType) -> &'static str {
+    if ft.is_symlink() {
+        "a symlink"
+    } else if ft.is_dir() {
+        "a directory"
+    } else if ft.is_file() {
+        "a regular file"
+    } else {
+        "a special file, not a regular file"
+    }
+}
+
+/// Reject anything that is not a regular file before it is opened.
+///
+/// A symlink can point outside the program folder, a FIFO can block the build
+/// forever, and a device is not page text. The `audits/` walk already skips
+/// symlinks; this is the check for the top-level inputs, findings and dossiers,
+/// and it also closes the window between discovery and reading.
+pub fn require_regular_file(path: &Path) -> Result<fs::Metadata, String> {
+    require_regular_file_from(path, "file")
+}
+
+/// [`require_regular_file`], with the role name (`finding`, `dossier`) that the
+/// caller's error message should carry.
+pub fn require_regular_file_from(path: &Path, what: &str) -> Result<fs::Metadata, String> {
+    let meta = fs::symlink_metadata(path)
+        .map_err(|e| format!("cannot read {what} {}: {e}", path.display()))?;
+    let ft = meta.file_type();
+    if !ft.is_file() {
+        return Err(format!(
+            "cannot read {what} {}: it is {}; priorart reads regular files only (no symlinks, FIFOs or devices). Replace it with a regular file.",
+            path.display(),
+            file_kind(&ft)
+        ));
+    }
+    Ok(meta)
+}
+
+/// Read a regular file, refusing symlinks and special files first.
+pub fn read_regular_file(path: &Path) -> Result<Vec<u8>, String> {
+    require_regular_file(path)?;
+    fs::read(path).map_err(|e| format!("cannot read {}: {e}", path.display()))
 }
 
 /// Refuse a folder over the count, per-file or total size limits, before any
@@ -499,10 +600,9 @@ fn check_file_size(path: &Path, len: u64, max: u64) -> Result<(), String> {
     Ok(())
 }
 
-fn mib(bytes: u64) -> String {
+pub(crate) fn mib(bytes: u64) -> String {
     format!("{:.1} MiB", bytes as f64 / (1024.0 * 1024.0))
 }
-
 fn is_doc(path: &Path) -> bool {
     matches!(
         path.extension()
@@ -526,7 +626,10 @@ struct Input {
 }
 
 impl Input {
-    fn new(path: &Path, kind: &str, root: &Path) -> Result<Self, String> {
+    fn new(path: &Path, kind: &str, root: &Path, options: &ImportOptions) -> Result<Self, String> {
+        // Re-check at read time: discovery and reading are two steps.
+        let meta = require_regular_file(path)?;
+        check_file_size(path, meta.len(), MAX_INPUT_BYTES)?;
         let bytes = fs::read(path).map_err(|e| format!("cannot read {}: {e}", path.display()))?;
         let rel = path
             .strip_prefix(root)
@@ -548,7 +651,7 @@ impl Input {
         let mut pages = 1;
         let mut warning = None;
         if is_pdf(path) {
-            match pdf_to_text(path) {
+            match pdf_to_text_with(path, options.use_pdftotext) {
                 Ok(t) => {
                     pages = 1 + t.matches('\u{0c}').count();
                     text = Some(t);
@@ -557,7 +660,14 @@ impl Input {
             }
         } else {
             let raw = String::from_utf8_lossy(&bytes).to_string();
-            let t = strip_bom(&raw).replace("\r\n", "\n").replace('\r', "\n");
+            let raw = strip_bom(&raw);
+            let t = if html::is_html_path(path) {
+                // A saved page is converted conservatively: headings, bullets
+                // and paragraphs survive, markup and scripts do not.
+                html::to_text(&raw)
+            } else {
+                raw.replace("\r\n", "\n").replace('\r', "\n")
+            };
             pages = 1 + t.matches('\u{0c}').count();
             text = Some(t);
         }
@@ -592,8 +702,8 @@ fn is_pdf(path: &Path) -> bool {
         .is_some_and(|e| e.eq_ignore_ascii_case("pdf"))
 }
 
-fn read_text(path: &Path) -> Result<String, String> {
-    let bytes = fs::read(path).map_err(|e| format!("cannot read {}: {e}", path.display()))?;
+fn read_regular_text(path: &Path) -> Result<String, String> {
+    let bytes = read_regular_file(path)?;
     Ok(strip_bom(&String::from_utf8_lossy(&bytes)).replace("\r\n", "\n"))
 }
 
@@ -601,14 +711,28 @@ pub fn strip_bom(s: &str) -> String {
     s.strip_prefix('\u{feff}').unwrap_or(s).to_string()
 }
 
-/// Extract text from a PDF: the uncompressed literal scrape first, then
-/// pdftotext. A missing pdftotext is a clear error message, never a panic.
+/// Extract text from a PDF with the default policy: the uncompressed literal
+/// scrape first, then pdftotext. A missing pdftotext is a clear error message,
+/// never a panic.
 pub fn pdf_to_text(path: &Path) -> Result<String, String> {
+    pdf_to_text_with(path, true)
+}
+
+/// Extract text from a PDF. `use_pdftotext` false means the built-in scrape is
+/// the only reader: when it finds no text, the source is reported unread and
+/// no native parser is started.
+pub fn pdf_to_text_with(path: &Path, use_pdftotext: bool) -> Result<String, String> {
     let bytes = fs::read(path).map_err(|e| format!("cannot read {}: {e}", path.display()))?;
     let scraped = scrape_pdf_literals(&bytes);
     let letters = scraped.chars().filter(|c| c.is_alphanumeric()).count();
     if letters > 40 {
         return Ok(scraped);
+    }
+    if !use_pdftotext {
+        return Err(format!(
+            "{}: no extractable text (the uncompressed scrape found nothing and pdftotext is disabled with --no-pdftotext). Convert it with a text tool and pass the .txt.",
+            path.display()
+        ));
     }
     let Some(program) = find_on_path(std::env::var_os("PATH").as_deref()) else {
         return Err(format!(
@@ -806,37 +930,59 @@ fn read_head(mut pipe: impl Read, max: usize) -> Vec<u8> {
 /// Pull literal strings out of an uncompressed PDF. Compressed streams are
 /// left for pdftotext. This is enough for a text-showing PDF that was not
 /// deflated, and it does not pretend to be a PDF parser.
+///
+/// A literal's bytes are decoded as UTF-16BE or UTF-16LE when they start with
+/// the matching byte-order mark (the usual way a PDF carries non-Latin text),
+/// as UTF-8 when they are valid UTF-8, and byte-per-character only as a last
+/// resort. Before 0.2.0 every byte became a Latin-1 char, so a UTF-16 literal
+/// produced text interleaved with NUL characters.
 pub fn scrape_pdf_literals(bytes: &[u8]) -> String {
-    let text = String::from_utf8_lossy(bytes);
     let mut out = String::new();
-    let b = text.as_bytes();
     let mut i = 0usize;
-    while i < b.len() {
-        if b[i] == b'(' {
+    while i < bytes.len() {
+        if bytes[i] == b'(' {
             let mut j = i + 1;
-            let mut buf = String::new();
+            let mut buf: Vec<u8> = Vec::new();
             let mut escaped = false;
             let mut depth = 1i32;
-            while j < b.len() {
-                let c = b[j] as char;
+            while j < bytes.len() {
+                let c = bytes[j];
                 if escaped {
-                    buf.push(match c {
-                        'n' => '\n',
-                        'r' => '\r',
-                        't' => '\t',
-                        other => other,
-                    });
+                    match c {
+                        b'n' => buf.push(b'\n'),
+                        b'r' => buf.push(b'\r'),
+                        b't' => buf.push(b'\t'),
+                        b'b' => buf.push(0x08),
+                        b'f' => buf.push(0x0c),
+                        b'0'..=b'7' => {
+                            // A PDF octal escape is up to three digits.
+                            let mut value = (c - b'0') as u16;
+                            let mut digits = 1;
+                            while digits < 3 {
+                                match bytes.get(j + 1) {
+                                    Some(&next) if (b'0'..=b'7').contains(&next) => {
+                                        value = value * 8 + (next - b'0') as u16;
+                                        j += 1;
+                                        digits += 1;
+                                    }
+                                    _ => break,
+                                }
+                            }
+                            buf.push(value as u8);
+                        }
+                        other => buf.push(other),
+                    }
                     escaped = false;
                     j += 1;
                     continue;
                 }
                 match c {
-                    '\\' => escaped = true,
-                    '(' => {
+                    b'\\' => escaped = true,
+                    b'(' => {
                         depth += 1;
                         buf.push(c);
                     }
-                    ')' => {
+                    b')' => {
                         depth -= 1;
                         if depth == 0 {
                             j += 1;
@@ -848,12 +994,18 @@ pub fn scrape_pdf_literals(bytes: &[u8]) -> String {
                 }
                 j += 1;
             }
-            let after = text[j..].trim_start();
-            if (after.starts_with("Tj") || after.starts_with('\'') || after.starts_with("TJ"))
-                && !buf.trim().is_empty()
+            let after = skip_pdf_whitespace(bytes, j);
+            if (starts_with_bytes(bytes, after, b"Tj")
+                || bytes.get(after) == Some(&b'\'')
+                || starts_with_bytes(bytes, after, b"TJ"))
+                && buf.iter().any(|b| !b.is_ascii_whitespace())
             {
-                out.push_str(buf.trim());
-                out.push('\n');
+                let decoded = decode_pdf_string(&buf);
+                let trimmed = decoded.trim();
+                if !trimmed.is_empty() {
+                    out.push_str(trimmed);
+                    out.push('\n');
+                }
             }
             i = j;
         } else {
@@ -861,6 +1013,43 @@ pub fn scrape_pdf_literals(bytes: &[u8]) -> String {
         }
     }
     out
+}
+
+fn skip_pdf_whitespace(bytes: &[u8], mut i: usize) -> usize {
+    while bytes.get(i).is_some_and(|c| c.is_ascii_whitespace()) {
+        i += 1;
+    }
+    i
+}
+
+fn starts_with_bytes(bytes: &[u8], at: usize, needle: &[u8]) -> bool {
+    bytes.len() >= at + needle.len() && &bytes[at..at + needle.len()] == needle
+}
+
+/// Decode one PDF literal's bytes. A BOM picks UTF-16; valid UTF-8 is used as
+/// UTF-8; otherwise each byte is one character, which is the old behaviour and
+/// only a fallback.
+fn decode_pdf_string(bytes: &[u8]) -> String {
+    if let Some(rest) = bytes.strip_prefix(&[0xFE, 0xFF]) {
+        return utf16_to_string(rest, u16::from_be_bytes);
+    }
+    if let Some(rest) = bytes.strip_prefix(&[0xFF, 0xFE]) {
+        return utf16_to_string(rest, u16::from_le_bytes);
+    }
+    if let Ok(text) = std::str::from_utf8(bytes) {
+        return text.to_string();
+    }
+    bytes.iter().map(|b| char::from(*b)).collect()
+}
+
+fn utf16_to_string(bytes: &[u8], decode: fn([u8; 2]) -> u16) -> String {
+    let units: Vec<u16> = bytes
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .map(|pair| decode(*pair))
+        .collect();
+    String::from_utf16_lossy(&units)
 }
 
 // ------------------------------------------------------------ extraction
@@ -1319,6 +1508,54 @@ mod tests {
         let pdf = b"BT (settle_rebate rounds the rebate down twice) Tj ET";
         let text = scrape_pdf_literals(pdf);
         assert!(text.contains("settle_rebate"), "{text}");
+    }
+
+    #[test]
+    fn a_utf16be_pdf_literal_is_decoded() {
+        let mut pdf = b"BT (".to_vec();
+        pdf.extend_from_slice(&[0xFE, 0xFF]);
+        for unit in "settle_rebate rounds the rebate down twice".encode_utf16() {
+            pdf.extend_from_slice(&unit.to_be_bytes());
+        }
+        pdf.extend_from_slice(b") Tj ET");
+        let text = scrape_pdf_literals(&pdf);
+        assert!(
+            text.contains("settle_rebate rounds the rebate down twice"),
+            "{text:?}"
+        );
+        assert!(!text.contains('\u{0}'), "NUL characters survived: {text:?}");
+    }
+
+    #[test]
+    fn a_utf16le_pdf_literal_is_decoded() {
+        let mut pdf = b"BT (".to_vec();
+        pdf.extend_from_slice(&[0xFF, 0xFE]);
+        for unit in "FeeLedger.distributeFees".encode_utf16() {
+            pdf.extend_from_slice(&unit.to_le_bytes());
+        }
+        pdf.extend_from_slice(b") Tj ET");
+        let text = scrape_pdf_literals(&pdf);
+        assert!(text.contains("FeeLedger.distributeFees"), "{text:?}");
+        assert!(!text.contains('\u{0}'), "NUL characters survived: {text:?}");
+    }
+
+    #[test]
+    fn a_utf8_pdf_literal_is_not_read_as_latin1() {
+        let mut pdf = b"BT (r".to_vec();
+        pdf.extend_from_slice("é".as_bytes());
+        pdf.extend_from_slice(b"serve) Tj ET");
+        let text = scrape_pdf_literals(&pdf);
+        assert!(text.contains("réserve"), "{text:?}");
+        assert!(
+            !text.contains('\u{00c3}'),
+            "UTF-8 was read as Latin-1: {text:?}"
+        );
+    }
+
+    #[test]
+    fn pdf_octal_escapes_are_decoded() {
+        let text = scrape_pdf_literals(b"BT (\\101\\102\\103) Tj ET");
+        assert!(text.contains("ABC"), "{text:?}");
     }
 
     /// A fresh directory for one test's files.

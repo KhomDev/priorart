@@ -1,6 +1,6 @@
 [package]
 name = "priorart"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
 description = "Offline, deterministic prior-art dossiers for smart-contract audit findings: has this been found, is it excluded, and can it be paid?"
 license = "MIT"
