@@ -13,6 +13,73 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-22
+
+An input-handling release. A saved HTML program page is now read, every input
+must be a regular file, finding and dossier reads are bounded, and the native
+PDF fallback can be disabled. The matcher, the gates, both JSON schemas and the
+vocabularies are unchanged, so the 0.1.3 benchmark numbers still describe this
+release and older dossiers still load. Self-review: no external report.
+
+### Added
+
+- **`.html` program pages are read.** `scope.html` (or `.htm`) is converted to
+  Markdown-shaped text by a new in-repo normalizer, `src/dossier/html.rs`:
+  `<h1>`-`<h6>` become heading lines, `<li>` becomes a bullet, `<p>`/`<br>`/`<div>`
+  and other blocks become line breaks, remaining tags are stripped,
+  `<script>`/`<style>` contents are dropped, and common named and numeric
+  entities are decoded. It is not a browser; CSS, JavaScript-rendered text,
+  table structure and attribute-only text are not read, and complex pages
+  should be saved as Markdown. Fixture and gates: `tests/html.rs`.
+- **`build --no-pdftotext`.** The flag disables the poppler fallback entirely;
+  a PDF the in-process scrape cannot read is reported unread and skipped.
+  `docs/limitations.md`, `ARCHITECTURE.md` and `README.md` now state that
+  `pdftotext` is native third-party code run as the user, without a sandbox.
+- **A generated README example for the HTML fixture**, checked by
+  `tests/docs.rs` and reproduced by `scripts/regen-readme-examples.sh`.
+
+### Security
+
+- **Only regular files are read.** A symlink, FIFO, device or directory named
+  as `scope.*`, `known-issues.*`, `program.yaml`, an audit, the `audits/`
+  directory itself, a finding or a dossier is refused or skipped with an error
+  naming the file; nothing behind it is read. A FIFO used to be able to block a
+  build indefinitely. The `audits/` walk already skipped symlinks; the rule now
+  covers every input.
+- **Finding and dossier reads are bounded.** `check` refuses a finding over
+  16 MiB (`check::MAX_FINDING_BYTES`) and a dossier over 64 MiB
+  (`dossier::load::MAX_DOSSIER_BYTES`) by size, before the file is read, with
+  the same named exit-2 errors as the build limits.
+- **UTF-16 PDF literals are decoded.** `scrape_pdf_literals` used to read every
+  byte as a Latin-1 character; a UTF-16BE/LE literal came out interleaved with
+  NUL characters. It now honours the byte-order mark, prefers UTF-8 when valid,
+  and supports PDF octal escapes. Tests use UTF-16BE, UTF-16LE and UTF-8
+  literals.
+
+### Changed
+
+- The `build` summary prints the dossier path with forward slashes on every
+  platform, so copied output is the same everywhere.
+- The MSRV CI job runs `cargo check --locked` on Rust 1.89.0 (was build and
+  test).
+
+### Hardening
+
+- `#![forbid(unsafe_code)]` in `src/lib.rs` and `src/main.rs`.
+- `.github/workflows/mutants.yml` runs `cargo mutants` for `src/match/`,
+  `src/gates/` and `src/dossier/` every Monday. It is not a gate; the
+  measurement in `docs/test-quality.md` is unchanged until a scheduled run on
+  the release commit completes.
+
+### Tests
+
+- New: `tests/html.rs` (converted page, item kinds, G1/G2/G3), `tests/inputs.rs`
+  (symlinks, FIFO on Unix, sparse oversized finding and dossier, the
+  `--no-pdftotext` control, forward-slash paths), eleven `dossier::html` unit
+  tests, and four PDF literal-decoding tests.
+- `docs/validation.md` records the new claims, the retracted "`scope.html`
+  works" claim from 0.1.3 and its limits.
+
 ## [0.1.3] - 2026-11-21
 
 A correctness release. The specificity denominator, negation reading, dossier

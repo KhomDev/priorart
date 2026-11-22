@@ -41,6 +41,14 @@ is what its NIST vector test should give.
 The aim is not zero survivors. A survivor is a behaviour that no test pins down.
 The ten below are the ones that matter most for what priorart reports.
 
+## Scheduled runs
+
+Since 2026-11-22, `.github/workflows/mutants.yml` runs the same `cargo mutants`
+command every Monday and uploads `mutants.out/`. It is not a gate: a survivor
+is a test to write, not a failed build. The numbers above remain the
+2026-11-19 measurement on commit `66d0ec8` until a scheduled run on the release
+commit completes and is recorded here.
+
 ## The ten most important surviving mutants
 
 Line numbers are for commit `66d0ec8`.
