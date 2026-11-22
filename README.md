@@ -191,18 +191,24 @@ A saved `scope.html` (or `scope.htm`) is converted to text by a small in-repo
 normalizer: headings become `#` lines, `<li>` becomes a bullet, block elements
 become line breaks, other tags are stripped, `<script>`/`<style>` content is
 dropped, and common entities are decoded. It is designed for **list-based
-pages** (a heading plus a `<ul>`/`<li>` list), which is how most program pages
-publish rewards, assets and exclusions. It is not a browser: CSS, JavaScript,
-attribute-only text and **table structure** are not read. A rewards or scope
-table yields no payout/scope items, so save a table-based page as Markdown.
-Table mapping is a later-release plan, not 0.2.0. The behavior and its limits
-are in [docs/dossier.md](docs/dossier.md#html-program-pages).
+pages** (a heading plus a `<ul>`/`<li>` list). It is not a browser: CSS,
+JavaScript, attribute-only text and **table structure** are not read. A plain
+rewards or scope table yields no payout/scope items, though a cell whose text is
+itself a Markdown bullet (`- ...`) is still read as one. Save a table-based page
+as Markdown. Table mapping is a later-release plan, not 0.2.0. The behavior and
+its limits are in [docs/dossier.md](docs/dossier.md#html-program-pages).
 
 Inputs must be regular files. A symlink, FIFO, device or directory named as an
-input is never followed or opened: `program.yaml`, a finding and an explicit
-dossier are required and refused with exit 2, while an optional
-`scope.*`/`known-issues.*` name, an audit, or an `audits/` directory is skipped
-with a note that names it (and the build fails if no regular input is left).
+input is refused or skipped by name, never read through: `program.yaml`, a
+finding and an explicit dossier are required and refused with exit 2, while an
+optional `scope.*`/`known-issues.*` name, an audit (including a symlinked
+subdirectory of `audits/`), or an `audits/` directory is skipped with a note
+that names it (and the build fails if no regular input is left). A dossier
+discovered beside the finding follows the same rule: a non-regular only
+candidate is exit 2, and a regular candidate beside it is used instead. The
+check is a stat followed by a separate open, so a concurrent writer can swap the
+path between them; it refuses an accidental or stale link, not a writer who
+already controls the folder.
 
 Output: `my-program/<program-id>.dossier`, schema `priorart.dossier/v1`
 ([schemas/dossier.schema.json](schemas/dossier.schema.json)). Two builds over the

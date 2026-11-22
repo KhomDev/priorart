@@ -45,8 +45,9 @@ A saved `scope.html` (or `scope.htm`) is converted to text by a small in-repo
 normalizer (headings, bullets, blocks, entities, script/style removal). It is
 designed for **list-based pages**; it is **not a browser and not an HTML
 parser**: CSS layout, JavaScript-rendered text, table structure and text
-carried only in attributes are not read. A table-based rewards or scope page
-yields no payout/scope items, and a page that builds its scope list in
+carried only in attributes are not read. A **plain** table-based rewards or
+scope page yields no payout/scope items (a cell whose text is itself a Markdown
+bullet is still read as one), and a page that builds its scope list in
 JavaScript yields none either; save those pages as Markdown by hand. Table
 mapping is a later-release plan, not 0.2.0. The rules and the fixtures are in
 [dossier.md](dossier.md#html-program-pages) and `tests/html.rs`.
@@ -105,6 +106,6 @@ test runs on Unix where `mkfifo` exists, and the Windows symlink tests skip
 without SeCreateSymbolicLinkPrivilege (the Ubuntu CI job runs the Unix cases).
 The benchmark corpus is public contest material; behaviour on private reports,
 other languages or real-world program pages saved as HTML is not measured. The
-HTML path is tested against two committed synthetic fixtures (list-based and
-table-based), not against live platform pages
+HTML path is tested against one committed list-based fixture and an inline
+table-limitation test, not against live platform pages
 ([dossier.md](dossier.md#html-program-pages)).

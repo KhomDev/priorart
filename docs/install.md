@@ -82,9 +82,12 @@ cargo install priorart --force   # upgrade in place
 cargo uninstall priorart         # uninstall
 ```
 
-Dossiers built by an older 0.1.x or 0.2.x still load: the schema is
-`priorart.dossier/v1` and `v1` is additive-only ([schema.md](schema.md)). A
-dossier does not need rebuilding for a new binary unless the inputs changed.
+Dossiers built by an older 0.1.x or 0.2.x under the 64 MiB check limit still
+load: the schema is `priorart.dossier/v1` and `v1` is additive-only
+([schema.md](schema.md)). A dossier does not need rebuilding for a new binary
+unless the inputs changed. A pre-0.2.0 dossier larger than 64 MiB is refused by
+`check` with the named limit, because 0.1.3 had no such cap; rebuild it from a
+smaller folder.
 
 ## Moving from viability-gate
 

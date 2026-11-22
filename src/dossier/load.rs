@@ -6,8 +6,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 /// The build refuses to write a serialized dossier over this limit
-/// (`dossier::build::write_dossier`), so a dossier that exists can be read.
-/// A larger file is a usage error that names the limit, never read whole.
+/// (`dossier::build::write_dossier`), so a dossier this build writes can be
+/// read. A pre-0.2.0 dossier over the limit (0.1.3 had no cap) is still
+/// refused here.
 pub const MAX_DOSSIER_BYTES: u64 = 64 * 1024 * 1024;
 
 /// Read a dossier. Rejects a file whose schema id is not DOSSIER_SCHEMA, so a

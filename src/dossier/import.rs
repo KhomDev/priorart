@@ -517,9 +517,10 @@ fn collect_at_depth(
         };
         let ft = meta.file_type();
         if ft.is_symlink() {
-            if is_doc(&path) {
-                walk.skipped.push((path, "a symlink"));
-            }
+            // Every symlink under audits/ is named, file or directory. A
+            // symlinked subdirectory is a whole tree the user may think was
+            // indexed, so it must not disappear silently.
+            walk.skipped.push((path, "a symlink"));
             continue;
         }
         if ft.is_dir() {

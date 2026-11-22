@@ -313,6 +313,45 @@ fn a_symlinked_audit_is_named_skipped_and_never_read() {
 }
 
 #[test]
+fn a_symlinked_audit_subdirectory_is_named_and_not_followed() {
+    let tmp = TempDir::new("symlink-audit-dir");
+    tmp.write(
+        "program/scope.md",
+        "# Scope\n\n## In scope\n\n- src/Vault.sol\n",
+    );
+    tmp.write(
+        "outside-dir/review.md",
+        "# Review\n\n## Finding 1\n\nThe `OutsideContract.close` path leaves `OutsideLedger.distribute` unsettled.\n",
+    );
+    std::fs::create_dir_all(tmp.join("program/audits")).unwrap();
+    if !require_symlink_dir(
+        &tmp.join("outside-dir"),
+        &tmp.join("program/audits/sub"),
+        "symlinked audit subdirectory",
+    ) {
+        return;
+    }
+    let out = tmp.join("out.dossier");
+    let r = run(&[
+        "build",
+        tmp.join("program").to_str().unwrap(),
+        "--out",
+        out.to_str().unwrap(),
+    ]);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let combined = format!("{}{}", r.stdout, r.stderr);
+    assert!(
+        combined.contains("audits/sub is a symlink"),
+        "a skipped audit subdirectory must be named: {combined}"
+    );
+    let dossier = std::fs::read_to_string(&out).unwrap();
+    assert!(
+        !dossier.contains("OutsideContract"),
+        "bytes behind a symlinked audit subdirectory reached the dossier"
+    );
+}
+
+#[test]
 fn a_symlinked_finding_is_refused_by_name() {
     let tmp = TempDir::new("symlink-finding");
     let dossier = build_dossier(&tmp);

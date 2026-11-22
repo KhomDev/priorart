@@ -145,10 +145,9 @@ fn a_scope_htm_only_folder_builds() {
     assert!(kinds.contains(&"scope-path"), "{kinds:?}");
 }
 
-/// A table-based page is a known 0.2.0 limitation, not a promise. This test
-/// pins the limitation so it cannot be mistaken for support later: no
-/// payout/scope/exclusion items are extracted from a table, and the gates say
-/// what they could not read.
+/// A plain table-based page is a known 0.2.0 limitation, not a promise: a cell
+/// without a Markdown bullet marker is just a line, so no payout/scope/
+/// exclusion items are extracted and the gates say what they could not read.
 #[test]
 fn table_based_pages_are_a_known_limitation() {
     let tmp = TempDir::new("html-table");
@@ -204,5 +203,32 @@ fn table_based_pages_are_a_known_limitation() {
         check.stdout.contains("no payout block"),
         "G1 must report that no payout table was read:\n{}",
         check.stdout
+    );
+}
+
+/// The limitation is "table structure is not mapped", not "tables yield
+/// nothing unconditionally". A cell whose text is itself a Markdown bullet is
+/// still a bullet, because the normalizer cannot tell it came from a table.
+/// This test pins the edge so the docs cannot claim more than the code does.
+#[test]
+fn a_table_cell_that_is_itself_a_markdown_bullet_is_still_read() {
+    let tmp = TempDir::new("html-table-bullet");
+    tmp.write(
+        "program/scope.html",
+        "<!doctype html><html><body><h2>Rewards</h2>\
+<table><tr><td>- Critical: 50,000 USD</td></tr></table></body></html>\n",
+    );
+    let build = run(&["build", tmp.join("program").to_str().unwrap(), "--json"]);
+    assert_eq!(build.code, 0, "{}", build.stderr);
+    let dossier: Value = serde_json::from_str(&build.stdout).expect("build --json prints JSON");
+    let kinds: Vec<&str> = dossier["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|i| i["kind"].as_str().unwrap())
+        .collect();
+    assert!(
+        kinds.contains(&"payout-tier"),
+        "a cell that starts with '- ' is a bullet, so it is read: {kinds:?}"
     );
 }

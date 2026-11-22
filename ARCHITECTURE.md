@@ -100,7 +100,7 @@ reports a pass.
 
 | Boundary | What crosses it | How it is contained |
 |---|---|---|
-| Program folder → import | Markdown, HTML, text, YAML and PDF the user saved, often from a third party | HTML is converted by `dossier/html.rs` (tags stripped, script/style dropped, entities decoded; list-based pages only, not a browser); unknown `program.yaml` keys are ignored; per-file 64 MiB, 1000 documents, 512 MiB total, walk depth and entry caps. A non-regular **required** input (`program.yaml`) is exit 2; an optional page, known-issues, audit or `audits/` directory is named and skipped. The check is a stat followed by a separate open: a concurrent writer can swap the path between them, so it refuses an accidental or stale link, not a writer who controls the folder |
+| Program folder → import | Markdown, HTML, text, YAML and PDF the user saved, often from a third party | HTML is converted by `dossier/html.rs` (tags stripped, script/style dropped, entities decoded; list-based pages only, not a browser); unknown `program.yaml` keys are ignored; per-file 64 MiB, 1000 documents, 512 MiB total, walk depth and entry caps. A non-regular **required** input (`program.yaml`) is exit 2; an optional page, known-issues, audit (including a symlinked subdirectory), or `audits/` directory is named and skipped; a discovered dossier is used only when a regular candidate exists. The check is a stat followed by a separate open: a concurrent writer can swap the path between them, so it refuses an accidental or stale link, not a writer who controls the folder |
 | priorart → pdftotext | an untrusted PDF, read by **native third-party code (poppler), run as the same user without a sandbox** | only when the built-in scrape finds no text, and never with `--no-pdftotext`; absolute `PATH` entries only; the PDF is passed as an absolute path and must be a regular file; killed after 60 s or 16 MiB of output; a missing or refused `pdftotext` is a warning and the build still succeeds |
 | Finding → matcher and gates | the user's draft | a regular file of at most 16 MiB; regexes and keyword tables only; nothing is evaluated |
 | Dossier file → check | JSON that may have been edited | a regular file of at most 64 MiB; validated against the schema on load; page ranges checked against the recorded sources |
@@ -113,9 +113,10 @@ reports a pass.
 | A compressed PDF and no `pdftotext` | a warning on build; the file is listed as unread; the build succeeds |
 | A compressed PDF with `--no-pdftotext` | the same warning, naming the flag; poppler never runs |
 | A symlinked or FIFO required input (`program.yaml`, finding, explicit dossier) | exit 2 with an error naming the file and its type; nothing behind it is read |
-| A symlinked or FIFO optional input (`scope.*`, known-issues, an audit, `audits/`) | a note naming the file and its type; it is skipped, and the build exits 2 only if no regular input remains |
-| A table-based HTML page | no payout/scope items are extracted; save the page as Markdown (table mapping is a later-release plan) |
-| A dossier that would exceed 64 MiB | exit 2 naming the limit and saying to split the program folder; no file is written |
+| A symlinked or FIFO optional input (`scope.*`, known-issues, an audit including a symlinked subdirectory, `audits/`) | a note naming the file and its type; it is skipped, and the build exits 2 only if no regular input remains |
+| A non-regular dossier discovered beside the finding | exit 2 naming it when it is the only candidate; ignored when a regular dossier is also present |
+| A table-based HTML page | plain cells are lines, not bullets: no payout/scope items unless a cell is itself a Markdown bullet; save the page as Markdown (table mapping is a later-release plan) |
+| A dossier this build would write over 64 MiB | exit 2 naming the limit and saying to split the program folder; no file is written (a pre-0.2.0 dossier over the cap is still refused by `check`) |
 | A finding over 16 MiB or a dossier over 64 MiB | exit 2 naming the limit, before the file is read |
 | A scanned, image-only PDF | no text; the file must be converted outside priorart (OCR isn't attempted) |
 | A finding with fewer than 2 symbol identifiers | a note that prior items can't be ranked; the gates still run |
