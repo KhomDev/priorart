@@ -9,35 +9,45 @@ fetched at build time or check time.
 ```text
 program-dir/
   program.yaml         # optional metadata and payout terms
-  scope.md             # the saved program page (.html converts to text; .txt too)
+  scope.md             # the saved program page (.html/.htm convert; .txt too)
   known-issues.md      # the program's own known issues (.yaml/.yml/.txt too)
   audits/              # prior audit reports, .md/.txt/.pdf, recursive
 ```
 
 What `build` reads, and the order it reads it in:
 
-- exactly one program page: `scope.md`, `scope.html`, `scope.txt` (first found
-  in that order; if several exist the build prints which one it used);
+- exactly one program page: `scope.md`, `scope.html`, `scope.htm`, `scope.txt`
+  (first found in that order; if several exist the build prints which one it
+  used);
 - exactly one known-issues file: `known-issues.md`, `.yaml`, `.yml`, `.txt`;
 - every document under `audits/`, recursively, with extension `.md`,
   `.markdown`, `.txt` or `.pdf`. `audits/README.md` is skipped: scaffolding is
-  not a prior audit. Dot-files and symlinks are skipped.
+  not a prior audit. Dot-files are skipped; a symlink or non-regular document
+  under `audits/` is skipped with a note that names it.
 
 Program page, then known issues, then audits by path: that order is the source
 order, the item order and therefore the id order. If no input is found at all,
 the build is a usage error (exit 2), not an empty dossier.
 
-Every input must be a **regular file**. A symlink, FIFO, device or directory
-named `scope.*`, `known-issues.*`, `program.yaml`, an audit under `audits/`,
-the `audits/` directory itself or (for `check`) a finding or dossier is refused
-or skipped with a message that names the file; it is never followed or opened.
-The `audits/` walk has always skipped symlinks, and the same rule now covers
-every top-level input. A FIFO is refused before it is opened, so a build cannot
-block on one.
+Every input must be a **regular file**, and a symlink, FIFO, device or
+directory named as an input is never followed or opened. The treatment depends
+on whether the input is required:
+
+- **Required:** `program.yaml` (for `build`); a finding and an explicit dossier
+  (for `check`). A non-regular one is refused with **exit 2** and an error
+  naming it.
+- **Optional:** `scope.*`, `known-issues.*`, any document under `audits/` and
+  the `audits/` directory itself. A non-regular one is **skipped with a note
+  that names it**. The build exits 2 only when no regular input remains.
+
+A FIFO is refused before it is opened, so a build cannot block on one. The
+check is a stat followed by a separate open: a concurrent writer can swap the
+path between the two calls. It refuses an accidental or stale link, not a
+writer who already controls the folder.
 
 ## HTML program pages
 
-A saved `scope.html` (or `.htm`) is converted to text before extraction, by
+A saved `scope.html` or `scope.htm` is converted to text before extraction, by
 `src/dossier/html.rs`, into the Markdown-shaped text a careful copy would have:
 
 - `<h1>`-`<h6>` become `#`-`######` heading lines, so the section logic sees
@@ -53,12 +63,19 @@ A saved `scope.html` (or `.htm`) is converted to text before extraction, by
   as written rather than guessed;
 - whitespace is collapsed the way a browser collapses it, except in `<pre>`.
 
-This is **not a browser**. CSS layout, JavaScript-rendered content, table
-structure and text carried only in attributes (`alt`, `title`, `aria-label`)
-are not read. A page whose scope list is rendered by JavaScript, or whose
-content lives in attributes, should be saved as Markdown by hand. The source is
-recorded as `scope.html` with one page, its `sha256` is of the HTML bytes, and
-every item quotes the converted text.
+This is **not a browser**, and it is designed for **list-based pages**: a
+heading followed by a `<ul>`/`<li>` list, which is how most program pages
+publish rewards, assets and exclusions. CSS layout, JavaScript-rendered
+content, table structure and text carried only in attributes (`alt`, `title`,
+`aria-label`) are not read.
+
+A page whose rewards or scope live in a `<table>` yields **no** `payout-tier`,
+`scope-path` or `scope-clause` items: table cells become lines, not bullets.
+Save a table-based page as Markdown by hand. Table mapping is planned for a
+later release, not 0.2.0; `tests/html.rs` pins the limitation. A page rendered
+by JavaScript, or whose content lives in attributes, needs the same manual
+save. The source is recorded as `scope.html` with one page, its `sha256` is of
+the HTML bytes, and every item quotes the converted text.
 
 ## program.yaml
 
@@ -246,6 +263,9 @@ text or split into smaller program folders.
 | Dossier file | 64 MiB (`dossier::load::MAX_DOSSIER_BYTES`) | the file and its size |
 
 A sparse or accidental huge file is refused by size, not read and then judged.
+A **build whose serialized dossier would exceed 64 MiB is exit 2 before the
+file is written**, with an error that says to split the program folder; a
+dossier that exists can therefore always be read by `check`.
 
 ## What `build` does not do
 
@@ -253,9 +273,10 @@ A sparse or accidental huge file is refused by size, not read and then judged.
   argument, no cache and no update check ([no-network.md](no-network.md)).
 - It does not check out a repository at a commit, and it does not parse source
   code. It reads documents.
-- It does not render HTML. `scope.html` is converted conservatively
-  ([above](#html-program-pages)); CSS, JavaScript-rendered text and
-  attribute-only text are not read.
+- It does not render HTML. `scope.html`/`scope.htm` is converted conservatively
+  ([above](#html-program-pages)); CSS, JavaScript-rendered text,
+  attribute-only text and table structure are not read. A table-based page
+  should be saved as Markdown.
 - It does not infer a severity, a floor or a clause class from prose. A payout
   terms block comes from `program.yaml`; a clause class comes from the vocabulary
   ([vocab.md](vocab.md)).

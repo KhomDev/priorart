@@ -93,7 +93,10 @@ if mode == "--check":
     print("README examples are current")
 else:
     # LF endings on every platform, matching the generated text and git.
-    readme.write_text(text, encoding="utf-8", newline="\n")
+    # Path.open(newline=...) needs Python 3.10, so use the builtin open(),
+    # whose newline argument has existed since Python 3.
+    with open(readme, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(text)
     print("README.md examples regenerated")
 PY
 rm -f "$block" "$html_block"

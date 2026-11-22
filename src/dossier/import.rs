@@ -147,7 +147,11 @@ pub fn read_program_dir_with(
     // The dossier's item order and ids follow it, so two builds on the same
     // folder are byte-identical.
     let mut found: Vec<(PathBuf, &str)> = Vec::new();
-    if let Some(path) = find_one(dir, &["scope.md", "scope.html", "scope.txt"], &mut notes)? {
+    if let Some(path) = find_one(
+        dir,
+        &["scope.md", "scope.html", "scope.htm", "scope.txt"],
+        &mut notes,
+    )? {
         found.push((path, "program-page"));
     }
     if let Some(path) = find_one(
@@ -167,6 +171,18 @@ pub fn read_program_dir_with(
         Ok(meta) if meta.file_type().is_dir() => {
             let mut walk = Walk::default();
             collect_files(&audits_dir, &mut walk, WalkLimits::DEFAULT)?;
+            // The walk skips symlinks and non-regular files; name each one so
+            // an audit cannot disappear from a dossier silently.
+            for (path, kind) in &walk.skipped {
+                let rel = path
+                    .strip_prefix(dir)
+                    .unwrap_or(path)
+                    .to_string_lossy()
+                    .replace('\\', "/");
+                notes.push(format!(
+                    "{rel} is {kind}; priorart reads regular files only and skipped it"
+                ));
+            }
             let mut files = walk.docs;
             // A README in audits/ is scaffolding, not a prior audit.
             files.retain(|p| {
@@ -190,7 +206,7 @@ pub fn read_program_dir_with(
             format!(" Skipped: {}.", notes.join("; "))
         };
         return Err(format!(
-            "no inputs found in {}. Expected scope.md (or .html/.txt), known-issues.md/.yaml/.txt, or audits/*.md/.txt/.pdf. Run priorart init to scaffold the layout.{skipped}",
+            "no inputs found in {}. Expected scope.md (or .html/.htm/.txt), known-issues.md/.yaml/.txt, or audits/*.md/.txt/.pdf. Run priorart init to scaffold the layout.{skipped}",
             dir.display()
         ));
     }
@@ -446,6 +462,8 @@ fn display_name(path: &Path) -> String {
 #[derive(Default)]
 struct Walk {
     docs: Vec<PathBuf>,
+    /// Symlinks and special files that were skipped, with the kind to print.
+    skipped: Vec<(PathBuf, &'static str)>,
     entries: usize,
 }
 
@@ -497,13 +515,21 @@ fn collect_at_depth(
         let Ok(meta) = fs::symlink_metadata(&path) else {
             continue;
         };
-        if meta.file_type().is_symlink() {
+        let ft = meta.file_type();
+        if ft.is_symlink() {
+            if is_doc(&path) {
+                walk.skipped.push((path, "a symlink"));
+            }
             continue;
         }
-        if meta.is_dir() {
+        if ft.is_dir() {
             collect_at_depth(&path, depth + 1, walk, limits)?;
         } else if is_doc(&path) {
-            walk.docs.push(path);
+            if ft.is_file() {
+                walk.docs.push(path);
+            } else {
+                walk.skipped.push((path, file_kind(&ft)));
+            }
         }
     }
     Ok(())
@@ -529,9 +555,11 @@ fn file_kind(ft: &fs::FileType) -> &'static str {
 /// Reject anything that is not a regular file before it is opened.
 ///
 /// A symlink can point outside the program folder, a FIFO can block the build
-/// forever, and a device is not page text. The `audits/` walk already skips
-/// symlinks; this is the check for the top-level inputs, findings and dossiers,
-/// and it also closes the window between discovery and reading.
+/// forever, and a device is not page text. This is a named boundary, not an
+/// atomic open: the check and the later read are separate system calls, so a
+/// concurrent writer can still swap the path between them. A local writer can
+/// choose the bytes anyway; the goal is to refuse an accidental or stale
+/// symlink/FIFO, not to sandbox the folder.
 pub fn require_regular_file(path: &Path) -> Result<fs::Metadata, String> {
     require_regular_file_from(path, "file")
 }
@@ -722,7 +750,9 @@ pub fn pdf_to_text(path: &Path) -> Result<String, String> {
 /// the only reader: when it finds no text, the source is reported unread and
 /// no native parser is started.
 pub fn pdf_to_text_with(path: &Path, use_pdftotext: bool) -> Result<String, String> {
-    let bytes = fs::read(path).map_err(|e| format!("cannot read {}: {e}", path.display()))?;
+    // A PDF is read as a regular file like every other input: a symlink, FIFO
+    // or device is refused by name before anything is opened.
+    let bytes = read_regular_file(path)?;
     let scraped = scrape_pdf_literals(&bytes);
     let letters = scraped.chars().filter(|c| c.is_alphanumeric()).count();
     if letters > 40 {
@@ -1508,6 +1538,31 @@ mod tests {
         let pdf = b"BT (settle_rebate rounds the rebate down twice) Tj ET";
         let text = scrape_pdf_literals(pdf);
         assert!(text.contains("settle_rebate"), "{text}");
+    }
+
+    #[test]
+    fn a_symlinked_pdf_is_refused_before_it_is_read() {
+        let dir = scratch("symlink-pdf");
+        let real = dir.join("real.pdf");
+        fs::write(&real, b"%PDF-1.4\nBT (settle_rebate) Tj ET\n").unwrap();
+        let link = dir.join("link.pdf");
+        let made = {
+            #[cfg(unix)]
+            {
+                std::os::unix::fs::symlink(&real, &link).is_ok()
+            }
+            #[cfg(windows)]
+            {
+                std::os::windows::fs::symlink_file(&real, &link).is_ok()
+            }
+        };
+        if !made {
+            eprintln!("SKIP: this account cannot create a file symlink");
+            return;
+        }
+        let err = pdf_to_text_with(&link, false).expect_err("a symlink is not read");
+        assert!(err.contains("symlink"), "{err}");
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]

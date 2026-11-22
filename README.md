@@ -63,7 +63,7 @@ dataset are compiled into the binary. Rust 1.89 or newer.
 ```sh
 # 1. Scaffold the folder priorart reads, once per program.
 priorart init my-program
-#    then save the program page as scope.md (or scope.html), add known issues
+#    then save the program page as scope.md (or scope.html/scope.htm), add known issues
 #    and audit PDFs/markdown under audits/, and fill in program.yaml.
 
 # 2. Build the dossier. This is the product: one indexed local file per program.
@@ -182,23 +182,27 @@ the same as clear.
 ```text
 my-program/
   program.yaml        # optional: name, platform, urls, payout, prior_audits
-  scope.md            # the saved program page (.html converts to text; .txt too)
+  scope.md            # the saved program page (.html/.htm convert; .txt too)
   known-issues.md     # the program's own known issues (.yaml and .txt too)
   audits/*.md|*.txt|*.pdf
 ```
 
-A saved `scope.html` is converted to text by a small in-repo normalizer:
-headings become `#` lines, `<li>` becomes a bullet, block elements become line
-breaks, other tags are stripped, `<script>`/`<style>` content is dropped, and
-common entities are decoded. It is not a browser, so a page that needs CSS,
-JavaScript or attribute-only text should be saved as Markdown. The behavior and
-its limits are in [docs/dossier.md](docs/dossier.md#html-program-pages).
+A saved `scope.html` (or `scope.htm`) is converted to text by a small in-repo
+normalizer: headings become `#` lines, `<li>` becomes a bullet, block elements
+become line breaks, other tags are stripped, `<script>`/`<style>` content is
+dropped, and common entities are decoded. It is designed for **list-based
+pages** (a heading plus a `<ul>`/`<li>` list), which is how most program pages
+publish rewards, assets and exclusions. It is not a browser: CSS, JavaScript,
+attribute-only text and **table structure** are not read. A rewards or scope
+table yields no payout/scope items, so save a table-based page as Markdown.
+Table mapping is a later-release plan, not 0.2.0. The behavior and its limits
+are in [docs/dossier.md](docs/dossier.md#html-program-pages).
 
 Inputs must be regular files. A symlink, FIFO, device or directory named as an
 input is never followed or opened: `program.yaml`, a finding and an explicit
-dossier are refused with exit 2, while an optional `scope.*`/`known-issues.*`
-name or an `audits/` directory is skipped with a note that names it (and the
-build fails if no regular input is left).
+dossier are required and refused with exit 2, while an optional
+`scope.*`/`known-issues.*` name, an audit, or an `audits/` directory is skipped
+with a note that names it (and the build fails if no regular input is left).
 
 Output: `my-program/<program-id>.dossier`, schema `priorart.dossier/v1`
 ([schemas/dossier.schema.json](schemas/dossier.schema.json)). Two builds over the

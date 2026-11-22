@@ -135,8 +135,12 @@ pub const MAX_FINDING_BYTES: u64 = 16 * 1024 * 1024;
 /// before it is read, so a sparse or accidental huge file cannot exhaust
 /// memory.
 pub fn read_finding(path: &Path) -> Result<(String, String), String> {
-    let meta = import::require_regular_file_from(path, "finding")
-        .map_err(|e| format!("{e}. Pass a markdown file with the finding text."))?;
+    let meta = import::require_regular_file_from(path, "finding").map_err(|e| {
+        format!(
+            "{}. Pass a markdown file with the finding text.",
+            e.trim_end_matches('.')
+        )
+    })?;
     check_finding_size(path, meta.len())?;
     let bytes = std::fs::read(path).map_err(|e| {
         format!(

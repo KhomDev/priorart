@@ -5,6 +5,7 @@
 //! builds over the same folder are byte-identical, which a test asserts.
 
 use crate::dossier::import::{self, ImportOptions, Imported};
+use crate::dossier::load::MAX_DOSSIER_BYTES;
 use crate::model::{Dossier, ToolInfo, DOSSIER_SCHEMA};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -66,10 +67,43 @@ pub fn build_with_options(
 }
 
 /// Serialise and write, atomically: a partial dossier is never left behind.
+///
+/// The serialized body is checked against the same limit `check` applies
+/// before the file is written, so a build cannot produce a dossier the tool
+/// then refuses to read.
 pub fn write_dossier(dossier: &Dossier, path: &Path) -> Result<(), String> {
     let body = crate::render::json::pretty(dossier)?;
+    check_dossier_body_size(body.len() as u64, path)?;
     let tmp = path.with_extension("dossier.tmp");
     fs::write(&tmp, body).map_err(|e| format!("cannot write {}: {e}", tmp.display()))?;
     fs::rename(&tmp, path).map_err(|e| format!("cannot rename into {}: {e}", path.display()))?;
     Ok(())
+}
+
+fn check_dossier_body_size(len: u64, path: &Path) -> Result<(), String> {
+    if len > MAX_DOSSIER_BYTES {
+        return Err(format!(
+            "the dossier for {} would be {}; priorart check reads a dossier up to {} MiB. Split the program folder (for example, one folder per audit set) and build again.",
+            path.display(),
+            import::mib(len),
+            MAX_DOSSIER_BYTES / (1024 * 1024)
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_dossier_over_the_check_limit_is_refused_before_it_is_written() {
+        let err = check_dossier_body_size(MAX_DOSSIER_BYTES + 1, Path::new("out.dossier"))
+            .expect_err("one byte over the limit");
+        assert!(err.contains("out.dossier"), "{err}");
+        assert!(err.contains("64 MiB"), "{err}");
+        assert!(err.contains("check reads a dossier"), "{err}");
+        assert!(err.contains("Split the program folder"), "{err}");
+        assert!(check_dossier_body_size(MAX_DOSSIER_BYTES, Path::new("out.dossier")).is_ok());
+    }
 }

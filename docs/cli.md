@@ -62,8 +62,10 @@ Reads a folder you saved and writes one deterministic dossier
 
 Exit 0 on success, even when a PDF could not be read (that is a warning, and the
 source is skipped). Exit 2 when the folder does not exist, holds no inputs, is
-over an input limit ([dossier.md](dossier.md#input-limits)), or names a
-non-regular file (a symlink, FIFO or device) as an input.
+over an input limit ([dossier.md](dossier.md#input-limits)), or a **required**
+input is not a regular file (`program.yaml`). An optional page, known-issues or
+audit name that is a symlink, FIFO or device is skipped with a note naming it;
+the build exits 2 only when no regular input remains.
 
 ```text
 $ priorart build examples/dossier-demo
@@ -98,9 +100,10 @@ The claimed severity comes from a `Severity: High` line or a
 `| Severity | High |` table row. It is never inferred from prose; without it the
 payout gate reports that it could not compare.
 
-Both inputs must be regular files. A finding over 16 MiB or a dossier over
-64 MiB is exit 2, refused by size before it is read; a symlink, FIFO or device
-is refused by name. See [dossier.md](dossier.md#input-limits).
+Both the finding and the explicit dossier are required inputs, so a symlink,
+FIFO or device at either path is exit 2, refused by name. A finding over
+16 MiB or a dossier over 64 MiB is exit 2 as well, refused by size before it is
+read. See [dossier.md](dossier.md#input-limits).
 
 ```text
 $ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier

@@ -5,7 +5,8 @@ use crate::model::{Dossier, DOSSIER_SCHEMA};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// A dossier assembled from the largest allowed input set is far below this.
+/// The build refuses to write a serialized dossier over this limit
+/// (`dossier::build::write_dossier`), so a dossier that exists can be read.
 /// A larger file is a usage error that names the limit, never read whole.
 pub const MAX_DOSSIER_BYTES: u64 = 64 * 1024 * 1024;
 
@@ -15,8 +16,12 @@ pub const MAX_DOSSIER_BYTES: u64 = 64 * 1024 * 1024;
 /// The path must be a regular file, and the file must fit `MAX_DOSSIER_BYTES`;
 /// both are checked before the bytes are read.
 pub fn load(path: &Path) -> Result<Dossier, String> {
-    let meta = import::require_regular_file_from(path, "dossier")
-        .map_err(|e| format!("{e}. Build one with priorart build <program-dir>."))?;
+    let meta = import::require_regular_file_from(path, "dossier").map_err(|e| {
+        format!(
+            "{}. Build one with priorart build <program-dir>.",
+            e.trim_end_matches('.')
+        )
+    })?;
     check_dossier_size(path, meta.len())?;
     let bytes = fs::read(path).map_err(|e| {
         format!(
@@ -90,7 +95,12 @@ fn check_dossier_size(path: &Path, len: u64) -> Result<(), String> {
 /// .dossier file beside the finding. More than one is an error that names the
 /// candidates, because guessing would be worse.
 pub fn discover_beside(finding: &Path) -> Result<Option<PathBuf>, String> {
-    let dir = finding.parent().unwrap_or_else(|| Path::new("."));
+    // `Path::new("finding.md").parent()` is Some(""), and read_dir("") fails;
+    // a bare file name means the current directory.
+    let dir = finding
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
     let mut candidates = Vec::new();
     let mut skipped = Vec::new();
     let entries = fs::read_dir(dir).map_err(|e| {

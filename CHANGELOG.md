@@ -23,14 +23,18 @@ release and older dossiers still load. Self-review: no external report.
 
 ### Added
 
-- **`.html` program pages are read.** `scope.html` (or `.htm`) is converted to
-  Markdown-shaped text by a new in-repo normalizer, `src/dossier/html.rs`:
-  `<h1>`-`<h6>` become heading lines, `<li>` becomes a bullet, `<p>`/`<br>`/`<div>`
-  and other blocks become line breaks, remaining tags are stripped,
-  `<script>`/`<style>` contents are dropped, and common named and numeric
-  entities are decoded. It is not a browser; CSS, JavaScript-rendered text,
-  table structure and attribute-only text are not read, and complex pages
-  should be saved as Markdown. Fixture and gates: `tests/html.rs`.
+- **`.html` program pages are read.** `scope.html` (or `scope.htm`) is
+  converted to Markdown-shaped text by a new in-repo normalizer,
+  `src/dossier/html.rs`: `<h1>`-`<h6>` become heading lines, `<li>` becomes a
+  bullet, `<p>`/`<br>`/`<div>` and other blocks become line breaks, remaining
+  tags are stripped, `<script>`/`<style>` contents are dropped, and common
+  named and numeric entities are decoded. It is designed for **list-based
+  pages** (headings plus `<ul>`/`<li>` lists), which is how most program pages
+  publish their rewards and scope. It is not a browser: CSS,
+  JavaScript-rendered text, table structure and attribute-only text are not
+  read. A rewards or scope **table** yields no payout/scope items; save a
+  table-based page as Markdown. Table mapping is planned for a later release,
+  not 0.2.0. Fixture and gates: `tests/html.rs`.
 - **`build --no-pdftotext`.** The flag disables the poppler fallback entirely;
   a PDF the in-process scrape cannot read is reported unread and skipped.
   `docs/limitations.md`, `ARCHITECTURE.md` and `README.md` now state that
@@ -41,11 +45,17 @@ release and older dossiers still load. Self-review: no external report.
 ### Security
 
 - **Only regular files are read.** A symlink, FIFO, device or directory named
-  as `scope.*`, `known-issues.*`, `program.yaml`, an audit, the `audits/`
-  directory itself, a finding or a dossier is refused or skipped with an error
-  naming the file; nothing behind it is read. A FIFO used to be able to block a
-  build indefinitely. The `audits/` walk already skipped symlinks; the rule now
-  covers every input.
+  as an input is never followed or opened. Required inputs (`program.yaml` for
+  `build`; a finding and an explicit dossier for `check`) are refused with
+  exit 2. Optional names
+  (`scope.*`, `known-issues.*`, any symlink or non-regular document under
+  `audits/`, and the `audits/` directory itself) are named and skipped; the
+  build exits 2 only when no regular input remains. A FIFO used to be able to
+  block a build indefinitely, and a symlinked audit used to disappear without a
+  note.
+- **A build cannot write a dossier that `check` refuses.** The serialized body
+  is checked against `MAX_DOSSIER_BYTES` (64 MiB) before the file is written,
+  with an exit-2 error that says to split the folder.
 - **Finding and dossier reads are bounded.** `check` refuses a finding over
   16 MiB (`check::MAX_FINDING_BYTES`) and a dossier over 64 MiB
   (`dossier::load::MAX_DOSSIER_BYTES`) by size, before the file is read, with
@@ -60,8 +70,6 @@ release and older dossiers still load. Self-review: no external report.
 
 - The `build` summary prints the dossier path with forward slashes on every
   platform, so copied output is the same everywhere.
-- The MSRV CI job runs `cargo check --locked` on Rust 1.89.0 (was build and
-  test).
 
 ### Hardening
 
@@ -73,10 +81,15 @@ release and older dossiers still load. Self-review: no external report.
 
 ### Tests
 
-- New: `tests/html.rs` (converted page, item kinds, G1/G2/G3), `tests/inputs.rs`
-  (symlinks, FIFO on Unix, sparse oversized finding and dossier, the
-  `--no-pdftotext` control, forward-slash paths), eleven `dossier::html` unit
-  tests, and four PDF literal-decoding tests.
+- New: `tests/html.rs` (converted page, `scope.htm`, item kinds, G1/G2/G3, the
+  pinned table limitation), `tests/inputs.rs` (symlinks, symlinked and FIFO
+  audits on Unix, FIFO program page on Unix, sparse oversized finding and
+  dossier, the pre-read ordering with an unreadable file, the `--no-pdftotext`
+  control, bare file-name discovery, forward-slash paths), the `dossier::html`
+  unit tests (including the apostrophe and non-ASCII cases), and four PDF
+  literal-decoding tests.
+- A `html_normalize` fuzz target, replayed from `fuzz/corpus/html_normalize/`
+  every test run and by the weekly fuzz workflow.
 - `docs/validation.md` records the new claims, the retracted "`scope.html`
   works" claim from 0.1.3 and its limits.
 
@@ -941,7 +954,8 @@ The tree itself is unchanged except for the two fixes recorded here.
 - The rule catalog and gate definitions as data, embedded in the binary.
 - The fixture suite: one positive and one negative case per anti-pattern.
 
-[Unreleased]: https://github.com/KhomDev/priorart/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/KhomDev/priorart/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/KhomDev/priorart/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/KhomDev/priorart/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/KhomDev/priorart/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/KhomDev/priorart/compare/v0.1.0...v0.1.1

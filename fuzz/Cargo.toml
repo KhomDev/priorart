@@ -32,6 +32,13 @@ doc = false
 bench = false
 
 [[bin]]
+name = "html_normalize"
+path = "fuzz_targets/html_normalize.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "program_yaml"
 path = "fuzz_targets/program_yaml.rs"
 test = false

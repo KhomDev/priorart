@@ -130,3 +130,10 @@ pub fn finding_profile(data: &[u8]) {
     );
     let _ = render::text::check(&report, &DEMO, &text);
 }
+
+/// The HTML program-page normalizer, on arbitrary bytes read as lossy UTF-8
+/// (the same conversion `build` applies before the normalizer sees them).
+pub fn html_normalize(data: &[u8]) {
+    let text = String::from_utf8_lossy(data);
+    let _ = priorart::dossier::html::to_text(&text);
+}

@@ -26,8 +26,10 @@ pub fn is_html_path(path: &Path) -> bool {
         .is_some_and(|e| e.eq_ignore_ascii_case("html") || e.eq_ignore_ascii_case("htm"))
 }
 
-/// Convert one HTML document to text. Never fails: malformed markup loses the
-/// tag it starts, not the document.
+/// Convert one HTML document to text. It never panics. A malformed but
+/// terminated tag loses only its attributes; an unterminated tag or quoted
+/// attribute drops the remainder of the document, because everything after it
+/// is attribute state a browser would not display either.
 pub fn to_text(html: &str) -> String {
     let bytes = html.as_bytes();
     let mut out = String::with_capacity(html.len());
@@ -188,20 +190,38 @@ fn is_tag_name_byte(c: u8) -> bool {
     c.is_ascii_alphanumeric() || c == b'-' || c == b':' || c == b'_'
 }
 
-/// The index just past the `>` that ends a tag, respecting quoted attribute
-/// values. None when the tag never ends.
+/// The index just past the `>` that ends a tag.
+///
+/// A quote starts an attribute value only when it follows `=` (whitespace
+/// allowed). Stray apostrophes are common in real pages (`<support's team>`,
+/// `<a href=/don't>`); treating every quote as an attribute quote swallowed
+/// the rest of the document. A quoted value may contain `>` and the other
+/// quote character. An unterminated quote returns None, and the caller drops
+/// the remainder because the document ends inside attribute state.
 fn tag_end(bytes: &[u8], mut i: usize) -> Option<usize> {
     let mut quote = 0u8;
+    let mut after_equals = false;
     while i < bytes.len() {
         let c = bytes[i];
         if quote != 0 {
             if c == quote {
                 quote = 0;
             }
-        } else if c == b'"' || c == b'\'' {
-            quote = c;
-        } else if c == b'>' {
+            i += 1;
+            continue;
+        }
+        if c == b'>' {
             return Some(i + 1);
+        }
+        if c == b'"' || c == b'\'' {
+            if after_equals {
+                quote = c;
+            }
+            after_equals = false;
+        } else if c == b'=' {
+            after_equals = true;
+        } else if !c.is_ascii_whitespace() {
+            after_equals = false;
         }
         i += 1;
     }
@@ -523,6 +543,57 @@ var secret = 'not page text';</SCRIPT><style>.x{color:red}</style>\
         let text = to_text("<p>kept</p><a href=\"https://example.invalid/secret\"");
         assert!(text.contains("kept"), "{text}");
         assert!(!text.contains("secret"), "{text}");
+    }
+
+    #[test]
+    fn a_stray_apostrophe_inside_a_tag_does_not_swallow_the_document() {
+        let html = "<p>before</p><p>contact <support's team> for details</p>\
+<h2>Out of scope</h2><ul><li>Attack A</li></ul>";
+        let text = to_text(html);
+        assert!(text.contains("contact"), "{text}");
+        assert!(text.contains("for details"), "{text}");
+        assert!(text.contains("## Out of scope"), "{text}");
+        assert!(text.contains("- Attack A"), "{text}");
+    }
+
+    #[test]
+    fn an_unquoted_apostrophe_in_an_attribute_ends_at_the_gt() {
+        let text = to_text("<a href=/don't>link</a><p>after</p>");
+        assert!(text.contains("link"), "{text}");
+        assert!(text.contains("after"), "{text}");
+        assert!(!text.contains('<'), "{text}");
+    }
+
+    #[test]
+    fn a_quoted_attribute_may_contain_gt_and_the_other_quote() {
+        let text = to_text("<a title=\"a > b 'c'\" href='x > y'>link</a><p>after</p>");
+        assert!(text.contains("link"), "{text}");
+        assert!(text.contains("after"), "{text}");
+        assert!(!text.contains("title"), "{text}");
+        assert!(!text.contains("x > y"), "{text}");
+    }
+
+    #[test]
+    fn an_unterminated_quoted_attribute_drops_the_remainder() {
+        // Documented behavior: the rest of the bytes are attribute state, so
+        // they are not page text.
+        let text = to_text("<p>kept</p><a title=\"unterminated>lost");
+        assert!(text.contains("kept"), "{text}");
+        assert!(
+            !text.contains("lost"),
+            "the remainder after an unterminated quote is attribute state: {text}"
+        );
+    }
+
+    #[test]
+    fn non_ascii_text_is_preserved() {
+        let html = "<p>Réserve — trésorerie</p><li>emoji 😀</li>\
+<li>e\u{301} combining</li><li>&#233;t&#xE9; and &amp;</li>";
+        let text = to_text(html);
+        assert!(text.contains("Réserve — trésorerie"), "{text}");
+        assert!(text.contains("emoji 😀"), "{text}");
+        assert!(text.contains("e\u{301} combining"), "{text}");
+        assert!(text.contains("été and &"), "{text}");
     }
 
     #[test]

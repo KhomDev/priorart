@@ -41,13 +41,15 @@ claim. Do not cite it as a finding.
 
 ## HTML is converted, not rendered
 
-A saved `scope.html` is converted to text by a small in-repo normalizer
-(headings, bullets, blocks, entities, script/style removal). It is **not a
-browser and not an HTML parser**: CSS layout, JavaScript-rendered text, table
-structure and text carried only in attributes are not read. A page that builds
-its scope list in JavaScript should be saved as Markdown by hand. The rules and
-the fixture are in [dossier.md](dossier.md#html-program-pages) and
-`tests/html.rs`.
+A saved `scope.html` (or `scope.htm`) is converted to text by a small in-repo
+normalizer (headings, bullets, blocks, entities, script/style removal). It is
+designed for **list-based pages**; it is **not a browser and not an HTML
+parser**: CSS layout, JavaScript-rendered text, table structure and text
+carried only in attributes are not read. A table-based rewards or scope page
+yields no payout/scope items, and a page that builds its scope list in
+JavaScript yields none either; save those pages as Markdown by hand. Table
+mapping is a later-release plan, not 0.2.0. The rules and the fixtures are in
+[dossier.md](dossier.md#html-program-pages) and `tests/html.rs`.
 
 ## PDFs are best-effort, and the fallback is native code
 
@@ -98,8 +100,11 @@ scope, exclusion or duplication for a platform, and it is not a verdict.
 
 ## Windows, and what "tested" means
 
-The test suite runs on Windows and on Linux in CI; there is no unix-only code.
+There is no unix-only production code. OS-specific tests are gated: the FIFO
+test runs on Unix where `mkfifo` exists, and the Windows symlink tests skip
+without SeCreateSymbolicLinkPrivilege (the Ubuntu CI job runs the Unix cases).
 The benchmark corpus is public contest material; behaviour on private reports,
 other languages or real-world program pages saved as HTML is not measured. The
-HTML path is tested against one committed synthetic fixture, not against live
-platform pages ([dossier.md](dossier.md#html-program-pages)).
+HTML path is tested against two committed synthetic fixtures (list-based and
+table-based), not against live platform pages
+([dossier.md](dossier.md#html-program-pages)).

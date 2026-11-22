@@ -9,6 +9,7 @@
 mod support;
 
 use priorart::dossier::import::read_program_dir;
+use serde_json::Value;
 use support::{manifest_dir, run, TempDir};
 
 fn fixture_dir() -> std::path::PathBuf {
@@ -114,4 +115,94 @@ fn html_program_page_builds_and_answers_all_three_gates() {
         );
     }
     assert!(!check.stdout.contains("analytics"), "{}", check.stdout);
+}
+
+#[test]
+fn a_scope_htm_only_folder_builds() {
+    let tmp = TempDir::new("html-htm");
+    tmp.write(
+        "program/scope.htm",
+        "<h2>Rewards</h2><ul><li>High: 10,000 USD</li></ul>\
+<h2>In scope</h2><ul><li>src/Vault.sol</li></ul>\n",
+    );
+    let build = run(&["build", tmp.join("program").to_str().unwrap(), "--json"]);
+    assert_eq!(build.code, 0, "{}", build.stderr);
+    let dossier: Value = serde_json::from_str(&build.stdout).expect("build --json prints JSON");
+    let source = dossier["sources"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|s| s["kind"] == "program-page")
+        .expect("a program-page source");
+    assert_eq!(source["path"], "scope.htm");
+    let kinds: Vec<&str> = dossier["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|i| i["kind"].as_str().unwrap())
+        .collect();
+    assert!(kinds.contains(&"payout-tier"), "{kinds:?}");
+    assert!(kinds.contains(&"scope-path"), "{kinds:?}");
+}
+
+/// A table-based page is a known 0.2.0 limitation, not a promise. This test
+/// pins the limitation so it cannot be mistaken for support later: no
+/// payout/scope/exclusion items are extracted from a table, and the gates say
+/// what they could not read.
+#[test]
+fn table_based_pages_are_a_known_limitation() {
+    let tmp = TempDir::new("html-table");
+    tmp.write(
+        "program/scope.html",
+        "<!doctype html><html><body><h1>Program</h1>\
+<table><tr><td>Rewards</td></tr><tr><td>Critical: 50,000 USD</td></tr></table>\
+<table><tr><td>Assets in scope</td></tr><tr><td>src/Vault.sol</td></tr></table>\
+<table><tr><td>Out of scope</td></tr><tr><td>Attacks requiring a privileged role</td></tr></table>\
+</body></html>\n",
+    );
+    let out = tmp.join("table.dossier");
+    let build = run(&[
+        "build",
+        tmp.join("program").to_str().unwrap(),
+        "--out",
+        out.to_str().unwrap(),
+        "--json",
+    ]);
+    assert_eq!(build.code, 0, "{}", build.stderr);
+    let dossier: Value = serde_json::from_str(&build.stdout).expect("build --json prints JSON");
+    let kinds: Vec<&str> = dossier["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|i| i["kind"].as_str().unwrap())
+        .collect();
+    for unsupported in ["payout-tier", "scope-path", "scope-clause"] {
+        assert!(
+            !kinds.contains(&unsupported),
+            "table mapping is a P1 plan item, not 0.2.0; {unsupported} appeared: {kinds:?}"
+        );
+    }
+    assert!(kinds.contains(&"page-section"), "{kinds:?}");
+
+    let finding = tmp.write(
+        "finding.md",
+        "# Finding\n\n`Vault.close` needs an operator.\nSeverity: High\n",
+    );
+    let check = run(&[
+        "check",
+        finding.to_str().unwrap(),
+        "--dossier",
+        out.to_str().unwrap(),
+    ]);
+    assert_eq!(check.code, 0, "{}", check.stderr);
+    assert!(
+        check.stdout.contains("no in-scope file list was indexed"),
+        "G3 must report that the table scope was not read:\n{}",
+        check.stdout
+    );
+    assert!(
+        check.stdout.contains("no payout block"),
+        "G1 must report that no payout table was read:\n{}",
+        check.stdout
+    );
 }
