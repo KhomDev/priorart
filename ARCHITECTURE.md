@@ -1,7 +1,7 @@
 # Architecture
 
 This page explains how priorart is put together: why each part exists, what crosses each
-boundary, and what the user sees when a part fails. It describes `main` after 0.1.3. Where it
+boundary, and what the user sees when a part fails. It describes `main` after 0.2.0. Where it
 disagrees with the source, the source wins.
 
 ## Three questions, one dossier
@@ -43,9 +43,9 @@ reads that dossier and a finding and assembles the evidence.
 
 | Component | Files | Why it exists | Must never |
 |---|---|---|---|
-| Import | `dossier/import.rs` | Reads the program folder in a fixed order (program page, known issues, audits by file name) and splits it into items with page numbers and verbatim quotes. A PDF is scraped for text literals first, then read with `pdftotext` | fetch a URL, or invent text |
+| Import | `dossier/import.rs`, `dossier/html.rs` | Reads the program folder in a fixed order (program page, known issues, audits by file name) and splits it into items with page numbers and verbatim quotes. A saved `scope.html`/`scope.htm` is converted to Markdown-shaped text first. A PDF is scraped for text literals, then read with `pdftotext` unless `--no-pdftotext` is set. Symlinks and special files are refused or named-skipped, never followed | fetch a URL, invent text, or follow a symlink |
 | Fingerprints | `dossier/sha256.rs` | SHA-256 of each source, in-tree, so the crate has no hashing dependency | be used as a security boundary (it's an identifier) |
-| Build | `dossier/build.rs` | Sorts sources and items, assigns ids from those orders, and writes no wall-clock field. Two builds of one folder are byte-identical (tested in `tests/cli.rs`) | depend on file-system order or time |
+| Build | `dossier/build.rs` | Sorts sources and items, assigns ids from those orders, and writes no wall-clock field. Two builds of one folder are byte-identical (tested in `tests/cli.rs`). It refuses to write a serialized dossier over the `check` limit | depend on file-system order or time, or write a dossier `check` would refuse |
 | Load | `dossier/load.rs` | Reads and validates a dossier against `priorart.dossier/v1` before anything uses it | accept a dossier with an unknown schema |
 | Model | `model.rs` | The two documents the tool emits (`Dossier`, `CheckReport`) and the inputs the gates read. The JSON Schemas in `schemas/` are enforced by tests | — |
 | Matcher | `match/mod.rs` | Ranks prior items by shared code identifiers (functions, errors, contracts, qualified names, backticked spans). An item needs at least `MIN_SHARED_IDENTIFIERS` (2) symbols. A symbol in more than `GENERIC_DF_PERCENT` (20%) of the items sharing a symbol with the finding is generic and doesn't count, unless only one or two items name it. Paths break ties but never qualify an item alone. Word overlap isn't scored | say two findings are the same |
@@ -62,10 +62,11 @@ reads that dossier and a finding and assembles the evidence.
 
 `priorart build examples/dossier-demo`, then `priorart check examples/finding-demo.md --dossier …`:
 
-1. `import::read_program_dir` reads `scope.md`, `known-issues.md`, `audits/internal-review.md`
-   (`audits/README.md` is skipped as scaffolding) and `program.yaml`. Each source gets a
-   sha256 and a page count. Each item gets its quote, identifiers, a clause class (for exclusion
-   text) and a mechanism hint (a keyword table, `null` when it's negated or unknown).
+1. `import::read_program_dir` reads `scope.md` (or converts `scope.html`/`scope.htm`), `known-issues.md`,
+   `audits/internal-review.md` (`audits/README.md` is skipped as scaffolding) and
+   `program.yaml`. Each source gets a sha256 and a page count. Each item gets its quote,
+   identifiers, a clause class (for exclusion text) and a mechanism hint (a keyword table,
+   `null` when it's negated or unknown). Every input must be a regular file.
 2. `build` sorts and numbers everything and writes `dossier-demo.dossier`.
 3. `check` loads and validates the dossier and reads the finding. `match::Profile::from_text`
    extracts the finding's identifiers, and `match::rank` returns the top-k prior items, each
@@ -99,10 +100,10 @@ reports a pass.
 
 | Boundary | What crosses it | How it is contained |
 |---|---|---|
-| Program folder → import | Markdown, HTML, text, YAML and PDF the user saved, often from a third party | parsed as text; unknown `program.yaml` keys are ignored; no size limits yet (planned) |
-| priorart → pdftotext | an untrusted PDF, read by a third-party parser | only when the built-in scrape finds no text; a missing `pdftotext` is a warning, and the build still succeeds. No timeout or output cap yet (planned) |
-| Finding → matcher and gates | the user's draft | regexes and keyword tables only; nothing is evaluated |
-| Dossier file → check | JSON that may have been edited | validated against the schema on load |
+| Program folder → import | Markdown, HTML, text, YAML and PDF the user saved, often from a third party | HTML is converted by `dossier/html.rs` (tags stripped, script/style dropped, entities decoded; list-based pages only, not a browser); unknown `program.yaml` keys are ignored; per-file 64 MiB, 1000 documents, 512 MiB total, walk depth and entry caps. A non-regular **required** input (`program.yaml`) is exit 2; an optional page, known-issues, audit (including a symlinked subdirectory), or `audits/` directory is named and skipped; a discovered dossier is used only when a regular candidate exists. The check is a stat followed by a separate open: a concurrent writer can swap the path between them, so it refuses an accidental or stale link, not a writer who controls the folder |
+| priorart → pdftotext | an untrusted PDF, read by **native third-party code (poppler), run as the same user without a sandbox** | only when the built-in scrape finds no text, and never with `--no-pdftotext`; absolute `PATH` entries only; the PDF is passed as an absolute path and must be a regular file; killed after 60 s or 16 MiB of output; a missing or refused `pdftotext` is a warning and the build still succeeds |
+| Finding → matcher and gates | the user's draft | a regular file of at most 16 MiB; regexes and keyword tables only; nothing is evaluated |
+| Dossier file → check | JSON that may have been edited | a regular file of at most 64 MiB; validated against the schema on load; page ranges checked against the recorded sources |
 | Network | — | none: no HTTP client in the manifest or lockfile, checked by a CI job ([docs/no-network.md](docs/no-network.md)) |
 
 ## Failure modes
@@ -110,6 +111,13 @@ reports a pass.
 | Failure | What the user sees |
 |---|---|
 | A compressed PDF and no `pdftotext` | a warning on build; the file is listed as unread; the build succeeds |
+| A compressed PDF with `--no-pdftotext` | the same warning, naming the flag; poppler never runs |
+| A symlinked or FIFO required input (`program.yaml`, finding, explicit dossier) | exit 2 with an error naming the file and its type; nothing behind it is read |
+| A symlinked or FIFO optional input (`scope.*`, known-issues, an audit including a symlinked subdirectory, `audits/`) | a note naming the file and its type; it is skipped, and the build exits 2 only if no regular input remains |
+| A non-regular dossier discovered beside the finding | exit 2 naming it when it is the only candidate; ignored when a regular dossier is also present |
+| A table-based HTML page | plain cells are lines, not bullets: no payout/scope items unless a cell is itself a Markdown bullet; save the page as Markdown (table mapping is a later-release plan) |
+| A dossier this build would write over 64 MiB | exit 2 naming the limit and saying to split the program folder; no file is written (a pre-0.2.0 dossier over the cap is still refused by `check`) |
+| A finding over 16 MiB or a dossier over 64 MiB | exit 2 naming the limit, before the file is read |
 | A scanned, image-only PDF | no text; the file must be converted outside priorart (OCR isn't attempted) |
 | A finding with fewer than 2 symbol identifiers | a note that prior items can't be ranked; the gates still run |
 | A prior item that shares identifiers but a different mechanism | it is listed, with `their mechanism` against `yours`; ranking ignores the mechanism |

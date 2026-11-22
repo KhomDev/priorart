@@ -1,6 +1,6 @@
 # CLI reference
 
-Every command, flag and exit code in `priorart 0.1.3`. `priorart --help` and
+Every command, flag and exit code in `priorart 0.2.0`. `priorart --help` and
 `priorart <command> --help` print the same surface; the binary is the source of
 truth for wording.
 
@@ -58,14 +58,19 @@ Reads a folder you saved and writes one deterministic dossier
 | `--out FILE` | Output path. Default: `<program-dir>/<program-id>.dossier`. |
 | `--program ID` | Program id override. Default: `program.yaml`'s `id`, else the folder name, slugified (lowercase letters, digits, `.`, `-`, `_`). |
 | `--json` | Print the dossier JSON to stdout instead of the summary. Notes go to stderr. |
+| `--no-pdftotext` | Never run `pdftotext`. A PDF the built-in scrape cannot read is reported unread and skipped, so poppler never parses an untrusted file. |
 
 Exit 0 on success, even when a PDF could not be read (that is a warning, and the
-source is skipped). Exit 2 when the folder does not exist, holds no inputs, or is
-over an input limit ([dossier.md](dossier.md#input-limits)).
+source is skipped). Exit 2 when the folder does not exist, holds no inputs, is
+over an input limit ([dossier.md](dossier.md#input-limits)), or a **required**
+input is not a regular file (`program.yaml`). An optional page, known-issues or
+audit name (including a symlinked subdirectory of `audits/`) that is a symlink,
+FIFO or device is skipped with a note naming it; the build exits 2 only when no
+regular input remains.
 
 ```text
 $ priorart build examples/dossier-demo
-priorart 0.1.3 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.2.0 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
   3 source(s), 13 item(s)
     audit-finding    1
     known-issue      2
@@ -95,6 +100,13 @@ items found" or "excluded" unless asked to.
 The claimed severity comes from a `Severity: High` line or a
 `| Severity | High |` table row. It is never inferred from prose; without it the
 payout gate reports that it could not compare.
+
+Both the finding and the explicit dossier are required inputs, so a symlink,
+FIFO or device at either path is exit 2, refused by name. A dossier
+**discovered** without `--dossier` is optional: a non-regular only candidate is
+exit 2 naming it, and a regular candidate beside it is used instead. A finding
+over 16 MiB or a dossier over 64 MiB is exit 2 as well, refused by size before
+it is read. See [dossier.md](dossier.md#input-limits).
 
 ```text
 $ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
@@ -188,7 +200,7 @@ existing file without `--force`. `build` reads the scaffold without edits.
 
 ```text
 $ priorart init my-program
-priorart 0.1.3 - scaffolded my-program
+priorart 0.2.0 - scaffolded my-program
 
   program.yaml
   scope.md

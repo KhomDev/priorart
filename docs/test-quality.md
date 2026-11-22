@@ -2,7 +2,9 @@
 
 Measured on 2026-11-19, on `main` at commit `66d0ec8`, on Windows 11 with
 Rust 1.98.0. These numbers describe the test suite as it was on that commit.
-They are a measurement, not a gate: CI does not run either tool.
+They are a measurement, not a gate: CI does not gate on either tool. A weekly
+job (`.github/workflows/mutants.yml`) runs cargo-mutants without gating, and
+coverage stays a manual measurement.
 
 ## Commands
 
@@ -40,6 +42,14 @@ is what its NIST vector test should give.
 
 The aim is not zero survivors. A survivor is a behaviour that no test pins down.
 The ten below are the ones that matter most for what priorart reports.
+
+## Scheduled runs
+
+Since 2026-11-22, `.github/workflows/mutants.yml` runs the same `cargo mutants`
+command every Monday and uploads `mutants.out/`. It is not a gate: a survivor
+is a test to write, not a failed build. The numbers above remain the
+2026-11-19 measurement on commit `66d0ec8` until a scheduled run on the release
+commit completes and is recorded here.
 
 ## The ten most important surviving mutants
 

@@ -9,23 +9,83 @@ fetched at build time or check time.
 ```text
 program-dir/
   program.yaml         # optional metadata and payout terms
-  scope.md             # the saved program page (.html and .txt also work)
+  scope.md             # the saved program page (.html/.htm convert; .txt too)
   known-issues.md      # the program's own known issues (.yaml/.yml/.txt too)
   audits/              # prior audit reports, .md/.txt/.pdf, recursive
 ```
 
 What `build` reads, and the order it reads it in:
 
-- exactly one program page: `scope.md`, `scope.html`, `scope.txt` (first found
-  in that order; if several exist the build prints which one it used);
+- exactly one program page: `scope.md`, `scope.html`, `scope.htm`, `scope.txt`
+  (first found in that order; if several exist the build prints which one it
+  used);
 - exactly one known-issues file: `known-issues.md`, `.yaml`, `.yml`, `.txt`;
 - every document under `audits/`, recursively, with extension `.md`,
   `.markdown`, `.txt` or `.pdf`. `audits/README.md` is skipped: scaffolding is
-  not a prior audit. Dot-files and symlinks are skipped.
+  not a prior audit. Hidden regular files and directories are skipped; every
+  symlink (hidden or not, file or directory) and every non-regular document is
+  skipped with a note that names it.
 
 Program page, then known issues, then audits by path: that order is the source
 order, the item order and therefore the id order. If no input is found at all,
 the build is a usage error (exit 2), not an empty dossier.
+
+Every input must be a **regular file**, and a symlink, FIFO, device or
+directory named as an input is refused or skipped by name, never read through.
+The treatment depends on whether the input is required:
+
+- **Required:** `program.yaml` (for `build`); a finding and an explicit dossier
+  (for `check`). A non-regular one is refused with **exit 2** and an error
+  naming it.
+- **Optional:** `scope.*`, `known-issues.*`, any symlink (file or directory) or
+  document under `audits/`, and the `audits/` directory itself. A non-regular
+  one is **skipped with a note that names it**. The build exits 2 only when no
+  regular input remains.
+
+A dossier **discovered** beside the finding is optional too, with one
+exception: when the only `.dossier` candidate is non-regular, discovery is a
+usage error (exit 2) naming it; when a regular dossier is also present, the
+regular one is used and the non-regular candidate is ignored without a note.
+Pass `--dossier` to name a file explicitly.
+
+A FIFO is refused before it is opened, so a build cannot block on one. The
+check is a stat followed by a separate open: a concurrent writer can swap the
+path between the two calls. It refuses an accidental or stale link, not a
+writer who already controls the folder.
+
+## HTML program pages
+
+A saved `scope.html` or `scope.htm` is converted to text before extraction, by
+`src/dossier/html.rs`, into the Markdown-shaped text a careful copy would have:
+
+- `<h1>`-`<h6>` become `#`-`######` heading lines, so the section logic sees
+  `## Rewards` where the page has `<h2>Rewards</h2>`;
+- `<li>` becomes a `- ` bullet, so reward tables, scope lists and exclusion
+  lists are read as bullets;
+- `<p>`, `<br>`, `<div>` and the other block elements become line breaks;
+- every other tag is dropped and its text kept, so `src/<code>Vault</code>.sol`
+  stays `src/Vault.sol`;
+- `<script>` and `<style>` contents are dropped and never quoted;
+- common named entities (`&amp;`, `&nbsp;`, `&mdash;`) and numeric references
+  (`&#39;`, `&#x2F;`) are decoded; an entity this build does not know is left
+  as written rather than guessed;
+- whitespace is collapsed the way a browser collapses it, except in `<pre>`.
+
+This is **not a browser**, and it is designed for **list-based pages**: a
+heading followed by a `<ul>`/`<li>` list. CSS layout, JavaScript-rendered
+content, table structure and text carried only in attributes (`alt`, `title`,
+`aria-label`) are not read.
+
+A page whose rewards or scope live in a **plain** `<table>` yields **no**
+`payout-tier`, `scope-path` or `scope-clause` items: table cells become lines,
+not bullets. The exception is a cell whose text is itself a Markdown bullet
+(`- Critical: ...`): the converter cannot tell it came from a table, so that
+cell is read as a bullet. Table structure is not mapped. Save a table-based
+page as Markdown by hand. Table mapping is planned for a later release, not
+0.2.0; `tests/html.rs` pins both the limitation and the bullet-cell edge. A
+page rendered by JavaScript, or whose content lives in attributes, needs the
+same manual save. The source is recorded as `scope.html` with one page, its
+`sha256` is of the HTML bytes, and every item quotes the converted text.
 
 ## program.yaml
 
@@ -82,7 +142,7 @@ prior_audits:
 ```json
 {
   "schema": "priorart.dossier/v1",
-  "tool": {"name": "priorart", "version": "0.1.3"},
+  "tool": {"name": "priorart", "version": "0.2.0"},
   "program": {"id": "dossier-demo", "name": "Example Lend", "platform": "ExamplePlatform",
               "url": "https://example.invalid/lend",
               "scope_url": "https://example.invalid/lend/scope",
@@ -148,6 +208,29 @@ A scanned (image-only) PDF has no text at all and needs the same conversion; OCR
 is not attempted. On Windows without `pdftotext`, that warning is the expected
 outcome for a compressed PDF, not a failure.
 
+A literal is decoded as UTF-16BE or UTF-16LE when it starts with a byte-order
+mark, as UTF-8 when it is valid UTF-8, and byte-per-character only as a last
+resort. Before 0.2.0 every byte was read as a Latin-1 character, so a UTF-16
+literal came out interleaved with NUL characters; the code now decodes it, and a
+test uses a UTF-16BE literal (`a_utf16be_pdf_literal_is_decoded`).
+
+### The native parser is a trust boundary
+
+`pdftotext` is poppler: a **native third-party parser**, started by priorart as
+the same user, with the same privileges, and **without a sandbox**. The PDF it
+reads is an untrusted saved file. priorart contains it with the absolute-path
+lookup and the time/output limits above, not with isolation.
+
+`priorart build --no-pdftotext` never starts it. With that flag, a PDF the
+built-in scrape cannot read is reported unread and skipped, exactly like the
+missing-`pdftotext` case:
+
+```text
+note: <path>: no extractable text (the uncompressed scrape found nothing and
+pdftotext is disabled with --no-pdftotext). Convert it with a text tool and pass
+the .txt. - source skipped
+```
+
 `pdftotext` reads a file that may be hostile, so it runs under three limits:
 
 - **Found on `PATH`, absolute entries only.** priorart looks the executable up
@@ -182,12 +265,30 @@ The values are constants in `src/dossier/import.rs` (`MAX_INPUT_BYTES` and the
 others). They are not command-line flags: a larger audit should be converted to
 text or split into smaller program folders.
 
+`check` has its own limits, checked before the file is read:
+
+| Limit | Value | Error names |
+|---|---|---|
+| Finding file | 16 MiB (`check::MAX_FINDING_BYTES`) | the file and its size |
+| Dossier file | 64 MiB (`dossier::load::MAX_DOSSIER_BYTES`) | the file and its size |
+
+A sparse or accidental huge file is refused by size, not read and then judged.
+A **build of this version whose serialized dossier would exceed 64 MiB is exit 2
+before the file is written**, with an error that says to split the program
+folder; a dossier this build writes can therefore be read by `check`. A
+pre-0.2.0 dossier over the cap (0.1.3 had no limit) is still refused.
+
 ## What `build` does not do
 
 - **It does not fetch anything.** A page is a file you saved. There is no URL
   argument, no cache and no update check ([no-network.md](no-network.md)).
 - It does not check out a repository at a commit, and it does not parse source
   code. It reads documents.
+- It does not render HTML. `scope.html`/`scope.htm` is converted conservatively
+  ([above](#html-program-pages)); CSS, JavaScript-rendered text,
+  attribute-only text and table structure are not read. A table-based page
+  should be saved as Markdown (a cell that is itself a Markdown bullet is still
+  read as one).
 - It does not infer a severity, a floor or a clause class from prose. A payout
   terms block comes from `program.yaml`; a clause class comes from the vocabulary
   ([vocab.md](vocab.md)).

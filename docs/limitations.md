@@ -39,7 +39,20 @@ precondition that tripped it, so the reader can disagree in one line.
 `null` when the text is negated or unrecognised, and a wrong hint is not a
 claim. Do not cite it as a finding.
 
-## PDFs are best-effort
+## HTML is converted, not rendered
+
+A saved `scope.html` (or `scope.htm`) is converted to text by a small in-repo
+normalizer (headings, bullets, blocks, entities, script/style removal). It is
+designed for **list-based pages**; it is **not a browser and not an HTML
+parser**: CSS layout, JavaScript-rendered text, table structure and text
+carried only in attributes are not read. A **plain** table-based rewards or
+scope page yields no payout/scope items (a cell whose text is itself a Markdown
+bullet is still read as one), and a page that builds its scope list in
+JavaScript yields none either; save those pages as Markdown by hand. Table
+mapping is a later-release plan, not 0.2.0. The rules and the fixtures are in
+[dossier.md](dossier.md#html-program-pages) and `tests/html.rs`.
+
+## PDFs are best-effort, and the fallback is native code
 
 An uncompressed PDF is scraped for text literals; otherwise `pdftotext` is
 required. Without it a compressed PDF is skipped with a warning and the build
@@ -48,6 +61,12 @@ attempted, and the file must be converted outside priorart. The exact warning is
 in [dossier.md](dossier.md). A `pdftotext` that runs past 60 seconds or writes
 more than 16 MiB is killed and its source skipped; the limits and the reason for
 them are in [dossier.md](dossier.md#input-limits).
+
+`pdftotext` is poppler: **native third-party code, run as the same user with the
+same privileges, without a sandbox**, on an untrusted PDF. priorart bounds its
+lookup, arguments, time and output, but does not isolate it. `priorart build
+--no-pdftotext` disables the fallback entirely; a PDF the built-in scrape cannot
+read is then reported unread and skipped.
 
 ## No live rules, no update channel
 
@@ -82,6 +101,11 @@ scope, exclusion or duplication for a platform, and it is not a verdict.
 
 ## Windows, and what "tested" means
 
-The test suite runs on Windows and on Linux in CI; there is no unix-only code.
+There is no unix-only production code. OS-specific tests are gated: the FIFO
+test runs on Unix where `mkfifo` exists, and the Windows symlink tests skip
+without SeCreateSymbolicLinkPrivilege (the Ubuntu CI job runs the Unix cases).
 The benchmark corpus is public contest material; behaviour on private reports,
-other languages or non-markdown program pages is not measured.
+other languages or real-world program pages saved as HTML is not measured. The
+HTML path is tested against one committed list-based fixture and an inline
+table-limitation test, not against live platform pages
+([dossier.md](dossier.md#html-program-pages)).

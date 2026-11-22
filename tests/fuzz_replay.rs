@@ -13,9 +13,10 @@ use std::path::PathBuf;
 
 type Target = fn(&[u8]);
 
-const TARGETS: [(&str, Target); 7] = [
+const TARGETS: [(&str, Target); 8] = [
     ("markdown_import", targets::markdown_import),
     ("pdf_scrape", targets::pdf_scrape),
+    ("html_normalize", targets::html_normalize),
     ("program_yaml", targets::program_yaml),
     ("known_issues_yaml", targets::known_issues_yaml),
     ("ledger_yaml", targets::ledger_yaml),

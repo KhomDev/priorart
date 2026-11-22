@@ -28,6 +28,12 @@ fn plural(n: usize, one: &str, many: &str) -> String {
     }
 }
 
+/// A path as printed: forward slashes on every platform, so output is the
+/// same on Windows, Linux and macOS and a copied path is one spelling.
+fn display_path(path: &std::path::Path) -> String {
+    path.to_string_lossy().replace('\\', "/")
+}
+
 /// What `priorart build` prints: where the dossier went and what is in it.
 pub fn dossier_summary(outcome: &BuildOutcome) -> String {
     let d = &outcome.dossier;
@@ -36,7 +42,7 @@ pub fn dossier_summary(outcome: &BuildOutcome) -> String {
         "priorart {} - dossier {} ({})\n",
         env!("CARGO_PKG_VERSION"),
         d.program.id,
-        outcome.path.display()
+        display_path(&outcome.path)
     ));
     out.push_str(&format!(
         "  {} source(s), {} item(s)\n",
@@ -68,7 +74,7 @@ pub fn dossier_summary(outcome: &BuildOutcome) -> String {
     }
     out.push_str(&format!(
         "Next: priorart check <finding.md> --dossier {}\n",
-        outcome.path.display()
+        display_path(&outcome.path)
     ));
     sanitize(&out)
 }

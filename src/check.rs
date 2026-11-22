@@ -124,16 +124,45 @@ pub fn failure_exit(
     None
 }
 
+/// A finding is a note, not a corpus. This is far above any real finding; a
+/// larger file is a usage error that names the limit, never read whole.
+pub const MAX_FINDING_BYTES: u64 = 16 * 1024 * 1024;
+
 /// Read a finding file, in UTF-8 with a BOM tolerated.
+///
+/// The path must be a regular file: a symlink, FIFO or device is refused by
+/// name, not followed or opened. A file over `MAX_FINDING_BYTES` is refused
+/// before it is read, so a sparse or accidental huge file cannot exhaust
+/// memory.
 pub fn read_finding(path: &Path) -> Result<(String, String), String> {
+    let meta = import::require_regular_file_from(path, "finding").map_err(|e| {
+        format!(
+            "{}. Pass a markdown file with the finding text.",
+            e.trim_end_matches('.')
+        )
+    })?;
+    check_finding_size(path, meta.len())?;
     let bytes = std::fs::read(path).map_err(|e| {
         format!(
             "cannot read finding {}: {e}. Pass a markdown file with the finding text.",
             path.display()
         )
     })?;
+    check_finding_size(path, bytes.len() as u64)?;
     let text = import::strip_bom(&String::from_utf8_lossy(&bytes)).replace("\r\n", "\n");
     Ok((text, crate::dossier::sha256::hex(&bytes)))
+}
+
+fn check_finding_size(path: &Path, len: u64) -> Result<(), String> {
+    if len > MAX_FINDING_BYTES {
+        return Err(format!(
+            "finding {} is {}; priorart reads a finding up to {} MiB. Quote the relevant section in a smaller file.",
+            path.display(),
+            import::mib(len),
+            MAX_FINDING_BYTES / (1024 * 1024)
+        ));
+    }
+    Ok(())
 }
 
 /// Is this a severity the payout gate can compare? Used by the CLI to reject a

@@ -49,7 +49,10 @@ const PROGRAM_YAML: &str = "# Saved by you; read by priorart build. Every field 
 const SCOPE_MD: &str = "# Example Program - scope and rewards\n\
 \n\
 Save the program's own page here, as markdown, html or text. priorart reads\n\
-this file; it never fetches a URL. Replace every line below with the real page.\n\
+this file; it never fetches a URL. An .html page is converted to text with a\n\
+conservative normalizer (headings, bullets, paragraphs, entities); it is not a\n\
+browser, so save a complex page as markdown by hand. Replace every line below\n\
+with the real page.\n\
 \n\
 ## Rewards\n\
 \n\
@@ -84,7 +87,8 @@ the file name becomes the source title.\n\
 \n\
 PDFs are read with pdftotext when it is installed. Without it, an uncompressed\n\
 PDF is scraped and a compressed one is skipped with a warning - convert it with\n\
-pdftotext -layout and save the .txt here instead.\n";
+pdftotext -layout and save the .txt here instead. `priorart build\n\
+--no-pdftotext` never runs pdftotext, so a compressed PDF is then skipped.\n";
 
 /// Scaffold a program folder. Refuses to overwrite existing files unless
 /// force is set.

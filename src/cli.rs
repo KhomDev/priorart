@@ -2,7 +2,7 @@
 //! command and exit code is exercised by tests/cli.rs.
 
 use crate::check;
-use crate::dossier::{build, load};
+use crate::dossier::{build, import, load};
 use crate::error::EVIDENCE_EXIT;
 use crate::ledger;
 use crate::matching::{DEFAULT_TOP_K, MAX_TOP_K};
@@ -52,6 +52,10 @@ enum Command {
         /// Print the dossier JSON to stdout instead of the summary
         #[arg(long)]
         json: bool,
+        /// Never run pdftotext: a PDF the built-in scrape cannot read is
+        /// reported unread, so poppler never parses an untrusted file
+        #[arg(long)]
+        no_pdftotext: bool,
     },
     /// Report quoted evidence for one finding against a dossier
     Check {
@@ -173,8 +177,17 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             out,
             program,
             json,
+            no_pdftotext,
         } => {
-            let outcome = build::build(&program_dir, out.as_deref(), program.as_deref())?;
+            let options = import::ImportOptions {
+                use_pdftotext: !no_pdftotext,
+            };
+            let outcome = build::build_with_options(
+                &program_dir,
+                out.as_deref(),
+                program.as_deref(),
+                &options,
+            )?;
             if json {
                 print!("{}", json::pretty(&outcome.dossier)?);
                 for note in &outcome.notes {
@@ -312,11 +325,20 @@ fn run_check(
     let (finding_text, finding_sha) = check::read_finding(finding)?;
     let resolved: PathBuf = match dossier_path {
         Some(p) => {
-            if !p.exists() {
-                return Err(format!(
-                    "{} does not exist. Build one with priorart build <program-dir>.",
-                    p.display()
-                ));
+            match std::fs::symlink_metadata(p) {
+                Err(_) => {
+                    return Err(format!(
+                        "{} does not exist. Build one with priorart build <program-dir>.",
+                        p.display()
+                    ))
+                }
+                Ok(meta) if !meta.file_type().is_file() => {
+                    return Err(format!(
+                        "{} is not a regular file; priorart reads regular files only. Pass --dossier with a regular file.",
+                        p.display()
+                    ))
+                }
+                Ok(_) => {}
             }
             p.to_path_buf()
         }

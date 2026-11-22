@@ -34,6 +34,12 @@ impl TempDir {
         self.path.join(rel)
     }
 
+    /// The directory itself, for `run_in` and direct filesystem calls.
+    #[allow(dead_code)]
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+
     pub fn write(&self, rel: &str, body: &str) -> PathBuf {
         let path = self.join(rel);
         if let Some(parent) = path.parent() {

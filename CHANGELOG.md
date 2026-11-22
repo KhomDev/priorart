@@ -13,6 +13,92 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-22
+
+An input-handling release. A saved HTML program page is now read, every input
+must be a regular file, finding and dossier reads are bounded, and the native
+PDF fallback can be disabled. The matcher, the gates, both JSON schemas and the
+vocabularies are unchanged, so the 0.1.3 benchmark numbers still describe this
+release and older dossiers under the 64 MiB check limit still load. Self-review:
+no external report.
+
+### Added
+
+- **`.html` program pages are read.** `scope.html` (or `scope.htm`) is
+  converted to Markdown-shaped text by a new in-repo normalizer,
+  `src/dossier/html.rs`: `<h1>`-`<h6>` become heading lines, `<li>` becomes a
+  bullet, `<p>`/`<br>`/`<div>` and other blocks become line breaks, remaining
+  tags are stripped, `<script>`/`<style>` contents are dropped, and common
+  named and numeric entities are decoded. It is designed for **list-based
+  pages** (headings plus `<ul>`/`<li>` lists). It is not a browser: CSS,
+  JavaScript-rendered text, table structure and attribute-only text are not
+  read. A **plain** table yields no payout/scope items, although a cell whose
+  text is itself a Markdown bullet (`- ...`) is still read as one; save a
+  table-based page as Markdown. Table mapping is planned for a later release,
+  not 0.2.0. Fixture and gates: `tests/html.rs`.
+- **`build --no-pdftotext`.** The flag disables the poppler fallback entirely;
+  a PDF the in-process scrape cannot read is reported unread and skipped.
+  `docs/limitations.md`, `ARCHITECTURE.md` and `README.md` now state that
+  `pdftotext` is native third-party code run as the user, without a sandbox.
+- **A generated README example for the HTML fixture**, checked by
+  `tests/docs.rs` and reproduced by `scripts/regen-readme-examples.sh`.
+
+### Security
+
+- **Only regular files are read.** A symlink, FIFO, device or directory named
+  as an input is refused or skipped by name, never read through. Required
+  inputs (`program.yaml` for `build`; a finding and an explicit dossier for
+  `check`) are refused with exit 2. Optional names
+  (`scope.*`, `known-issues.*`, any symlink (file or directory) or non-regular
+  document under `audits/`, and the `audits/` directory itself) are named and
+  skipped; the build exits 2 only when no regular input remains. A FIFO used to
+  be able to block a build indefinitely, and a symlinked audit used to disappear
+  without a note. A dossier discovered beside the finding follows the same rule:
+  a non-regular only candidate is exit 2, and a regular candidate beside it is
+  used instead.
+- **A build of this version cannot write a dossier that `check` refuses for
+  size.** The serialized body is checked against `MAX_DOSSIER_BYTES` (64 MiB)
+  before the file is written, with an exit-2 error that says to split the
+  folder. A pre-0.2.0 dossier over the cap (0.1.3 had none) is still refused by
+  `check`.
+- **Finding and dossier reads are bounded.** `check` refuses a finding over
+  16 MiB (`check::MAX_FINDING_BYTES`) and a dossier over 64 MiB
+  (`dossier::load::MAX_DOSSIER_BYTES`) by size, before the file is read, with
+  the same named exit-2 errors as the build limits.
+- **UTF-16 PDF literals are decoded.** `scrape_pdf_literals` used to read every
+  byte as a Latin-1 character; a UTF-16BE/LE literal came out interleaved with
+  NUL characters. It now honours the byte-order mark, prefers UTF-8 when valid,
+  and supports PDF octal escapes. Tests use UTF-16BE, UTF-16LE and UTF-8
+  literals.
+
+### Changed
+
+- The `build` summary prints the dossier path with forward slashes on every
+  platform, so copied output is the same everywhere.
+
+### Hardening
+
+- `#![forbid(unsafe_code)]` in `src/lib.rs` and `src/main.rs`.
+- `.github/workflows/mutants.yml` runs `cargo mutants` for `src/match/`,
+  `src/gates/` and `src/dossier/` every Monday. It is not a gate; the
+  measurement in `docs/test-quality.md` is unchanged until a scheduled run on
+  the release commit completes.
+
+### Tests
+
+- New: `tests/html.rs` (converted page, `scope.htm`, item kinds, G1/G2/G3, the
+  pinned table limitation and its bullet-cell edge), `tests/inputs.rs` (symlinks
+  including symlinked audit subdirectories and hidden symlinks, symlinked and
+  FIFO audits on Unix, FIFO program page on Unix, sparse oversized finding and
+  dossier, the pre-read ordering with an unreadable file, the `--no-pdftotext`
+  control, bare file-name discovery, forward-slash paths), the `dossier::html`
+  unit tests (including the apostrophe and non-ASCII cases), the build-size
+  guard and its real write-path call site, and four PDF literal-decoding tests.
+- A `html_normalize` fuzz target, replayed from `fuzz/corpus/html_normalize/`
+  every test run and by the weekly fuzz workflow.
+- `docs/validation.md` records the new claims, the retracted "`scope.html`
+  works" claim from 0.1.3 and its limits.
+
 ## [0.1.3] - 2026-11-21
 
 A correctness release. The specificity denominator, negation reading, dossier
@@ -874,7 +960,8 @@ The tree itself is unchanged except for the two fixes recorded here.
 - The rule catalog and gate definitions as data, embedded in the binary.
 - The fixture suite: one positive and one negative case per anti-pattern.
 
-[Unreleased]: https://github.com/KhomDev/priorart/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/KhomDev/priorart/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/KhomDev/priorart/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/KhomDev/priorart/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/KhomDev/priorart/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/KhomDev/priorart/compare/v0.1.0...v0.1.1

@@ -10,19 +10,20 @@ carried them is frozen at 0.9.0.
 cargo install priorart
 # or, if you have cargo-binstall:
 cargo binstall priorart
-priorart --version   # priorart 0.1.3
+priorart --version   # priorart 0.2.0
 ```
 
 Or straight from the release tag on GitHub:
 
 ```sh
-cargo install --git https://github.com/KhomDev/priorart --tag v0.1.0
+cargo install --git https://github.com/KhomDev/priorart --tag v0.2.0
 ```
 
 Rust 1.89 or newer (`rust-version` in `Cargo.toml`). No system dependencies: the
 vocabularies and the rejection dataset are compiled into the binary with
 `include_str!`, and the crate has no HTTP client. `pdftotext` is optional and
-only needed for compressed PDFs ([dossier.md](dossier.md)).
+only needed for compressed PDFs ([dossier.md](dossier.md)); `priorart build
+--no-pdftotext` never runs it.
 
 ## From a release
 
@@ -41,7 +42,7 @@ GitHub's workflow for this repository, that names the archive's SHA-256 and the
 commit and workflow that built it. Check it with the GitHub CLI:
 
 ```sh
-gh attestation verify priorart-v0.1.3-x86_64-unknown-linux-gnu.tar.gz --repo KhomDev/priorart
+gh attestation verify priorart-v0.2.0-x86_64-unknown-linux-gnu.tar.gz --repo KhomDev/priorart
 ```
 
 The release also carries `SHA256SUMS` and a CycloneDX software bill of materials
@@ -81,9 +82,12 @@ cargo install priorart --force   # upgrade in place
 cargo uninstall priorart         # uninstall
 ```
 
-Dossiers built by an older 0.1.x still load: the schema is `priorart.dossier/v1`
-and `v1` is additive-only ([schema.md](schema.md)). A dossier does not need
-rebuilding for a new binary unless the inputs changed.
+Dossiers built by an older 0.1.x or 0.2.x under the 64 MiB check limit still
+load: the schema is `priorart.dossier/v1` and `v1` is additive-only
+([schema.md](schema.md)). A dossier does not need rebuilding for a new binary
+unless the inputs changed. A pre-0.2.0 dossier larger than 64 MiB is refused by
+`check` with the named limit, because 0.1.3 had no such cap; rebuild it from a
+smaller folder.
 
 ## Moving from viability-gate
 

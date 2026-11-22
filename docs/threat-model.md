@@ -1,8 +1,8 @@
 # Threat model
 
 A short, STRIDE-light model of priorart. Every statement names the code or the
-test that backs it. Line numbers are for commit `5b58846` on `main`; they move
-when the code moves, so the names are the stable reference.
+test that backs it. Line numbers come from the 0.1.3 tree and move with the
+code, so the names are the stable reference.
 
 Each guarantee has a status:
 
@@ -36,17 +36,18 @@ Each row is a point where bytes from an attacker-influenced file are parsed.
 
 | Input | Parser | Reference | Limits today |
 |---|---|---|---|
-| Program page, known issues, audits (text) | Lossy UTF-8, then line and heading scan | `src/dossier/import.rs:398-444`, `:429` | None: the whole file is read |
-| PDF, uncompressed | Byte scan for literal strings, in process | `src/dossier/import.rs:513-568` | None |
-| PDF, compressed | Subprocess `pdftotext -layout -q <absolute path> -` | `src/dossier/import.rs` `find_on_path`, `run_pdftotext` | Killed after `PDFTOTEXT_TIMEOUT` (60 s) or `PDFTOTEXT_MAX_OUTPUT` (16 MiB); found on absolute `PATH` entries only, never the current directory; the PDF is passed as an absolute path, so it can't be read as an option |
-| `program.yaml` | `serde_saphyr::from_str`, unknown keys ignored | `src/dossier/import.rs` `read_program_file` | `MAX_INPUT_BYTES` (64 MiB) per file |
-| Known issues as YAML | `serde_saphyr::from_str` | `src/dossier/import.rs:888-893` | None |
-| Ledger | `serde_saphyr::from_str` on one YAML document | `src/ledger/mod.rs:122-133` | None |
-| Finding (markdown) | Lossy UTF-8 | `src/check.rs:105-116` | None |
-| Dossier JSON | `serde_json`, schema id checked before the struct | `src/dossier/load.rs:9-28` | None |
-| Directory walk of `audits/` | `read_dir`, recursion | `src/dossier/import.rs` `collect_at_depth`, `check_input_limits` | Depth `MAX_WALK_DEPTH` (16), `MAX_WALK_ENTRIES` (10 000) entries, `MAX_INPUT_FILES` (1000) documents, `MAX_TOTAL_BYTES` (512 MiB); exit 2 naming the limit |
-| Vocabularies and rejection data | Compiled in with `include_str!` | `src/vocab/mod.rs:82`, `src/rejections/mod.rs:19,27` | Trusted: part of the build |
-| Terminal output | Control characters stripped | `src/render/text.rs:10-15` | JSON output is escaped by `serde_json` |
+| Program page, known issues, audits (text) | Lossy UTF-8, then the HTML normalizer for `.html`/`.htm` or a line and heading scan | `src/dossier/html.rs`, `src/dossier/import.rs` | `MAX_INPUT_BYTES` (64 MiB) per file, `MAX_INPUT_FILES` (1000), `MAX_TOTAL_BYTES` (512 MiB); a required input that is a symlink, FIFO or device is exit 2, an optional one is named and skipped |
+| HTML program page | In-repo conservative converter: comments, doctype, script and style dropped; tags stripped; headings, bullets and blocks mapped; entities decoded | `src/dossier/html.rs` | 64 MiB like any input. List-based pages only; not a browser: no CSS, JavaScript, table structure or attribute-only text |
+| PDF, uncompressed | Byte scan for literal strings, in process; UTF-16BE/LE and UTF-8 literals decoded; the PDF must be a regular file | `src/dossier/import.rs` `scrape_pdf_literals`, `read_regular_file` | 64 MiB like any input |
+| PDF, compressed | Subprocess `pdftotext -layout -q <absolute path> -` (native poppler, same user, no sandbox) | `src/dossier/import.rs` `find_on_path`, `run_pdftotext` | Killed after `PDFTOTEXT_TIMEOUT` (60 s) or `PDFTOTEXT_MAX_OUTPUT` (16 MiB); found on absolute `PATH` entries only, never the current directory; the PDF is passed as an absolute path and must be a regular file, so it can't be read as an option; disabled entirely by `--no-pdftotext` |
+| `program.yaml` | `serde_saphyr::from_str`, unknown keys ignored | `src/dossier/import.rs` `read_program_file` | `MAX_INPUT_BYTES` (64 MiB) per file; must be a regular file |
+| Known issues as YAML | `serde_saphyr::from_str` | `src/dossier/import.rs` | 64 MiB per file; must be a regular file |
+| Ledger | `serde_saphyr::from_str` on one YAML document | `src/ledger/mod.rs` | None |
+| Finding (markdown) | Lossy UTF-8 | `src/check.rs` `read_finding` | `MAX_FINDING_BYTES` (16 MiB) and a regular file; the size is checked from metadata before the read, and the ordering is pinned by tests |
+| Dossier JSON | `serde_json`, schema id checked before the struct | `src/dossier/load.rs` `load` | `MAX_DOSSIER_BYTES` (64 MiB) and a regular file; the size is checked from metadata before the read, and the ordering is pinned by tests |
+| Directory walk of `audits/` | `read_dir`, recursion | `src/dossier/import.rs` `collect_at_depth`, `check_input_limits` | Depth `MAX_WALK_DEPTH` (16), `MAX_WALK_ENTRIES` (10 000) entries, `MAX_INPUT_FILES` (1000) documents, `MAX_TOTAL_BYTES` (512 MiB); symlinks (file or directory) and non-regular documents are named and skipped; exit 2 naming the limit |
+| Vocabularies and rejection data | Compiled in with `include_str!` | `src/vocab/mod.rs`, `src/rejections/mod.rs` | Trusted: part of the build |
+| Terminal output | Control characters stripped | `src/render/text.rs` `sanitize` | JSON output is escaped by `serde_json` |
 
 ## Guarantees and what proves them
 
@@ -61,10 +62,15 @@ Each row is a point where bytes from an attacker-influenced file are parsed.
 | G7 | Quotes are text recorded from a saved file, with an in-range page number | `tests/cli.rs::check_prints_three_labelled_sections_with_a_whole_sentence_quote`; quote check in `src/check.rs`; page range in `src/dossier/load.rs`; `tests/adversarial.rs::a_hand_edited_quote_that_is_in_no_source_is_flagged`, `a_page_number_past_the_source_page_count_is_flagged` | Tested for quote-vs-recorded-text and page range. The recorded text is not re-read from the source, so a dossier that edits both is not detected (open item 6). |
 | G8 | The dossier records the SHA-256 of each source | `src/dossier/sha256.rs`, checked against NIST vectors (per `docs/dossier.md`); `src/dossier/import.rs:438` | Read. The vector test is the claim in `docs/dossier.md`; not re-checked here. |
 | G9 | The build writes only the dossier file, and a program id cannot name a path | `src/dossier/build.rs:45-48` (default path is `<program-dir>/<id>.dossier`); `src/dossier/import.rs:300-317` (`slug` keeps letters, digits, `.`, `-`, `_` only); `slug("../..")` is `None` at `src/dossier/import.rs:986` | Tested for `slug`. The write is tmp-then-rename (`src/dossier/build.rs:58-66`) with no test that a failed write leaves no partial file. |
-| G10 | Terminal output cannot carry control characters from input | `src/render/text.rs:10-15` | Read. No test. |
+| G10 | Terminal output cannot carry control characters from input | `src/render/text.rs` `sanitize`; `tests/adversarial.rs::terminal_control_characters_in_a_quote_do_not_reach_stdout` | Tested for the text and build output. JSON is escaped by `serde_json`. |
 | G11 | Dependencies are checked for advisories, yanked versions, licences and duplicate versions | CI jobs `cargo-deny` and `cargo-audit`; `deny.toml` (`yanked = "deny"`, `multiple-versions = "deny"`) | Tested in CI |
 | G12 | Format, lint and tests gate every change | CI `test` job runs `cargo fmt --check`, `clippy -D warnings`, `cargo test --locked --release` on three OSes | Tested in CI |
-| G13 | A release archive can be checked against its digest and its build provenance | `.github/workflows/release.yml` writes `SHA256SUMS` (archives and SBOM) and attests each archive and the SBOM on tag runs; `.github/workflows/verify-release.yml` installs a release three ways and checks `SHA256SUMS` | Tested for the digest. The attestation step has not run on a real tag yet: the first one is the next release. |
+| G13 | A release archive can be checked against its digest and its build provenance | `.github/workflows/release.yml` writes `SHA256SUMS` (archives and SBOM) and attests each archive and the SBOM on tag runs; `.github/workflows/verify-release.yml` installs a release three ways and checks `SHA256SUMS` | Tested for the digest. The 0.1.2 and 0.1.3 archives carry attestations and verify with `gh attestation verify`; 0.2.0 adds one when the tag is cut. |
+| G14 | A symlink, FIFO, device or directory is never read as an input, finding or dossier | `src/dossier/import.rs` `require_regular_file_from`, the `audits/` directory check and the walk's skip list; `tests/inputs.rs` (`a_symlinked_program_page_is_named_skipped_and_never_read`, `a_folder_whose_only_page_is_a_symlink_is_a_named_usage_error`, `a_symlinked_program_yaml_is_refused_by_name`, `a_symlinked_audits_directory_is_named_and_not_followed`, `a_symlinked_audit_is_named_skipped_and_never_read`, `a_symlinked_audit_subdirectory_is_named_and_not_followed`, `a_hidden_symlink_under_audits_is_named_and_not_followed`, `a_symlinked_finding_is_refused_by_name`, `a_symlinked_dossier_beside_the_finding_is_refused_not_read`, `a_fifo_program_page_is_named_and_never_opened` and `a_fifo_audit_is_named_skipped_and_never_opened` on Unix) | Tested where the OS permits creating the link/FIFO. The Windows symlink tests skip without the privilege (they print `SKIP`), and the Ubuntu CI job runs the Unix cases. The stat check and the read are separate calls: a concurrent writer can swap the path between them, so this refuses an accidental or stale link, not a writer who already controls the folder. |
+| G15 | A finding over 16 MiB or a dossier over 64 MiB is refused before it is read | `src/check.rs` `MAX_FINDING_BYTES`, `src/dossier/load.rs` `MAX_DOSSIER_BYTES`; `tests/inputs.rs` (`an_oversized_sparse_finding_is_refused_before_it_is_read`, `an_oversized_sparse_dossier_is_refused_before_it_is_read`, plus the locked-file and chmod-000 tests that pin the metadata check before the read) | Tested with sparse files; the pre-read ordering is pinned by making the read itself fail distinctly |
+| G16 | `--no-pdftotext` never starts poppler | `src/dossier/import.rs` `pdf_to_text_with`; `tests/inputs.rs::no_pdftotext_never_runs_poppler_and_the_control_proves_it` (a marker-writing fake pdftotext runs in the control and not with the flag) | Tested |
+| G17 | A saved `.html`/`.htm` list-based program page yields headings, bullets and blocks, and script/style text never reaches an item | `src/dossier/html.rs` unit tests; `tests/html.rs` (list fixture, `scope.htm`, the plain-table limitation and its bullet-cell edge); `tests/docs.rs` generated example | Tested against one committed list fixture and an inline table case. Table structure is not mapped; a cell that is itself a Markdown bullet is still read as one. Not measured against real platform pages. |
+| G18 | A build of this version cannot write a dossier that `check` refuses for size | `src/dossier/build.rs` `check_dossier_body_size` and `write_dossier_with_limit`; tests `a_dossier_over_the_check_limit_is_refused_before_it_is_written` and `the_write_path_checks_the_limit_before_writing_anything` (neither the target nor the temp file is written); `tests/html.rs` and the CLI tests exercise normal builds | Tested at the limit with a one-byte-over input to the guard and a one-byte limit at the real call site; no 70 MB fixture in the suite. A pre-0.2.0 dossier over the cap is still refused by `check`. |
 
 ## Open items
 
@@ -89,12 +95,20 @@ Each item is a hypothesis or a known gap. None is a confirmed exploit.
    `build_refuses_more_documents_than_the_limit_with_exit_two`,
    `build_refuses_audits_nested_past_the_depth_limit_with_exit_two` (CLI), and
    `input_size_is_checked_per_file_and_in_total` (unit) for the per-file, total and count limits.
-4. **Symlinks and dot-files under `audits/` are skipped** (`src/dossier/import.rs:358-366`).
-   No test covers this. *Read, untested.*
-5. **Parser robustness is sampled, not measured.** The seven `fuzz/` targets and
+4. **Symlinks under `audits/` are skipped and named; hidden regular files and
+   directories are skipped silently** (`src/dossier/import.rs` `collect_at_depth`).
+   A skipped symlink (file or directory, hidden or not) or non-regular document
+   is named in the build notes;
+   `tests/inputs.rs::a_symlinked_audit_is_named_skipped_and_never_read`,
+   `a_symlinked_audit_subdirectory_is_named_and_not_followed` and
+   `a_hidden_symlink_under_audits_is_named_and_not_followed` cover symlinks, and
+   `a_fifo_audit_is_named_skipped_and_never_opened` (Unix) the non-regular case.
+   Skipping hidden regular files/directories has no dedicated test.
+   *Partly checked.*
+5. **Parser robustness is sampled, not measured.** The eight `fuzz/` targets and
    `tests/fuzz_replay.rs` replay committed seeds and hostile edges, and the weekly
    workflow runs libFuzzer for five minutes per target. Coverage of the YAML, JSON,
-   markdown and PDF-scrape paths is not measured, and the weekly job's crash corpus
+   markdown, HTML-normalizer and PDF-scrape paths is not measured, and the weekly job's crash corpus
    is not part of the release gate. *Partly checked.*
 6. **A planted dossier is trusted.** A `.dossier` beside a finding is read as
    evidence (`src/dossier/load.rs`). There is no signature or hash binding it to

@@ -1,0 +1,134 @@
+{
+  "schema": "priorart.dossier/v1",
+  "tool": {
+    "name": "priorart",
+    "version": "0.2.0"
+  },
+  "program": {
+    "id": "html-program",
+    "name": "Example HTML Program",
+    "platform": "ExamplePlatform",
+    "url": "https://example.invalid/html",
+    "scope_url": "https://example.invalid/html/scope",
+    "payout": {
+      "tier_shape": "medium_and_above",
+      "floor_status": "documented",
+      "floor_severity": "medium",
+      "source_url": "https://example.invalid/html/rewards",
+      "retrieved": "2026-11-22",
+      "section": "Rewards",
+      "quote": "Medium: 2,000 USD"
+    },
+    "prior_audits": []
+  },
+  "sources": [
+    {
+      "id": "src-0001",
+      "kind": "program-page",
+      "title": "scope.html",
+      "path": "scope.html",
+      "sha256": "27540f87d255a577811a69314ea6d030bfe4a95c6d3ed569778773c8a1d03732",
+      "pages": 1
+    }
+  ],
+  "items": [
+    {
+      "id": "item-0001",
+      "source_id": "src-0001",
+      "kind": "payout-tier",
+      "title": "scope.html",
+      "section": "Rewards",
+      "page": 1,
+      "quote": "Critical: 50,000 USD",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "Critical: 50,000 USD"
+    },
+    {
+      "id": "item-0002",
+      "source_id": "src-0001",
+      "kind": "payout-tier",
+      "title": "scope.html",
+      "section": "Rewards",
+      "page": 1,
+      "quote": "High: 10,000 USD",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "High: 10,000 USD"
+    },
+    {
+      "id": "item-0003",
+      "source_id": "src-0001",
+      "kind": "payout-tier",
+      "title": "scope.html",
+      "section": "Rewards",
+      "page": 1,
+      "quote": "Medium: 2,000 USD",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "Medium: 2,000 USD"
+    },
+    {
+      "id": "item-0004",
+      "source_id": "src-0001",
+      "kind": "scope-path",
+      "title": "scope.html",
+      "section": "Assets in scope",
+      "page": 1,
+      "quote": "src/Vault.sol",
+      "identifiers": [
+        "src/Vault.sol",
+        "Vault.sol"
+      ],
+      "mechanism_class": null,
+      "clause_class": null,
+      "text": "src/Vault.sol"
+    },
+    {
+      "id": "item-0005",
+      "source_id": "src-0001",
+      "kind": "scope-path",
+      "title": "scope.html",
+      "section": "Assets in scope",
+      "page": 1,
+      "quote": "src/FeeLedger.sol",
+      "identifiers": [
+        "FeeLedger",
+        "FeeLedger.sol",
+        "src/FeeLedger.sol"
+      ],
+      "mechanism_class": "accounting_order_of_operations",
+      "clause_class": null,
+      "text": "src/FeeLedger.sol"
+    },
+    {
+      "id": "item-0006",
+      "source_id": "src-0001",
+      "kind": "scope-clause",
+      "title": "scope.html",
+      "section": "Out of scope",
+      "page": 1,
+      "quote": "Attacks requiring access to privileged roles",
+      "identifiers": [],
+      "mechanism_class": "privileged_path_bypass",
+      "clause_class": "privileged_role",
+      "text": "Attacks requiring access to privileged roles"
+    },
+    {
+      "id": "item-0007",
+      "source_id": "src-0001",
+      "kind": "scope-clause",
+      "title": "scope.html",
+      "section": "Out of scope",
+      "page": 1,
+      "quote": "Issues already listed in the known-issues section",
+      "identifiers": [],
+      "mechanism_class": null,
+      "clause_class": "known_issue",
+      "text": "Issues already listed in the known-issues section"
+    }
+  ]
+}

@@ -29,6 +29,7 @@ jobs:
         target:
           - markdown_import
           - pdf_scrape
+          - html_normalize
           - program_yaml
           - known_issues_yaml
           - ledger_yaml

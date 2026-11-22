@@ -1,0 +1,15 @@
+# Saved by the user; read by priorart build.
+# The program page beside this file is HTML; priorart converts it to text.
+
+name: Example HTML Program
+platform: ExamplePlatform
+url: https://example.invalid/html
+scope_url: https://example.invalid/html/scope
+
+payout:
+  tier_shape: medium_and_above
+  floor_status: documented
+  floor_severity: medium
+  source_url: https://example.invalid/html/rewards
+  retrieved: "2026-11-22"
+  section: Rewards
