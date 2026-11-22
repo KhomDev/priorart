@@ -172,7 +172,9 @@ pub fn read_program_dir_with(
             let mut walk = Walk::default();
             collect_files(&audits_dir, &mut walk, WalkLimits::DEFAULT)?;
             // The walk skips symlinks and non-regular files; name each one so
-            // an audit cannot disappear from a dossier silently.
+            // an audit cannot disappear from a dossier silently. Sorting keeps
+            // the notes independent of filesystem order.
+            walk.skipped.sort();
             for (path, kind) in &walk.skipped {
                 let rel = path
                     .strip_prefix(dir)
@@ -509,18 +511,20 @@ fn collect_at_depth(
         }
         let path = entry.path();
         let name = entry.file_name().to_string_lossy().to_string();
-        if name.starts_with('.') {
-            continue;
-        }
         let Ok(meta) = fs::symlink_metadata(&path) else {
             continue;
         };
         let ft = meta.file_type();
         if ft.is_symlink() {
-            // Every symlink under audits/ is named, file or directory. A
-            // symlinked subdirectory is a whole tree the user may think was
-            // indexed, so it must not disappear silently.
+            // Every symlink under audits/ is named, file or directory, hidden
+            // or not. A symlinked subdirectory is a whole tree the user may
+            // think was indexed, so it must not disappear silently.
             walk.skipped.push((path, "a symlink"));
+            continue;
+        }
+        if name.starts_with('.') {
+            // Hidden regular files and directories are scaffolding, not
+            // audits; they stay skipped as before.
             continue;
         }
         if ft.is_dir() {

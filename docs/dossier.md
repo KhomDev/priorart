@@ -22,8 +22,9 @@ What `build` reads, and the order it reads it in:
 - exactly one known-issues file: `known-issues.md`, `.yaml`, `.yml`, `.txt`;
 - every document under `audits/`, recursively, with extension `.md`,
   `.markdown`, `.txt` or `.pdf`. `audits/README.md` is skipped: scaffolding is
-  not a prior audit. Dot-files are skipped; a symlink or non-regular document
-  under `audits/` is skipped with a note that names it.
+  not a prior audit. Hidden regular files and directories are skipped; every
+  symlink (hidden or not, file or directory) and every non-regular document is
+  skipped with a note that names it.
 
 Program page, then known issues, then audits by path: that order is the source
 order, the item order and therefore the id order. If no input is found at all,

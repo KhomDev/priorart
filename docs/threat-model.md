@@ -66,7 +66,7 @@ Each row is a point where bytes from an attacker-influenced file are parsed.
 | G11 | Dependencies are checked for advisories, yanked versions, licences and duplicate versions | CI jobs `cargo-deny` and `cargo-audit`; `deny.toml` (`yanked = "deny"`, `multiple-versions = "deny"`) | Tested in CI |
 | G12 | Format, lint and tests gate every change | CI `test` job runs `cargo fmt --check`, `clippy -D warnings`, `cargo test --locked --release` on three OSes | Tested in CI |
 | G13 | A release archive can be checked against its digest and its build provenance | `.github/workflows/release.yml` writes `SHA256SUMS` (archives and SBOM) and attests each archive and the SBOM on tag runs; `.github/workflows/verify-release.yml` installs a release three ways and checks `SHA256SUMS` | Tested for the digest. The 0.1.2 and 0.1.3 archives carry attestations and verify with `gh attestation verify`; 0.2.0 adds one when the tag is cut. |
-| G14 | A symlink, FIFO, device or directory is never read as an input, finding or dossier | `src/dossier/import.rs` `require_regular_file_from`, the `audits/` directory check and the walk's skip list; `tests/inputs.rs` (`a_symlinked_program_page_is_named_skipped_and_never_read`, `a_folder_whose_only_page_is_a_symlink_is_a_named_usage_error`, `a_symlinked_program_yaml_is_refused_by_name`, `a_symlinked_audits_directory_is_named_and_not_followed`, `a_symlinked_audit_is_named_skipped_and_never_read`, `a_symlinked_audit_subdirectory_is_named_and_not_followed`, `a_symlinked_finding_is_refused_by_name`, `a_symlinked_dossier_beside_the_finding_is_refused_not_read`, `a_fifo_program_page_is_named_and_never_opened` and `a_fifo_audit_is_named_skipped_and_never_opened` on Unix) | Tested where the OS permits creating the link/FIFO. The Windows symlink tests skip without the privilege (they print `SKIP`), and the Ubuntu CI job runs the Unix cases. The stat check and the read are separate calls: a concurrent writer can swap the path between them, so this refuses an accidental or stale link, not a writer who already controls the folder. |
+| G14 | A symlink, FIFO, device or directory is never read as an input, finding or dossier | `src/dossier/import.rs` `require_regular_file_from`, the `audits/` directory check and the walk's skip list; `tests/inputs.rs` (`a_symlinked_program_page_is_named_skipped_and_never_read`, `a_folder_whose_only_page_is_a_symlink_is_a_named_usage_error`, `a_symlinked_program_yaml_is_refused_by_name`, `a_symlinked_audits_directory_is_named_and_not_followed`, `a_symlinked_audit_is_named_skipped_and_never_read`, `a_symlinked_audit_subdirectory_is_named_and_not_followed`, `a_hidden_symlink_under_audits_is_named_and_not_followed`, `a_symlinked_finding_is_refused_by_name`, `a_symlinked_dossier_beside_the_finding_is_refused_not_read`, `a_fifo_program_page_is_named_and_never_opened` and `a_fifo_audit_is_named_skipped_and_never_opened` on Unix) | Tested where the OS permits creating the link/FIFO. The Windows symlink tests skip without the privilege (they print `SKIP`), and the Ubuntu CI job runs the Unix cases. The stat check and the read are separate calls: a concurrent writer can swap the path between them, so this refuses an accidental or stale link, not a writer who already controls the folder. |
 | G15 | A finding over 16 MiB or a dossier over 64 MiB is refused before it is read | `src/check.rs` `MAX_FINDING_BYTES`, `src/dossier/load.rs` `MAX_DOSSIER_BYTES`; `tests/inputs.rs` (`an_oversized_sparse_finding_is_refused_before_it_is_read`, `an_oversized_sparse_dossier_is_refused_before_it_is_read`, plus the locked-file and chmod-000 tests that pin the metadata check before the read) | Tested with sparse files; the pre-read ordering is pinned by making the read itself fail distinctly |
 | G16 | `--no-pdftotext` never starts poppler | `src/dossier/import.rs` `pdf_to_text_with`; `tests/inputs.rs::no_pdftotext_never_runs_poppler_and_the_control_proves_it` (a marker-writing fake pdftotext runs in the control and not with the flag) | Tested |
 | G17 | A saved `.html`/`.htm` list-based program page yields headings, bullets and blocks, and script/style text never reaches an item | `src/dossier/html.rs` unit tests; `tests/html.rs` (list fixture, `scope.htm`, the plain-table limitation and its bullet-cell edge); `tests/docs.rs` generated example | Tested against one committed list fixture and an inline table case. Table structure is not mapped; a cell that is itself a Markdown bullet is still read as one. Not measured against real platform pages. |
@@ -95,13 +95,16 @@ Each item is a hypothesis or a known gap. None is a confirmed exploit.
    `build_refuses_more_documents_than_the_limit_with_exit_two`,
    `build_refuses_audits_nested_past_the_depth_limit_with_exit_two` (CLI), and
    `input_size_is_checked_per_file_and_in_total` (unit) for the per-file, total and count limits.
-4. **Symlinks and dot-files under `audits/` are skipped** (`src/dossier/import.rs`
-   `collect_at_depth`). A skipped symlink (file or directory) or non-regular
-   document is named in the build notes;
-   `tests/inputs.rs::a_symlinked_audit_is_named_skipped_and_never_read` and
-   `a_symlinked_audit_subdirectory_is_named_and_not_followed` cover symlinks,
-   and `a_fifo_audit_is_named_skipped_and_never_opened` (Unix) the non-regular
-   case. Dot-file skipping has no dedicated test. *Partly checked.*
+4. **Symlinks under `audits/` are skipped and named; hidden regular files and
+   directories are skipped silently** (`src/dossier/import.rs` `collect_at_depth`).
+   A skipped symlink (file or directory, hidden or not) or non-regular document
+   is named in the build notes;
+   `tests/inputs.rs::a_symlinked_audit_is_named_skipped_and_never_read`,
+   `a_symlinked_audit_subdirectory_is_named_and_not_followed` and
+   `a_hidden_symlink_under_audits_is_named_and_not_followed` cover symlinks, and
+   `a_fifo_audit_is_named_skipped_and_never_opened` (Unix) the non-regular case.
+   Skipping hidden regular files/directories has no dedicated test.
+   *Partly checked.*
 5. **Parser robustness is sampled, not measured.** The eight `fuzz/` targets and
    `tests/fuzz_replay.rs` replay committed seeds and hostile edges, and the weekly
    workflow runs libFuzzer for five minutes per target. Coverage of the YAML, JSON,

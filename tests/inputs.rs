@@ -352,6 +352,60 @@ fn a_symlinked_audit_subdirectory_is_named_and_not_followed() {
 }
 
 #[test]
+fn a_hidden_symlink_under_audits_is_named_and_not_followed() {
+    let tmp = TempDir::new("symlink-audit-hidden");
+    tmp.write(
+        "program/scope.md",
+        "# Scope\n\n## In scope\n\n- src/Vault.sol\n",
+    );
+    tmp.write(
+        "outside/review.md",
+        "# Review\n\n## Finding 1\n\nThe `OutsideContract.close` path leaves `OutsideLedger.distribute` unsettled.\n",
+    );
+    tmp.write(
+        "outside-dir/other.md",
+        "# Review\n\n## Finding 2\n\nThe `OtherContract.close` path leaves `OtherLedger.distribute` unsettled.\n",
+    );
+    std::fs::create_dir_all(tmp.join("program/audits")).unwrap();
+    if !require_symlink_file(
+        &tmp.join("outside/review.md"),
+        &tmp.join("program/audits/.hidden.md"),
+        "hidden symlinked audit file",
+    ) {
+        return;
+    }
+    if !require_symlink_dir(
+        &tmp.join("outside-dir"),
+        &tmp.join("program/audits/.hiddendir"),
+        "hidden symlinked audit directory",
+    ) {
+        return;
+    }
+    let out = tmp.join("out.dossier");
+    let r = run(&[
+        "build",
+        tmp.join("program").to_str().unwrap(),
+        "--out",
+        out.to_str().unwrap(),
+    ]);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let combined = format!("{}{}", r.stdout, r.stderr);
+    assert!(
+        combined.contains("audits/.hidden.md is a symlink"),
+        "a hidden symlinked audit file must be named: {combined}"
+    );
+    assert!(
+        combined.contains("audits/.hiddendir is a symlink"),
+        "a hidden symlinked audit directory must be named: {combined}"
+    );
+    let dossier = std::fs::read_to_string(&out).unwrap();
+    assert!(
+        !dossier.contains("OutsideContract") && !dossier.contains("OtherContract"),
+        "bytes behind a hidden symlink reached the dossier"
+    );
+}
+
+#[test]
 fn a_symlinked_finding_is_refused_by_name() {
     let tmp = TempDir::new("symlink-finding");
     let dossier = build_dossier(&tmp);

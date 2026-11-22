@@ -88,12 +88,12 @@ no external report.
 
 - New: `tests/html.rs` (converted page, `scope.htm`, item kinds, G1/G2/G3, the
   pinned table limitation and its bullet-cell edge), `tests/inputs.rs` (symlinks
-  including a symlinked audit subdirectory, symlinked and FIFO audits on Unix,
-  FIFO program page on Unix, sparse oversized finding and dossier, the
-  pre-read ordering with an unreadable file, the `--no-pdftotext` control, bare
-  file-name discovery, forward-slash paths), the `dossier::html` unit tests
-  (including the apostrophe and non-ASCII cases), the build-size guard and its
-  real write-path call site, and four PDF literal-decoding tests.
+  including symlinked audit subdirectories and hidden symlinks, symlinked and
+  FIFO audits on Unix, FIFO program page on Unix, sparse oversized finding and
+  dossier, the pre-read ordering with an unreadable file, the `--no-pdftotext`
+  control, bare file-name discovery, forward-slash paths), the `dossier::html`
+  unit tests (including the apostrophe and non-ASCII cases), the build-size
+  guard and its real write-path call site, and four PDF literal-decoding tests.
 - A `html_normalize` fuzz target, replayed from `fuzz/corpus/html_normalize/`
   every test run and by the weekly fuzz workflow.
 - `docs/validation.md` records the new claims, the retracted "`scope.html`
