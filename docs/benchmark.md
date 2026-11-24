@@ -165,6 +165,29 @@ n=0. The fallback was used instead; the verification is recorded in
 [`eval/benchmark/BENCHMARK.md`](../eval/benchmark/BENCHMARK.md) under "Second
 corpus" and in its dead ends.
 
+**Dead ends for this round.** (1) Ajna #2 cannot supply duplicate recall (above).
+(2) The work plan's Ajna code commit `276942bc...` belongs to the audited code
+repository `code-423n4/2023-05-ajna`, not to the findings repository; the
+findings report's own commit is `2ec232ee...`. (3) A C4 report heading is the
+prior-item definition even when the report's comments record a judge
+downgrading the item: PoolTogether M-03 is listed under Medium Risk Findings
+but its comment says Low, so it stays a prior item and the `inv:009` label
+carries the note. (4) Do not label excluded findings by identifier overlap:
+the same dead end that applies to Tapioca applies here.
+
+## Errata, 2026-11-24
+
+`--corpus-dir` was added to `fetch.py` and `run.py`; the Tapioca directory is
+the default and its regenerated `manifest.yaml` is byte-identical (sha256
+`55420745...`) after the refactor. The new corpus's `freeze.json` also records
+the priorart version, binary sha256, source commit and source-dirty flag
+(Tapioca's historical freeze is unchanged). `run.py --check` now verifies the
+results corpus hashes and counts against the manifest and labels, the freeze
+hashes, and each Wilson interval against its own numerator and denominator. On
+Windows, Python's `subprocess` did not resolve a relative `.exe`, so the
+measured run passed an absolute path; `results.json.tool.path` records the
+repository-relative `target/release/priorart.exe`, never a host path.
+
 ## Errata, 2026-11-13
 
 An earlier interim report said duplicate recall@5 was **0/64**. That was the
