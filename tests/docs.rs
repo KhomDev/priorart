@@ -118,3 +118,85 @@ fn the_generated_block_is_deterministic() {
     assert_eq!(example_block(), example_block());
     assert_eq!(html_example_block(), html_example_block());
 }
+
+/// The published benchmark numbers live in two results files and are quoted in
+/// docs/benchmark.md and README.md. This pins the four rates and the two
+/// known-prior counts to the committed results, so a re-measurement cannot
+/// update one page without the other.
+#[test]
+fn benchmark_docs_quote_the_measured_numbers() {
+    let root = manifest_dir();
+    let read = |path: &str| std::fs::read_to_string(root.join(path)).expect(path);
+    let docs = read("docs/benchmark.md");
+    let readme = read("README.md");
+
+    let load = |path: &str| -> serde_json::Value {
+        serde_json::from_str(&read(path)).expect("results.json is valid JSON")
+    };
+    let tapioca = load("eval/benchmark/results.json");
+    let pooltogether = load("eval/benchmark/pooltogether/results.json");
+
+    let cases = [
+        (
+            &tapioca,
+            "false_alarm_rate",
+            "alarms",
+            60,
+            15,
+            "15/60 = 25.0%",
+        ),
+        (
+            &tapioca,
+            "duplicate_recall",
+            "hits",
+            64,
+            36,
+            "36/64 = 56.3%",
+        ),
+        (
+            &pooltogether,
+            "false_alarm_rate",
+            "alarms",
+            40,
+            9,
+            "9/40 = 22.5%",
+        ),
+        (
+            &pooltogether,
+            "duplicate_recall",
+            "hits",
+            85,
+            32,
+            "32/85 = 37.6%",
+        ),
+    ];
+    for (doc, measure, key, n, k, needle) in cases {
+        let row = &doc["measurements"][measure];
+        assert_eq!(row["n"].as_u64(), Some(n), "{measure}: n drifted");
+        assert_eq!(row[key].as_u64(), Some(k), "{measure}: {key} drifted");
+        assert!(
+            docs.contains(needle),
+            "docs/benchmark.md is missing {needle}; update it with the results"
+        );
+        assert!(
+            readme.contains(needle),
+            "README.md is missing {needle}; update it with the results"
+        );
+    }
+
+    for (doc, n) in [(&tapioca, 1), (&pooltogether, 2)] {
+        let row = &doc["measurements"]["known_prior_recall"];
+        assert_eq!(row["n"].as_u64(), Some(n), "known_prior_recall: n drifted");
+        assert_eq!(
+            row["hits"].as_u64(),
+            Some(0),
+            "known_prior_recall: hits drifted"
+        );
+    }
+    for needle in ["n=1, 0 hits", "n=2, 0 hits"] {
+        assert!(
+            docs.contains(needle) && readme.contains(needle),
+            "the known-prior count {needle} is missing from the docs"
+        );
+    }
+}

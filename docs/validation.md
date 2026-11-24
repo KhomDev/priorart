@@ -1,7 +1,7 @@
 # Validation ledger
 
 Every public claim priorart makes, the command or file that backs it, and its
-status on **2026-11-22**. `validated` means a reader can re-run the evidence in
+status on **2026-11-24**. `validated` means a reader can re-run the evidence in
 this repository. `unvalidated` means it is a design statement or an out-of-sample
 question, not a measurement. `retracted` means a previously published claim that
 this release withdraws.
@@ -49,7 +49,16 @@ this release withdraws.
 | `--no-pdftotext` never starts poppler | `tests/inputs.rs::no_pdftotext_never_runs_poppler_and_the_control_proves_it`; the control run proves the fake pdftotext is executed without the flag | 2026-11-22 | validated |
 | UTF-16BE and UTF-16LE PDF literals are decoded, and a UTF-8 literal is not read as Latin-1 | `dossier::import::tests` (`a_utf16be_pdf_literal_is_decoded`, `a_utf16le_pdf_literal_is_decoded`, `a_utf8_pdf_literal_is_not_read_as_latin1`, `pdf_octal_escapes_are_decoded`) | 2026-11-22 | validated |
 | The build summary prints a dossier path with forward slashes on every platform | `tests/inputs.rs::the_build_summary_prints_the_dossier_path_with_forward_slashes` | 2026-11-22 | validated |
-| 0.2.0 changes no matcher, gate, schema or vocabulary code, so the 0.1.3 benchmark numbers describe it | `git diff v0.1.3 -- src/match src/gates schemas vocab eval` is empty | 2026-11-22 | validated |
+| 0.2.0 changes no matcher, gate, schema or vocabulary code, so the 0.1.3 benchmark numbers describe it | `git diff v0.1.3 v0.2.0 -- src/match src/gates schemas vocab` is empty (the eval harness gained `--corpus-dir` after the 0.2.0 tag; the measurement path is unchanged) | 2026-11-22 | validated |
+| The second corpus is pinned as 3 public sources, 166 files, each with a sha256 in `eval/benchmark/pooltogether/cache.lock.json` | `python eval/benchmark/fetch.py --corpus-dir eval/benchmark/pooltogether --check` prints "cache matches cache.lock.json (166 files across 3 sources)" | 2026-11-24 | validated |
+| The PoolTogether corpus has 10 prior items, 78 judged findings (40 paid+unique, 38 excluded), 85 judge-grouped duplicates and 2 known-prior groundings | `eval/benchmark/pooltogether/manifest.yaml` counts; regenerate with `fetch.py --corpus-dir ... --manifest` and compare sha256 `36eac6fd...` | 2026-11-24 | validated |
+| PoolTogether false-alarm rate is 9/40 = 22.5% [12.3-37.5] on 40 judged paid+unique findings | `eval/benchmark/pooltogether/results.json` and `BENCHMARK.md`, binary sha256 `06fdf195...` (priorart 0.2.0, matcher unchanged since 0.1.3) | 2026-11-24 | validated (published, first measurement on this corpus) |
+| PoolTogether duplicate recall@5 is 32/85 = 37.6% [28.1-48.3] on 85 judge-grouped duplicates | same files | 2026-11-24 | validated (published) |
+| PoolTogether known-prior recall is 0 hits out of n=2, not a rate | same files; `inv:009` vs M-03 and `inv:invalid-010` vs M-08 | 2026-11-24 | validated (count only) |
+| PoolTogether label agreement is 35/38 = 92.1% [79.2-97.3], from a title-only pass recorded before any body was read | `eval/benchmark/pooltogether/labels.yaml` agreement sample and blind labels | 2026-11-24 | validated (published) |
+| The PoolTogether freeze was written by `--split dev` before the full run and records seed, priorart version, binary sha256 and source commit | `eval/benchmark/pooltogether/freeze.json`; `run.py --split all` refuses without it and on a manifest/labels hash change | 2026-11-24 | validated |
+| Adding `--corpus-dir` left the Tapioca benchmark reproducible and unchanged | regenerated `eval/benchmark/manifest.yaml` sha256 `55420745...` is byte-identical; `fetch.py --check` (153 files), `run.py --check` (15/20 agreement) both pass | 2026-11-24 | validated |
+| The Ajna pair cannot supply duplicate recall: its Sherlock judging repository has 18 accepted directories with one file each and no judge-grouped duplicate submissions | `sherlock-audit/2023-09-ajna-judging` tree at `main`, checked 2026-11-24; recorded in `BENCHMARK.md` "Second corpus" and dead end 7 | 2026-11-24 | validated (corpus-selection evidence) |
 
 ## Retracted
 
@@ -64,7 +73,10 @@ this release withdraws.
 
 | Open claim | Status |
 |---|---|
-| The matcher generalises beyond this corpus | unvalidated: one contest pair, 60 paid+unique and 64 duplicate labels |
+| The matcher generalises beyond these corpora | unvalidated: two contest pairs on two protocols (100 paid+unique and 149 duplicate labels total), both false-alarm intervals straddle the 30% trigger |
+| The PoolTogether numbers are population estimates | unvalidated: one protocol, 40 paid+unique findings, 10 prior items from an audit of 6 contracts/648 lines |
+| Priorart behaves the same on another platform pair | unvalidated: both corpora are Code4rena prior audit -> Sherlock judging |
+| PoolTogether known-prior recall is a rate | unvalidated: n=2, 0 hits; reported as a count only |
 | The tool improves a hunter's outcomes | unvalidated: no user study |
 | An "excluded", "in scope" or "payable" reading is correct for a platform | unvalidated and not claimed: the gates report evidence, never a verdict |
 | Known-prior recall is a rate | unvalidated: n=1, 0 hits; reported as a count only |

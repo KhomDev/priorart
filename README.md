@@ -31,22 +31,31 @@ criterion, but the warning still ships off: the interval reaches 37.2%, the
 corpus is one contest pair, and its held-out half was opened for 0.1.0, so this
 is a re-measurement rather than a fresh out-of-sample result. **0.2.0 changes
 no matcher, gate, schema or vocabulary code**, so the 0.1.3 numbers below
-describe this release.
+describe this release. A second corpus on PoolTogether V5 was frozen and
+measured on the 0.2.0 binary: **9/40 = 22.5%** (CI 12.3-37.5) false alarms and
+**32/85 = 37.6%** (CI 28.1-48.3) duplicate recall@5, with 0/2 known-prior hits
+(not a rate).
 
-0.1.3 benchmark, measured binary sha256 `be373973` (0 tool errors):
+Measured benchmark (0 tool errors):
 
-| Metric | Result | Wilson 95% CI |
-|---|---|---|
-| False-alarm rate, 60 judged paid+unique | **15/60 = 25.0%** | 15.8-37.2% |
-| Duplicate recall@5, 64 judged duplicates | **36/64 = 56.3%** | 44.1-67.7% |
-| Known-prior recall@5 | n=1, 0 hits | not a rate |
+| Corpus | Metric | Result | Wilson 95% CI |
+|---|---|---|---|
+| Tapioca, 0.1.3 `be373973` | False-alarm rate, 60 judged paid+unique | **15/60 = 25.0%** | 15.8-37.2% |
+| Tapioca, 0.1.3 `be373973` | Duplicate recall@5, 64 judged duplicates | **36/64 = 56.3%** | 44.1-67.7% |
+| Tapioca, 0.1.3 `be373973` | Known-prior recall@5 | n=1, 0 hits | not a rate |
+| PoolTogether, 0.2.0 `06fdf195` | False-alarm rate, 40 judged paid+unique | **9/40 = 22.5%** | 12.3-37.5% |
+| PoolTogether, 0.2.0 `06fdf195` | Duplicate recall@5, 85 judged duplicates | **32/85 = 37.6%** | 28.1-48.3% |
+| PoolTogether, 0.2.0 `06fdf195` | Known-prior recall@5 | n=2, 0 hits | not a rate |
 
-Every run is in [docs/benchmark.md](docs/benchmark.md). The 0.1.0 number of
-record was 26/60 = 43.3% [31.6-55.9] false alarms and 39/64 = 60.9% [48.7-71.9]
-duplicate recall; before it, 30.0% and 25.0%. The 0.1.3 denominator change gives
-up some duplicate recall (39/64 to 36/64) to remove false alarms that rested on
-symbols shared by most of the relevant items. A fresh held-out split is still
-required before the criterion is treated as settled.
+Every run is in [docs/benchmark.md](docs/benchmark.md). The Tapioca 0.1.0
+number of record was 26/60 = 43.3% [31.6-55.9] false alarms and
+39/64 = 60.9% [48.7-71.9] duplicate recall; before it, 30.0% and 25.0%. The
+0.1.3 denominator change gives up some duplicate recall (39/64 to 36/64) to
+remove false alarms that rested on symbols shared by most of the relevant
+items. Both corpora put the false-alarm point estimate below the 30% trigger,
+but both Wilson intervals include 30%, so the duplicate warning stays off; a
+fresh, adequately powered held-out split is still required before the criterion
+is treated as settled.
 
 ## Install
 

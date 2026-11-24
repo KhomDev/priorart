@@ -1,4 +1,4 @@
-# Benchmark: corpus, protocol, three runs, and the release decision
+# Benchmark: corpora, protocol, measured runs, and the release decision
 
 priorart's benchmark is public and multi-researcher. It is not the author's
 rejection log (that is the descriptive layer, see [rejections.md](rejections.md)):
@@ -6,71 +6,96 @@ it is a judged contest that published its prior audit and a later contest's
 judging on the same code. Everything is stored as pointers and labels:
 `repo@commit` plus a path or issue id, never finding text.
 
-The committed source of truth is
-[`eval/benchmark/BENCHMARK.md`](../eval/benchmark/BENCHMARK.md) and
-[`eval/benchmark/results.json`](../eval/benchmark/results.json). This page
-summarises them on 2026-11-21; if they disagree, the eval files win.
+There are two corpora on two protocols: Tapioca (Code4rena 2023-07 ->
+Sherlock 2024-02) and PoolTogether V5 (Code4rena 2024-03 -> Sherlock 2024-05).
+Both use the same platform pair because that is the only public combination
+found that publishes both judge-grouped duplicate submissions and excluded
+findings; the protocols and codebases are different.
 
-**Status: 0.1.0 final, 0.1.3 re-measured.** The 0.1.0 number of record is
-26/60 = 43.3% on binary `dabfcc0c...`. The deciding 0.1.0 run was made on
-`2ec4c3c9...`; `176f1986...` (matcher identical, wording only) and then
-`dabfcc0c...` (one last stale-prose sweep) reproduced the same numbers. 0.1.3
-changes the specificity denominator and was re-measured with the same seed,
-manifest, dossiers and measurement code: **15/60 = 25.0% [15.8-37.2]** false alarms and
-**36/64 = 56.3% [44.1-67.7]** duplicate recall@5. The held-out split was opened
-for 0.1.0, so the 0.1.3 number is a re-measurement on the full public corpus,
-not a fresh out-of-sample result. Four measured runs are printed below.
+The committed source of truth is
+[`eval/benchmark/BENCHMARK.md`](../eval/benchmark/BENCHMARK.md) and the two
+`results.json` files. This page summarises them on 2026-11-24; if they
+disagree, the eval files win.
+
+**Status: 0.1.0 final, 0.1.3 re-measured, second corpus measured on 0.2.0.**
+The Tapioca 0.1.0 number of record is 26/60 = 43.3% on binary `dabfcc0c...`.
+The deciding 0.1.0 run was made on `2ec4c3c9...`; `176f1986...` (matcher
+identical, wording only) and then `dabfcc0c...` (one last stale-prose sweep)
+reproduced the same numbers. 0.1.3 changes the specificity denominator and was
+re-measured with the same seed, manifest, dossiers and measurement code:
+**15/60 = 25.0% [15.8-37.2]** false alarms and **36/64 = 56.3% [44.1-67.7]**
+duplicate recall@5. The held-out split was opened for 0.1.0, so the 0.1.3
+number is a re-measurement on the full public corpus, not a fresh
+out-of-sample result. Four measured Tapioca runs are printed below. The second
+corpus was frozen and measured once on priorart 0.2.0:
+**9/40 = 22.5% [12.3-37.5]** false alarms and **32/85 = 37.6% [28.1-48.3]**
+duplicate recall@5, with 0/2 known-prior hits (not a rate).
 
 ## Corpus
 
-One judged contest pair on one codebase, which is what makes a prior item
-retrievable at all: Tapioca was audited by Code4rena in 2023-07 and judged by
-Sherlock in 2024-02.
+Each corpus is one judged contest pair on one codebase, which is what makes a
+prior item retrievable at all. Tapioca was audited by Code4rena in 2023-07 and
+judged by Sherlock in 2024-02. PoolTogether V5 was audited by Code4rena in
+2024-03 and judged by Sherlock in 2024-05.
 
-| Role | Pointer | What it provides |
-|---|---|---|
-| prior audit | `code-423n4/2023-07-tapioca-findings` @ `4193111261e3cf8de27c15857babecaa2519d67c`, `report.md` | 60 High/Medium findings, one file per finding |
-| known issues | `sherlock-audit/2024-02-tapioca` @ `dc2464f420927409a67763de6ec60fe5c028ab0e`, `README.md` | the sponsor's answer to "list any known issues" (1 item: zero-address check) |
-| judging | `sherlock-audit/2024-02-tapioca-judging` @ `9e52685cd447417a1d9d5c96fb1492d8773eab8a` | 60 accepted findings, 26 excluded findings, 64 submissions grouped as duplicates |
+| Corpus | Role | Pointer | What it provides |
+|---|---|---|---|
+| Tapioca | prior audit | `code-423n4/2023-07-tapioca-findings` @ `4193111261e3cf8de27c15857babecaa2519d67c`, `report.md` | 60 High/Medium findings, one file per finding |
+| Tapioca | known issues | `sherlock-audit/2024-02-tapioca` @ `dc2464f420927409a67763de6ec60fe5c028ab0e`, `README.md` | the sponsor's answer to "list any known issues" (1 item: zero-address check) |
+| Tapioca | judging | `sherlock-audit/2024-02-tapioca-judging` @ `9e52685cd447417a1d9d5c96fb1492d8773eab8a` | 60 accepted findings, 26 excluded findings, 64 submissions grouped as duplicates |
+| PoolTogether | prior audit | `code-423n4/2024-03-pooltogether-findings` @ `87f1b837fc3af84b32433b3d82538694b490b9f9`, `report.md` | 9 High/Medium findings (H-01, M-01..M-08) |
+| PoolTogether | known issues | `sherlock-audit/2024-05-pooltogether` @ `1aa1b8c028b659585e4c7a6b9b652fb075f86db3`, `README.md` | the sponsor's known-issues answer (1 item: bridged Witnet RNG) |
+| PoolTogether | judging | `sherlock-audit/2024-05-pooltogether-judging` @ `88298eacec6f178fd0b5f9f13e4605c58aa58072` | 40 accepted findings, 38 excluded findings, 85 submissions grouped as duplicates |
 
-Counts, from `manifest.yaml`: 61 prior items (60 audit + 1 known issue); 86
-judged findings (60 paid Medium/High, 26 excluded); 64 judge-grouped duplicate
-submissions; 1 finding with a defensible known-prior grounding. Dossier **A** is
-built from the prior audit plus the sponsor's known issues, dossier **B** from
-the judged primary submissions. Neither is committed; `fetch.py` and
-`priorart build` recreate them.
+Counts, from each `manifest.yaml`: Tapioca has 61 prior items (60 audit + 1
+known issue), 86 judged findings (60 paid Medium/High, 26 excluded), 64
+judge-grouped duplicate submissions and 1 known-prior grounding. PoolTogether
+has 10 prior items (9 audit + 1 known issue), 78 judged findings (40 paid
+Medium/High, 38 excluded), 85 judge-grouped duplicate submissions and 2
+known-prior groundings (`inv:009` repeats M-03; `inv:invalid-010` repeats M-08).
+The PoolTogether prior audit covers 6 contracts and 648 lines of the Vault, not
+the whole judged codebase, so its 10 prior items are narrower as well as fewer.
+Dossier **A** is built from the prior audit plus the sponsor's known issues,
+dossier **B** from the judged primary submissions. Neither is committed;
+`fetch.py` and `priorart build` recreate them.
 
 ## Protocol
 
 - **Recall@5 on known-prior findings.** Positive = a finding the judge excluded
   *and* whose text repeats one named prior item. A hit = that item in the top 5
   of `priorart check --top-k 5 --json`. This is the plan's headline metric and it
-  cannot be measured at adequate n here: the judging repo publishes no exclusion
-  reasons, and only one excluded finding grounds in a prior item. **n = 1, 0
-  hits. This is not a rate.**
+  cannot be measured at adequate n on either corpus: the judging repos publish
+  no exclusion reasons. Tapioca has **n = 1, 0 hits**; PoolTogether has **n = 2,
+  0 hits**. Neither is a rate.
 - **False-alarm rate (FAR) on judged paid and unique findings.** Denominator =
-  the 60 accepted Medium/High findings; none duplicates another accepted finding
+  the accepted Medium/High findings; none duplicates another accepted finding
   and none was called known. An alarm = `check` returns at least one prior item.
   By the matcher's own rule (>=2 specific symbol identifiers) any returned item
-  is a claim of shared prior art, so the alarm definition is the tool's.
-- **Duplicate recall@5 (supplementary).** Denominator = the 64 judge-grouped
-  duplicates (54 in accepted groups, 10 in excluded groups). A hit = the group's
-  representative in the top 5 from a dossier of the 86 judged representatives.
+  is a claim of shared prior art, so the alarm definition is the tool's. The
+  denominators are 60 for Tapioca and 40 for PoolTogether and are not
+  comparable across corpora.
+- **Duplicate recall@5 (supplementary).** Denominator = the judge-grouped
+  duplicates (64 Tapioca: 54 in accepted groups, 10 in excluded; 85
+  PoolTogether: 52 in accepted groups, 33 in excluded). A hit = the group's
+  representative in the top 5 from a dossier of the judged representatives.
   This is retrieval of a judged label, not the plan's known-issue metric.
 - **Intervals:** Wilson score, 95%, z = 1.959964, computed in `run.py`.
-- **Seed and freeze:** seed `priorart-bench-2026-11-12` is committed in
-  `sources.yaml`/`labels.yaml` and drives the dev/held-out split, the duplicate
-  sample and the agreement sample. `run.py --split dev` writes `freeze.json`
-  (manifest sha256 `554207452495d9d2...`, labels sha256, harness sha256, seed,
-  k=5). `--split heldout` and `--split all` refuse to run without it and refuse
-  if the manifest changed. The reported run used `--split all`, so the held-out
-  half was opened after the freeze; `results.json.frozen.heldout_opened` says so.
-  No rule was tuned on it. `freeze.json` holds the 0.1.0 harness hash
-  (`57524916...`); the 0.1.3 results were produced by harness `4d9d9bc0...`,
-  which differs only in the 0.1.3 run-history/provenance text and the corrected
-  `not_claimed` line. The measurement path is unchanged.
-- **Tool errors:** a per-query crash is recorded as a tool error. The final run
-  reports 0.
+- **Seeds and freezes:** each corpus has its own committed seed. Tapioca's is
+  `priorart-bench-2026-11-12`; PoolTogether's is
+  `priorart-bench-pooltogether-2026-11-24`. `run.py --split dev` writes the
+  corpus's `freeze.json` (manifest sha256, labels sha256, harness sha256, seed,
+  k=5; the new freeze also records the priorart version, binary sha256, source
+  commit and source-dirty flag). `--split heldout` and `--split all` refuse to
+  run without it and refuse if the manifest or labels changed. Both reported
+  full runs used `--split all`, so each held-out half was opened after its
+  freeze; `results.json.frozen.heldout_opened` says so. No rule was tuned on
+  either. Tapioca's `freeze.json` holds the 0.1.0 harness hash (`57524916...`);
+  the 0.1.3 results came from harness `4d9d9bc0...`, which differs only in
+  run-history/provenance text. The PoolTogether freeze records priorart 0.2.0,
+  binary sha256 `06fdf195...`, source commit `eabd6b3...`, harness
+  `7c7a7f16...`, manifest `36eac6fd...` and labels `2400932f...`.
+- **Tool errors:** a per-query crash is recorded as a tool error. Both
+  published full runs report 0.
 
 ## The four runs
 
@@ -102,6 +127,40 @@ prior item at all, because paths alone no longer qualify and those submissions
 carry no qualifying symbol identifiers. The remaining failures are ranking on
 shared symbols plus path-only queries with no symbol overlap. That is a defect
 report for the matcher, not a property of the corpus.
+
+## The PoolTogether run (2026-11-24)
+
+One corpus, one frozen measurement, on the priorart 0.2.0 release-profile build
+(binary sha256 `06fdf195...`; 0 tool errors):
+
+| Metric | Result | Wilson 95% |
+|---|---|---|
+| False-alarm rate, 40 judged paid+unique | **9/40 = 22.5%** | 12.3-37.5% |
+| Duplicate recall@5, 85 judge-grouped duplicates | **32/85 = 37.6%** | 28.1-48.3% |
+| Known-prior recall@5 | n=2, 0 hits | not a rate |
+
+The two known-prior positives (`inv:009` repeats C4 M-03 on
+`maxDeposit()`/`_depositAndMint()`, and `inv:invalid-010` repeats M-08 on
+permit/DAI) both returned no prior item. That is a matcher recall failure on
+near-identical claims, recorded as a defect report, not a corpus property.
+
+The 9 false alarms returned M-01 (claimer fees) five times, M-04
+(withdraw/redeem slippage) four times and M-06 (missing transfer check) once;
+one query returned both M-04 and M-06. Reading the nine alarmed findings, none
+states the returned prior item's claim (for example `acc:037-M` is a
+`maxRedeem` divide-by-zero revert, not M-04 slippage), so they are semantic
+false alarms too. That inspection is a reader judgment, not part of the metric.
+
+Label agreement is **35/38 = 92.1% [79.2-97.3]**. Unlike Tapioca's post-hoc
+second look, this title-only pass was recorded before any excluded finding body
+was read. It measures label stability of one reader, not correctness.
+
+Ajna was the planned second corpus and was rejected after verification: its
+Sherlock judging repository has 18 accepted directories with one file each and
+no judge-grouped duplicate submissions, so duplicate recall@5 would have had
+n=0. The fallback was used instead; the verification is recorded in
+[`eval/benchmark/BENCHMARK.md`](../eval/benchmark/BENCHMARK.md) under "Second
+corpus" and in its dead ends.
 
 ## Errata, 2026-11-13
 
@@ -146,6 +205,15 @@ something a single re-measurement on an already-open corpus settles. The 25.0%
 interval still reaches 37.2%, and it was measured on the same contest pair
 whose held-out half was opened for 0.1.0. Quote it with n and the interval.
 
+**PoolTogether against the same trigger.** The second corpus measures
+9/40 = 22.5% [12.3-37.5]. The point estimate is below 30%, but the interval
+straddles 30%, so it does not establish that the rate is below the trigger.
+**The duplicate warning stays off.** Nothing in this corpus turns a warning on;
+retrieval-only is unchanged. Tapioca's interval [15.8-37.2] straddles 30% too.
+Two corpora now point below the line and neither interval excludes it, so the
+criterion is still unsettled and the product decision stays retrieval-only
+until a fresh, adequately powered held-out measurement says otherwise.
+
 ## What this benchmark does not claim
 
 - It does not measure whether priorart finds bugs; the corpus is judged human
@@ -156,12 +224,18 @@ whose held-out half was opened for 0.1.0. Quote it with n and the interval.
   is one label.
 - The duplicate-retrieval number is retrieval of judged group representatives,
   not known-issue detection, and is not comparable to recall@5 on a prior audit.
-- n=1 known-prior observation is not a rate, in either direction.
-- 43.3% (0.1.0) and 25.0% (0.1.3) are not population estimates for "unique
-  findings".
+- n=1 (Tapioca) and n=2 (PoolTogether) known-prior observations are not rates,
+  in either direction.
+- 43.3% (0.1.0), 25.0% (0.1.3) and 22.5% (PoolTogether) are not population
+  estimates for "unique findings".
 - The 0.1.3 denominator change was made to satisfy the unrelated-item
   invariant, not tuned against the labels, but it was measured after the
   held-out split had been opened: it is retrospective, like the 0.1.0 number.
+- The PoolTogether corpus has 10 prior items and 40 paid+unique findings; its
+  false-alarm denominator is not comparable to Tapioca's 60, and its lower
+  point estimate is not evidence that the matcher improved.
+- Both corpora share the Code4rena-prior -> Sherlock-judging platform pair.
+  Neither measures another judging platform.
 
 ## Reproducing
 
@@ -175,12 +249,21 @@ python eval/benchmark/fetch.py --check     # cache matches the committed lock
 cargo build
 python eval/benchmark/run.py --priorart target/debug/priorart.exe --split dev   # writes freeze.json
 python eval/benchmark/run.py --priorart target/debug/priorart.exe --split all   # writes results.json
-python eval/benchmark/run.py --check       # recomputes the label agreement
+python eval/benchmark/run.py --check       # hashes, counts, freeze and agreement
 python eval/benchmark/run.py --self-test   # fixture corpus + fake binary; no network, no priorart
+
+# second corpus
+python eval/benchmark/fetch.py --corpus-dir eval/benchmark/pooltogether
+python eval/benchmark/fetch.py --corpus-dir eval/benchmark/pooltogether --check
+python eval/benchmark/fetch.py --corpus-dir eval/benchmark/pooltogether --manifest
+python eval/benchmark/run.py --corpus-dir eval/benchmark/pooltogether --priorart target/release/priorart.exe --split dev
+python eval/benchmark/run.py --corpus-dir eval/benchmark/pooltogether --priorart target/release/priorart.exe --split all
+python eval/benchmark/run.py --corpus-dir eval/benchmark/pooltogether --check
 ```
 
-`--check` recomputes labels and agreement, not the tool measurements: those need
-the same binary, whose sha256 is in `results.json`.
+`--check` verifies the corpus hashes, counts, freeze and Wilson arithmetic, not
+the tool measurements: those need the same binary, whose sha256 is in
+`results.json`.
 
 **Durable provenance.** The measurement is pinned to the release commit/tag, not
 to a binary hash: the published release-profile binary hashes differently again,
