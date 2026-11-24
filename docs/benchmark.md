@@ -141,8 +141,11 @@ One corpus, one frozen measurement, on the priorart 0.2.0 release-profile build
 
 The two known-prior positives (`inv:009` repeats C4 M-03 on
 `maxDeposit()`/`_depositAndMint()`, and `inv:invalid-010` repeats M-08 on
-permit/DAI) both returned no prior item. That is a matcher recall failure on
-near-identical claims, recorded as a defect report, not a corpus property.
+permit/DAI) both returned no prior item. `inv:invalid-010` shares only one
+specific identifier with M-08 (`depositWithPermit`), and `inv:009` shares only
+`maxDeposit` because M-03's other identifiers are in the report heading, which
+the tool does not count as item text. Both are retrieval defects exposed by the
+corpus, recorded as such, not label errors.
 
 The 9 false alarms returned M-01 (claimer fees) five times, M-04
 (withdraw/redeem slippage) four times and M-06 (missing transfer check) once;

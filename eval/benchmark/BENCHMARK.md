@@ -300,10 +300,14 @@ out-of-sample with respect to matcher development.
 | Label agreement (blinded sample = all 38 excluded) | **35/38 = 92.1%** | [79.2%, 97.3%] |
 
 The known-prior positives are `inv:009` (M-03) and `inv:invalid-010` (M-08).
-Both returned no prior item at all. Those two excluded findings state nearly
-the same mechanism as a named prior item and the matcher retrieved neither; it
-is a recall defect report for the matcher, not a corpus property. n=2 is not a
-rate in either direction.
+Both returned no prior item at all. The diagnostics show why, and the reasons
+differ: `inv:invalid-010` shares only one specific identifier with M-08
+(`depositWithPermit`; `PrizeVault` appears in too many items to count), so the
+matcher's >= 2 rule cannot fire; `inv:009` shares only `maxDeposit` with M-03
+because that prior item's other identifiers (`_depositAndMint`,
+`yieldVault.mint`) sit in the report's heading line, which the tool records as
+`section` and does not count as item text. Both are retrieval defects exposed by
+the corpus, not label errors, and n=2 is not a rate in either direction.
 
 **Label agreement for this corpus is stronger than Tapioca's by construction.**
 The title-only pass was recorded before any excluded finding body was read, so
