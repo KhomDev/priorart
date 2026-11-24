@@ -7,6 +7,12 @@
     python eval/benchmark/run.py --self-test      # fixture binary, no CLI needed
     python eval/benchmark/run.py --check          # recompute from results.json
 
+A second corpus is selected with --corpus-dir; the default is the directory
+this script sits in, so the Tapioca corpus is unchanged:
+
+    python eval/benchmark/run.py --corpus-dir eval/benchmark/pooltogether \
+        --priorart target/release/priorart --split all
+
 Three measurements, defined in BENCHMARK.md:
 
 known_prior_recall  for findings the judge excluded as a repeat of one prior
@@ -43,7 +49,9 @@ except ImportError:
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent                     # priorart/
-CACHE = ROOT / "eval" / "cache" / "benchmark"
+DEFAULT_CACHE = ROOT / "eval" / "cache" / "benchmark"
+CORPUS = HERE
+CACHE = DEFAULT_CACHE
 BUILD = CACHE / "build"
 QUERIES = CACHE / "queries"
 MANIFEST = HERE / "manifest.yaml"
@@ -52,6 +60,35 @@ RESULTS = HERE / "results.json"
 FREEZE = HERE / "freeze.json"
 K = 5
 Z = 1.959964
+
+
+def set_corpus(value: str) -> None:
+    """Point every path at one corpus directory. The original directory keeps
+    the historical cache root so its results and freeze stay valid."""
+    global CORPUS, CACHE, BUILD, QUERIES, MANIFEST, LABELS, RESULTS, FREEZE
+    corpus = Path(value).resolve()
+    if not (corpus / "sources.yaml").is_file():
+        raise SystemExit(f"eval/benchmark: no sources.yaml under {corpus}")
+    CORPUS = corpus
+    CACHE = DEFAULT_CACHE if corpus == HERE else DEFAULT_CACHE / corpus.name
+    BUILD = CACHE / "build"
+    QUERIES = CACHE / "queries"
+    MANIFEST = corpus / "manifest.yaml"
+    LABELS = corpus / "labels.yaml"
+    RESULTS = corpus / "results.json"
+    FREEZE = corpus / "freeze.json"
+
+
+def judging_source_id() -> str:
+    """The cache directory of the judged repository. fetch.py records each
+    source's role in the corpus's committed cache.lock.json."""
+    lock_path = CORPUS / "cache.lock.json"
+    if lock_path.is_file():
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+        for source_id, entry in lock.get("sources", {}).items():
+            if entry.get("role") == "judging":
+                return source_id
+    return "sherlock-2024-02-tapioca-judging"
 
 
 def wilson(k: int, n: int) -> list[float] | None:
@@ -82,6 +119,12 @@ def in_split(split: str, seed: str, item_id: str) -> bool:
     return split == "all" or split_of(seed, item_id) == split
 
 
+def program_name() -> str:
+    """The original corpus keeps its historical name; another corpus uses its
+    directory name. The name is dossier metadata and does not affect scoring."""
+    return "tapioca-sherlock-2024-02" if CORPUS == HERE else f"{CORPUS.name}-sherlock"
+
+
 def write_dossier_a(manifest: dict) -> Path:
     """Dossier A: the prior audit, one file per item, plus the sponsor's known
     issues. One item per file so the item boundary does not depend on how the
@@ -90,20 +133,24 @@ def write_dossier_a(manifest: dict) -> Path:
     if dest.exists():
         shutil.rmtree(dest)
     (dest / "audits").mkdir(parents=True)
-    audit = (CACHE / "c4-2023-07-tapioca-audit" / "report.md").read_text(encoding="utf-8")
+    prior = manifest["sources"]["prior_audit"]
+    known = manifest["sources"]["known_issues"]
+    audit = (CACHE / prior["id"] / prior["path"]).read_text(encoding="utf-8")
     import re
+    first_prior = manifest["prior_items"]["prior_audit_and_known"][0]["id"]
+    file_prefix = first_prior.split(":")[0]
     heads = list(re.finditer(r"^##\s+\[\[(H|M)-(\d+)\]\s+(.+?)\]\(#?", audit, re.M))
     for i, h in enumerate(heads):
         end = heads[i + 1].start() if i + 1 < len(heads) else len(audit)
         locator = f"{h.group(1)}-{int(h.group(2)):02d}"
         body = audit[h.start():end].strip()
-        (dest / "audits" / f"c4-2023-07-{locator}.md").write_text(body + "\n", encoding="utf-8", newline="\n")
-    readme = (CACHE / "sherlock-2024-02-tapioca-contest" / "README.md").read_text(encoding="utf-8")
+        (dest / "audits" / f"{file_prefix}-{locator}.md").write_text(body + "\n", encoding="utf-8", newline="\n")
+    readme = (CACHE / known["id"] / known["path"]).read_text(encoding="utf-8")
     m = re.search(r"(?ims)^#{1,4}\s*Q:\s*Please list any known issues.*?\n(.*?)(?=^___|\n#{1,4}\s*Q:|\Z)", readme)
     ki = ("# Known issues / acceptable risks\n\n" + (m.group(1).strip() if m else "not found")) + "\n"
     (dest / "known-issues.md").write_text(ki, encoding="utf-8", newline="\n")
     (dest / "program.yaml").write_text(
-        "name: tapioca-sherlock-2024-02\n"
+        f"name: {program_name()}\n"
         "platform: sherlock\n"
         "url: https://audits.sherlock.xyz/contests/298\n"
         "known_issues: known-issues.md\n",
@@ -118,14 +165,14 @@ def write_dossier_b(manifest: dict) -> Path:
     if dest.exists():
         shutil.rmtree(dest)
     (dest / "audits").mkdir(parents=True)
-    src = CACHE / "sherlock-2024-02-tapioca-judging"
+    src = CACHE / judging_source_id()
     for row in manifest["findings"]:
         text = (src / row["pointer"]["path"]).read_text(encoding="utf-8", errors="replace")
         head = f"## [[{row['id']}]] {row.get('title', '')}\n\n"
         (dest / "audits" / (row["id"].replace(":", "-") + ".md")).write_text(
             head + text, encoding="utf-8", newline="\n")
     (dest / "program.yaml").write_text(
-        "name: tapioca-sherlock-2024-02-judged\nplatform: sherlock\n"
+        f"name: {program_name()}-judged\nplatform: sherlock\n"
         "known_issues: none\n", encoding="utf-8", newline="\n")
     (dest / "known-issues.md").write_text("# Known issues\n\nnone\n", encoding="utf-8", newline="\n")
     return dest
@@ -199,6 +246,7 @@ def matches(expected: dict, item: dict) -> bool:
 def evaluate(manifest: dict, binary: str, split: str, version: str) -> dict:
     dossier_a = write_dossier_a(manifest)
     dossier_b = write_dossier_b(manifest)
+    judged = CACHE / judging_source_id()
     QUERIES.mkdir(parents=True, exist_ok=True)
     build_dossier(binary, dossier_a, BUILD / "dossier-a.dossier")
     build_dossier(binary, dossier_b, BUILD / "dossier-b.dossier")
@@ -224,7 +272,7 @@ def evaluate(manifest: dict, binary: str, split: str, version: str) -> dict:
     kp_hits = 0
     kp_scored = 0
     for row in kp:
-        got = ask(row["id"], CACHE / "sherlock-2024-02-tapioca-judging" / row["pointer"]["path"], BUILD / "dossier-a.dossier")
+        got = ask(row["id"], judged / row["pointer"]["path"], BUILD / "dossier-a.dossier")
         if got is None:
             continue
         kp_scored += 1
@@ -239,7 +287,7 @@ def evaluate(manifest: dict, binary: str, split: str, version: str) -> dict:
     uv_alarms = 0
     uv_scored = 0
     for row in uv:
-        got = ask(row["id"], CACHE / "sherlock-2024-02-tapioca-judging" / row["pointer"]["path"], BUILD / "dossier-a.dossier")
+        got = ask(row["id"], judged / row["pointer"]["path"], BUILD / "dossier-a.dossier")
         if got is None:
             continue
         uv_scored += 1
@@ -253,7 +301,7 @@ def evaluate(manifest: dict, binary: str, split: str, version: str) -> dict:
     dup_hits = 0
     dup_scored = 0
     for d in dup:
-        got = ask(d["id"], CACHE / "sherlock-2024-02-tapioca-judging" / d["pointer"]["path"], BUILD / "dossier-b.dossier")
+        got = ask(d["id"], judged / d["pointer"]["path"], BUILD / "dossier-b.dossier")
         if got is None:
             continue
         dup_scored += 1
@@ -343,7 +391,7 @@ def blocked(reason: str) -> int:
                    "binary_sha256": None},
         "measurements": {name: {"status": "not_measured", "reason": reason, "n": None}
                          for name in ("known_prior_recall", "false_alarm_rate", "duplicate_recall")},
-        "not_claimed": NOT_CLAIMED,
+        "not_claimed": not_claimed(),
     }
     write_result(doc)
     print(json.dumps({"status": "not_measured", "reason": reason,
@@ -416,7 +464,7 @@ RELEASE_PROVENANCE = {
               "hash will differ from the measured one.",
 }
 
-NOT_CLAIMED = [
+TAPIOCA_NOT_CLAIMED = [
     "not a measurement of whether priorart finds bugs: the corpus is judged human findings",
     "not a false-positive rate on model-written hypotheses",
     "not a duplicate-detector score for submissions against public reports: the duplicate variant is a reading list and never a duplicate verdict",
@@ -424,24 +472,100 @@ NOT_CLAIMED = [
     "the held-out split was opened for the 0.1.0 run; the 0.1.3 number is a re-measurement on the full public corpus, not a fresh out-of-sample result",
 ]
 
+OTHER_CORPUS_NOT_CLAIMED = [
+    "not a measurement of whether priorart finds bugs: the corpus is judged human findings",
+    "not a false-positive rate on model-written hypotheses",
+    "not a duplicate-detector score for submissions against public reports: the duplicate variant is a reading list and never a duplicate verdict",
+    "the known-prior positives are one reader's grounding, not the judge's published reason",
+    "the corpus is smaller than the Tapioca corpus (9 audit prior items), so the false-alarm denominator is not comparable across the two corpora",
+    "the first measured run opened this corpus's frozen held-out split; the number is out-of-sample with respect to matcher development, but no held-out remainder is left",
+]
+
+
+def not_claimed() -> list[str]:
+    return TAPIOCA_NOT_CLAIMED if CORPUS == HERE else OTHER_CORPUS_NOT_CLAIMED
+
+
+def git_rev() -> str | None:
+    proc = run(["git", "-C", str(ROOT), "rev-parse", "HEAD"])
+    return proc.stdout.strip() if proc.returncode == 0 else None
+
+
+def source_dirty() -> bool | None:
+    """Whether the matcher's source files differ from HEAD. The harness itself
+    may be dirty while a freeze is written; that is a separate hash."""
+    proc = run(["git", "-C", str(ROOT), "status", "--porcelain", "--", "src", "Cargo.toml", "Cargo.lock"])
+    return bool(proc.stdout.strip()) if proc.returncode == 0 else None
+
+
+def check_corpus() -> list[str]:
+    """Offline drift check: the committed results still match the labelled
+    manifest, the freeze, and their own arithmetic."""
+    problems: list[str] = []
+    if not RESULTS.is_file():
+        return [f"no results.json under {CORPUS}"]
+    doc = json.loads(RESULTS.read_text(encoding="utf-8"))
+    got = label_agreement()
+    if doc.get("label_agreement", {}).get("agree") != got["agree"]:
+        problems.append(f"label agreement drifted: results {doc.get('label_agreement', {}).get('agree')}, recomputed {got['agree']}")
+    manifest = yaml.safe_load(MANIFEST.read_text(encoding="utf-8"))
+    corpus = doc.get("corpus", {})
+    if corpus.get("manifest_sha256") != sha256_file(MANIFEST):
+        problems.append("results.corpus.manifest_sha256 does not match manifest.yaml")
+    if corpus.get("labels_sha256") != sha256_file(LABELS):
+        problems.append("results.corpus.labels_sha256 does not match labels.yaml")
+    if corpus.get("seed") != manifest.get("seed"):
+        problems.append("results.corpus.seed does not match manifest.yaml")
+    for key in ("prior_items", "findings", "accepted", "invalid", "duplicates", "known_prior"):
+        count = manifest.get("counts", {}).get(key)
+        if corpus.get(key) != count:
+            problems.append(f"results.corpus.{key} {corpus.get(key)} != manifest count {count}")
+    if FREEZE.is_file():
+        frozen = json.loads(FREEZE.read_text(encoding="utf-8"))
+        if frozen.get("manifest_sha256") != sha256_file(MANIFEST):
+            problems.append("freeze.json was written for a different manifest.yaml")
+        if frozen.get("labels_sha256") != sha256_file(LABELS):
+            problems.append("freeze.json was written for a different labels.yaml")
+    measurements = doc.get("measurements", {})
+    tool_errors = doc.get("tool_errors") or []
+    heldout_opened = doc.get("frozen", {}).get("heldout_opened")
+    denominators = {"known_prior_recall": corpus.get("known_prior"),
+                    "false_alarm_rate": corpus.get("accepted"),
+                    "duplicate_recall": corpus.get("duplicates")}
+    for name, m in measurements.items():
+        n = m.get("n")
+        hits = m.get("alarms", m.get("hits"))
+        if n is not None and hits is not None and wilson(hits, n) != m.get("wilson95"):
+            problems.append(f"{name}: wilson95 does not recompute from {hits}/{n}")
+        if heldout_opened and not tool_errors and n is not None:
+            if n != denominators.get(name):
+                problems.append(f"{name}: n {n} != corpus denominator {denominators.get(name)}")
+    return problems
+
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="score the priorart public benchmark (offline)")
+    parser.add_argument("--corpus-dir", default=str(HERE),
+                        help="corpus directory holding sources.yaml (default: the Tapioca corpus here)")
     parser.add_argument("--priorart", default=str(ROOT / "target" / "release" / "priorart"))
     parser.add_argument("--split", choices=["dev", "heldout", "all"], default="dev",
                         help="all = dev + held-out, allowed only after freeze.json exists")
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)
+    set_corpus(args.corpus_dir)
 
     if args.check:
+        problems = check_corpus()
+        if problems:
+            for problem in problems:
+                print(f"eval/benchmark check failed: {problem}", file=sys.stderr)
+            return 1
         doc = json.loads(RESULTS.read_text(encoding="utf-8"))
         got = label_agreement()
-        if doc.get("label_agreement", {}).get("agree") != got["agree"]:
-            print("eval/benchmark check failed: label agreement drifted", file=sys.stderr)
-            return 1
-        print(f"eval/benchmark check ok: label agreement {got['agree']}/{got['n']}, "
-              f"measurements {sorted(doc.get('measurements', {}))}")
+        print(f"eval/benchmark check ok: {CORPUS.name}: label agreement {got['agree']}/{got['n']}, "
+              f"measurements {sorted(doc.get('measurements', {}))}, "
+              f"counts {json.dumps(doc.get('corpus', {}).get('prior_items'))} prior items")
         return 0
 
     if args.self_test:
@@ -458,6 +582,9 @@ def main(argv: list[str]) -> int:
         if frozen.get("manifest_sha256") != sha256_file(MANIFEST):
             print("refusing: manifest changed since freeze.json was written", file=sys.stderr)
             return 2
+        if frozen.get("labels_sha256") != sha256_file(LABELS):
+            print("refusing: labels changed since freeze.json was written", file=sys.stderr)
+            return 2
     binary = args.priorart
     if not Path(binary).is_file():
         return blocked(f"priorart binary not found at {binary}; the benchmark is not run until it exists")
@@ -473,14 +600,23 @@ def main(argv: list[str]) -> int:
                  "binary_sha256": sha256_file(Path(binary)),
                  "matching_rule": ">= 2 strong identifiers, ranked top-k (EXECUTION-BRIEF 3.3)"},
         "frozen": {"k": K, "seed": manifest["seed"], "manifest_sha256": sha256_file(MANIFEST),
+                   "labels_sha256": sha256_file(LABELS),
                    "heldout_opened": args.split in ("heldout", "all"),
                    "harness_sha256": sha256_file(HERE / "run.py")},
         "measurements": {k: v for k, v in measurements.items() if k not in ("per_query", "tool_version", "errors")},
-        "run_history": RUN_HISTORY,
-        "release": RELEASE_PROVENANCE,
+        "run_history": RUN_HISTORY if CORPUS == HERE else [],
+        "release": RELEASE_PROVENANCE if CORPUS == HERE else {
+            "measured_binary_sha256": sha256_file(Path(binary)),
+            "release_binary_sha256": None,
+            "source_commit": git_rev(),
+            "tag": None,
+            "status": "the measured binary is a local release-profile build; record the "
+                      "published release binary hash and tag here when this corpus's "
+                      "measurement is tied to a release",
+        },
         "per_query": measurements["per_query"],
         "tool_errors": measurements["errors"],
-        "not_claimed": NOT_CLAIMED,
+        "not_claimed": not_claimed(),
     }
     write_result(doc)
     if args.split == "dev" and not FREEZE.is_file():
@@ -490,6 +626,12 @@ def main(argv: list[str]) -> int:
             "labels_sha256": sha256_file(LABELS),
             "harness_sha256": sha256_file(HERE / "run.py"),
             "seed": manifest["seed"], "k": K,
+            "priorart": {
+                "version": version,
+                "binary_sha256": sha256_file(Path(binary)),
+                "source_commit": git_rev(),
+                "source_dirty": source_dirty(),
+            },
         }, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(doc["measurements"], indent=2))
     return 0
@@ -501,7 +643,11 @@ def main(argv: list[str]) -> int:
 # --------------------------------------------------------------------------
 
 SELFTEST_MANIFEST = {
-    "version": 1, "seed": "selftest-seed", "sources": {},
+    "version": 1, "seed": "selftest-seed",
+    "sources": {
+        "prior_audit": {"id": "c4-2023-07-tapioca-audit", "path": "report.md"},
+        "known_issues": {"id": "sherlock-2024-02-tapioca-contest", "path": "README.md"},
+    },
     "prior_items": {
         "prior_audit_and_known": [
             {"id": "c4:H-01", "source": "c4", "locator": "H-01", "title": "first"},
@@ -555,7 +701,7 @@ def self_test() -> int:
     """Run the pipeline on a fixture corpus with a fake binary, assert the
     expected numbers, then restore nothing (it all lives under a temp dir)."""
     tmp = Path(tempfile.mkdtemp(prefix="priorart-bench-selftest-"))
-    saved = (CACHE, BUILD, QUERIES)
+    saved = (CORPUS, CACHE, BUILD, QUERIES)
     saved_spec = os.environ.get("FAKE_PRIORART_SPEC")
     try:
         spec_path = tmp / "fake-spec.json"
@@ -576,6 +722,7 @@ def self_test() -> int:
         for row in SELFTEST_MANIFEST["findings"] + SELFTEST_MANIFEST["duplicates"]:
             (cache / "sherlock-2024-02-tapioca-judging" / row["pointer"]["path"]).write_text(
                 "# fixture\n", encoding="utf-8")
+        globals()["CORPUS"] = tmp          # no cache.lock.json: judging_source_id falls back
         globals()["CACHE"], globals()["BUILD"], globals()["QUERIES"] = cache, cache / "build", cache / "queries"
         if os.name == "nt":
             binary = tmp / "fake.cmd"
@@ -617,7 +764,7 @@ def self_test() -> int:
         }, indent=2))
         return 0
     finally:
-        globals()["CACHE"], globals()["BUILD"], globals()["QUERIES"] = saved
+        globals()["CORPUS"], globals()["CACHE"], globals()["BUILD"], globals()["QUERIES"] = saved
         if saved_spec is None:
             os.environ.pop("FAKE_PRIORART_SPEC", None)
         else:

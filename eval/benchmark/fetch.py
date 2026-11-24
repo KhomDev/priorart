@@ -7,10 +7,17 @@ here and only here; run.py is offline.
     python eval/benchmark/fetch.py --manifest # offline: write manifest.yaml
     python eval/benchmark/fetch.py --list     # what is pinned
 
+A second corpus lives in its own directory and is selected with --corpus-dir;
+the default is the directory this script sits in, so the Tapioca corpus is
+unchanged:
+
+    python eval/benchmark/fetch.py --corpus-dir eval/benchmark/pooltogether
+
 What is downloaded is public contest/audit material; it is written under
-eval/cache/benchmark/, which the repository gitignores. The committed files are
-the pointers (sources.yaml), the labels (labels.yaml), the integrity lock
-(cache.lock.json) and the generated manifest.yaml. No finding body is committed.
+eval/cache/benchmark/ (this corpus) or eval/cache/benchmark/<corpus>/ (another
+corpus), which the repository gitignores. The committed files are the pointers
+(sources.yaml), the labels (labels.yaml), the integrity lock (cache.lock.json)
+and the generated manifest.yaml. No finding body is committed.
 
 A token comes from GH_TOKEN, GITHUB_TOKEN, or "gh auth token". Unauthenticated
 access works but is rate-limited to 60 requests an hour, which is not enough.
@@ -40,12 +47,36 @@ except ImportError:
 
 BENCH = Path(__file__).resolve().parent
 ROOT = BENCH.parent.parent            # priorart/
-CACHE = ROOT / "eval" / "cache" / "benchmark"
+DEFAULT_CACHE = ROOT / "eval" / "cache" / "benchmark"
+CACHE = DEFAULT_CACHE
 SOURCES = BENCH / "sources.yaml"
 LABELS = BENCH / "labels.yaml"
 LOCK = BENCH / "cache.lock.json"
 MANIFEST = BENCH / "manifest.yaml"
 API = "https://api.github.com"
+
+# The original corpus predates --corpus-dir; its generator parameters are the
+# defaults, so its committed files and manifest bytes do not change. A second
+# corpus declares the same keys in a `corpus:` block in its sources.yaml.
+LEGACY_CORPUS = {
+    "prior_item_prefix": "c4-2023-07",
+    "known_item_prefix": "ki-2024-02",
+    "known_issue_section": "Q: Please list any known issues/acceptable risks",
+}
+
+
+def set_corpus(value: str) -> None:
+    """Point every path at one corpus directory. The original directory keeps
+    the historical cache root so its lock and freeze stay valid."""
+    global CACHE, SOURCES, LABELS, LOCK, MANIFEST
+    corpus = Path(value).resolve()
+    if not (corpus / "sources.yaml").is_file():
+        raise SystemExit(f"eval/benchmark: no sources.yaml under {corpus}")
+    CACHE = DEFAULT_CACHE if corpus == BENCH else DEFAULT_CACHE / corpus.name
+    SOURCES = corpus / "sources.yaml"
+    LABELS = corpus / "labels.yaml"
+    LOCK = corpus / "cache.lock.json"
+    MANIFEST = corpus / "manifest.yaml"
 
 
 def token() -> str:
@@ -216,7 +247,7 @@ def check(_args) -> int:
 AUDIT_HEADING = re.compile(r"^##\s+\[\[(H|M)-(\d+)\]\s+(.+?)\]\(#?", re.M)
 
 
-def prior_items(audit_text: str) -> list[dict]:
+def prior_items(audit_text: str, item_prefix: str, source_id: str) -> list[dict]:
     """Every High/Medium finding heading is one prior item. The locator is the
     report's own id (H-01..); the title is truncated: a locator, not the text."""
     items = []
@@ -224,15 +255,15 @@ def prior_items(audit_text: str) -> list[dict]:
         sev, num, title = match.group(1), match.group(2), match.group(3)
         locator = f"{sev}-{int(num):02d}"
         items.append({
-            "id": f"c4-2023-07:{locator}",
-            "source": "c4-2023-07-tapioca-audit",
+            "id": f"{item_prefix}:{locator}",
+            "source": source_id,
             "locator": locator,
             "title": re.sub(r"\s+", " ", title).strip()[:100],
         })
     return sorted(items, key=lambda i: (i["locator"][0], i["locator"]))
 
 
-def known_issue_items(readme_text: str) -> list[dict]:
+def known_issue_items(readme_text: str, item_prefix: str, source_id: str) -> list[dict]:
     """The sponsor's Q&A answer is the known-issues section. Bullets become
     items; a one-line answer becomes one item. Kept as short locators."""
     m = re.search(
@@ -246,8 +277,8 @@ def known_issue_items(readme_text: str) -> list[dict]:
     items = []
     for i, line in enumerate(lines, 1):
         items.append({
-            "id": f"ki-2024-02:{i}",
-            "source": "sherlock-2024-02-tapioca-contest",
+            "id": f"{item_prefix}:{i}",
+            "source": source_id,
             "locator": f"KI-{i}",
             "text": re.sub(r"\s+", " ", line)[:100],
             "aliases": [re.sub(r"\s+", " ", line).lower()[:100]],
@@ -321,6 +352,19 @@ def judging_findings(judging_root: Path) -> list[dict]:
     return out
 
 
+def source_by_role(role: str) -> dict:
+    for source in specs():
+        if source["role"] == role:
+            return source
+    raise RuntimeError(f"sources.yaml has no source with role {role!r}")
+
+
+def corpus_meta() -> dict:
+    meta = dict(LEGACY_CORPUS)
+    meta.update(spec_file().get("corpus") or {})
+    return meta
+
+
 def build_manifest(_args) -> int:
     if not LOCK.is_file():
         print("eval/benchmark: no cache.lock.json; run fetch first", file=sys.stderr)
@@ -334,10 +378,16 @@ def build_manifest(_args) -> int:
     labels = yaml.safe_load(LABELS.read_text(encoding="utf-8")) if LABELS.is_file() else {}
     labels = labels.get("findings", {}) if isinstance(labels, dict) else {}
 
-    audit = (CACHE / "c4-2023-07-tapioca-audit" / "report.md").read_text(encoding="utf-8")
-    readme = (CACHE / "sherlock-2024-02-tapioca-contest" / "README.md").read_text(encoding="utf-8")
-    priors = prior_items(audit) + known_issue_items(readme)
-    findings = judging_findings(CACHE / "sherlock-2024-02-tapioca-judging")
+    meta = corpus_meta()
+    prior_src = source_by_role("prior-audit")
+    known_src = source_by_role("known-issues")
+    judging_src = source_by_role("judging")
+
+    audit = (CACHE / prior_src["id"] / prior_src["path"]).read_text(encoding="utf-8")
+    readme = (CACHE / known_src["id"] / known_src["path"]).read_text(encoding="utf-8")
+    priors = prior_items(audit, meta["prior_item_prefix"], prior_src["id"]) + known_issue_items(
+        readme, meta["known_item_prefix"], known_src["id"])
+    findings = judging_findings(CACHE / judging_src["id"])
 
     rows = []
     for finding in findings:
@@ -346,8 +396,8 @@ def build_manifest(_args) -> int:
             "id": finding["id"],
             "judged": finding["judged"],
             "pointer": {
-                "repo": "sherlock-audit/2024-02-tapioca-judging",
-                "commit": lock["sources"]["sherlock-2024-02-tapioca-judging"]["commit"],
+                "repo": judging_src["repo"],
+                "commit": lock["sources"][judging_src["id"]]["commit"],
                 "path": finding["path"],
             },
             "group_files": finding["group_files"],
@@ -380,17 +430,17 @@ def build_manifest(_args) -> int:
         ),
         "sources": {
             "prior_audit": {
-                "id": "c4-2023-07-tapioca-audit",
-                "repo": "code-423n4/2023-07-tapioca-findings",
-                "commit": lock["sources"]["c4-2023-07-tapioca-audit"]["commit"],
-                "path": "report.md",
+                "id": prior_src["id"],
+                "repo": prior_src["repo"],
+                "commit": lock["sources"][prior_src["id"]]["commit"],
+                "path": prior_src["path"],
             },
             "known_issues": {
-                "id": "sherlock-2024-02-tapioca-contest",
-                "repo": "sherlock-audit/2024-02-tapioca",
-                "commit": lock["sources"]["sherlock-2024-02-tapioca-contest"]["commit"],
-                "path": "README.md",
-                "section": "Q: Please list any known issues/acceptable risks",
+                "id": known_src["id"],
+                "repo": known_src["repo"],
+                "commit": lock["sources"][known_src["id"]]["commit"],
+                "path": known_src["path"],
+                "section": meta["known_issue_section"],
             },
         },
         "prior_items": {
@@ -470,11 +520,14 @@ def list_pins(_args) -> int:
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="fetch, verify and describe the pinned priorart benchmark corpus")
+    parser.add_argument("--corpus-dir", default=str(BENCH),
+                        help="corpus directory holding sources.yaml (default: the Tapioca corpus here)")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--check", action="store_true", help="offline: cache matches cache.lock.json")
     group.add_argument("--manifest", action="store_true", help="offline: write manifest.yaml")
     group.add_argument("--list", action="store_true", help="print the pinned sources")
     args = parser.parse_args(argv)
+    set_corpus(args.corpus_dir)
     if args.check:
         return check(args)
     if args.manifest:

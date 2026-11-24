@@ -1,0 +1,312 @@
+# Labels for the second priorart public benchmark corpus
+# (eval/benchmark/pooltogether/manifest.yaml).
+#
+# Store pointers and labels only; never a finding body.
+#
+# label values
+#   known_prior    the judge excluded the finding AND the text repeats the claim
+#                  of one specific prior item; prior_ref names it.
+#   invalid_unmapped the judge excluded the finding but no prior item reproduces
+#                  its claim. This is not a claim that the finding is wrong; it
+#                  is the absence of a prior-item grounding.
+#   unique_valid   judged paid Medium/High and not a judge-grouped duplicate
+#                  (platform label, applied to every accepted directory).
+#
+# method: reader (a person/AI read the text, 2026-11-24) or platform (the
+# judge's own label). confidence: high | medium | low. See BENCHMARK.md for the
+# label design, the dead ends and the agreement check.
+#
+# The prior audit is Code4rena 2024-03 (9 High/Medium report items plus the
+# sponsor's one known issue). A C4 report item is a prior item by definition of
+# the generated manifest; M-03's report comment records the judge downgrading
+# it to Low, but the report still lists it under Medium Risk Findings, so it
+# stays in the prior-item set and the note is recorded on inv:009.
+version: 1
+schema: priorart.benchmark.labels/v1
+seed: "priorart-bench-pooltogether-2026-11-24"
+reader: "bench-eval (one AI reader, 2026-11-24); not ground truth, see BENCHMARK.md"
+
+findings:
+  inv:001:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/001.md: fee-on-transfer balance check in PrizePool.donatePrizeTokens/contributeReserve; prior M-06 is an unchecked transfer result in PrizeVault._withdraw, a different function and claim"
+    notes: ""
+  inv:005:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/005.md: changing yieldFeePercentage applies to yield accrued under the old percentage; no prior item makes this claim"
+    notes: ""
+  inv:009:
+    label: known_prior
+    prior_ref: c4-2024-03:M-03
+    method: reader
+    confidence: high
+    provenance: "invalid/009.md: maxDeposit() returns yieldVault.maxDeposit() while _depositAndMint() uses yieldVault.mint(), so depositing maxDeposit() can revert; C4 M-03 makes the same PrizeVault.maxDeposit claim"
+    notes: "M-03's report comment records the judge decreasing it to Low, but the C4 report lists it under Medium Risk Findings; the prior-item set is the report's High/Medium headings"
+  inv:010:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/010.md: RngWitnet.startDraw does not refund excess ETH; prior KI-1 is the Witnet RNG bridge trust assumption, not a refund claim"
+    notes: ""
+  inv:018:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/018.md: depositWithPermit restricts the caller to _owner; prior M-08 is DAI's incompatible permit signature, a different failure"
+    notes: "permit topic overlap"
+  inv:020:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/020.md: computeMaxFee returns the canary max while _computeFeePerClaim pays the canary prize size; prior M-01 is a winner griefing a claimer over fees, a different actor and claim"
+    notes: "claimer-fee topic overlap"
+  inv:040:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/040.md: previewDeposit/previewMint round in the wrong direction; prior M-02 and M-03 concern maxWithdraw/maxDeposit limits, not preview rounding"
+    notes: "ERC4626 topic overlap"
+  inv:044:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/044.md: front-running a yield-vault loss so the attacker withdraws before losses are socialized; prior M-04 is missing user slippage protection on withdraw/redeem, a different claim"
+    notes: "yield-loss topic overlap"
+  inv:045:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/045.md: yield vaults with a deposit fee revert the _depositAndMint loss check; no prior item makes this claim"
+    notes: ""
+  inv:048:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/048.md: _directlyContributedReserve is always recycled into the next draw; no prior item makes this claim"
+    notes: ""
+  inv:049:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/049.md: claims maxDeposit/transferTokensOut/verifyTokensIn/targetOf are missing parameters; prior M-03/M-07 are concrete maxDeposit limit and fee-accounting mismatches, not missing parameters"
+    notes: "maxDeposit topic overlap"
+  inv:055:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/055.md: a liquidator chooses an amountOut whose yieldFee rounds to zero; prior H-01 is a partial claimYieldFeeShares that wipes the remaining yieldFeeBalance and prior M-05 is a TWAB-limit mint failure, both different claims"
+    notes: "yield-fee topic overlap"
+  inv:061:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/061.md: computeNextNumberOfTiers can be influenced through claimCount; no prior item makes this claim"
+    notes: ""
+  inv:062:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/062.md: TwabController does not record a zero-balance observation; no prior item makes this claim"
+    notes: ""
+  inv:063:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/063.md: TPDA Dutch auction price can be manipulated by timing; no prior item makes this claim"
+    notes: ""
+  inv:065:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/065.md: generic lack of zero-address checks around onlyLiquidationPair; no prior item makes this claim"
+    notes: ""
+  inv:066:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/066.md: claims both branches of the transferTokensOut if/else-if can execute; no prior item makes this claim"
+    notes: ""
+  inv:077:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/077.md: a reorg can strand the Requester deployed with create; no prior item makes this claim"
+    notes: ""
+  inv:078:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/078.md: _withdraw reverts when the vault lacks assets; prior M-06 is the unchecked-false-return path that locks funds, a different outcome and mechanism"
+    notes: "_withdraw topic overlap"
+  inv:083:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/083.md: TpdaLiquidationPair does not restrict swapExactAmountOut to the router; no prior item makes this claim"
+    notes: ""
+  inv:085:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/085.md: transferTokensOut's yield-fee formula is algebraically wrong; prior H-01 is a partial fee claim wiping the balance and prior M-05 is a TWAB-limit mint failure, so neither reproduces this claim"
+    notes: "yield-fee topic overlap"
+  inv:087:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/087.md: missing zero-address check on _rewardRecipient in claimPrize; no prior item makes this claim"
+    notes: ""
+  inv:108:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/108.md: swapExactAmountOut does not refund excess inTokens outside the router; no prior item makes this claim"
+    notes: ""
+  inv:109:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/109.md: reentrancy through _vault.claimPrize in _claim; no prior item makes this claim"
+    notes: ""
+  inv:118:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/118.md: unchecked transfer result in Requestor.withdraw; prior M-06 is an unchecked transfer result in PrizeVault._withdraw with a concrete locked-funds path, a different contract and impact"
+    notes: "same pattern, different contract and claim"
+  inv:148:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/148.md: uint32 requestId overflow under high request volume; no prior item makes this claim"
+    notes: ""
+  inv:152:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/152.md: TwabController.sponsor has no access control; no prior item makes this claim"
+    notes: ""
+  inv:155:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/155.md: TwabController.delegate has no authorization check; no prior item makes this claim"
+    notes: ""
+  inv:invalid-001:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/invalid-001/102-best.md: TwabController.mint has no access control; no prior item makes this claim"
+    notes: ""
+  inv:invalid-002:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/invalid-002/060-best.md: PrizePool.setDrawManager lacks access control and validation; no prior item makes this claim"
+    notes: ""
+  inv:invalid-003:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/invalid-003/019-best.md: after the TWAB supply limit is reached, a liquidator back-runs a withdraw with a liquidation bought at a decayed auction price; prior M-05 mentions the TWAB limit but claims unclaimed yieldFeeBalance, not auction-price profit"
+    notes: "TWAB-limit topic overlap"
+  inv:invalid-004:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/invalid-004/104-best.md: calculatePseudoNumber can be previewed before claimPrize; no prior item makes this claim"
+    notes: ""
+  inv:invalid-005:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/invalid-005/011-best.md: Blast gas yield is never configured or claimed; prior H-01 and M-05 are PrizeVault yieldFeeBalance claims, not gas yield"
+    notes: ""
+  inv:invalid-006:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/invalid-006/157-best.md: TpdaLiquidationPair.swapExactAmountOut has no deadline; prior M-04 is vault withdraw/redeem slippage, a different function"
+    notes: ""
+  inv:invalid-007:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/invalid-007/116-best.md: an attacker can force zero yield-vault shares to delay liquidations; no prior item makes this claim"
+    notes: ""
+  inv:invalid-008:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/invalid-008/056-best.md: contributePrizeTokens can be front-run to redirect a contribution; no prior item makes this claim"
+    notes: ""
+  inv:invalid-009:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/invalid-009/089-best.md: depositWithPermit is DoSed when a prior allowance exists; prior M-08 is DAI's incompatible permit signature, a different failure"
+    notes: "permit topic overlap"
+  inv:invalid-010:
+    label: known_prior
+    prior_ref: c4-2024-03:M-08
+    method: reader
+    confidence: high
+    provenance: "invalid/invalid-010/138-best.md: DAI's permit has a different signature, so depositWithPermit reverts for DAI; C4 M-08 makes the same claim about PrizeVault.depositWithPermit"
+    notes: ""
+
+# The agreement check is a blinded title-only pass over the excluded findings.
+# Unlike the Tapioca corpus (a second pass by a reader who had already read the
+# bodies), this pass was recorded before any excluded finding body was read:
+# only each finding's first heading and the prior-item titles were visible.
+# It measures label stability, not correctness.
+agreement:
+  method: "blinded title-only first pass vs the full-text labels, same reader, recorded before reading any finding body"
+  sample: [inv:001, inv:005, inv:009, inv:010, inv:018, inv:020, inv:040, inv:044,
+           inv:045, inv:048, inv:049, inv:055, inv:061, inv:062, inv:063, inv:065,
+           inv:066, inv:077, inv:078, inv:083, inv:085, inv:087, inv:108, inv:109,
+           inv:118, inv:148, inv:152, inv:155, inv:invalid-001, inv:invalid-002,
+           inv:invalid-003, inv:invalid-004, inv:invalid-005, inv:invalid-006,
+           inv:invalid-007, inv:invalid-008, inv:invalid-009, inv:invalid-010]
+  blind:
+    inv:001: invalid_unmapped
+    inv:005: invalid_unmapped
+    inv:009: invalid_unmapped
+    inv:010: invalid_unmapped
+    inv:018: invalid_unmapped
+    inv:020: invalid_unmapped
+    inv:040: invalid_unmapped
+    inv:044: invalid_unmapped
+    inv:045: invalid_unmapped
+    inv:048: invalid_unmapped
+    inv:049: invalid_unmapped
+    inv:055: invalid_unmapped
+    inv:061: invalid_unmapped
+    inv:062: invalid_unmapped
+    inv:063: invalid_unmapped
+    inv:065: invalid_unmapped
+    inv:066: invalid_unmapped
+    inv:077: invalid_unmapped
+    inv:078: invalid_unmapped
+    inv:083: invalid_unmapped
+    inv:085: known_prior
+    inv:087: invalid_unmapped
+    inv:108: invalid_unmapped
+    inv:109: invalid_unmapped
+    inv:118: known_prior
+    inv:148: invalid_unmapped
+    inv:152: invalid_unmapped
+    inv:155: invalid_unmapped
+    inv:invalid-001: invalid_unmapped
+    inv:invalid-002: invalid_unmapped
+    inv:invalid-003: invalid_unmapped
+    inv:invalid-004: invalid_unmapped
+    inv:invalid-005: invalid_unmapped
+    inv:invalid-006: invalid_unmapped
+    inv:invalid-007: invalid_unmapped
+    inv:invalid-008: invalid_unmapped
+    inv:invalid-009: invalid_unmapped
+    inv:invalid-010: known_prior
