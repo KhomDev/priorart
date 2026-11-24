@@ -486,6 +486,15 @@ def not_claimed() -> list[str]:
     return TAPIOCA_NOT_CLAIMED if CORPUS == HERE else OTHER_CORPUS_NOT_CLAIMED
 
 
+def display_path(binary: str) -> str:
+    """Record a repository-relative binary path, never a host absolute path."""
+    resolved = Path(binary).resolve()
+    try:
+        return resolved.relative_to(ROOT).as_posix()
+    except ValueError:
+        return Path(binary).name
+
+
 def git_rev() -> str | None:
     proc = run(["git", "-C", str(ROOT), "rev-parse", "HEAD"])
     return proc.stdout.strip() if proc.returncode == 0 else None
@@ -596,7 +605,7 @@ def main(argv: list[str]) -> int:
         "generated_by": "eval/benchmark/run.py",
         "corpus": corpus_facts(),
         "label_agreement": label_agreement(),
-        "tool": {"path": binary, "version": version,
+        "tool": {"path": display_path(binary), "version": version,
                  "binary_sha256": sha256_file(Path(binary)),
                  "matching_rule": ">= 2 strong identifiers, ranked top-k (EXECUTION-BRIEF 3.3)"},
         "frozen": {"k": K, "seed": manifest["seed"], "manifest_sha256": sha256_file(MANIFEST),
