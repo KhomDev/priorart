@@ -20,7 +20,9 @@ That block is illustrative. The generated block further down is produced from
 the committed fixture by `scripts/regen-readme-examples.sh` and checked by
 `tests/docs.rs`, so it cannot drift.
 
-## Status: retrieval-only (0.2.1; matcher unchanged since 0.1.3)
+> **Research:** [I measured my own audit tools against real exploit proofs, fixed what broke, and measured again](https://github.com/KhomDev/realism-gate/blob/main/docs/research/2026-11-measure-fix-remeasure.md) (November 2026): both tools on judged contest data, the failed 0.3.0 alarm redesign, and why the warning stays off.
+
+## Status: retrieval-only (0.2.2; matcher unchanged since 0.1.3)
 
 **P1-C (2026-11-25): the 0.3.0 alarm redesign was measured and rejected.** A
 shared claim component plus an absolute document frequency does not lower the
