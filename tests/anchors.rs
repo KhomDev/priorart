@@ -155,7 +155,7 @@ fn bench_json_measures_the_tiny_corpus_and_blocks_a_missing_source() {
     assert_eq!(report["schema"], "priorart.anchors-bench/v1");
     let row = &report["corpora"][0];
     assert_eq!(row["status"], "measured");
-    assert_eq!(row["findings_total"], 2);
+    assert_eq!(row["findings_total"], 3);
     assert_eq!(row["findings_citing_code"], 1);
     assert_eq!(row["findings_resolved"], 1);
     assert_eq!(report["pooled"]["findings_resolved"], 1);
@@ -178,7 +178,7 @@ fn bench_json_measures_the_tiny_corpus_and_blocks_a_missing_source() {
     let report: Value = serde_json::from_str(&blocked.stdout).expect("blocked JSON");
     let row = &report["corpora"][0];
     assert_eq!(row["status"], "blocked");
-    assert_eq!(row["findings_total"], 2);
+    assert_eq!(row["findings_total"], 3);
     assert_eq!(row["findings_citing_code"], 1);
     assert!(row["findings_resolved"].is_null());
     assert!(report["pooled"].is_null());

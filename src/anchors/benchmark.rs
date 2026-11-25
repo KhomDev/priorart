@@ -637,9 +637,31 @@ fn enumerate_findings(root: &Path) -> Vec<(String, PathBuf)> {
                     .unwrap_or_default();
                 out.push((format!("inv:{stem}"), file));
             }
-        } else if name.starts_with("invalid-") {
-            if let Some(rep) = representative(&dir) {
-                out.push((format!("inv:{name}"), rep));
+            // Judged invalid groups live *inside* `invalid/`, as
+            // `invalid-NNN/` with a `*-best.md` representative, exactly as
+            // fetch.py enumerates them.
+            let mut groups: Vec<PathBuf> = match std::fs::read_dir(&dir) {
+                Ok(entries) => entries
+                    .filter_map(|e| e.ok())
+                    .map(|e| e.path())
+                    .filter(|p| {
+                        p.is_dir()
+                            && p.file_name()
+                                .map(|n| n.to_string_lossy().starts_with("invalid-"))
+                                .unwrap_or(false)
+                    })
+                    .collect(),
+                Err(_) => Vec::new(),
+            };
+            groups.sort();
+            for group in groups {
+                if let Some(rep) = representative(&group) {
+                    let name = group
+                        .file_name()
+                        .map(|n| n.to_string_lossy().to_string())
+                        .unwrap_or_default();
+                    out.push((format!("inv:{name}"), rep));
+                }
             }
         }
     }
@@ -705,7 +727,7 @@ mod tests {
         let report = bench(&options).expect("blocked corpus still reports");
         let row = &report.corpora[0];
         assert_eq!(row.status, CorpusStatus::Blocked);
-        assert_eq!(row.findings_total, 2);
+        assert_eq!(row.findings_total, 3);
         assert_eq!(row.findings_citing_code, 1);
         assert_eq!(row.findings_resolved, None);
         assert!(row.resolution_rate.is_none());
@@ -717,7 +739,7 @@ mod tests {
         let report = fixture();
         let row = &report.corpora[0];
         assert_eq!(row.status, CorpusStatus::Measured, "{row:#?}");
-        assert_eq!(row.findings_total, 2);
+        assert_eq!(row.findings_total, 3);
         assert_eq!(row.findings_citing_code, 1);
         assert_eq!(row.findings_resolved, Some(1));
         let rate = row.resolution_rate.as_ref().expect("rate");
