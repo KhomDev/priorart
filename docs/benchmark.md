@@ -6,7 +6,7 @@ it is a judged contest that published its prior audit and a later contest's
 judging on the same code. Everything is stored as pointers and labels:
 `repo@commit` plus a path or issue id, never finding text.
 
-There are four corpora on four protocols and two judging platforms. Judged by
+There are six corpora on six protocols and two judging platforms (the last two were added for P1-C and are sealed). Judged by
 Sherlock: Tapioca (Code4rena 2023-07 -> Sherlock 2024-02) and PoolTogether V5
 (Code4rena 2024-03 -> Sherlock 2024-05). Judged by Code4rena: Maia (Code4rena
 2023-05 -> Code4rena 2023-09) and Panoptic (Code4rena 2023-11 -> Code4rena
@@ -314,3 +314,17 @@ to a binary hash: the published release-profile binary hashes differently again,
 so its sha256 is not the one above. The debug-build sha256 in `results.json` is
 recorded so a reader can reproduce the run with the same harness and the same
 per-query rows; it identifies the measured artifact, not the one you install.
+
+
+## P1-C re-measurement (2026-11-25, matcher 0.3.0)
+
+The 0.3.0 alarm rule (a shared claim component; absolute document frequency;
+heading identifiers; joined known-issues bullets) was measured on all six
+corpora with the frozen binary `6bfc20d3…`. It **does not work**: the sealed
+Code4rena corpora are at 3/9 = 33.3% [12.1-64.6] false alarms each (6/18 =
+33.3% pooled), above the 30% trigger; Maia and Panoptic are unchanged at
+53.3% and 54.5%; and duplicate recall@5 collapses (Maia 30.1% -> 2.4%,
+Panoptic 47.5% -> 3.8%, Party 0/132). The harness fixes (last-slice, heading
+identifiers, bullet joining) are keepers; the alarm gate is not. Full table
+and the decision note: `eval/benchmark/BENCHMARK.md`, "P1-C re-measurement
+results".

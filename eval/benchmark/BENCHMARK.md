@@ -739,3 +739,46 @@ should lower the false-alarm rate on both platforms and may lower duplicate
 recall, because a duplicate that shares only two common identifiers no longer
 matches. If the fresh corpora still exceed 30%, the trigger stays met and the
 warning stays off.
+
+## P1-C re-measurement results (2026-11-25, matcher 0.3.0)
+
+Frozen matcher 0.3.0 at commit `f983d03`; binary
+`target/release/priorart.exe` sha256
+`6bfc20d381350f7b8e2f6fbe534b5ca8724268faa80ce08494772fb8530b2d5b`.
+All six corpora were re-measured in full (`--split all`; the two sealed
+corpora got their dev-split `freeze.json` first). Every rate is k/n with a
+Wilson 95% interval; pooled rows also carry a source-clustered bootstrap
+(10,000 draws, seed `priorart-bootstrap-p1c-2026-11-25`).
+
+| Corpus | Platform | False-alarm rate | Duplicate recall@5 | Known-prior |
+|---|---|---|---|---|
+| Tapioca | Sherlock | 14/60 = 23.3% [14.4-35.4] | 14/64 = 21.9% [13.5-33.4] | 0/1 (count) |
+| PoolTogether | Sherlock | 9/40 = 22.5% [12.3-37.5] | 16/85 = 18.8% [11.9-28.4] | 1/2 (count) |
+| Maia | Code4rena | 8/15 = 53.3% [30.1-75.2] | 7/289 = 2.4% [1.2-4.9] | 0/1 (count) |
+| Panoptic | Code4rena | 6/11 = 54.5% [28.0-78.7] | 3/80 = 3.8% [1.3-10.4] | 0/3 (count) |
+| **Party** (sealed) | Code4rena | **3/9 = 33.3% [12.1-64.6]** | **0/132 = 0.0% [0.0-2.8]** | 0/0 (unlabelled) |
+| **Wildcat** (sealed) | Code4rena | **3/9 = 33.3% [12.1-64.6]** | **9/46 = 19.6% [10.7-33.2]** | 0/0 (unlabelled) |
+| Sealed pooled | Code4rena | **6/18 = 33.3% [16.3-56.3]**; bootstrap [16.3-56.3] | 9/178 = 5.1% [2.7-9.3] | — |
+| Code4rena pooled | Code4rena | 20/44 = 45.5% [31.7-59.9]; bootstrap [33.3-53.8] | 19/547 = 3.5% | — |
+| Sherlock pooled | Sherlock | 23/100 = 23.0% [15.8-32.1]; bootstrap [22.5-23.3] | 30/149 = 20.1% | — |
+| All six pooled | both | 43/144 = 29.9% [23.0-37.8]; bootstrap [23.9-48.6] | 49/696 = 7.0% | — |
+
+**The redesign does not work.** The claim-component requirement barely moved
+the false-alarm rate on the Code4rena corpora (Maia 53.3% and Panoptic 54.5%
+are unchanged to the flag; the pooled Code4rena rate falls only from 53.8% to
+45.5% because the two new corpora are lower), and the sealed corpora are
+33.3%, above the 30% trigger. What it did do is destroy duplicate recall:
+Tapioca 56.3% -> 21.9%, PoolTogether 37.6% -> 18.8%, Maia 30.1% -> 2.4%,
+Panoptic 47.5% -> 3.8%, Party 0/132, Wildcat 19.6%. The requirement that a
+shared symbol be unique to one prior item, or that the two findings name the
+same file, rejects almost every judge-grouped duplicate, which by construction
+share common function names with several representatives.
+
+**Decision against the preregistered trigger.** The 30% trigger is met on the
+sealed pooled interval (lower bound 16.3% is below 30%, upper 56.3% above; the
+point estimate is above). The warning stays off, as it has since 0.1.0. The
+0.3.0 alarm rule is **not fit to ship**: it is not better on false alarms and
+it loses most of the duplicate retrieval. A release that keeps the harness
+fixes and the recall-preserving parts, and either reverts the alarm gate or
+ships it off by default, is the operator's decision; this file records the
+measurement, not a release.

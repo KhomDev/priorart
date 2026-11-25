@@ -1,0 +1,14 @@
+{
+  "frozen_at": "written by eval/benchmark/run.py --split dev",
+  "manifest_sha256": "fa2c205a717b5b8dc659606202fa09881ab147226968b79979fb3e1e85aff94d",
+  "labels_sha256": "6e40d669286f8c18a0c9ba78468ffe8cbe265c664166492cbce93b658e59b653",
+  "harness_sha256": "25c9e17a69c076cf504582d23a17469343bb6a778f0d61ef9df3d5a728a13b6a",
+  "seed": "priorart-bench-wildcat-c4-2026-11-25",
+  "k": 5,
+  "priorart": {
+    "version": "priorart 0.3.0",
+    "binary_sha256": "6bfc20d381350f7b8e2f6fbe534b5ca8724268faa80ce08494772fb8530b2d5b",
+    "source_commit": "f983d038b2ffef481589d39343ff9456867d2a4b",
+    "source_dirty": false
+  }
+}

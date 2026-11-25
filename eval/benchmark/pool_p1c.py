@@ -25,7 +25,7 @@ DRAWS = 10_000
 SEED = "priorart-bootstrap-p1c-2026-11-25"
 
 CORPORA = [
-    ("tapioca", "sherlock", "Tapioca"),
+    ("", "sherlock", "Tapioca"),
     ("pooltogether", "sherlock", "PoolTogether"),
     ("maia-c4", "code4rena", "Maia"),
     ("panoptic-c4", "code4rena", "Panoptic"),
@@ -45,7 +45,7 @@ def wilson(k: int, n: int) -> list[float] | None:
 
 
 def load(name: str) -> dict | None:
-    path = HERE / name / "results.json"
+    path = HERE / "results.json" if name == "" else HERE / name / "results.json"
     if not path.is_file():
         return None
     doc = json.loads(path.read_text(encoding="utf-8"))

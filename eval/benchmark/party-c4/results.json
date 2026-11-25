@@ -1,0 +1,1127 @@
+{
+  "schema": "priorart.benchmark.results/v1",
+  "generated_by": "eval/benchmark/run.py",
+  "corpus": {
+    "manifest_sha256": "3686bb69fd0d2dbf45f3c2cc2f88a8a94369dec27bd39ff24d701c5fd2a5025e",
+    "labels_sha256": "496fab76e78a8875f763de41e7efbc2d15da60e5c6cadb4168b78af4b88b80da",
+    "sources": {
+      "prior_audit": {
+        "id": "c4-2023-04-party-audit",
+        "repo": "code-423n4/2023-04-party-findings",
+        "commit": "04f7ff6417d62b25d258eebf0261fef9f9df95a0",
+        "path": "report.md"
+      },
+      "known_issues": {
+        "id": "c4-2023-10-party-contest",
+        "repo": "code-423n4/2023-10-party",
+        "commit": "d2202cf30fa5d4733e2948827c4586981132c28a",
+        "path": "README.md",
+        "section": "## Automated Findings / Publicly Known Issues"
+      }
+    },
+    "prior_items": 38,
+    "findings": 307,
+    "accepted": 9,
+    "invalid": 298,
+    "duplicates": 132,
+    "known_prior": 0,
+    "seed": "priorart-bench-party-c4-2026-11-25"
+  },
+  "label_agreement": {
+    "n": 0,
+    "agree": 0,
+    "rate": null,
+    "wilson95": null,
+    "method": null,
+    "note": "label stability of one reader, not correctness; the labels and the sample are published"
+  },
+  "tool": {
+    "path": "target/release/priorart.exe",
+    "version": "priorart 0.3.0",
+    "binary_sha256": "6bfc20d381350f7b8e2f6fbe534b5ca8724268faa80ce08494772fb8530b2d5b",
+    "matching_rule": ">= 2 strong identifiers, ranked top-k (EXECUTION-BRIEF 3.3)"
+  },
+  "frozen": {
+    "k": 5,
+    "seed": "priorart-bench-party-c4-2026-11-25",
+    "manifest_sha256": "3686bb69fd0d2dbf45f3c2cc2f88a8a94369dec27bd39ff24d701c5fd2a5025e",
+    "labels_sha256": "496fab76e78a8875f763de41e7efbc2d15da60e5c6cadb4168b78af4b88b80da",
+    "heldout_opened": true,
+    "harness_sha256": "25c9e17a69c076cf504582d23a17469343bb6a778f0d61ef9df3d5a728a13b6a"
+  },
+  "measurements": {
+    "known_prior_recall": {
+      "n": 0,
+      "hits": 0,
+      "recall": null,
+      "wilson95": null,
+      "status": "underpowered",
+      "reason": "fewer than 5 defensible known-prior positives exist in this corpus; the value is reported with its n but is not a rate (see BENCHMARK.md dead ends)"
+    },
+    "false_alarm_rate": {
+      "n": 9,
+      "alarms": 3,
+      "rate": 0.3333,
+      "wilson95": [
+        0.1206,
+        0.6458
+      ],
+      "status": "measured",
+      "tool_errors": 0
+    },
+    "duplicate_recall": {
+      "n": 132,
+      "hits": 0,
+      "recall": 0.0,
+      "wilson95": [
+        0.0,
+        0.0283
+      ],
+      "status": "measured",
+      "note": "supplementary judged-duplicate retrieval, not the plan's known-issue metric"
+    }
+  },
+  "run_history": [],
+  "release": {
+    "measured_binary_sha256": "6bfc20d381350f7b8e2f6fbe534b5ca8724268faa80ce08494772fb8530b2d5b",
+    "release_binary_sha256": null,
+    "source_commit": "f983d038b2ffef481589d39343ff9456867d2a4b",
+    "tag": null,
+    "status": "the measured binary is a local release-profile build; record the published release binary hash and tag here when this corpus's measurement is tied to a release"
+  },
+  "per_query": [
+    {
+      "id": "acc:119-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0017"
+      ]
+    },
+    {
+      "id": "acc:127-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0017"
+      ]
+    },
+    {
+      "id": "acc:233-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:237-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:295-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:340-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:418-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0030"
+      ]
+    },
+    {
+      "id": "acc:475-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:533-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "dup:127-M/135.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:127-M",
+      "returned": [
+        "item-0250",
+        "item-1102"
+      ]
+    },
+    {
+      "id": "dup:127-M/219.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:127-M",
+      "returned": []
+    },
+    {
+      "id": "dup:127-M/262.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:127-M",
+      "returned": []
+    },
+    {
+      "id": "dup:127-M/336.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:127-M",
+      "returned": []
+    },
+    {
+      "id": "dup:127-M/449.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:127-M",
+      "returned": []
+    },
+    {
+      "id": "dup:127-M/453.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:127-M",
+      "returned": []
+    },
+    {
+      "id": "dup:127-M/539.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:127-M",
+      "returned": []
+    },
+    {
+      "id": "dup:127-M/552.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:127-M",
+      "returned": []
+    },
+    {
+      "id": "dup:127-M/590.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:127-M",
+      "returned": []
+    },
+    {
+      "id": "dup:233-H/075.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": []
+    },
+    {
+      "id": "dup:233-H/156.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": [
+        "item-0082",
+        "item-0795"
+      ]
+    },
+    {
+      "id": "dup:233-H/241.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": []
+    },
+    {
+      "id": "dup:233-H/258.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": []
+    },
+    {
+      "id": "dup:233-H/288.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": []
+    },
+    {
+      "id": "dup:233-H/315.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": []
+    },
+    {
+      "id": "dup:233-H/322.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": [
+        "item-0082"
+      ]
+    },
+    {
+      "id": "dup:233-H/323.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": [
+        "item-0082",
+        "item-0795"
+      ]
+    },
+    {
+      "id": "dup:233-H/331.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": []
+    },
+    {
+      "id": "dup:233-H/370.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": [
+        "item-0082",
+        "item-0795"
+      ]
+    },
+    {
+      "id": "dup:233-H/396.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": []
+    },
+    {
+      "id": "dup:233-H/444.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": [
+        "item-0985",
+        "item-1172"
+      ]
+    },
+    {
+      "id": "dup:233-H/488.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": []
+    },
+    {
+      "id": "dup:233-H/507.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": []
+    },
+    {
+      "id": "dup:233-H/538.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:233-H",
+      "returned": [
+        "item-0957",
+        "item-0795"
+      ]
+    },
+    {
+      "id": "dup:237-M/133.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:237-M",
+      "returned": []
+    },
+    {
+      "id": "dup:237-M/333.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:237-M",
+      "returned": []
+    },
+    {
+      "id": "dup:237-M/469.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:237-M",
+      "returned": []
+    },
+    {
+      "id": "dup:295-M/094.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:295-M",
+      "returned": [
+        "item-0156"
+      ]
+    },
+    {
+      "id": "dup:295-M/385.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:295-M",
+      "returned": []
+    },
+    {
+      "id": "dup:295-M/413.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:295-M",
+      "returned": []
+    },
+    {
+      "id": "dup:340-M/187.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:340-M",
+      "returned": []
+    },
+    {
+      "id": "dup:340-M/392.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:340-M",
+      "returned": []
+    },
+    {
+      "id": "dup:340-M/399.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:340-M",
+      "returned": [
+        "item-0894"
+      ]
+    },
+    {
+      "id": "dup:418-M/072.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:418-M",
+      "returned": []
+    },
+    {
+      "id": "dup:418-M/073.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:418-M",
+      "returned": []
+    },
+    {
+      "id": "dup:418-M/226.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:418-M",
+      "returned": []
+    },
+    {
+      "id": "dup:418-M/248.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:418-M",
+      "returned": []
+    },
+    {
+      "id": "dup:418-M/311.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:418-M",
+      "returned": []
+    },
+    {
+      "id": "dup:418-M/334.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:418-M",
+      "returned": []
+    },
+    {
+      "id": "dup:418-M/433.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:418-M",
+      "returned": []
+    },
+    {
+      "id": "dup:418-M/459.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:418-M",
+      "returned": []
+    },
+    {
+      "id": "dup:475-M/118.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:475-M",
+      "returned": []
+    },
+    {
+      "id": "dup:475-M/267.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:475-M",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-049/002.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-049",
+      "returned": [
+        "item-0658"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-111/454.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-111",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-124/307.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-124",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-190/024.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-190",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-190/159.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-190",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-190/195.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-190",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-224/089.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-224",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-227/016.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-227",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-227/061.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-227",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-227/105.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-227",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-227/184.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-227",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-227/244.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-227",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-239/082.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-239",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-239/229.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-239",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-239/292.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-239",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-242/221.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-242",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-242/246.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-242",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-242/412.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-242",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-301/299.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-301",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-339/276.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-339",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-342/074.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-342",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-369/280.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-369",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-387/286.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-387",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-402/230.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-402",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-406/249.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-406",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-406/310.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-406",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-414/100.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-414",
+      "returned": [
+        "item-0250",
+        "item-1102"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-426/345.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-426",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-429/047.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-429",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-429/154.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-429",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-429/162.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-429",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-429/332.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-429",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-429/442.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-429",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-434/058.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-434",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-434/578.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-434",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-435/102.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-435",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-435/134.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-435",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-435/274.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-435",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-435/388.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-435",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-480/097.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-480",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-480/259.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-480",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-480/341.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-480",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-480/353.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-480",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-480/361.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-480",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-480/376.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-480",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-480/476.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-480",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-482/256.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-482",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-489/110.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-489",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-489/170.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-489",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-489/356.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-489",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-489/377.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-489",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-489/485.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-489",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-498/079.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-498",
+      "returned": [
+        "item-0485"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-498/115.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-498",
+      "returned": [
+        "item-0485"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-504/076.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-504",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-504/151.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-504",
+      "returned": [
+        "item-0750"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-504/157.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-504",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-504/169.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-504",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-504/411.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-504",
+      "returned": [
+        "item-0985",
+        "item-1172"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-505/131.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-505",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-505/401.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-505",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-512/455.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-512",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-514/484.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-514",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-517/493.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-517",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-528/031.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-528",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-528/086.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-528",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-528/231.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-528",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-529/313.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-529",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-532/161.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-532",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-532/235.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-532",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-532/297.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-532",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-532/513.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-532",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-536/366.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-536",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-536/477.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-536",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-545/172.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-545",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-545/348.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-545",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-545/351.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-545",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-547/542.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-547",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-551/139.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-551",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-551/410.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-551",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-556/496.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-556",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-556/554.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-556",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-568/106.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-568",
+      "returned": [
+        "item-0020"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-568/289.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-568",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-568/398.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-568",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-573/003.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-573",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-573/180.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-573",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-573/272.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-573",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-573/312.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-573",
+      "returned": []
+    }
+  ],
+  "tool_errors": [],
+  "not_claimed": [
+    "not a measurement of whether priorart finds bugs: the corpus is judged human findings",
+    "not a false-positive rate on model-written hypotheses",
+    "not a duplicate-detector score for submissions against public reports: the duplicate variant is a reading list and never a duplicate verdict",
+    "the known-prior positives are one reader's grounding, not the judge's published reason",
+    "the corpus is smaller than the Tapioca corpus (9 audit prior items), so the false-alarm denominator is not comparable across the two corpora",
+    "the first measured run opened this corpus's frozen held-out split; the number is out-of-sample with respect to matcher development, but no held-out remainder is left"
+  ]
+}

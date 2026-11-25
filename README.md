@@ -22,6 +22,15 @@ the committed fixture by `scripts/regen-readme-examples.sh` and checked by
 
 ## Status: retrieval-only (0.2.1; matcher unchanged since 0.1.3)
 
+**P1-C (2026-11-25): the 0.3.0 alarm redesign was measured and rejected.** A
+shared claim component plus an absolute document frequency does not lower the
+Code4rena false-alarm rate (Maia 8/15 = 53.3%, Panoptic 6/11 = 54.5%) and the
+two sealed corpora are 3/9 = 33.3% [12.1-64.6] each. It also destroys duplicate
+recall (Maia 87/289 -> 7/289, Panoptic 38/80 -> 3/80, Party 0/132). The
+warning stays off; the 0.3.0 alarm gate is not fit to ship, while the harness
+fixes are. Table and decision note: [docs/benchmark.md](docs/benchmark.md) and
+`eval/benchmark/BENCHMARK.md`.
+
 **On two Code4rena-judged corpora the matcher's false-alarm rate is above the
 30% trigger:** 14/26 = 53.8% (Wilson 95% CI 35.5-71.2) pooled over Maia and
 Panoptic, the first time an interval lies wholly above it. The duplicate
