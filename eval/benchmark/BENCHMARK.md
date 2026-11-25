@@ -816,4 +816,8 @@ met and the "shares identifiers" warning stays off.**
 The harness fixes are still correct and worth shipping (they remove a known
 way Low/QA text enters dossier A, and they make heading and wrapped-bullet
 identifiers count), but they are not a precision lever. The next lever is a
-different alarm rule, to be developed on the dev splits and measured fresh.
+different alarm rule. It needs a **new** sealed corpus pair first: the Party
+and Wildcat results are now opened (they were the fresh measurement for 0.3.0
+and are in-sample from this round on), so no fresh priorart evidence remains
+in the workspace. A rule tuned on what is left would be measured in-sample and
+could not support a precision claim.
