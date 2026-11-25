@@ -30,7 +30,7 @@ HERE = ROOT / "eval" / "dupbench"
 CACHE = ROOT / ".corpus" / "dupbench"
 PINS = CACHE / "repos"
 LABELS = CACHE / "labels"
-T, T2 = "2025-09-01", "2026-05-01"
+T, T2 = "2024-03-01", "2024-09-01"
 
 SEC = re.compile(r'^## \[\[([HM])-(\d+)\]\s*(.*?)\]\((https://github\.com/[^)]+?/issues/(\d+))\)', re.S | re.M)
 
