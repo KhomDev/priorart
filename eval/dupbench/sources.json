@@ -1,0 +1,1019 @@
+{
+  "version": 1,
+  "schema": "priorart.dupbench.sources/v1",
+  "note": "One judged Code4rena contest with public duplicate grouping. commit is the findings-repo HEAD at collection; report.md and data/ are the pinned files; labels are fetched into the gitignored cache and pinned by cache.lock.json. No finding body is committed.",
+  "selection": {
+    "window": [
+      "2022-11-01",
+      "2024-12-31"
+    ],
+    "max_curated_jsons": 500,
+    "extras": [
+      "2022-09-nouns-builder",
+      "2023-04-frankencoin",
+      "2024-01-salty"
+    ],
+    "rule": "report date in window and curated_jsons <= 500, plus the extras for span and duplicate volume"
+  },
+  "repos": [
+    {
+      "slug": "2022-09-nouns-builder",
+      "repo": "code-423n4/2022-09-nouns-builder-findings",
+      "kind": "code4rena",
+      "report_date": "2022-11-03",
+      "commit": "a8afbb818552f13bc8a0738cbd767bc140bef286",
+      "hm_sections": 33,
+      "curated_jsons": 735
+    },
+    {
+      "slug": "2022-12-pooltogether",
+      "repo": "code-423n4/2022-12-pooltogether-findings",
+      "kind": "code4rena",
+      "report_date": "2023-01-20",
+      "commit": "7b5759b0ab6b2e24d64539f8d692e9f8831e6b6a",
+      "hm_sections": 3,
+      "curated_jsons": 238
+    },
+    {
+      "slug": "2023-01-ondo",
+      "repo": "code-423n4/2023-01-ondo-findings",
+      "kind": "code4rena",
+      "report_date": "2023-02-28",
+      "commit": "c20cf640328b76a787828b15c5021b53d004beca",
+      "hm_sections": 6,
+      "curated_jsons": 376
+    },
+    {
+      "slug": "2023-01-numoen",
+      "repo": "code-423n4/2023-01-numoen-findings",
+      "kind": "code4rena",
+      "report_date": "2023-03-03",
+      "commit": "d586deacef1716bfb5f42ddbdc264938db3b68cb",
+      "hm_sections": 7,
+      "curated_jsons": 290
+    },
+    {
+      "slug": "2023-01-drips",
+      "repo": "code-423n4/2023-01-drips-findings",
+      "kind": "code4rena",
+      "report_date": "2023-03-10",
+      "commit": "9f23763ddfd3c00689b6f4243619167e1abce616",
+      "hm_sections": 3,
+      "curated_jsons": 324
+    },
+    {
+      "slug": "2023-01-timeswap",
+      "repo": "code-423n4/2023-01-timeswap-findings",
+      "kind": "code4rena",
+      "report_date": "2023-03-10",
+      "commit": "82935b579481c98560c6c0308a84683f9c14105f",
+      "hm_sections": 10,
+      "curated_jsons": 296
+    },
+    {
+      "slug": "2023-01-opensea",
+      "repo": "code-423n4/2023-01-opensea-findings",
+      "kind": "code4rena",
+      "report_date": "2023-03-21",
+      "commit": "982332aa29adb0c3be21507059e6f87c8cd4f3e4",
+      "hm_sections": 1,
+      "curated_jsons": 118
+    },
+    {
+      "slug": "2023-01-canto-identity",
+      "repo": "code-423n4/2023-01-canto-identity-findings",
+      "kind": "code4rena",
+      "report_date": "2023-04-06",
+      "commit": "80cfaa5b6558be1338f9cc53cb47fe3d7fe3e35a",
+      "hm_sections": 5,
+      "curated_jsons": 186
+    },
+    {
+      "slug": "2023-03-neotokyo",
+      "repo": "code-423n4/2023-03-neotokyo-findings",
+      "kind": "code4rena",
+      "report_date": "2023-04-11",
+      "commit": "95032586df4eeef06a231d2f3b35638f96a6e043",
+      "hm_sections": 2,
+      "curated_jsons": 459
+    },
+    {
+      "slug": "2023-03-mute",
+      "repo": "code-423n4/2023-03-mute-findings",
+      "kind": "code4rena",
+      "report_date": "2023-04-27",
+      "commit": "89a54edea5ac688a72949da354a1c0238bc7a6e5",
+      "hm_sections": 12,
+      "curated_jsons": 48
+    },
+    {
+      "slug": "2023-02-malt",
+      "repo": "code-423n4/2023-02-malt-findings",
+      "kind": "code4rena",
+      "report_date": "2023-05-01",
+      "commit": "066cc7335987bf3b629dc6786b0fb46851974022",
+      "hm_sections": 22,
+      "curated_jsons": 44
+    },
+    {
+      "slug": "2022-12-Stealth-Project",
+      "repo": "code-423n4/2022-12-Stealth-Project-findings",
+      "kind": "code4rena",
+      "report_date": "2023-05-03",
+      "commit": "96537d823c0a2cf26112d7de9d3ed1d006af5225",
+      "hm_sections": 8,
+      "curated_jsons": 122
+    },
+    {
+      "slug": "2023-03-canto-identity",
+      "repo": "code-423n4/2023-03-canto-identity-findings",
+      "kind": "code4rena",
+      "report_date": "2023-05-09",
+      "commit": "d60cabde25e54a6924b8f23e024d754ee2342fc8",
+      "hm_sections": 10,
+      "curated_jsons": 292
+    },
+    {
+      "slug": "2022-11-ens",
+      "repo": "code-423n4/2022-11-ens-findings",
+      "kind": "code4rena",
+      "report_date": "2023-05-26",
+      "commit": "744f97a1a954f8a6c2a13d273f38c3ddb688454c",
+      "hm_sections": 5,
+      "curated_jsons": 16
+    },
+    {
+      "slug": "2023-04-frankencoin",
+      "repo": "code-423n4/2023-04-frankencoin-findings",
+      "kind": "code4rena",
+      "report_date": "2023-06-09",
+      "commit": "df70ee616c774ecd7a381e1555df4dcf47589690",
+      "hm_sections": 21,
+      "curated_jsons": 990
+    },
+    {
+      "slug": "2023-03-zksync",
+      "repo": "code-423n4/2023-03-zksync-findings",
+      "kind": "code4rena",
+      "report_date": "2023-06-14",
+      "commit": "35e96810f9d62abd76096170c885ff0b5aa4be0e",
+      "hm_sections": 6,
+      "curated_jsons": 213
+    },
+    {
+      "slug": "2023-02-kuma",
+      "repo": "code-423n4/2023-02-kuma-findings",
+      "kind": "code4rena",
+      "report_date": "2023-06-23",
+      "commit": "71b3cf462012012416dd6ee4f2aa1efb09a724c6",
+      "hm_sections": 5,
+      "curated_jsons": 36
+    },
+    {
+      "slug": "2023-04-party",
+      "repo": "code-423n4/2023-04-party-findings",
+      "kind": "code4rena",
+      "report_date": "2023-06-23",
+      "commit": "04f7ff6417d62b25d258eebf0261fef9f9df95a0",
+      "hm_sections": 20,
+      "curated_jsons": 46
+    },
+    {
+      "slug": "2023-05-party",
+      "repo": "code-423n4/2023-05-party-findings",
+      "kind": "code4rena",
+      "report_date": "2023-06-23",
+      "commit": "5c8fffd1c1987f219a5e0bdd80dc20a435f1983b",
+      "hm_sections": 8,
+      "curated_jsons": 41
+    },
+    {
+      "slug": "2023-04-eigenlayer",
+      "repo": "code-423n4/2023-04-eigenlayer-findings",
+      "kind": "code4rena",
+      "report_date": "2023-07-06",
+      "commit": "cb13576fd42c380873eae040ccec0e050ad5c0c9",
+      "hm_sections": 4,
+      "curated_jsons": 459
+    },
+    {
+      "slug": "2023-06-stader",
+      "repo": "code-423n4/2023-06-stader-findings",
+      "kind": "code4rena",
+      "report_date": "2023-07-19",
+      "commit": "a46e9e439cd8664e06f942050857bfe4a776c04a",
+      "hm_sections": 15,
+      "curated_jsons": 425
+    },
+    {
+      "slug": "2023-05-juicebox",
+      "repo": "code-423n4/2023-05-juicebox-findings",
+      "kind": "code4rena",
+      "report_date": "2023-07-26",
+      "commit": "669539a23493238b8a9cea3553c63ee0c86e0c42",
+      "hm_sections": 3,
+      "curated_jsons": 287
+    },
+    {
+      "slug": "2023-06-llama",
+      "repo": "code-423n4/2023-06-llama-findings",
+      "kind": "code4rena",
+      "report_date": "2023-07-26",
+      "commit": "19f12df3ef0812c6d9fe0bb1b4a32a69ae9018b0",
+      "hm_sections": 5,
+      "curated_jsons": 304
+    },
+    {
+      "slug": "2023-07-nounsdao",
+      "repo": "code-423n4/2023-07-nounsdao-findings",
+      "kind": "code4rena",
+      "report_date": "2023-07-31",
+      "commit": "6eddc3a6247d9a10fc4aa8f8a883c1ea76153fc5",
+      "hm_sections": 4,
+      "curated_jsons": 267
+    },
+    {
+      "slug": "2023-03-polynomial",
+      "repo": "code-423n4/2023-03-polynomial-findings",
+      "kind": "code4rena",
+      "report_date": "2023-08-01",
+      "commit": "c255b5ffed6d45afa70f30afdd950d0139e13928",
+      "hm_sections": 33,
+      "curated_jsons": 264
+    },
+    {
+      "slug": "2023-05-ambire",
+      "repo": "code-423n4/2023-05-ambire-findings",
+      "kind": "code4rena",
+      "report_date": "2023-08-04",
+      "commit": "78a405d29cd8460fbfb37fabb657242078acaf6b",
+      "hm_sections": 5,
+      "curated_jsons": 36
+    },
+    {
+      "slug": "2023-05-particle",
+      "repo": "code-423n4/2023-05-particle-findings",
+      "kind": "code4rena",
+      "report_date": "2023-08-07",
+      "commit": "a7193463c1de11c4927536532a4e6f037b4d35ec",
+      "hm_sections": 10,
+      "curated_jsons": 49
+    },
+    {
+      "slug": "2023-06-angle",
+      "repo": "code-423n4/2023-06-angle-findings",
+      "kind": "code4rena",
+      "report_date": "2023-08-09",
+      "commit": "ecb393d7187f0412875527c7fed753f697b91c4e",
+      "hm_sections": 10,
+      "curated_jsons": 47
+    },
+    {
+      "slug": "2023-05-base",
+      "repo": "code-423n4/2023-05-base-findings",
+      "kind": "code4rena",
+      "report_date": "2023-08-10",
+      "commit": "b6571ac888d49a21d31b46c3d8815adf86a4b04a",
+      "hm_sections": 0,
+      "curated_jsons": 136
+    },
+    {
+      "slug": "2023-05-xeth",
+      "repo": "code-423n4/2023-05-xeth-findings",
+      "kind": "code4rena",
+      "report_date": "2023-08-15",
+      "commit": "368c8265ff7944bf9aac33586ad5248d38aee4f1",
+      "hm_sections": 10,
+      "curated_jsons": 39
+    },
+    {
+      "slug": "2023-04-ens",
+      "repo": "code-423n4/2023-04-ens-findings",
+      "kind": "code4rena",
+      "report_date": "2023-08-31",
+      "commit": "676f575d274470151fe24992b51c8051f5a0afe6",
+      "hm_sections": 7,
+      "curated_jsons": 331
+    },
+    {
+      "slug": "2023-08-pooltogether",
+      "repo": "code-423n4/2023-08-pooltogether-findings",
+      "kind": "code4rena",
+      "report_date": "2023-09-07",
+      "commit": "ce185045aa6966a3054b169369aade39c8148ed5",
+      "hm_sections": 13,
+      "curated_jsons": 179
+    },
+    {
+      "slug": "2023-06-lukso",
+      "repo": "code-423n4/2023-06-lukso-findings",
+      "kind": "code4rena",
+      "report_date": "2023-09-18",
+      "commit": "89075bbc5698af41b3b9aeb30c28ae09ba7fc147",
+      "hm_sections": 8,
+      "curated_jsons": 142
+    },
+    {
+      "slug": "2023-08-arbitrum",
+      "repo": "code-423n4/2023-08-arbitrum-findings",
+      "kind": "code4rena",
+      "report_date": "2023-09-20",
+      "commit": "1242399740566462afcfb391e04fcf3aaf2101d1",
+      "hm_sections": 6,
+      "curated_jsons": 277
+    },
+    {
+      "slug": "2023-07-pooltogether",
+      "repo": "code-423n4/2023-07-pooltogether-findings",
+      "kind": "code4rena",
+      "report_date": "2023-09-27",
+      "commit": "ec193297735caa64d472a6d89ef7d77a7cb6196c",
+      "hm_sections": 36,
+      "curated_jsons": 478
+    },
+    {
+      "slug": "2023-06-canto",
+      "repo": "code-423n4/2023-06-canto-findings",
+      "kind": "code4rena",
+      "report_date": "2023-09-29",
+      "commit": "a85a277322ef870ba33cdea95c1cdb6397d06577",
+      "hm_sections": 2,
+      "curated_jsons": 105
+    },
+    {
+      "slug": "2023-07-moonwell",
+      "repo": "code-423n4/2023-07-moonwell-findings",
+      "kind": "code4rena",
+      "report_date": "2023-10-04",
+      "commit": "664c57a54571a8af0c765c39009515f8321bc695",
+      "hm_sections": 17,
+      "curated_jsons": 405
+    },
+    {
+      "slug": "2023-08-shell",
+      "repo": "code-423n4/2023-08-shell-findings",
+      "kind": "code4rena",
+      "report_date": "2023-10-04",
+      "commit": "bb4327c4f4fcf1998c9aab5fab1a53a3d4753616",
+      "hm_sections": 1,
+      "curated_jsons": 274
+    },
+    {
+      "slug": "2023-07-basin",
+      "repo": "code-423n4/2023-07-basin-findings",
+      "kind": "code4rena",
+      "report_date": "2023-10-05",
+      "commit": "55abdd66057ecb372b7efb669c8c2522095bc725",
+      "hm_sections": 14,
+      "curated_jsons": 297
+    },
+    {
+      "slug": "2023-08-verwa",
+      "repo": "code-423n4/2023-08-verwa-findings",
+      "kind": "code4rena",
+      "report_date": "2023-10-11",
+      "commit": "68d2753abfe77017a4da583a0cf15f8a2180f494",
+      "hm_sections": 11,
+      "curated_jsons": 475
+    },
+    {
+      "slug": "2023-08-livepeer",
+      "repo": "code-423n4/2023-08-livepeer-findings",
+      "kind": "code4rena",
+      "report_date": "2023-10-17",
+      "commit": "f1317e38a91b77b7567fd713c375400f02bb4650",
+      "hm_sections": 5,
+      "curated_jsons": 256
+    },
+    {
+      "slug": "2023-06-reserve",
+      "repo": "code-423n4/2023-06-reserve-findings",
+      "kind": "code4rena",
+      "report_date": "2023-11-13",
+      "commit": "ea9fa52cabe8d7df596c8c472f51ebc6ce819f76",
+      "hm_sections": 14,
+      "curated_jsons": 56
+    },
+    {
+      "slug": "2023-07-reserve",
+      "repo": "code-423n4/2023-07-reserve-findings",
+      "kind": "code4rena",
+      "report_date": "2023-11-13",
+      "commit": "7bb18b95f1645ae92f2a17d7c6a5c775e498af7b",
+      "hm_sections": 18,
+      "curated_jsons": 43
+    },
+    {
+      "slug": "2023-09-delegate",
+      "repo": "code-423n4/2023-09-delegate-findings",
+      "kind": "code4rena",
+      "report_date": "2023-11-15",
+      "commit": "d221dfc8f274e277dc141c7e7b393f1916504e9a",
+      "hm_sections": 2,
+      "curated_jsons": 386
+    },
+    {
+      "slug": "2023-10-canto",
+      "repo": "code-423n4/2023-10-canto-findings",
+      "kind": "code4rena",
+      "report_date": "2023-11-20",
+      "commit": "004f6223da0733ebdd07d3f72af42a6d1c46facf",
+      "hm_sections": 6,
+      "curated_jsons": 305
+    },
+    {
+      "slug": "2023-10-brahma",
+      "repo": "code-423n4/2023-10-brahma-findings",
+      "kind": "code4rena",
+      "report_date": "2023-11-21",
+      "commit": "de5a3ec88b2456b101673fb7deb85d623edee3fd",
+      "hm_sections": 4,
+      "curated_jsons": 482
+    },
+    {
+      "slug": "2023-11-betafinance",
+      "repo": "code-423n4/2023-11-betafinance-findings",
+      "kind": "code4rena",
+      "report_date": "2023-12-06",
+      "commit": "84fefe2366e6b801840f7f37b1a29e39fa58b77e",
+      "hm_sections": 5,
+      "curated_jsons": 35
+    },
+    {
+      "slug": "2023-07-lens",
+      "repo": "code-423n4/2023-07-lens-findings",
+      "kind": "code4rena",
+      "report_date": "2023-12-11",
+      "commit": "8c6502f00391825a311f301f3877e9a8ef773bd3",
+      "hm_sections": 11,
+      "curated_jsons": 190
+    },
+    {
+      "slug": "2023-03-aragon",
+      "repo": "code-423n4/2023-03-aragon-findings",
+      "kind": "code4rena",
+      "report_date": "2023-12-12",
+      "commit": "3ecf076b9afa134da25f97a1d684d127bda2c372",
+      "hm_sections": 4,
+      "curated_jsons": 188
+    },
+    {
+      "slug": "2023-10-opendollar",
+      "repo": "code-423n4/2023-10-opendollar-findings",
+      "kind": "code4rena",
+      "report_date": "2023-12-20",
+      "commit": "988685b819dfa9440f84f7712eda46005a02ea11",
+      "hm_sections": 17,
+      "curated_jsons": 449
+    },
+    {
+      "slug": "2023-11-shellprotocol",
+      "repo": "code-423n4/2023-11-shellprotocol-findings",
+      "kind": "code4rena",
+      "report_date": "2024-01-05",
+      "commit": "c29d59d9a6cf70f2630eb1117e78f9ff274d7667",
+      "hm_sections": 0,
+      "curated_jsons": 340
+    },
+    {
+      "slug": "2023-12-initcapital",
+      "repo": "code-423n4/2023-12-initcapital-findings",
+      "kind": "code4rena",
+      "report_date": "2024-01-16",
+      "commit": "7d0603210e01285686bcefc13c99d1db38bc8cd2",
+      "hm_sections": 15,
+      "curated_jsons": 46
+    },
+    {
+      "slug": "2023-12-particle",
+      "repo": "code-423n4/2023-12-particle-findings",
+      "kind": "code4rena",
+      "report_date": "2024-01-26",
+      "commit": "acf0c9166916dfd55784a7fd7c3f6d7627f56a8e",
+      "hm_sections": 19,
+      "curated_jsons": 64
+    },
+    {
+      "slug": "2023-09-asymmetry",
+      "repo": "code-423n4/2023-09-asymmetry-findings",
+      "kind": "code4rena",
+      "report_date": "2024-02-06",
+      "commit": "9ecac9cca9082f3245554e7f4f9d81f7b59a7037",
+      "hm_sections": 15,
+      "curated_jsons": 73
+    },
+    {
+      "slug": "2023-12-autonolas",
+      "repo": "code-423n4/2023-12-autonolas-findings",
+      "kind": "code4rena",
+      "report_date": "2024-02-06",
+      "commit": "0466370ec3f6626affdf6d1043e398fad8053368",
+      "hm_sections": 10,
+      "curated_jsons": 459
+    },
+    {
+      "slug": "2024-01-canto",
+      "repo": "code-423n4/2024-01-canto-findings",
+      "kind": "code4rena",
+      "report_date": "2024-02-07",
+      "commit": "3994274db27810e994c36cb60e00ec1e5a31b43c",
+      "hm_sections": 4,
+      "curated_jsons": 17
+    },
+    {
+      "slug": "2023-10-badger",
+      "repo": "code-423n4/2023-10-badger-findings",
+      "kind": "code4rena",
+      "report_date": "2024-02-13",
+      "commit": "b972a75d388f909ee88d9a31be72d29ac24706fe",
+      "hm_sections": 7,
+      "curated_jsons": 327
+    },
+    {
+      "slug": "2024-01-init-capital-invitational",
+      "repo": "code-423n4/2024-01-init-capital-invitational-findings",
+      "kind": "code4rena",
+      "report_date": "2024-02-22",
+      "commit": "6a73baf93c2ee22188873d7884c759d86f9c7ae3",
+      "hm_sections": 7,
+      "curated_jsons": 39
+    },
+    {
+      "slug": "2024-01-opus",
+      "repo": "code-423n4/2024-01-opus-findings",
+      "kind": "code4rena",
+      "report_date": "2024-03-08",
+      "commit": "1447b4c01eebc89c420d4f97bcd7624615b1114d",
+      "hm_sections": 13,
+      "curated_jsons": 241
+    },
+    {
+      "slug": "2024-02-thruster",
+      "repo": "code-423n4/2024-02-thruster-findings",
+      "kind": "code4rena",
+      "report_date": "2024-03-28",
+      "commit": "7b051afebbfe25bc239a3240e903081d0fe34097",
+      "hm_sections": 5,
+      "curated_jsons": 31
+    },
+    {
+      "slug": "2024-03-pooltogether",
+      "repo": "code-423n4/2024-03-pooltogether-findings",
+      "kind": "code4rena",
+      "report_date": "2024-04-04",
+      "commit": "87f1b837fc3af84b32433b3d82538694b490b9f9",
+      "hm_sections": 9,
+      "curated_jsons": 358
+    },
+    {
+      "slug": "2024-02-spectra",
+      "repo": "code-423n4/2024-02-spectra-findings",
+      "kind": "code4rena",
+      "report_date": "2024-04-05",
+      "commit": "9b0f4a58cb8da1372ff68cce6e36d7c532d50bd2",
+      "hm_sections": 2,
+      "curated_jsons": 307
+    },
+    {
+      "slug": "2024-02-hydradx",
+      "repo": "code-423n4/2024-02-hydradx-findings",
+      "kind": "code4rena",
+      "report_date": "2024-04-10",
+      "commit": "a0aabd250c84dce96b3362ffa41467e3515469b3",
+      "hm_sections": 11,
+      "curated_jsons": 204
+    },
+    {
+      "slug": "2024-02-uniswap-foundation",
+      "repo": "code-423n4/2024-02-uniswap-foundation-findings",
+      "kind": "code4rena",
+      "report_date": "2024-04-11",
+      "commit": "20b7d4b66862d0df3507b0e32890a55a97de6383",
+      "hm_sections": 0,
+      "curated_jsons": 419
+    },
+    {
+      "slug": "2024-03-phala-network",
+      "repo": "code-423n4/2024-03-phala-network-findings",
+      "kind": "code4rena",
+      "report_date": "2024-04-11",
+      "commit": "c952d6be9d444c6b02261c571e6b2eecae38706b",
+      "hm_sections": 4,
+      "curated_jsons": 98
+    },
+    {
+      "slug": "2024-01-salty",
+      "repo": "code-423n4/2024-01-salty-findings",
+      "kind": "code4rena",
+      "report_date": "2024-04-19",
+      "commit": "124cf3d332c1d74705c294ee1827ed4afb4971ef",
+      "hm_sections": 37,
+      "curated_jsons": 1064
+    },
+    {
+      "slug": "2024-03-gitcoin",
+      "repo": "code-423n4/2024-03-gitcoin-findings",
+      "kind": "code4rena",
+      "report_date": "2024-04-19",
+      "commit": "4104c8959ca5962f6a7059e481839d62a6f03270",
+      "hm_sections": 1,
+      "curated_jsons": 16
+    },
+    {
+      "slug": "2023-07-amphora",
+      "repo": "code-423n4/2023-07-amphora-findings",
+      "kind": "code4rena",
+      "report_date": "2024-04-22",
+      "commit": "fe47bdf8f431d82f3a587474d83932541808020e",
+      "hm_sections": 6,
+      "curated_jsons": 433
+    },
+    {
+      "slug": "2024-03-ondo-finance",
+      "repo": "code-423n4/2024-03-ondo-finance-findings",
+      "kind": "code4rena",
+      "report_date": "2024-04-24",
+      "commit": "4cad6b92dc55972bacba3668f31f14f43ef40972",
+      "hm_sections": 5,
+      "curated_jsons": 345
+    },
+    {
+      "slug": "2024-03-neobase",
+      "repo": "code-423n4/2024-03-neobase-findings",
+      "kind": "code4rena",
+      "report_date": "2024-04-26",
+      "commit": "978da184ef3ebf60f7fe8f7144510465070549da",
+      "hm_sections": 8,
+      "curated_jsons": 24
+    },
+    {
+      "slug": "2024-03-taiko",
+      "repo": "code-423n4/2024-03-taiko-findings",
+      "kind": "code4rena",
+      "report_date": "2024-04-26",
+      "commit": "315d303af1791401f23b84181e35afc8e713eed7",
+      "hm_sections": 19,
+      "curated_jsons": 381
+    },
+    {
+      "slug": "2024-03-coinbase",
+      "repo": "code-423n4/2024-03-coinbase-findings",
+      "kind": "code4rena",
+      "report_date": "2024-05-01",
+      "commit": "55584d9aeec3c59beef988b2a6771aea495b6e5f",
+      "hm_sections": 3,
+      "curated_jsons": 200
+    },
+    {
+      "slug": "2024-03-acala",
+      "repo": "code-423n4/2024-03-acala-findings",
+      "kind": "code4rena",
+      "report_date": "2024-05-02",
+      "commit": "c5dce53dae6f2a2adef6a73bb4d4f47e90aa882c",
+      "hm_sections": 7,
+      "curated_jsons": 110
+    },
+    {
+      "slug": "2024-02-wise-lending",
+      "repo": "code-423n4/2024-02-wise-lending-findings",
+      "kind": "code4rena",
+      "report_date": "2024-05-03",
+      "commit": "eb30b162e6bee0a878f7e3a14c5d062144215ac1",
+      "hm_sections": 22,
+      "curated_jsons": 309
+    },
+    {
+      "slug": "2024-03-abracadabra-money",
+      "repo": "code-423n4/2024-03-abracadabra-money-findings",
+      "kind": "code4rena",
+      "report_date": "2024-05-03",
+      "commit": "061ab30b503cdf79300725fd822fbafe2a147d4f",
+      "hm_sections": 20,
+      "curated_jsons": 259
+    },
+    {
+      "slug": "2024-02-tapioca",
+      "repo": "code-423n4/2024-02-tapioca-findings",
+      "kind": "code4rena",
+      "report_date": "2024-05-23",
+      "commit": "51a5c3c9e596f000e3ec2dec6376440e22d3c893",
+      "hm_sections": 44,
+      "curated_jsons": 186
+    },
+    {
+      "slug": "2024-03-zksync",
+      "repo": "code-423n4/2024-03-zksync-findings",
+      "kind": "code4rena",
+      "report_date": "2024-05-29",
+      "commit": "2ecd49087c9789e9dd2b3cdc41c3e444956c6416",
+      "hm_sections": 5,
+      "curated_jsons": 134
+    },
+    {
+      "slug": "2024-04-lavarage",
+      "repo": "code-423n4/2024-04-lavarage-findings",
+      "kind": "code4rena",
+      "report_date": "2024-05-29",
+      "commit": "108abd5f603cd995f908fec36868fe5812e30046",
+      "hm_sections": 7,
+      "curated_jsons": 33
+    },
+    {
+      "slug": "2024-05-loop",
+      "repo": "code-423n4/2024-05-loop-findings",
+      "kind": "code4rena",
+      "report_date": "2024-06-12",
+      "commit": "acc38a227494e35d8bced43d3599bec2a0d65c50",
+      "hm_sections": 1,
+      "curated_jsons": 132
+    },
+    {
+      "slug": "2024-05-arbitrum-foundation",
+      "repo": "code-423n4/2024-05-arbitrum-foundation-findings",
+      "kind": "code4rena",
+      "report_date": "2024-06-17",
+      "commit": "2a853fab49b01dd131a5034614451adb133c8233",
+      "hm_sections": 4,
+      "curated_jsons": 70
+    },
+    {
+      "slug": "2024-05-bakerfi",
+      "repo": "code-423n4/2024-05-bakerfi-findings",
+      "kind": "code4rena",
+      "report_date": "2024-06-24",
+      "commit": "30e7003f6fc084da282f699e9fd3599199435339",
+      "hm_sections": 12,
+      "curated_jsons": 48
+    },
+    {
+      "slug": "2024-06-panoptic",
+      "repo": "code-423n4/2024-06-panoptic-findings",
+      "kind": "code4rena",
+      "report_date": "2024-06-24",
+      "commit": "57edc7ba6b6fa729b422819817f4cbabf3977487",
+      "hm_sections": 0,
+      "curated_jsons": 49
+    },
+    {
+      "slug": "2024-03-dittoeth",
+      "repo": "code-423n4/2024-03-dittoeth-findings",
+      "kind": "code4rena",
+      "report_date": "2024-06-25",
+      "commit": "fb91efbbcd00fc16f39ed9b01e277c3944944acb",
+      "hm_sections": 16,
+      "curated_jsons": 304
+    },
+    {
+      "slug": "2024-06-krystal-defi",
+      "repo": "code-423n4/2024-06-krystal-defi-findings",
+      "kind": "code4rena",
+      "report_date": "2024-07-12",
+      "commit": "2381dc9358d7249b48a1375887cd2c6e54d2b162",
+      "hm_sections": 5,
+      "curated_jsons": 33
+    },
+    {
+      "slug": "2024-05-predy",
+      "repo": "code-423n4/2024-05-predy-findings",
+      "kind": "code4rena",
+      "report_date": "2024-07-16",
+      "commit": "766659221c5d4b5f5477106adc79cabc78d999b4",
+      "hm_sections": 12,
+      "curated_jsons": 308
+    },
+    {
+      "slug": "2024-04-gondi",
+      "repo": "code-423n4/2024-04-gondi-findings",
+      "kind": "code4rena",
+      "report_date": "2024-07-25",
+      "commit": "25665cc3b6e095e2a547caf253cd3e0585a78b41",
+      "hm_sections": 37,
+      "curated_jsons": 83
+    },
+    {
+      "slug": "2024-07-dittoeth",
+      "repo": "code-423n4/2024-07-dittoeth-findings",
+      "kind": "code4rena",
+      "report_date": "2024-07-29",
+      "commit": "424e49f12c01bd52e69ca12a6850d075d0367563",
+      "hm_sections": 5,
+      "curated_jsons": 16
+    },
+    {
+      "slug": "2024-06-badger",
+      "repo": "code-423n4/2024-06-badger-findings",
+      "kind": "code4rena",
+      "report_date": "2024-08-05",
+      "commit": "9eed74b338cfea574b29b0abd768ca6712664fcc",
+      "hm_sections": 2,
+      "curated_jsons": 48
+    },
+    {
+      "slug": "2024-06-thorchain",
+      "repo": "code-423n4/2024-06-thorchain-findings",
+      "kind": "code4rena",
+      "report_date": "2024-08-05",
+      "commit": "cba6b1516281504c1a294bee7ac862f5f46a3578",
+      "hm_sections": 4,
+      "curated_jsons": 103
+    },
+    {
+      "slug": "2024-06-vultisig",
+      "repo": "code-423n4/2024-06-vultisig-findings",
+      "kind": "code4rena",
+      "report_date": "2024-08-05",
+      "commit": "4111be31b0927c32a1558767db6c3de75487fa3b",
+      "hm_sections": 6,
+      "curated_jsons": 228
+    },
+    {
+      "slug": "2024-05-olas",
+      "repo": "code-423n4/2024-05-olas-findings",
+      "kind": "code4rena",
+      "report_date": "2024-08-06",
+      "commit": "3391d168f8a6489a177b50511ece6420b17e279c",
+      "hm_sections": 22,
+      "curated_jsons": 121
+    },
+    {
+      "slug": "2024-07-munchables",
+      "repo": "code-423n4/2024-07-munchables-findings",
+      "kind": "code4rena",
+      "report_date": "2024-08-16",
+      "commit": "2efccd9f1b65f77da50a2861b77f9f5b0bf267f4",
+      "hm_sections": 6,
+      "curated_jsons": 325
+    },
+    {
+      "slug": "2024-07-optimism",
+      "repo": "code-423n4/2024-07-optimism-findings",
+      "kind": "code4rena",
+      "report_date": "2024-08-16",
+      "commit": "9a8fea61bc01a27752f2c1b0ccb88cb7151ca642",
+      "hm_sections": 16,
+      "curated_jsons": 124
+    },
+    {
+      "slug": "2024-05-canto",
+      "repo": "code-423n4/2024-05-canto-findings",
+      "kind": "code4rena",
+      "report_date": "2024-08-19",
+      "commit": "a6787569edaedc1b99a174ae6f4476fd53fa4833",
+      "hm_sections": 4,
+      "curated_jsons": 35
+    },
+    {
+      "slug": "2024-07-basin",
+      "repo": "code-423n4/2024-07-basin-findings",
+      "kind": "code4rena",
+      "report_date": "2024-09-03",
+      "commit": "12468792fc3c89de5ea1353ddb83b7ce5f7d5b21",
+      "hm_sections": 4,
+      "curated_jsons": 90
+    },
+    {
+      "slug": "2024-07-benddao",
+      "repo": "code-423n4/2024-07-benddao-findings",
+      "kind": "code4rena",
+      "report_date": "2024-09-03",
+      "commit": "892e7d324d338e9ff1a5485b50e0dd259440f6b0",
+      "hm_sections": 28,
+      "curated_jsons": 67
+    },
+    {
+      "slug": "2024-08-basin",
+      "repo": "code-423n4/2024-08-basin-findings",
+      "kind": "code4rena",
+      "report_date": "2024-09-11",
+      "commit": "e492f98f24f26b514578b45610fcbb6e195649d2",
+      "hm_sections": 1,
+      "curated_jsons": 5
+    },
+    {
+      "slug": "2024-06-size",
+      "repo": "code-423n4/2024-06-size-findings",
+      "kind": "code4rena",
+      "report_date": "2024-09-16",
+      "commit": "d5ff2c6088cde2c98820128ef7a412375f721989",
+      "hm_sections": 17,
+      "curated_jsons": 434
+    },
+    {
+      "slug": "2024-07-reserve",
+      "repo": "code-423n4/2024-07-reserve-findings",
+      "kind": "code4rena",
+      "report_date": "2024-10-03",
+      "commit": "59b95d602bd74c79ee49c820d154ca87d4885ac5",
+      "hm_sections": 7,
+      "curated_jsons": 117
+    },
+    {
+      "slug": "2024-07-karak",
+      "repo": "code-423n4/2024-07-karak-findings",
+      "kind": "code4rena",
+      "report_date": "2024-10-07",
+      "commit": "bc1098e79301a0edcdab949405e12924d53c12c5",
+      "hm_sections": 9,
+      "curated_jsons": 102
+    },
+    {
+      "slug": "2024-08-phi",
+      "repo": "code-423n4/2024-08-phi-findings",
+      "kind": "code4rena",
+      "report_date": "2024-10-07",
+      "commit": "0c473d9115cd5a1e90ed5beb49d363c9e2fee9f0",
+      "hm_sections": 15,
+      "curated_jsons": 378
+    },
+    {
+      "slug": "2024-09-panoptic",
+      "repo": "code-423n4/2024-09-panoptic-findings",
+      "kind": "code4rena",
+      "report_date": "2024-10-10",
+      "commit": "5d5fbbb990373e3aab47afedf7e79c5475caa317",
+      "hm_sections": 0,
+      "curated_jsons": 7
+    },
+    {
+      "slug": "2024-09-fenix-finance",
+      "repo": "code-423n4/2024-09-fenix-finance-findings",
+      "kind": "code4rena",
+      "report_date": "2024-10-11",
+      "commit": "563f7d73f9aa6efc90c9a8c8573567acf9ccf454",
+      "hm_sections": 7,
+      "curated_jsons": 20
+    },
+    {
+      "slug": "2024-08-superposition",
+      "repo": "code-423n4/2024-08-superposition-findings",
+      "kind": "code4rena",
+      "report_date": "2024-10-18",
+      "commit": "c8910007457e74b7255ba5df29c8f63755816fb2",
+      "hm_sections": 19,
+      "curated_jsons": 173
+    },
+    {
+      "slug": "2024-08-wildcat",
+      "repo": "code-423n4/2024-08-wildcat-findings",
+      "kind": "code4rena",
+      "report_date": "2024-10-24",
+      "commit": "dc0352696795b2cb37e1712199b4a809e1b92646",
+      "hm_sections": 9,
+      "curated_jsons": 123
+    },
+    {
+      "slug": "2024-10-kleidi",
+      "repo": "code-423n4/2024-10-kleidi-findings",
+      "kind": "code4rena",
+      "report_date": "2024-11-20",
+      "commit": "bbb702a3e1c601e8ffb3b16170353f4130ed4cf0",
+      "hm_sections": 3,
+      "curated_jsons": 62
+    },
+    {
+      "slug": "2024-10-ronin",
+      "repo": "code-423n4/2024-10-ronin-findings",
+      "kind": "code4rena",
+      "report_date": "2024-11-25",
+      "commit": "d8857b492b788cf224098ea1870128b06cd286c2",
+      "hm_sections": 0,
+      "curated_jsons": 85
+    },
+    {
+      "slug": "2024-11-ethena-labs",
+      "repo": "code-423n4/2024-11-ethena-labs-findings",
+      "kind": "code4rena",
+      "report_date": "2024-12-02",
+      "commit": "94c52393ab0c2d5c901f3f5c8d02aa072a7589f9",
+      "hm_sections": 2,
+      "curated_jsons": 15
+    },
+    {
+      "slug": "2024-10-ramses-exchange",
+      "repo": "code-423n4/2024-10-ramses-exchange-findings",
+      "kind": "code4rena",
+      "report_date": "2024-12-03",
+      "commit": "e73eb49ed81b070c66da84e47cb62b75c9ad1350",
+      "hm_sections": 2,
+      "curated_jsons": 44
+    },
+    {
+      "slug": "2024-10-coded-estate",
+      "repo": "code-423n4/2024-10-coded-estate-findings",
+      "kind": "code4rena",
+      "report_date": "2024-12-04",
+      "commit": "0e6c1e01dcf1f591a23838e7c176861ce2eaa4c5",
+      "hm_sections": 18,
+      "curated_jsons": 46
+    },
+    {
+      "slug": "2024-09-kakarot",
+      "repo": "code-423n4/2024-09-kakarot-findings",
+      "kind": "code4rena",
+      "report_date": "2024-12-10",
+      "commit": "1f8dd297be7627dfdc5a2ed5f82a91ec800b9ca9",
+      "hm_sections": 17,
+      "curated_jsons": 131
+    }
+  ]
+}
