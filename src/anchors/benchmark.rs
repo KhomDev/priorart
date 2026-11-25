@@ -86,6 +86,14 @@ pub struct CorpusReport {
     pub files_indexed: Option<usize>,
     /// Solidity files that failed to parse, when a source was available.
     pub files_unparsed: Option<usize>,
+    /// Codebase repositories named by the corpus's cached README
+    /// (`owner/repo@commit`), for corpora that split the code across repos.
+    pub codebase_pins: Vec<String>,
+    /// Repositories actually indexed, `owner/repo@commit`.
+    pub indexed_repos: Vec<String>,
+    /// Deterministic notes about pinned repositories that were absent or at a
+    /// different commit; never a host path.
+    pub index_notes: Vec<String>,
     pub findings_total: usize,
     pub findings_citing_code: usize,
     pub findings_resolved: Option<usize>,
@@ -226,6 +234,9 @@ fn measure_corpus(name: &str, options: &BenchOptions) -> CorpusReport {
         commit_verified: false,
         files_indexed: None,
         files_unparsed: None,
+        codebase_pins: Vec::new(),
+        indexed_repos: Vec::new(),
+        index_notes: Vec::new(),
         findings_total: 0,
         findings_citing_code: 0,
         findings_resolved: None,
@@ -259,7 +270,7 @@ fn measure_corpus(name: &str, options: &BenchOptions) -> CorpusReport {
             .find(|(_, v)| v.get("role").and_then(|x| x.as_str()) == Some("judging"))
             .map(|(id, v)| (id.clone(), v.clone()))
     });
-    let (_known_id, known) = match known {
+    let (known_id, known) = match known {
         Some(pair) => pair,
         None => {
             report.blocked_reason = Some("lock has no known-issues source".to_string());
@@ -276,8 +287,21 @@ fn measure_corpus(name: &str, options: &BenchOptions) -> CorpusReport {
         .and_then(|v| v.as_str())
         .unwrap_or("")
         .to_string();
+    let known_path = known
+        .get("path")
+        .and_then(|v| v.as_str())
+        .unwrap_or("README.md");
     report.audited_repo = Some(repo.clone());
     report.audited_commit = Some(commit.clone());
+
+    // A Sherlock contest snapshot may split the code across repositories and
+    // name each one, with its commit, in the cached README. Those pins are
+    // supplementary indexes; the snapshot itself stays the required source.
+    let pins = read_codebase_pins(&cache_dir, &known_id, known_path);
+    report.codebase_pins = pins
+        .iter()
+        .map(|pin| format!("{}@{}", pin.repo, pin.commit))
+        .collect();
 
     // Findings live in the judging source's cache directory.
     let finding_paths = match judging {
@@ -309,12 +333,17 @@ fn measure_corpus(name: &str, options: &BenchOptions) -> CorpusReport {
         texts.push((id.clone(), text));
     }
 
-    let source = match find_checkout(
+    let checkouts = match discover_checkouts(
         &options.sources_root.join(name),
-        &repo,
-        &commit,
         options.allow_unverified_commit,
     ) {
+        Ok(checkouts) => checkouts,
+        Err(reason) => {
+            report.blocked_reason = Some(reason);
+            return report;
+        }
+    };
+    let source = match find_checkout(&checkouts, &repo, &commit, options.allow_unverified_commit) {
         Ok(source) => source,
         Err(reason) => {
             report.blocked_reason = Some(reason);
@@ -324,16 +353,51 @@ fn measure_corpus(name: &str, options: &BenchOptions) -> CorpusReport {
     report.source_checkout = Some(normalise_root(&source.path));
     report.commit_verified = source.verified;
 
-    let index = match parse_repo(&source.path, &repo, &commit, &IndexOptions::default()) {
-        Ok(index) => index,
+    let mut indexes = Vec::new();
+    match parse_repo(&source.path, &repo, &commit, &IndexOptions::default()) {
+        Ok(index) => {
+            report.files_indexed = Some(report.files_indexed.unwrap_or(0) + index.files.len());
+            report.files_unparsed =
+                Some(report.files_unparsed.unwrap_or(0) + index.parse_failures.len());
+            report.indexed_repos.push(format!("{repo}@{commit}"));
+            indexes.push(index);
+        }
         Err(reason) => {
             report.blocked_reason = Some(format!("index-failed: {reason}"));
             return report;
         }
-    };
-    report.files_indexed = Some(index.files.len());
-    report.files_unparsed = Some(index.parse_failures.len());
-    let index = IndexSet::single(index);
+    }
+    for pin in &pins {
+        if pin.repo == repo {
+            continue;
+        }
+        match find_pin(&checkouts, pin, options.allow_unverified_commit) {
+            Ok(found) => {
+                match parse_repo(
+                    &found.path,
+                    &pin.repo,
+                    &pin.commit,
+                    &IndexOptions::default(),
+                ) {
+                    Ok(index) => {
+                        report.files_indexed =
+                            Some(report.files_indexed.unwrap_or(0) + index.files.len());
+                        report.files_unparsed =
+                            Some(report.files_unparsed.unwrap_or(0) + index.parse_failures.len());
+                        report
+                            .indexed_repos
+                            .push(format!("{}@{}", pin.repo, pin.commit));
+                        indexes.push(index);
+                    }
+                    Err(reason) => report
+                        .index_notes
+                        .push(format!("pin-index-failed: {}: {reason}", pin.repo)),
+                }
+            }
+            Err(note) => report.index_notes.push(note),
+        }
+    }
+    let index = IndexSet::new(indexes);
 
     let mut resolved = 0usize;
     let mut unresolved_by_reason: BTreeMap<String, usize> = BTreeMap::new();
@@ -407,89 +471,143 @@ struct SourceCheckout {
     verified: bool,
 }
 
-fn find_checkout(
+/// A repository and commit named by the corpus's cached README.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct CodebasePin {
+    repo: String,
+    commit: String,
+}
+
+/// One candidate source directory.
+struct Checkout {
+    path: PathBuf,
+    /// `owner/repo` from the git remote, when it is a git checkout.
+    repo: Option<String>,
+    head: Option<String>,
+}
+
+/// Read `[Name @ <40 hex>](https://github.com/owner/repo/tree/<40 hex>)`
+/// pins from the corpus's cached known-issues README. Sherlock contest
+/// snapshots split the code across repositories and name each one this way.
+fn read_codebase_pins(cache_dir: &Path, known_id: &str, known_path: &str) -> Vec<CodebasePin> {
+    let path = cache_dir.join(known_id).join(known_path);
+    let Ok(text) = std::fs::read_to_string(path) else {
+        return Vec::new();
+    };
+    let Ok(re) = regex::Regex::new(
+        r"\[[^\]]+ @ ([0-9a-fA-F]{40})\]\(https://github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)/tree/[0-9a-fA-F]{40}\)",
+    ) else {
+        return Vec::new();
+    };
+    let mut pins: Vec<CodebasePin> = Vec::new();
+    for caps in re.captures_iter(&text) {
+        let commit = caps.get(1).map(|m| m.as_str()).unwrap_or("");
+        let owner = caps.get(2).map(|m| m.as_str()).unwrap_or("");
+        let repo = caps.get(3).map(|m| m.as_str()).unwrap_or("");
+        if commit.is_empty() || owner.is_empty() || repo.is_empty() {
+            continue;
+        }
+        pins.push(CodebasePin {
+            repo: format!("{owner}/{repo}"),
+            commit: commit.to_ascii_lowercase(),
+        });
+    }
+    pins.sort_by(|a, b| {
+        (a.repo.as_str(), a.commit.as_str()).cmp(&(b.repo.as_str(), b.commit.as_str()))
+    });
+    pins.dedup();
+    pins
+}
+
+/// Every candidate checkout under a corpus's sources directory, sorted.
+fn discover_checkouts(
     corpus_sources: &Path,
+    allow_unverified: bool,
+) -> Result<Vec<Checkout>, String> {
+    let mut out = Vec::new();
+    if !corpus_sources.is_dir() {
+        return Ok(out);
+    }
+    if is_git_checkout(corpus_sources) {
+        out.push(checkout_of(corpus_sources));
+    } else if allow_unverified && looks_like_snapshot(corpus_sources) {
+        out.push(Checkout {
+            path: corpus_sources.to_path_buf(),
+            repo: None,
+            head: None,
+        });
+    } else {
+        let mut entries: Vec<PathBuf> = std::fs::read_dir(corpus_sources)
+            .map_err(|e| format!("source-missing: cannot read sources root: {e}"))?
+            .filter_map(|e| e.ok())
+            .map(|e| e.path())
+            .filter(|p| p.is_dir())
+            .collect();
+        entries.sort();
+        for entry in entries {
+            if is_git_checkout(&entry) {
+                out.push(checkout_of(&entry));
+            } else if allow_unverified && looks_like_snapshot(&entry) {
+                out.push(Checkout {
+                    path: entry,
+                    repo: None,
+                    head: None,
+                });
+            }
+        }
+    }
+    Ok(out)
+}
+
+fn checkout_of(path: &Path) -> Checkout {
+    Checkout {
+        path: path.to_path_buf(),
+        repo: git_remote(path).and_then(|url| owner_repo(&url)),
+        head: git_head(path),
+    }
+}
+
+fn checkout_matches(checkout: &Checkout, repo: &str, single: bool) -> bool {
+    let expected_name = repo.rsplit('/').next().unwrap_or(repo);
+    match &checkout.repo {
+        Some(found) => found == repo || found.ends_with(&format!("/{expected_name}")),
+        None => {
+            single
+                || checkout
+                    .path
+                    .file_name()
+                    .map(|n| {
+                        n.to_string_lossy().replace('-', "_") == expected_name.replace('-', "_")
+                    })
+                    .unwrap_or(false)
+        }
+    }
+}
+
+/// The required contest-snapshot checkout, at the pinned commit.
+fn find_checkout(
+    checkouts: &[Checkout],
     repo: &str,
     commit: &str,
     allow_unverified: bool,
 ) -> Result<SourceCheckout, String> {
-    let expected_name = repo.rsplit('/').next().unwrap_or(repo);
-    let mut candidates: Vec<PathBuf> = Vec::new();
-    if corpus_sources.is_dir() {
-        if is_git_checkout(corpus_sources) {
-            candidates.push(corpus_sources.to_path_buf());
-        } else if allow_unverified && looks_like_snapshot(corpus_sources) {
-            return Ok(SourceCheckout {
-                path: corpus_sources.to_path_buf(),
-                verified: false,
-            });
-        } else {
-            let mut entries: Vec<PathBuf> = std::fs::read_dir(corpus_sources)
-                .map_err(|e| format!("source-missing: cannot read sources root: {e}"))?
-                .filter_map(|e| e.ok())
-                .map(|e| e.path())
-                .filter(|p| p.is_dir() && p.join(".git").exists())
-                .collect();
-            entries.sort();
-            if entries.is_empty() {
-                // A snapshot with no `.git` is still usable when the caller
-                // explicitly accepts an unverified commit.
-                if allow_unverified {
-                    let mut snapshots: Vec<PathBuf> = std::fs::read_dir(corpus_sources)
-                        .map_err(|e| format!("source-missing: cannot read sources root: {e}"))?
-                        .filter_map(|e| e.ok())
-                        .map(|e| e.path())
-                        .filter(|p| p.is_dir())
-                        .collect();
-                    snapshots.sort();
-                    if snapshots.len() == 1 {
-                        return Ok(SourceCheckout {
-                            path: snapshots.remove(0),
-                            verified: false,
-                        });
-                    }
-                }
-            }
-            candidates.extend(entries);
-        }
-    }
-    if candidates.is_empty() {
-        return Err(format!(
-            "source-missing: no checkout of {repo}@{commit} under the corpus sources directory"
-        ));
-    }
-
     let mut unverified: Option<PathBuf> = None;
     let mut mismatch: Option<String> = None;
     let mut unverified_error: Option<String> = None;
-    for candidate in &candidates {
-        let head = git_head(candidate);
-        let remote = git_remote(candidate).and_then(|url| owner_repo(&url));
-        let name_matches = candidate
-            .file_name()
-            .map(|n| n.to_string_lossy().replace('-', "_") == expected_name.replace('-', "_"))
-            .unwrap_or(false);
-        let remote_matches = remote
-            .as_deref()
-            .is_some_and(|r| r == repo || r.ends_with(&format!("/{expected_name}")));
-        let matches = if remote.is_some() {
-            remote_matches
-        } else {
-            name_matches || candidates.len() == 1
-        };
-        if !matches {
+    for checkout in checkouts {
+        if !checkout_matches(checkout, repo, checkouts.len() == 1) {
             continue;
         }
-        match head {
+        match &checkout.head {
             Some(head) if head.eq_ignore_ascii_case(commit) => {
                 return Ok(SourceCheckout {
-                    path: candidate.clone(),
+                    path: checkout.path.clone(),
                     verified: true,
                 });
             }
             Some(head) => {
                 if allow_unverified {
-                    unverified.get_or_insert_with(|| candidate.clone());
+                    unverified.get_or_insert_with(|| checkout.path.clone());
                 } else {
                     mismatch.get_or_insert_with(|| {
                         format!("commit-mismatch: {repo} checkout is at {head}, expected {commit}")
@@ -498,12 +616,12 @@ fn find_checkout(
             }
             None => {
                 if allow_unverified {
-                    unverified.get_or_insert_with(|| candidate.clone());
+                    unverified.get_or_insert_with(|| checkout.path.clone());
                 } else {
                     unverified_error.get_or_insert_with(|| {
                         format!(
                             "commit-unverified: {} is not a git checkout; pass --allow-unverified-commit only for a snapshot pinned by other means",
-                            normalise_root(candidate)
+                            normalise_root(&checkout.path)
                         )
                     });
                 }
@@ -525,6 +643,48 @@ fn find_checkout(
     Err(format!(
         "source-missing: no checkout of {repo}@{commit} under the corpus sources directory"
     ))
+}
+
+/// A supplementary README-pinned checkout, at its named commit. A missing or
+/// mismatched pin is a note, not a block: the contest snapshot may vendor the
+/// code itself.
+fn find_pin(
+    checkouts: &[Checkout],
+    pin: &CodebasePin,
+    allow_unverified: bool,
+) -> Result<SourceCheckout, String> {
+    for checkout in checkouts {
+        if !checkout_matches(checkout, &pin.repo, false) {
+            continue;
+        }
+        match &checkout.head {
+            Some(head) if head.eq_ignore_ascii_case(&pin.commit) => {
+                return Ok(SourceCheckout {
+                    path: checkout.path.clone(),
+                    verified: true,
+                });
+            }
+            Some(head) => {
+                return Err(format!(
+                    "pin-mismatch: {} is at {head}, expected {}",
+                    pin.repo, pin.commit
+                ));
+            }
+            None => {
+                if allow_unverified {
+                    return Ok(SourceCheckout {
+                        path: checkout.path.clone(),
+                        verified: false,
+                    });
+                }
+                return Err(format!(
+                    "pin-unverified: {} is not a git checkout",
+                    pin.repo
+                ));
+            }
+        }
+    }
+    Err(format!("pin-missing: {}@{}", pin.repo, pin.commit))
 }
 
 fn is_git_checkout(dir: &Path) -> bool {

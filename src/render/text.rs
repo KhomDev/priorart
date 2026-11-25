@@ -688,11 +688,21 @@ pub fn anchors_bench(report: &BenchReport) -> String {
             rate,
             sanitize(row.blocked_reason.as_deref().unwrap_or(""))
         ));
+        if !row.codebase_pins.is_empty() {
+            out.push_str(&format!(
+                "  codebase pins: {}\n",
+                row.codebase_pins.join(", ")
+            ));
+        }
         if row.status == CorpusStatus::Measured {
             if let (Some(indexed), Some(unparsed)) = (row.files_indexed, row.files_unparsed) {
                 out.push_str(&format!(
-                    "  index: {indexed} Solidity files, {unparsed} unparsed\n"
+                    "  index: {indexed} Solidity files, {unparsed} unparsed; repositories: {}\n",
+                    row.indexed_repos.join(", ")
                 ));
+            }
+            for note in &row.index_notes {
+                out.push_str(&format!("  note: {}\n", sanitize(note)));
             }
             for (reason, count) in &row.unresolved_findings_by_reason {
                 out.push_str(&format!("  unresolved {reason}: {count}\n"));
