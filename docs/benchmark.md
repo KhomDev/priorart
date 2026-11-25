@@ -333,3 +333,43 @@ formerly sealed pairs are 3/9 = 33.3% and 4/9 = 44.4%, 7/18 = 38.9% pooled.
 The trigger remains met; the warning stays off. Full tables:
 `eval/benchmark/BENCHMARK.md`, "P1-C re-measurement results" and "0.2.2
 measurement".
+
+## Dup-Bench v1 and the P2 measurement plan (2026-11-26)
+
+The P2 rebuild adds a second benchmark, **Dup-Bench v1** (`eval/dupbench/`), to
+measure code-anchored duplicate detection on a temporally sealed split:
+
+- **111 Code4rena contests** with public judge grouping, pinned by findings-repo
+  commit, `report.md` hash, `data/` listing and label pages. Span
+  2022-11-03..2024-12-10.
+- **All 111 labelled**: 1,102 paid-unique findings, 3,454 judged duplicates,
+  780 invalid, 101 contests with at least one duplicate group. The judge's
+  `duplicate-N` label pointing at the `selected for report` issue is the
+  grouping; report↔data joins 1,102/1,102.
+- **Temporal split, Amendment 1** (`eval/P2R_PREREGISTRATION_AMENDMENT_1.md`):
+  the originally preregistered 2025-09-01/2026-05-01 cut is empty because no
+  public judged repository exists after 2024-12 (C4) or 2025-07 (Sherlock).
+  Amendment 1 fixes T=2024-03-01, T2=2024-09-01: train 58 contests / 564
+  paid-unique / 1,237 duplicates, validation 36 / 380 / 1,441, FINAL 17 / 158 /
+  776. FINAL is sealed and has not been read.
+- **Six sealed pairs** (`pairs.json`): a prior audit report plus a later judged
+  contest for six sponsors not used in P1, with prior-report hashes and contest
+  codebase pins. The prior report's commit is not stated by the sponsors, so
+  the same-codebase evidence is the sponsor's "Previous audits" statement and
+  the drift is declared per pair.
+
+Two P2 measurements exist, and neither is a duplicate-detector number:
+
+- **Code anchors** (`priorart anchors bench`): on the six DEV corpora,
+  **1,296 of 1,299 findings that cite code resolve to at least one span
+  (99.77%, Wilson 95% [99.32, 99.92])**. It counts a file-level span; symbol
+  precision is what the ranker must learn.
+- **Mechanism taxonomy**: on 1,997 DEV finding files, 961 (48.1%) assert at
+  least one root-cause class and 24.9% abstain. This is cue coverage, not
+  judged accuracy; per-class precision is unmeasured.
+
+**No Dup-Bench recall@5 or FAR has been measured.** The candidate/feature layer
+(PA-B3), the fixed-weight ranker (PA-B4) and the calibrated alarm (PA-B5) are
+the items that produce those numbers; until they are measured on the sealed
+split, the only measured FAR and duplicate-recall values in this repository are
+the six-corpus 0.2.2 numbers above, and the warning stays off.
