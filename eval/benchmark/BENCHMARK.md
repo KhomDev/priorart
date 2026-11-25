@@ -352,6 +352,92 @@ Wilson intervals against their own numerators. On Windows, Python's
 an absolute binary path; `results.json.tool.path` records the repository-
 relative path `target/release/priorart.exe`, never a host path.
 
+## Third and fourth corpora: a second judging platform (preregistered 2026-11-25)
+
+**Why.** Both earlier corpora are judged by Sherlock. The P1 statement that the
+Code4rena -> Sherlock pair is "the only public combination found that
+publishes both judge-grouped duplicate submissions and excluded findings" was
+wrong: Code4rena publishes its judging as labels on every issue of the public
+findings repository (`duplicate-N`, report ids `H-NN`/`M-NN`, `satisfactory`,
+`unsatisfactory`, `downgraded by judge`, `withdrawn by judge`). These two
+corpora measure the same frozen matcher on Code4rena judging.
+
+**Selection rule, written before any measurement.** Candidates: protocols with
+two public Code4rena findings repositories, the earlier one supplying the prior
+audit (`report.md` High/Medium headings), the later one supplying the judging.
+Eligible: (a) judging not on Sherlock; (b) >= 30 judge-grouped duplicate
+submissions; (c) >= 20 excluded findings; (d) >= 50% of the later contest's
+non-test Solidity file names also present in the earlier contest's repository.
+Among eligible pairs, take the two with the most paid findings (the
+false-alarm denominator). Counts on 2026-11-25:
+
+| Pair (prior -> judged) | Paid | Excluded groups | Duplicates | Prior H/M | File overlap | Eligible |
+|---|---:|---:|---:|---:|---:|---|
+| Maia 2023-05 -> 2023-09 | 15 | 411 | 289 | 79 | 86% | yes |
+| Panoptic 2023-11 -> 2024-04 | 11 | 373 | 80 | 7 | 56% | yes |
+| Party 2023-04 -> 2023-10 | 9 | 323 | 132 | 20 | 78% | yes, not chosen (fewer paid) |
+| Wildcat 2023-10 -> 2024-08 | 9 | 52 | 46 | 17 | 55% | yes, not chosen |
+| PoolTogether 2023-07 -> 2024-03 | 9 | 97 | 169 | - | - | not chosen (same protocol as the second corpus) |
+| Munchables 2024-05 -> 2024-07 | 6 | 28 | 278 | 6 | 94% | yes, not chosen |
+| Basin 2023-07 -> 2024-07 | 4 | 16 | 56 | 14 | 81% | no: (c) |
+| Reserve 2023-07 -> 2024-07 | 7 | 83 | 18 | - | - | no: (b) |
+| DittoETH, LoopFi, Superposition, Badger | <= 7 | <= 19 | <= 25 | - | - | no: (b) or (c) |
+| Particle 2023-05 -> 2023-12 | 19 | 13 | 26 | 10 | 0% | no: (c), (d) |
+
+(The excluded-group counts in this table come from the selection script; the
+manifest counts below, after the mapping rules, are the ones measured.)
+
+**Label mapping (`fetch.py` `c4_layout`), frozen with the corpora.** In scope:
+an issue with a High/Medium severity label, a report id, or `downgraded by
+judge`; QA and Gas reports and `withdrawn by warden` issues are out. A group is
+the transitive closure of `duplicate-N` labels. A group is **paid** when any
+member carries a report id; its representative is that member. Every other
+group is **excluded**, including H/M submissions the judge downgraded to QA. A
+member whose root is not in scope (a QA report that absorbed it) is a single
+excluded finding. Every duplicate-labelled member counts as a judge-grouped
+duplicate, credited (`satisfactory`, `partial-*`) or not: the measurement is
+retrieval of the judge's grouping, not the award.
+
+**Mapping verification, before any label or run.** Each later contest's own
+`report.md` lists every paid finding with the issue links of its submitter
+and of everyone credited. Maia: 15 report items, 15 paid groups, 15 matched
+one-to-one with the same severity. Panoptic: 11 of 11. Group membership: the
+Panoptic groups hold 28 issues, all linked from their report sections; the
+Maia groups hold 158, of which 133 are linked in the first 4,000 characters
+of their section; the other 25 are 23 credited duplicates of #885 past that
+window, one `partial-*` and one `unsatisfactory` duplicate, which the rule above
+includes.
+
+| Corpus | Prior audit | Known issues | Judging |
+|---|---|---|---|
+| `maia-c4` | `code-423n4/2023-05-maia-findings` @ `fa2bd134`, `report.md` (79 H/M) | `code-423n4/2023-09-maia` @ `1aa8a7b5`, README "Publicly Known Issues" (6) | `code-423n4/2023-09-maia-findings` issues (904), fetched 2026-11-25 |
+| `panoptic-c4` | `code-423n4/2023-11-panoptic-findings` @ `85bd107f`, `report.md` (7 H/M) | `code-423n4/2024-04-panoptic` @ `a65595a1`, README known-issues list (21 lines) | `code-423n4/2024-04-panoptic-findings` issues (581), fetched 2026-11-25 |
+
+Manifest counts: Maia 85 prior items, 402 judged findings (15 paid, 387
+excluded), 289 judge-grouped duplicates. Panoptic 28 prior items (the
+known-issues list is split per line, so wrapped bullets count more than once),
+367 judged findings (11 paid, 356 excluded), 80 duplicates.
+
+**Labels, preregistered.** The paid findings carry the platform label
+`unique_valid`. Excluded findings are too many to read in full (387 and 356),
+so the known-prior label is read on a seeded sample: the 20 excluded findings
+per corpus with the smallest `sha256(seed + ":label:" + id)`. Each gets
+`known_prior` (with `prior_ref`) or `invalid_unmapped`, by the PoolTogether
+rubric; every other excluded finding stays `unlabelled` and is not a
+known-prior query. A blinded second reader labels the same 40 from the title
+and the prior-item list before the first reader's labels are visible to it;
+agreement is reported as a count and a Wilson interval.
+
+**Measurement, preregistered.** Matcher frozen at priorart 0.2.0, binary
+sha256 `06fdf195989e5c6e739285047e29dc3fe873252ee567e52e16e24f3804a85783`, the
+same binary as the PoolTogether run. `run.py --split dev` writes `freeze.json`
+first; `--split all` produces the published numbers. Per corpus: false-alarm
+rate on the paid findings, duplicate recall@5 on the judge-grouped duplicates,
+known-prior hits as a count when n < 5. Pooled across the two Code4rena
+corpora: the summed counts with a Wilson interval, labelled pooled. The 30%
+trigger is applied to each interval and to the pooled one; a straddling
+interval keeps the warning off.
+
 ## Labels
 
 The label file is `labels.yaml`; every label carries its pointer. Values:

@@ -122,7 +122,10 @@ def in_split(split: str, seed: str, item_id: str) -> bool:
 def program_name() -> str:
     """The original corpus keeps its historical name; another corpus uses its
     directory name. The name is dossier metadata and does not affect scoring."""
-    return "tapioca-sherlock-2024-02" if CORPUS == HERE else f"{CORPUS.name}-sherlock"
+    if CORPUS == HERE:
+        return "tapioca-sherlock-2024-02"
+    platform = corpus_meta()["platform"]
+    return f"{CORPUS.name}-sherlock" if platform == "sherlock" else CORPUS.name
 
 
 def write_dossier_a(manifest: dict) -> Path:
@@ -146,16 +149,37 @@ def write_dossier_a(manifest: dict) -> Path:
         body = audit[h.start():end].strip()
         (dest / "audits" / f"{file_prefix}-{locator}.md").write_text(body + "\n", encoding="utf-8", newline="\n")
     readme = (CACHE / known["id"] / known["path"]).read_text(encoding="utf-8")
-    m = re.search(r"(?ims)^#{1,4}\s*Q:\s*Please list any known issues.*?\n(.*?)(?=^___|\n#{1,4}\s*Q:|\Z)", readme)
+    meta = corpus_meta()
+    m = re.search(meta["known_issue_pattern"], readme)
     ki = ("# Known issues / acceptable risks\n\n" + (m.group(1).strip() if m else "not found")) + "\n"
     (dest / "known-issues.md").write_text(ki, encoding="utf-8", newline="\n")
     (dest / "program.yaml").write_text(
         f"name: {program_name()}\n"
-        "platform: sherlock\n"
-        "url: https://audits.sherlock.xyz/contests/298\n"
+        f"platform: {meta['platform']}\n"
+        f"url: {meta['url']}\n"
         "known_issues: known-issues.md\n",
         encoding="utf-8", newline="\n")
     return dest
+
+
+# Dossier metadata defaults: the Sherlock corpora's historical values, so their
+# dossiers are byte-identical. `platform` and `url` are free text the tool
+# prints; they do not affect matching. A corpus overrides them in the
+# `corpus:` block of its sources.yaml.
+LEGACY_META = {
+    "platform": "sherlock",
+    "url": "https://audits.sherlock.xyz/contests/298",
+    "known_issue_pattern": r"(?ims)^#{1,4}\s*Q:\s*Please list any known issues.*?\n(.*?)(?=^___|\n#{1,4}\s*Q:|\Z)",
+}
+
+
+def corpus_meta() -> dict:
+    meta = dict(LEGACY_META)
+    spec = yaml.safe_load((CORPUS / "sources.yaml").read_text(encoding="utf-8"))
+    for key in LEGACY_META:
+        if (spec.get("corpus") or {}).get(key):
+            meta[key] = spec["corpus"][key]
+    return meta
 
 
 def write_dossier_b(manifest: dict) -> Path:
@@ -172,7 +196,7 @@ def write_dossier_b(manifest: dict) -> Path:
         (dest / "audits" / (row["id"].replace(":", "-") + ".md")).write_text(
             head + text, encoding="utf-8", newline="\n")
     (dest / "program.yaml").write_text(
-        f"name: {program_name()}-judged\nplatform: sherlock\n"
+        f"name: {program_name()}-judged\nplatform: {corpus_meta()['platform']}\n"
         "known_issues: none\n", encoding="utf-8", newline="\n")
     (dest / "known-issues.md").write_text("# Known issues\n\nnone\n", encoding="utf-8", newline="\n")
     return dest

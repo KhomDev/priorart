@@ -62,7 +62,16 @@ LEGACY_CORPUS = {
     "prior_item_prefix": "c4-2023-07",
     "known_item_prefix": "ki-2024-02",
     "known_issue_section": "Q: Please list any known issues/acceptable risks",
+    # The regex whose group 1 is the sponsor's known-issues text. The default is
+    # Sherlock's README Q&A; a Code4rena corpus names its README heading.
+    "known_issue_pattern": r"(?ims)^#{1,4}\s*Q:\s*Please list any known issues.*?\n(.*?)(?=^___|\n#{1,4}\s*Q:|\Z)",
 }
+
+# Code4rena judge labels (see BENCHMARK.md, "Third and fourth corpora").
+C4_SEVERITY = ("2 (Med Risk)", "3 (High Risk)")
+C4_REPORT_ID = re.compile(r"^([HM])-(\d+)$")
+C4_DUPLICATE = re.compile(r"^duplicate-(\d+)$")
+C4_WITHDRAWN = ("withdrawn by warden",)
 
 
 def set_corpus(value: str) -> None:
@@ -182,7 +191,125 @@ def fetch_source(source: dict) -> dict[str, str]:
             time.sleep(0.05)
         print(f"  {sid}: {len(blobs)} files")
         return hashes
+    if source["kind"] == "c4-issues":
+        return fetch_c4_issues(source, dest)
     raise RuntimeError(f"{sid}: unknown kind {source['kind']!r}")
+
+
+def c4_issue_pages(repo: str) -> list[dict]:
+    """Every issue of a Code4rena findings repository (bodies and labels are in
+    the list response), oldest first. Pull requests are dropped."""
+    out: list[dict] = []
+    page = 1
+    while True:
+        batch = get(f"{API}/repos/{repo}/issues?state=all&per_page=100&page={page}&direction=asc&sort=created")
+        if not batch:
+            break
+        out.extend(i for i in batch if "pull_request" not in i)
+        page += 1
+        time.sleep(0.2)
+    return out
+
+
+def c4_layout(issues: list[dict]) -> dict[str, dict]:
+    """Map the judge's labels onto the judging layout the Sherlock corpora use.
+
+    Rules, frozen with the corpus (BENCHMARK.md):
+    - In scope: an issue with a High/Medium severity label, a report id label
+      (H-NN/M-NN), or `downgraded by judge`. QA and Gas reports are out; an
+      issue labelled `withdrawn by warden` is out.
+    - Group root: follow `duplicate-N` labels transitively; an issue with none
+      is its own root. A root outside the in-scope set (for example a QA report
+      that absorbed a downgraded finding) does not form a group: its members
+      become single excluded findings.
+    - A group is accepted (paid) when any member carries a report id; its
+      severity is that id's letter and its representative (*-best.md) is the
+      member with the report id. Every other group is excluded.
+    Returns relpath -> {"issue": n, "text": markdown} for the cache.
+    """
+    labels = {i["number"]: [l["name"] for l in i.get("labels", [])] for i in issues}
+    by_number = {i["number"]: i for i in issues}
+
+    def in_scope(n: int) -> bool:
+        ls = labels.get(n, [])
+        if any(w in ls for w in C4_WITHDRAWN):
+            return False
+        return (any(s in ls for s in C4_SEVERITY) or "downgraded by judge" in ls
+                or any(C4_REPORT_ID.match(x) for x in ls))
+
+    def root_of(n: int) -> int:
+        seen = set()
+        while n not in seen:
+            seen.add(n)
+            nxt = [int(m.group(1)) for x in labels.get(n, []) if (m := C4_DUPLICATE.match(x))]
+            if not nxt or nxt[0] == n:
+                return n
+            n = nxt[0]
+        return n
+
+    groups: dict[int, list[int]] = {}
+    for n in sorted(labels):
+        if not in_scope(n):
+            continue
+        r = root_of(n)
+        key = r if in_scope(r) else -n          # orphaned member: its own group
+        groups.setdefault(key, []).append(n)
+    for key in list(groups):
+        if key > 0 and key not in groups[key]:
+            groups[key].insert(0, key)
+
+    def text(n: int) -> str:
+        issue = by_number[n]
+        body = (issue.get("body") or "").replace("\r\n", "\n")
+        return f"# {issue['title'].strip()}\n\n{body}\n"
+
+    files: dict[str, dict] = {}
+    for key, members in sorted(groups.items(), key=lambda kv: abs(kv[0])):
+        members = sorted(set(members))
+        ids = [(n, m) for n in members for x in labels.get(n, []) if (m := C4_REPORT_ID.match(x))]
+        root = abs(key)
+        if root > 999:
+            raise RuntimeError(f"issue #{root}: the judging layout uses three-digit directory names")
+        if ids:
+            rep, m = sorted(ids)[0]
+            folder = f"{root:03d}-{m.group(1)}"
+            for n in members:
+                name = f"{n:03d}-best.md" if n == rep else f"{n:03d}.md"
+                files[f"{folder}/{name}"] = {"issue": n, "text": text(n)}
+        elif len(members) == 1:
+            n = members[0]
+            files[f"invalid/{n:03d}.md"] = {"issue": n, "text": text(n)}
+        else:
+            for n in members:
+                name = f"{n:03d}-best.md" if n == root else f"{n:03d}.md"
+                files[f"invalid/invalid-{root:03d}/{name}"] = {"issue": n, "text": text(n)}
+    return files
+
+
+def fetch_c4_issues(source: dict, dest: Path) -> dict[str, str]:
+    """Code4rena judging lives in GitHub issue labels, not files. Fetch every
+    issue once and write the judged layout into the cache; the lock pins each
+    written file by sha256, so a later edit to an issue shows up in --check."""
+    issues = c4_issue_pages(source["repo"])
+    if not issues:
+        raise RuntimeError(f"{source['id']}: no issues")
+    files = c4_layout(issues)
+    hashes: dict[str, str] = {}
+    for rel, entry in sorted(files.items()):
+        raw = entry["text"].encode("utf-8")
+        target = dest / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(raw)
+        hashes[rel] = sha256(raw)
+    # The label snapshot behind the layout, for the reader and for audits.
+    snap = json.dumps(
+        [{"number": i["number"], "updated_at": i.get("updated_at"),
+          "labels": sorted(l["name"] for l in i.get("labels", []))} for i in issues],
+        indent=1, sort_keys=True).encode("utf-8")
+    (dest / "_labels.json").write_bytes(snap)
+    hashes["_labels.json"] = sha256(snap)
+    print(f"  {source['id']}: {len(issues)} issues -> {len(files)} judged files")
+    return hashes
 
 
 def read_lock() -> dict:
@@ -219,6 +346,10 @@ def fetch(_args) -> int:
             "role": source["role"],
             "files": files,
         }
+        if source["kind"] == "c4-issues":
+            # Issues are not in git: the commit above is the findings
+            # repository's tip when fetched, recorded for context only.
+            lock["sources"][source["id"]]["fetched_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     LOCK.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8", newline="\n")
     total = sum(len(e["files"]) for e in lock["sources"].values())
     print(f"wrote {LOCK.relative_to(ROOT).as_posix()} ({total} files)")
@@ -263,13 +394,11 @@ def prior_items(audit_text: str, item_prefix: str, source_id: str) -> list[dict]
     return sorted(items, key=lambda i: (i["locator"][0], i["locator"]))
 
 
-def known_issue_items(readme_text: str, item_prefix: str, source_id: str) -> list[dict]:
-    """The sponsor's Q&A answer is the known-issues section. Bullets become
+def known_issue_items(readme_text: str, item_prefix: str, source_id: str,
+                      pattern: str = LEGACY_CORPUS["known_issue_pattern"]) -> list[dict]:
+    """The sponsor's known-issues section (group 1 of `pattern`). Bullets become
     items; a one-line answer becomes one item. Kept as short locators."""
-    m = re.search(
-        r"(?ims)^#{1,4}\s*Q:\s*Please list any known issues.*?\n(.*?)(?=^___|\n#{1,4}\s*Q:|\Z)",
-        readme_text,
-    )
+    m = re.search(pattern, readme_text)
     if not m:
         return []
     body = m.group(1).strip()
@@ -386,7 +515,7 @@ def build_manifest(_args) -> int:
     audit = (CACHE / prior_src["id"] / prior_src["path"]).read_text(encoding="utf-8")
     readme = (CACHE / known_src["id"] / known_src["path"]).read_text(encoding="utf-8")
     priors = prior_items(audit, meta["prior_item_prefix"], prior_src["id"]) + known_issue_items(
-        readme, meta["known_item_prefix"], known_src["id"])
+        readme, meta["known_item_prefix"], known_src["id"], meta["known_issue_pattern"])
     findings = judging_findings(CACHE / judging_src["id"])
 
     rows = []
