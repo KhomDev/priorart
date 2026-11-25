@@ -20,7 +20,14 @@ That block is illustrative. The generated block further down is produced from
 the committed fixture by `scripts/regen-readme-examples.sh` and checked by
 `tests/docs.rs`, so it cannot drift.
 
-## Status: retrieval-only (0.2.0; matcher unchanged since 0.1.3)
+## Status: retrieval-only (0.2.1; matcher unchanged since 0.1.3)
+
+**On two Code4rena-judged corpora the matcher's false-alarm rate is above the
+30% trigger:** 14/26 = 53.8% (Wilson 95% CI 35.5-71.2) pooled over Maia and
+Panoptic, the first time an interval lies wholly above it. The duplicate
+warning stays off, and the alarm rule (any prior item sharing >= 2 strong
+identifiers) is the next thing to fix. Details and the one harness defect these
+corpora exposed are in [docs/benchmark.md](docs/benchmark.md).
 
 priorart ranks prior items to read. It does **not** warn that a finding is a
 duplicate. The plan's kill criterion is a 30% false-alarm rate on judged unique
@@ -46,16 +53,22 @@ Measured benchmark (0 tool errors):
 | PoolTogether, 0.2.0 `06fdf195` | False-alarm rate, 40 judged paid+unique | **9/40 = 22.5%** | 12.3-37.5% |
 | PoolTogether, 0.2.0 `06fdf195` | Duplicate recall@5, 85 judged duplicates | **32/85 = 37.6%** | 28.1-48.3% |
 | PoolTogether, 0.2.0 `06fdf195` | Known-prior recall@5 | n=2, 0 hits | not a rate |
+| Maia (Code4rena-judged), 0.2.0 `06fdf195` | False-alarm rate, 15 judged paid+unique | **8/15 = 53.3%** | 30.1-75.2% |
+| Maia (Code4rena-judged), 0.2.0 `06fdf195` | Duplicate recall@5, 289 judged duplicates | **87/289 = 30.1%** | 25.1-35.6% |
+| Panoptic (Code4rena-judged), 0.2.0 `06fdf195` | False-alarm rate, 11 judged paid+unique | **6/11 = 54.5%** | 28.0-78.7% |
+| Panoptic (Code4rena-judged), 0.2.0 `06fdf195` | Duplicate recall@5, 80 judged duplicates | **38/80 = 47.5%** | 36.9-58.3% |
+| Maia + Panoptic pooled (preregistered) | False-alarm rate, 26 | **14/26 = 53.8%** | 35.5-71.2% |
+| Maia + Panoptic pooled (preregistered) | Known-prior recall@5 | n=4, 0 hits | not a rate |
 
 Every run is in [docs/benchmark.md](docs/benchmark.md). The Tapioca 0.1.0
 number of record was 26/60 = 43.3% [31.6-55.9] false alarms and
 39/64 = 60.9% [48.7-71.9] duplicate recall; before it, 30.0% and 25.0%. The
 0.1.3 denominator change gives up some duplicate recall (39/64 to 36/64) to
 remove false alarms that rested on symbols shared by most of the relevant
-items. Both corpora put the false-alarm point estimate below the 30% trigger,
-but both Wilson intervals include 30%, so the duplicate warning stays off; a
-fresh, adequately powered held-out split is still required before the criterion
-is treated as settled.
+items. Both Sherlock-judged corpora put the false-alarm point estimate below
+the 30% trigger with intervals that include 30%; the Code4rena-judged corpora
+put it above, with Maia's and the pooled interval wholly above. The duplicate
+warning stays off.
 
 ## Install
 
@@ -86,7 +99,7 @@ priorart check finding.md --dossier my-program/my-program.dossier
 
 <!-- BEGIN GENERATED EXAMPLE (scripts/regen-readme-examples.sh) -->
 $ priorart build examples/dossier-demo
-priorart 0.2.0 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.2.1 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
   3 source(s), 13 item(s)
     audit-finding    1
     known-issue      2
@@ -100,7 +113,7 @@ priorart 0.2.0 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossie
 Next: priorart check <finding.md> --dossier examples/dossier-demo/dossier-demo.dossier
 
 $ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
-priorart 0.2.0 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.2.1 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
 
 HAS THIS BEEN FOUND?  2 prior items to read (share >=2 symbol identifiers)
   [audit: internal-review.md p.1, section M-03 Fee index rounding]  "The consistency check in `FeeLedger.distributeFees` reverts with `FeeAccountingMismatch` when the fee index rounds up past the collected balance."
@@ -136,7 +149,7 @@ same script and checked by `tests/docs.rs`.
 
 <!-- BEGIN GENERATED HTML EXAMPLE (scripts/regen-readme-examples.sh) -->
 $ priorart build tests/fixtures/html-program
-priorart 0.2.0 - dossier html-program (tests/fixtures/html-program/html-program.dossier)
+priorart 0.2.1 - dossier html-program (tests/fixtures/html-program/html-program.dossier)
   1 source(s), 7 item(s)
     payout-tier      3
     scope-clause     2
@@ -146,7 +159,7 @@ priorart 0.2.0 - dossier html-program (tests/fixtures/html-program/html-program.
 Next: priorart check <finding.md> --dossier tests/fixtures/html-program/html-program.dossier
 
 $ priorart check tests/fixtures/html-finding.md --dossier tests/fixtures/html-program/html-program.dossier
-priorart 0.2.0 - tests/fixtures/html-finding.md against dossier html-program (tests/fixtures/html-program/html-program.dossier)
+priorart 0.2.1 - tests/fixtures/html-finding.md against dossier html-program (tests/fixtures/html-program/html-program.dossier)
 
 HAS THIS BEEN FOUND?  nothing ranked (no prior item shares >=2 symbol identifiers)
 

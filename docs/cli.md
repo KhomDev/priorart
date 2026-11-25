@@ -1,6 +1,6 @@
 # CLI reference
 
-Every command, flag and exit code in `priorart 0.2.0`. `priorart --help` and
+Every command, flag and exit code in `priorart 0.2.1`. `priorart --help` and
 `priorart <command> --help` print the same surface; the binary is the source of
 truth for wording.
 
@@ -70,7 +70,7 @@ regular input remains.
 
 ```text
 $ priorart build examples/dossier-demo
-priorart 0.2.0 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.2.1 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
   3 source(s), 13 item(s)
     audit-finding    1
     known-issue      2
@@ -200,7 +200,7 @@ existing file without `--force`. `build` reads the scaffold without edits.
 
 ```text
 $ priorart init my-program
-priorart 0.2.0 - scaffolded my-program
+priorart 0.2.1 - scaffolded my-program
 
   program.yaml
   scope.md

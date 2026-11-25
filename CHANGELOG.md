@@ -13,6 +13,47 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-25
+
+An evidence release. The crate's code is unchanged from 0.2.0 (`git diff
+v0.2.0 -- src Cargo.lock schemas vocab` is empty apart from the version), so
+the binary behaves exactly as 0.2.0; what changes is how much the benchmark
+says about it. Four corpora on two judging platforms now measure the frozen
+matcher, and the new ones say plainly that its alarm rule fires too often.
+
+### Benchmark
+
+- **Two Code4rena-judged corpora** (`eval/benchmark/maia-c4`,
+  `eval/benchmark/panoptic-c4`), preregistered before any label or run. The
+  false-alarm rate on paid, unique findings is 8/15 = 53.3% [30.1-75.2] on
+  Maia, 6/11 = 54.5% [28.0-78.7] on Panoptic and 14/26 = 53.8% [35.5-71.2]
+  pooled; duplicate recall@5 is 87/289 = 30.1% [25.1-35.6], 38/80 = 47.5%
+  [36.9-58.3] and 125/369 = 33.9% [29.2-38.9]. Maia's and the pooled interval
+  lie entirely above the preregistered 30% trigger, so the "shares
+  identifiers" warning stays off.
+- **A second Sherlock-judged corpus**, PoolTogether V5: false-alarm rate 9/40
+  = 22.5% [12.3-37.5], duplicate recall@5 32/85 = 37.6% [28.1-48.3], label
+  agreement 35/38.
+- **Harness:** `fetch.py`/`run.py --corpus-dir`; a `c4-issues` source kind
+  that maps Code4rena's issue labels (report ids, `duplicate-N`, `downgraded
+  by judge`) onto the judged layout, checked against each contest's published
+  report (26/26 paid findings); per-corpus known-issues pattern and dossier
+  metadata. The Tapioca and PoolTogether manifests regenerate byte-identically.
+- **Known defect, documented, not fixed in this release:** the prior report's
+  last High/Medium slice carries its Low/QA sections into the dossier. One
+  Maia alarm comes only from such an item; `BENCHMARK.md` gives the post-hoc
+  sensitivity row. The fix needs a new dated measurement of all four corpora.
+
+### Corrected
+
+- `docs/benchmark.md` and `BENCHMARK.md` said Code4rena -> Sherlock was the
+  only public platform pair with judge-grouped duplicates and excluded
+  findings. That was wrong; `docs/validation.md` records the retraction.
+
+### Build
+
+- OSS-Fuzz local project config for the parser fuzz targets (no upstream PR).
+
 ## [0.2.0] - 2026-11-22
 
 An input-handling release. A saved HTML program page is now read, every input
@@ -960,7 +1001,8 @@ The tree itself is unchanged except for the two fixes recorded here.
 - The rule catalog and gate definitions as data, embedded in the binary.
 - The fixture suite: one positive and one negative case per anti-pattern.
 
-[Unreleased]: https://github.com/KhomDev/priorart/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/KhomDev/priorart/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/KhomDev/priorart/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/KhomDev/priorart/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/KhomDev/priorart/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/KhomDev/priorart/compare/v0.1.1...v0.1.2
