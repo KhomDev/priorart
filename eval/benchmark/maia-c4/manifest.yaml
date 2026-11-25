@@ -3064,11 +3064,12 @@ findings:
   - invalid/008.md
   title: multiple verify smart contract
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/008.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:010
   judged: invalid
   pointer:
@@ -3242,11 +3243,12 @@ findings:
   title: A proposed strategy by the attacker that has been authorized by the governance
     can be redeployed int
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/041.md: CREATE2 redeploy of an approved strategy; prior M-04
+    is reorg on create, a different mechanism'
+  confidence: medium
+  notes: ''
 - id: inv:043
   judged: invalid
   pointer:
@@ -3293,11 +3295,12 @@ findings:
   title: Lack of event logging in critical functions within the contract can have
     a substantial impact on the
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/045.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:047
   judged: invalid
   pointer:
@@ -3612,11 +3615,12 @@ findings:
   title: Users can loose money due to gas spent and the _gasParams.remoteBranchExecutionGas
     on the transactio
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/093.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:097
   judged: invalid
   pointer:
@@ -3859,11 +3863,12 @@ findings:
   - invalid/134.md
   title: '[M-11] Dubious typecast in the BranchBridgeAgent contract'
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/134.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:136
   judged: invalid
   pointer:
@@ -4629,11 +4634,12 @@ findings:
   title: No check to confirm if the length of the `_payload` parameter is greater
     than or equal to the expect
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/230.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:231
   judged: invalid
   pointer:
@@ -5417,11 +5423,12 @@ findings:
   title: The initialize function is unprotected after setup. An attacker could re-initialize
     and take ownersh
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/340.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:342
   judged: invalid
   pointer:
@@ -5923,11 +5930,12 @@ findings:
   title: The `withdrawERC721` use transferFrom instead of safeTransferFrom to transfer
     ERC721 token
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/448.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:457
   judged: invalid
   pointer:
@@ -5990,11 +5998,12 @@ findings:
   title: '`setCoreBranchRouter` can set any address as a branch bridge agent which
     can then `withdraw()`'
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/465.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:466
   judged: invalid
   pointer:
@@ -6089,11 +6098,12 @@ findings:
   title: Unauthorised access to `bridgeAgent` to functions with `requiresBridgeAgent`
     modifiers
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/477.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:478
   judged: invalid
   pointer:
@@ -6154,11 +6164,13 @@ findings:
   title: The `_performCall` function in the `ArbitrumBranchBridgeAgent` contract does
     not check if the `_call
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/483.md: ArbitrumBranchBridgeAgent._performCall does not check
+    empty calldata; prior H-27 is the unhandled return value of the same function,
+    a different claim'
+  confidence: medium
+  notes: the blind title-only reader mapped it to H-27
 - id: inv:484
   judged: invalid
   pointer:
@@ -6808,11 +6820,12 @@ findings:
   title: Lack of proper input validation on `_depositNonce` leads to the bug where
     tokens can be stolen by pa
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/588.md: redeemDeposit with a non-existent nonce; prior H-08
+    is retrieveDeposit with an invalid nonce, a different function and path'
+  confidence: medium
+  notes: ''
 - id: inv:589
   judged: invalid
   pointer:
@@ -7594,12 +7607,13 @@ findings:
   files:
   - invalid/683.md
   title: RootBridgeAgentFactory:createBridgeAgent() is vulnerable to reorg attack
-  label: invalid_unmapped
-  label_method: unlabelled
-  prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  label: known_prior
+  label_method: reader
+  prior_ref: c4-2023-05:M-04
+  provenance: 'invalid/683.md: createBridgeAgent deployed with create is open to reorg;
+    prior M-04 makes the reorg claim for the create methods'
+  confidence: high
+  notes: ''
 - id: inv:684
   judged: invalid
   pointer:
@@ -7692,11 +7706,12 @@ findings:
   - invalid/702.md
   title: BranchBridgeAgent.sol contract may send more funds than required
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/702.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:703
   judged: invalid
   pointer:
@@ -7839,11 +7854,12 @@ findings:
   - invalid/736.md
   title: protocol might not work for functions require multiple cross-chain messages
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/736.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:739
   judged: invalid
   pointer:
@@ -7906,11 +7922,12 @@ findings:
   title: The ``toggleBridgeAgentFactory`` functionality is effectively negated by
     the ``addBridgeAgentFactory
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/742.md: addBridgeAgentFactory negates toggleBridgeAgentFactory;
+    prior M-28 is addBridgeAgentFactory being non-functional, a different failure'
+  confidence: medium
+  notes: ''
 - id: inv:743
   judged: invalid
   pointer:
@@ -7922,11 +7939,12 @@ findings:
   - invalid/743.md
   title: Token registration does not work for MulticallRouter
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/743.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:746
   judged: invalid
   pointer:
@@ -7986,11 +8004,12 @@ findings:
   - invalid/754.md
   title: Doesn't check for partial redemptions. Could allow duplicate redemptions
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/754.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:756
   judged: invalid
   pointer:
@@ -8461,11 +8480,12 @@ findings:
   - invalid/891.md
   title: add sendBack function to origin when lzReceiveNonBlocking is not executed
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/891.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:894
   judged: invalid
   pointer:
@@ -8792,11 +8812,12 @@ findings:
   title: '`CoreRootRouter.addBranchToBridgeAgent` doesn''t validate its parameter
     `_newBranchRouter`'
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/invalid-394/394-best.md: read in full; no prior item or known
+    issue makes this claim'
+  confidence: high
+  notes: ''
 - id: inv:invalid-401
   judged: invalid
   pointer:
@@ -12127,5 +12148,5 @@ counts:
   accepted: 15
   invalid: 387
   duplicates: 289
-  known_prior: 0
-  reader_labelled: 0
+  known_prior: 1
+  reader_labelled: 20

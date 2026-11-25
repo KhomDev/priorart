@@ -2439,11 +2439,12 @@ findings:
   title: Medium Risk Vulnerability in SafeTransferLib Due to Ignored ERC20 Transfer
     Return Values
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/005.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:007
   judged: invalid
   pointer:
@@ -2585,11 +2586,12 @@ findings:
   - invalid/017.md
   title: Functions returning `true` without their success checked may result in inconsistencies.
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/017.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:018
   judged: invalid
   pointer:
@@ -2617,11 +2619,12 @@ findings:
   - invalid/019.md
   title: '`abi.encodePacked` Allows Hash Collision'
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/019.md: abi.encodePacked collision claim; prior M-05 is a birthday
+    attack on validateCallback''s address computation, a different claim'
+  confidence: medium
+  notes: ''
 - id: inv:024
   judged: invalid
   pointer:
@@ -3255,11 +3258,12 @@ findings:
   title: Validation for address(0) is not present in CollateralToken, so tokens might
     be minted/deposited/tra
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/088.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:090
   judged: invalid
   pointer:
@@ -4056,11 +4060,12 @@ findings:
   - invalid/168.md
   title: Users with open positions can still send shares
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/168.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:170
   judged: invalid
   pointer:
@@ -4544,11 +4549,12 @@ findings:
   title: An attacker could use front-running to profit from anticipated price movements
     or disrupt legitimate
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/216.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:218
   judged: invalid
   pointer:
@@ -4593,11 +4599,12 @@ findings:
   title: '`CollateralTracker.sol` is not compliant with ERC-4626 because of the incorrect
     implementation of `t'
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/228.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:230
   judged: invalid
   pointer:
@@ -4757,11 +4764,12 @@ findings:
   - invalid/242.md
   title: premium can be paid over the protocol loss threshold
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/242.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:244
   judged: invalid
   pointer:
@@ -5001,12 +5009,13 @@ findings:
   - invalid/276.md
   title: One can trigger an underflow to `removedLiquidity()` so as to lock other
     user's deposits
-  label: invalid_unmapped
-  label_method: unlabelled
-  prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  label: known_prior
+  label_method: reader
+  prior_ref: c4-2023-11:M-02
+  provenance: 'invalid/276.md: underflow of removedLiquidity locks other users'' deposits;
+    the finding itself cites the prior C4 report, M-02 makes the same claim'
+  confidence: high
+  notes: ''
 - id: inv:277
   judged: invalid
   pointer:
@@ -6090,12 +6099,14 @@ findings:
   - invalid/390.md
   title: Manipulating Uniswap V3 observations can bypass solvency checks, allowing
     users to maintain undetect
-  label: invalid_unmapped
-  label_method: unlabelled
-  prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  label: known_prior
+  label_method: reader
+  prior_ref: ki-2024-04:7
+  provenance: 'invalid/390.md: manipulating Uniswap observations over several blocks
+    to bypass solvency checks; known issue 7 puts non-atomic, multi-block oracle manipulation
+    out of scope'
+  confidence: medium
+  notes: the blind title-only reader did not map it
 - id: inv:391
   judged: invalid
   pointer:
@@ -6459,11 +6470,12 @@ findings:
   title: Protocol is open to `Flash Loan` Attack via which `PoolUtilization Ratio`
     can manipulated and severa
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/422.md: flash-loan manipulation of pool utilization (atomic);
+    known issues 7/9 cover non-atomic price manipulation'
+  confidence: medium
+  notes: ''
 - id: inv:423
   judged: invalid
   pointer:
@@ -6492,11 +6504,12 @@ findings:
   title: Slippage checks are disabled in an edge case when minting/burning options;
     may lead to loss of funds
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/424.md: slippage checks disabled when tickLimitLow == tickLimitHigh
+    is a code path, not the user''s slippage choice in known issue 12'
+  confidence: medium
+  notes: ''
 - id: inv:425
   judged: invalid
   pointer:
@@ -6508,11 +6521,12 @@ findings:
   - invalid/425.md
   title: Mint() & Deposit() provide different shares amounts to same asset value.
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/425.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:426
   judged: invalid
   pointer:
@@ -6940,11 +6954,12 @@ findings:
   - invalid/477.md
   title: Incorrect OTM check in required collateral calculation
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/477.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:478
   judged: invalid
   pointer:
@@ -7020,12 +7035,14 @@ findings:
   - invalid/487.md
   title: In the addCapped there is no mechanism to reset the unfreeze the accumulators,
     and it will silentghl
-  label: invalid_unmapped
-  label_method: unlabelled
-  prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  label: known_prior
+  label_method: reader
+  prior_ref: ki-2024-04:16
+  provenance: 'invalid/487.md: premium accumulator in addCapped freezes at the cap
+    and is never reset; known issue 16 states premium accumulation can become permanently
+    capped'
+  confidence: high
+  notes: ''
 - id: inv:489
   judged: invalid
   pointer:
@@ -7071,11 +7088,12 @@ findings:
   - invalid/492.md
   title: Unable to burn tokenId with more than 2 legs inside
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/492.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:494
   judged: invalid
   pointer:
@@ -7235,11 +7253,12 @@ findings:
   title: '`ValidateExerciseable` function logic leads to forceExercising ineligible
     positions'
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/512.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:514
   judged: invalid
   pointer:
@@ -7548,11 +7567,12 @@ findings:
   - invalid/544.md
   title: Contract can be front run and set with a malicious owner upon deployment
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/544.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:545
   judged: invalid
   pointer:
@@ -7954,11 +7974,12 @@ findings:
   - invalid/583.md
   title: 'Upgraded Q -> 2 from #439 [1715296378859]'
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/583.md: read in full; no prior item or known issue makes this
+    claim'
+  confidence: high
+  notes: ''
 - id: inv:invalid-195
   judged: invalid
   pointer:
@@ -8174,11 +8195,12 @@ findings:
   title: '`mintTokenizedPosition` and `burnTokenizedPosition` can be Dos due to zero
     value transfer'
   label: invalid_unmapped
-  label_method: unlabelled
+  label_method: reader
   prior_ref: null
-  provenance: null
-  confidence: null
-  notes: null
+  provenance: 'invalid/invalid-435/435-best.md: read in full; no prior item or known
+    issue makes this claim'
+  confidence: high
+  notes: ''
 - id: inv:invalid-466
   judged: invalid
   pointer:
@@ -9063,5 +9085,5 @@ counts:
   accepted: 11
   invalid: 356
   duplicates: 80
-  known_prior: 0
-  reader_labelled: 0
+  known_prior: 3
+  reader_labelled: 20
