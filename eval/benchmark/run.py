@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import math
 import os
 import shutil
@@ -128,6 +129,24 @@ def program_name() -> str:
     return f"{CORPUS.name}-sherlock" if platform == "sherlock" else CORPUS.name
 
 
+def prior_slices(audit: str) -> list[tuple[str, str]]:
+    """One slice per High/Medium item, stopping at the next item or at the
+    next top-level section. Before P1-C the last item ran to the end of the
+    report, so its Low/QA/gas sections became dossier items."""
+    import re
+    heads = list(re.finditer(r"^##\s+\[\[(H|M)-(\d+)\]\s+(.+?)\]\(#?", audit, re.M))
+    out: list[tuple[str, str]] = []
+    for i, h in enumerate(heads):
+        if i + 1 < len(heads):
+            end = heads[i + 1].start()
+        else:
+            nxt = re.search(r"^#{1,2}\s+(?!\[\[(?:H|M)-\d+\])", audit[h.end():], re.M)
+            end = h.end() + nxt.start() if nxt else len(audit)
+        locator = f"{h.group(1)}-{int(h.group(2)):02d}"
+        out.append((locator, audit[h.start():end].strip()))
+    return out
+
+
 def write_dossier_a(manifest: dict) -> Path:
     """Dossier A: the prior audit, one file per item, plus the sponsor's known
     issues. One item per file so the item boundary does not depend on how the
@@ -139,15 +158,11 @@ def write_dossier_a(manifest: dict) -> Path:
     prior = manifest["sources"]["prior_audit"]
     known = manifest["sources"]["known_issues"]
     audit = (CACHE / prior["id"] / prior["path"]).read_text(encoding="utf-8")
-    import re
     first_prior = manifest["prior_items"]["prior_audit_and_known"][0]["id"]
     file_prefix = first_prior.split(":")[0]
-    heads = list(re.finditer(r"^##\s+\[\[(H|M)-(\d+)\]\s+(.+?)\]\(#?", audit, re.M))
-    for i, h in enumerate(heads):
-        end = heads[i + 1].start() if i + 1 < len(heads) else len(audit)
-        locator = f"{h.group(1)}-{int(h.group(2)):02d}"
-        body = audit[h.start():end].strip()
-        (dest / "audits" / f"{file_prefix}-{locator}.md").write_text(body + "\n", encoding="utf-8", newline="\n")
+    for locator, body in prior_slices(audit):
+        (dest / "audits" / f"{file_prefix}-{locator}.md").write_text(
+            body + "\n", encoding="utf-8", newline="\n")
     readme = (CACHE / known["id"] / known["path"]).read_text(encoding="utf-8")
     meta = corpus_meta()
     m = re.search(meta["known_issue_pattern"], readme)
@@ -733,9 +748,46 @@ def fake_spec() -> dict:
     }
 
 
+def slice_self_test() -> int:
+    """The last High/Medium slice stops at the next top-level section."""
+    audit = (
+        "## [[H-01] first](x)\n\nbody\n\n"
+        "## [[M-01] second](x)\n\nbody2\n\n"
+        "# Low Risk Findings\n\nlow\n\n# QA\n\nqa\n"
+    )
+    got = prior_slices(audit)
+    if len(got) != 2:
+        print(f"SELFTEST FAIL slice count {len(got)}", file=sys.stderr)
+        return 1
+    if "Low Risk" in got[1][1] or "qa" in got[1][1].lower():
+        print("SELFTEST FAIL slice leaked a Low/QA section", file=sys.stderr)
+        return 1
+    return 0
+
+
+def known_issue_self_test() -> int:
+    """A wrapped known-issue bullet is one item, not several."""
+    import fetch
+    text = "# K\n\n## Known\n\n- first line\n  wrapped line\n- second\n"
+    items = fetch.known_issue_items(
+        text, "ki", "src", r"(?ms)^##\s*Known\s*\n(.*)$"
+    )
+    if len(items) != 2:
+        print(f"SELFTEST FAIL known-issue count {len(items)}", file=sys.stderr)
+        return 1
+    if "first line wrapped line" not in items[0]["text"]:
+        print(f"SELFTEST FAIL known-issue join: {items[0]['text']}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def self_test() -> int:
     """Run the pipeline on a fixture corpus with a fake binary, assert the
     expected numbers, then restore nothing (it all lives under a temp dir)."""
+    if slice_self_test() != 0:
+        return 1
+    if known_issue_self_test() != 0:
+        return 1
     tmp = Path(tempfile.mkdtemp(prefix="priorart-bench-selftest-"))
     saved = (CORPUS, CACHE, BUILD, QUERIES)
     saved_spec = os.environ.get("FAKE_PRIORART_SPEC")

@@ -687,3 +687,55 @@ priorart binary at all; CI could run it on every change.
 | `pooltogether/results.json` | yes | the PoolTogether numbers, per query and with the binary hash |
 | `eval/cache/benchmark/` | no (gitignored) | fetched finding bodies and built dossiers (Tapioca) |
 | `eval/cache/benchmark/pooltogether/` | no (gitignored) | fetched finding bodies and built dossiers (PoolTogether) |
+
+## P1-C matcher revision and fresh corpora (preregistered 2026-11-25)
+
+Written before the revised matcher is run on any corpus. The P1 numbers above
+are unchanged; the new numbers are added beside them with their dates.
+
+**What changes in the matcher (0.3.0).**
+
+1. The alarm rule requires a **shared claim component**: at least one shared
+   specific symbol with document frequency 1 in the relevant set, or a shared
+   file path. Two shared identifiers alone no longer alarm.
+2. Specificity is **absolute**: a shared symbol may appear in at most
+   `MAX_SPECIFIC_DF = 2` items. Before this, the threshold was also a share of
+   the relevant items, so a larger dossier made more identifiers look specific
+   and raised alarms by itself.
+3. A prior item's **heading identifiers** are counted (the PoolTogether
+   `inv:009` / M-03 miss).
+4. A wrapped **known-issues bullet is one item**; continuation lines join the
+   bullet above them.
+
+**Harness fix.** The last High/Medium slice of a prior `report.md` stops at the
+next top-level section instead of running to the end of the file, so Low/QA/gas
+sections no longer enter dossier A.
+
+**Corpora.** Four in-sample corpora (their held-out halves were opened in P1):
+Tapioca, PoolTogether, Maia, Panoptic. Two **sealed** corpora are the
+out-of-sample headline, pinned before the matcher change:
+`party-c4` (Party 2023-04 -> 2023-10) and `wildcat-c4` (Wildcat 2023-10 ->
+2024-08). The paid-finding mapping was verified one-to-one against each later
+contest's `report.md` before any label or run (Party 9/9, Wildcat 9/9, same
+severity).
+
+**Analysis plan.**
+
+- False-alarm rate: paid, unique findings for which any prior item is
+  returned; duplicate recall@5 against the judged representatives; known-prior
+  recall@5 on the seeded sample of excluded findings.
+- Every rate carries n and a Wilson 95% interval; pooled rates also carry a
+  **source-clustered bootstrap** interval (resample sources, 10,000 draws,
+  seed `priorart-bootstrap-p1c-2026-11-25`).
+- The preregistered 30% trigger is unchanged: above 30% false alarms on judged
+  unique findings, the release ships retrieval only and no "shares
+  identifiers" warning.
+- Known-prior samples: the 20 excluded findings with the smallest
+  `sha256(seed + ':label:' + id)` per corpus, labelled before the frozen run
+  by one reader; a blinded second reader on titles and the prior-item list.
+
+**Expected outcome, stated in advance.** The claim-component requirement
+should lower the false-alarm rate on both platforms and may lower duplicate
+recall, because a duplicate that shares only two common identifiers no longer
+matches. If the fresh corpora still exceed 30%, the trigger stays met and the
+warning stays off.

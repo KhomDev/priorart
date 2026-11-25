@@ -26,10 +26,15 @@ pub const DEFAULT_TOP_K: usize = 5;
 pub const MAX_TOP_K: usize = 50;
 
 /// A symbol that appears in more than this share of the items sharing a symbol
-/// with the finding is treated as generic and never counts toward the
-/// threshold. An identifier that appears once is always specific, however
-/// small the dossier.
+/// with the finding is treated as generic. Kept for the corpus notes; the
+/// threshold is no longer a share of the dossier (see [`MAX_SPECIFIC_DF`]).
 pub const GENERIC_DF_PERCENT: usize = 20;
+
+/// The largest absolute document frequency a shared symbol may have and still
+/// count toward the threshold. Fixed, not a share of the dossier: before
+/// 0.3.0 a larger dossier made more identifiers look specific, so the alarm
+/// fired more often on bigger prior audits for no reason of substance.
+pub const MAX_SPECIFIC_DF: usize = 2;
 
 /// Language keywords and names that appear in almost every report. They are
 /// not evidence that two findings share a root cause.
@@ -719,10 +724,12 @@ pub struct Ranked {
 }
 
 /// Rank dossier items against the finding. Only items with at least
-/// MIN_SHARED_IDENTIFIERS shared specific symbols are returned; the sort is
-/// specific-symbol count descending, then rarity, then symbol count, then
-/// shared paths, then the identifiers themselves. Word overlap is never
-/// scored, and document order is never a tie-break.
+/// MIN_SHARED_IDENTIFIERS shared specific symbols **and a shared claim
+/// component** — one shared symbol unique to the prior item, or a shared file
+/// path — are returned; the sort is specific-symbol count descending, then
+/// rarity, then symbol count, then shared paths, then the identifiers
+/// themselves. Word overlap is never scored, and document order is never a
+/// tie-break.
 pub fn rank(items: &[Item], finding_text: &str, top_k: usize) -> Vec<Ranked> {
     let mine = Profile::from_text(finding_text);
     rank_with_profile(items, &mine, top_k)
@@ -753,10 +760,10 @@ pub fn rank_with_profile(items: &[Item], mine: &Profile, top_k: usize) -> Vec<Ra
         }
     }
     let is_specific = |id: &str| -> bool {
-        let count = df.get(id).copied().unwrap_or(0);
-        // A symbol named by at most two items is rare in absolute terms, which
-        // keeps the rule usable on small dossiers (an audit plus its index).
-        count <= 2 || count * 100 <= relevant_total * GENERIC_DF_PERCENT
+        // An absolute document frequency, not a share of the dossier: a
+        // larger dossier must not make more identifiers look specific, which
+        // is what raised alarms by itself on the Code4rena corpora.
+        df.get(id).copied().unwrap_or(0) <= MAX_SPECIFIC_DF
     };
     let mut rows: Vec<Ranked> = Vec::new();
     for (index, theirs) in profiles.iter().enumerate() {
@@ -772,11 +779,21 @@ pub fn rank_with_profile(items: &[Item], mine: &Profile, top_k: usize) -> Vec<Ra
         if specific.len() < MIN_SHARED_IDENTIFIERS {
             continue;
         }
+        let shared_paths: Vec<String> = mine.paths.intersection(&theirs.paths).cloned().collect();
+        // Two identifiers are not a claim: at least one of them has to be
+        // unique to this prior item, or the two findings have to name the
+        // same file. Without this a dossier that repeats common names alarms
+        // on everything.
+        let unique = specific
+            .iter()
+            .any(|id| df.get(id.as_str()).copied().unwrap_or(0) == 1);
+        if !unique && shared_paths.is_empty() {
+            continue;
+        }
         let rarity: u64 = specific
             .iter()
             .map(|id| (relevant_total + 1 - df.get(id.as_str()).copied().unwrap_or(0)) as u64)
             .sum();
-        let shared_paths: Vec<String> = mine.paths.intersection(&theirs.paths).cloned().collect();
         let mut shared: Vec<String> = specific.iter().map(|s| (*s).clone()).collect();
         shared.extend(
             shared_symbols
@@ -1025,8 +1042,64 @@ mod tests {
     }
 
     #[test]
-    fn tied_rows_are_ordered_by_identifiers_not_document_order() {
+    fn the_specificity_threshold_is_absolute_not_a_share_of_the_dossier() {
+        // Twenty items share `common_symbol` with the finding; three of them
+        // also name the two target symbols. A share-of-the-dossier rule makes
+        // the target symbols specific because the dossier is large; the
+        // absolute rule does not.
+        let finding = "common_symbol alpha_beta gamma_delta";
+        let mut items = Vec::new();
+        for i in 0..3 {
+            items.push(item(
+                &format!("item-{i}"),
+                "common_symbol alpha_beta gamma_delta",
+            ));
+        }
+        for i in 3..20 {
+            items.push(item(
+                &format!("item-{i}"),
+                &format!("common_symbol noise_symbol_{i}"),
+            ));
+        }
+        assert!(
+            rank(&items, finding, 5).is_empty(),
+            "a three-item frequency must stay generic however large the dossier"
+        );
+    }
+
+    #[test]
+    fn two_identifiers_without_a_claim_component_do_not_alarm() {
+        // The two symbols are shared by two items and name no file: neither is
+        // unique to one item, so there is no shared claim component.
         let text = "The alpha_beta and gamma_delta calls.";
+        let items = vec![item("item-0001", text), item("item-0002", text)];
+        assert!(
+            rank(&items, text, 5).is_empty(),
+            "two identifiers alone must not alarm"
+        );
+    }
+
+    #[test]
+    fn a_shared_path_supplies_the_claim_component() {
+        let text = "In src/Vault.sol the alpha_beta and gamma_delta calls.";
+        let items = vec![item("item-0001", text), item("item-0002", text)];
+        let hits = rank(&items, text, 5);
+        assert_eq!(hits.len(), 2, "{hits:?}");
+    }
+
+    #[test]
+    fn a_unique_identifier_supplies_the_claim_component() {
+        let prior = item(
+            "item-0001",
+            "The settle_rebate helper calls claim_rebate twice.",
+        );
+        let draft = "settle_rebate and claim_rebate both appear here.";
+        assert_eq!(rank(&[prior], draft, 5).len(), 1);
+    }
+
+    #[test]
+    fn tied_rows_are_ordered_by_identifiers_not_document_order() {
+        let text = "In src/Vault.sol the alpha_beta and gamma_delta calls.";
         let mut items = vec![item("item-0001", text), item("item-0002", text)];
         for i in 0..8 {
             items.push(item(
@@ -1069,7 +1142,7 @@ mod tests {
 
     #[test]
     fn the_top_k_caps_the_result() {
-        let p = "The alpha_beta and gamma_delta calls.";
+        let p = "In src/Vault.sol the alpha_beta and gamma_delta calls.";
         let mut items: Vec<Item> = Vec::new();
         for i in 0..8 {
             items.push(item(

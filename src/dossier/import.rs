@@ -1161,9 +1161,12 @@ fn heading_of(line: &str) -> Option<(usize, String)> {
 }
 
 fn bullets(lines: &[String]) -> Vec<String> {
-    let mut out = Vec::new();
+    let mut out: Vec<String> = Vec::new();
     for line in lines {
         let t = line.trim();
+        if t.is_empty() {
+            continue;
+        }
         let item = t
             .strip_prefix("- ")
             .or_else(|| t.strip_prefix("* "))
@@ -1173,6 +1176,12 @@ fn bullets(lines: &[String]) -> Vec<String> {
             if !item.is_empty() {
                 out.push(item.to_string());
             }
+        } else if !out.is_empty() && !t.starts_with('#') {
+            // A wrapped bullet's continuation line belongs to the bullet
+            // above it; before this fix each line became an item of its own.
+            let last = out.last_mut().expect("non-empty");
+            last.push(' ');
+            last.push_str(t);
         }
     }
     out
@@ -1187,7 +1196,16 @@ fn item(
     text: &str,
     clause_class: Option<String>,
 ) -> Item {
-    let profile = Profile::from_text(text);
+    // The heading is part of the claim: a prior item titled "M-03:
+    // settle_rebate loses the rebate" names the symbol even when the body
+    // does not repeat it.
+    let mut profile_text = String::new();
+    if let Some(section) = &section {
+        profile_text.push_str(section);
+        profile_text.push('\n');
+    }
+    profile_text.push_str(text);
+    let profile = Profile::from_text(&profile_text);
     Item {
         id: String::new(),
         source_id: source_id.to_string(),
@@ -1813,5 +1831,36 @@ mod tests {
         assert!(err.contains("more than 3 entries"), "{err}");
         let _ = fs::remove_dir_all(&dir);
         let _ = fs::remove_dir_all(&flat);
+    }
+
+    #[test]
+    fn a_heading_identifier_is_part_of_the_item() {
+        let it = item(
+            "src",
+            "audit-finding",
+            None,
+            Some("M-03 settle_rebate loses the rebate".to_string()),
+            1,
+            "The body names no symbol.",
+            None,
+        );
+        assert!(
+            it.identifiers.iter().any(|i| i.contains("settle_rebate")),
+            "{:?}",
+            it.identifiers
+        );
+    }
+
+    #[test]
+    fn a_wrapped_bullet_is_one_item_not_several() {
+        let lines = vec![
+            "- first line".to_string(),
+            "  wrapped line".to_string(),
+            "- second".to_string(),
+        ];
+        assert_eq!(
+            bullets(&lines),
+            vec!["first line wrapped line".to_string(), "second".to_string()]
+        );
     }
 }

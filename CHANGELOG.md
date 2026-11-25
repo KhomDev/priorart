@@ -13,6 +13,31 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+### Changed (P1-C, proposed 0.3.0)
+
+- **The alarm rule needs a shared claim component.** Two shared identifiers are
+  no longer enough: at least one shared symbol must be unique to that prior
+  item in the relevant set, or the finding and the prior item must name the
+  same file path. Two identifiers that a dossier repeats alarm nothing.
+- **Specificity is absolute, not a share of the dossier.** A shared symbol
+  may appear in at most `MAX_SPECIFIC_DF = 2` items to count. Before this
+  change a larger dossier made more identifiers look specific, so the alarm
+  fired more often on bigger prior audits for no reason of substance.
+- **A prior item's heading is part of its identifiers.** A symbol named only
+  in the item's heading (`M-03 settle_rebate …`) is counted, which the
+  PoolTogether `inv:009` / M-03 miss exposed.
+- **A wrapped known-issues bullet is one item.** Continuation lines join the
+  bullet above them instead of becoming items of their own (Panoptic's
+  21-line list).
+
+### Fixed (P1-C, benchmark harness)
+
+- **The last High/Medium slice stops at the next top-level section.** It used
+  to run to the end of `report.md`, so Low/QA/gas sections became dossier
+  items and one Maia alarm came only from such an item.
+- **`fetch.py` quotes a source path containing spaces**, so Wildcat's
+  `docs/Known Issues.md` can be fetched.
+
 ## [0.2.1] - 2026-11-25
 
 An evidence release. The crate's code is unchanged from 0.2.0 (`git diff
