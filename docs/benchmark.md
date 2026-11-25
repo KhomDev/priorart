@@ -155,7 +155,7 @@ One corpus, one frozen measurement, on the priorart 0.2.0 release-profile build
 |---|---|---|
 | False-alarm rate, 40 judged paid+unique | **9/40 = 22.5%** | 12.3-37.5% |
 | Duplicate recall@5, 85 judge-grouped duplicates | **32/85 = 37.6%** | 28.1-48.3% |
-| Known-prior recall@5 | n=2, 0 hits | not a rate |
+| Known-prior recall@5 | n=2, 1 hit (0.2.2; heading identifiers) | not a rate |
 
 The two known-prior positives (`inv:009` repeats C4 M-03 on
 `maxDeposit()`/`_depositAndMint()`, and `inv:invalid-010` repeats M-08 on
@@ -325,6 +325,11 @@ Code4rena corpora are at 3/9 = 33.3% [12.1-64.6] false alarms each (6/18 =
 33.3% pooled), above the 30% trigger; Maia and Panoptic are unchanged at
 53.3% and 54.5%; and duplicate recall@5 collapses (Maia 30.1% -> 2.4%,
 Panoptic 47.5% -> 3.8%, Party 0/132). The harness fixes (last-slice, heading
-identifiers, bullet joining) are keepers; the alarm gate is not. Full table
-and the decision note: `eval/benchmark/BENCHMARK.md`, "P1-C re-measurement
-results".
+identifiers, bullet joining) are keepers; the alarm gate is not. The 0.3.0 matcher was reverted; **0.2.2 ships the
+harness fixes only** and re-measures the unchanged matcher: in-sample numbers
+are materially the same as P1 (Tapioca 15/60 = 25.0% FAR, 35/64 = 54.7%
+duplicate recall; Maia 8/15 and Panoptic 6/11 unchanged), and the two
+formerly sealed pairs are 3/9 = 33.3% and 4/9 = 44.4%, 7/18 = 38.9% pooled.
+The trigger remains met; the warning stays off. Full tables:
+`eval/benchmark/BENCHMARK.md`, "P1-C re-measurement results" and "0.2.2
+measurement".

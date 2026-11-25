@@ -40,8 +40,8 @@
   },
   "tool": {
     "path": "target/release/priorart.exe",
-    "version": "priorart 0.3.0",
-    "binary_sha256": "6bfc20d381350f7b8e2f6fbe534b5ca8724268faa80ce08494772fb8530b2d5b",
+    "version": "priorart 0.2.2",
+    "binary_sha256": "b94598788be205483a3795b3097182564d2218e7a717857511e78d9865137128",
     "matching_rule": ">= 2 strong identifiers, ranked top-k (EXECUTION-BRIEF 3.3)"
   },
   "frozen": {
@@ -66,22 +66,22 @@
     },
     "false_alarm_rate": {
       "n": 60,
-      "alarms": 14,
-      "rate": 0.2333,
+      "alarms": 15,
+      "rate": 0.25,
       "wilson95": [
-        0.1444,
-        0.3544
+        0.1578,
+        0.3723
       ],
       "status": "measured",
       "tool_errors": 0
     },
     "duplicate_recall": {
       "n": 64,
-      "hits": 14,
-      "recall": 0.2188,
+      "hits": 35,
+      "recall": 0.5469,
       "wilson95": [
-        0.135,
-        0.3343
+        0.4257,
+        0.6627
       ],
       "status": "measured",
       "note": "supplementary judged-duplicate retrieval, not the plan's known-issue metric"
@@ -257,7 +257,8 @@
       "measure": "false_alarm_rate",
       "alarm": true,
       "returned": [
-        "item-0021"
+        "item-0021",
+        "item-0004"
       ]
     },
     {
@@ -310,7 +311,8 @@
       "alarm": true,
       "returned": [
         "item-0036",
-        "item-0021"
+        "item-0021",
+        "item-0004"
       ]
     },
     {
@@ -611,8 +613,11 @@
     {
       "id": "acc:057-M",
       "measure": "false_alarm_rate",
-      "alarm": false,
-      "returned": []
+      "alarm": true,
+      "returned": [
+        "item-0004",
+        "item-0021"
+      ]
     },
     {
       "id": "acc:058-M",
@@ -639,44 +644,70 @@
     {
       "id": "dup:001-M/056.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:001-M",
-      "returned": []
+      "returned": [
+        "item-0003",
+        "item-0002"
+      ]
     },
     {
       "id": "dup:001-M/058.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:001-M",
-      "returned": []
+      "returned": [
+        "item-0133",
+        "item-0002",
+        "item-0003",
+        "item-0350",
+        "item-0044"
+      ]
     },
     {
       "id": "dup:001-M/101.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:001-M",
-      "returned": []
+      "returned": [
+        "item-0153",
+        "item-0111",
+        "item-0353",
+        "item-0350",
+        "item-0154"
+      ]
     },
     {
       "id": "dup:001-M/117.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:001-M",
-      "returned": []
+      "returned": [
+        "item-0153",
+        "item-0127",
+        "item-0044",
+        "item-0350",
+        "item-0353"
+      ]
     },
     {
       "id": "dup:002-H/034.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:002-H",
-      "returned": []
+      "returned": [
+        "item-0008"
+      ]
     },
     {
       "id": "dup:002-H/055.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:002-H",
-      "returned": []
+      "returned": [
+        "item-0008",
+        "item-0011"
+      ]
     },
     {
       "id": "dup:002-H/149.md",
@@ -750,7 +781,10 @@
       "expected": "acc:005-H",
       "returned": [
         "item-0028",
-        "item-0029"
+        "item-0079",
+        "item-0029",
+        "item-0153",
+        "item-0353"
       ]
     },
     {
@@ -760,7 +794,10 @@
       "expected": "acc:005-H",
       "returned": [
         "item-0028",
-        "item-0029"
+        "item-0029",
+        "item-0025",
+        "item-0099",
+        "item-0204"
       ]
     },
     {
@@ -778,7 +815,8 @@
       "hit": true,
       "expected": "acc:006-M",
       "returned": [
-        "item-0034"
+        "item-0034",
+        "item-0126"
       ]
     },
     {
@@ -788,7 +826,10 @@
       "expected": "acc:006-M",
       "returned": [
         "item-0034",
-        "item-0035"
+        "item-0035",
+        "item-0126",
+        "item-0477",
+        "item-0480"
       ]
     },
     {
@@ -797,7 +838,11 @@
       "hit": false,
       "expected": "acc:007-H",
       "returned": [
-        "item-0145"
+        "item-0145",
+        "item-0176",
+        "item-0230",
+        "item-0231",
+        "item-0099"
       ]
     },
     {
@@ -805,35 +850,61 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:007-H",
-      "returned": []
+      "returned": [
+        "item-0099",
+        "item-0247",
+        "item-0301",
+        "item-0304",
+        "item-0176"
+      ]
     },
     {
       "id": "dup:007-H/110.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:007-H",
-      "returned": []
+      "returned": [
+        "item-0062",
+        "item-0158",
+        "item-0157",
+        "item-0184",
+        "item-0259"
+      ]
     },
     {
       "id": "dup:008-M/044.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:008-M",
-      "returned": []
+      "returned": [
+        "item-0044"
+      ]
     },
     {
       "id": "dup:008-M/062.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:008-M",
-      "returned": []
+      "returned": [
+        "item-0141",
+        "item-0127",
+        "item-0253",
+        "item-0044",
+        "item-0091"
+      ]
     },
     {
       "id": "dup:008-M/078.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:008-M",
-      "returned": []
+      "returned": [
+        "item-0141",
+        "item-0044",
+        "item-0127",
+        "item-0253",
+        "item-0256"
+      ]
     },
     {
       "id": "dup:009-M/047.md",
@@ -847,14 +918,24 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:009-M",
-      "returned": []
+      "returned": [
+        "item-0111",
+        "item-0153",
+        "item-0154"
+      ]
     },
     {
       "id": "dup:009-M/116.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:009-M",
-      "returned": []
+      "returned": [
+        "item-0050",
+        "item-0053",
+        "item-0127",
+        "item-0141",
+        "item-0153"
+      ]
     },
     {
       "id": "dup:010-H/051.md",
@@ -862,31 +943,50 @@
       "hit": true,
       "expected": "acc:010-H",
       "returned": [
-        "item-0058"
+        "item-0058",
+        "item-0008",
+        "item-0265",
+        "item-0267",
+        "item-0294"
       ]
     },
     {
       "id": "dup:010-H/088.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:010-H",
-      "returned": []
+      "returned": [
+        "item-0058",
+        "item-0265",
+        "item-0430",
+        "item-0002"
+      ]
     },
     {
       "id": "dup:011-M/015.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:011-M",
       "returned": [
-        "item-0184"
+        "item-0062",
+        "item-0231",
+        "item-0157",
+        "item-0184",
+        "item-0084"
       ]
     },
     {
       "id": "dup:011-M/092.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:011-M",
-      "returned": []
+      "returned": [
+        "item-0099",
+        "item-0062",
+        "item-0250",
+        "item-0301",
+        "item-0304"
+      ]
     },
     {
       "id": "dup:012-H/037.md",
@@ -898,9 +998,13 @@
     {
       "id": "dup:012-H/045.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:012-H",
-      "returned": []
+      "returned": [
+        "item-0070",
+        "item-0307",
+        "item-0038"
+      ]
     },
     {
       "id": "dup:013-M/011.md",
@@ -929,7 +1033,11 @@
       "hit": true,
       "expected": "acc:014-M",
       "returned": [
-        "item-0084"
+        "item-0084",
+        "item-0276",
+        "item-0288",
+        "item-0034",
+        "item-0126"
       ]
     },
     {
@@ -937,7 +1045,10 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:015-M",
-      "returned": []
+      "returned": [
+        "item-0141",
+        "item-0127"
+      ]
     },
     {
       "id": "dup:016-H/082.md",
@@ -945,7 +1056,11 @@
       "hit": true,
       "expected": "acc:016-H",
       "returned": [
-        "item-0099"
+        "item-0099",
+        "item-0062",
+        "item-0250",
+        "item-0096",
+        "item-0097"
       ]
     },
     {
@@ -961,43 +1076,70 @@
       "hit": true,
       "expected": "acc:018-H",
       "returned": [
-        "item-0111"
+        "item-0111",
+        "item-0112"
       ]
     },
     {
       "id": "dup:019-M/122.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:019-M",
-      "returned": []
+      "returned": [
+        "item-0115",
+        "item-0184",
+        "item-0176",
+        "item-0157",
+        "item-0181"
+      ]
     },
     {
       "id": "dup:020-M/142.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:020-M",
-      "returned": []
+      "returned": [
+        "item-0121"
+      ]
     },
     {
       "id": "dup:021-M/046.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:021-M",
-      "returned": []
+      "returned": [
+        "item-0141",
+        "item-0127",
+        "item-0126",
+        "item-0130",
+        "item-0111"
+      ]
     },
     {
       "id": "dup:022-M/105.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:022-M",
-      "returned": []
+      "returned": [
+        "item-0134",
+        "item-0153",
+        "item-0353",
+        "item-0136",
+        "item-0350"
+      ]
     },
     {
       "id": "dup:023-H/057.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:023-H",
-      "returned": []
+      "returned": [
+        "item-0307",
+        "item-0141",
+        "item-0111",
+        "item-0309",
+        "item-0510"
+      ]
     },
     {
       "id": "dup:024-M/133.md",
@@ -1005,15 +1147,22 @@
       "hit": true,
       "expected": "acc:024-M",
       "returned": [
-        "item-0145"
+        "item-0145",
+        "item-0176"
       ]
     },
     {
       "id": "dup:025-H/060.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:025-H",
-      "returned": []
+      "returned": [
+        "item-0111",
+        "item-0141",
+        "item-0307",
+        "item-0153",
+        "item-0133"
+      ]
     },
     {
       "id": "dup:026-H/114.md",
@@ -1021,7 +1170,8 @@
       "hit": false,
       "expected": "acc:026-H",
       "returned": [
-        "item-0176"
+        "item-0176",
+        "item-0145"
       ]
     },
     {
@@ -1036,17 +1186,27 @@
     {
       "id": "dup:028-M/145.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:028-M",
-      "returned": []
+      "returned": [
+        "item-0153",
+        "item-0078",
+        "item-0079",
+        "item-0170",
+        "item-0050"
+      ]
     },
     {
       "id": "dup:029-H/135.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:029-H",
       "returned": [
-        "item-0184"
+        "item-0157",
+        "item-0184",
+        "item-0181",
+        "item-0176",
+        "item-0085"
       ]
     },
     {
@@ -1056,7 +1216,9 @@
       "expected": "acc:030-M",
       "returned": [
         "item-0028",
-        "item-0029"
+        "item-0029",
+        "item-0070",
+        "item-0259"
       ]
     },
     {
@@ -1066,7 +1228,10 @@
       "expected": "inv:invalid-001",
       "returned": [
         "item-0506",
-        "item-0507"
+        "item-0507",
+        "item-0099",
+        "item-0148",
+        "item-0204"
       ]
     },
     {
@@ -1075,7 +1240,11 @@
       "hit": false,
       "expected": "inv:invalid-001",
       "returned": [
-        "item-0034"
+        "item-0034",
+        "item-0483",
+        "item-0486",
+        "item-0126",
+        "item-0141"
       ]
     },
     {
@@ -1091,7 +1260,8 @@
       "hit": false,
       "expected": "inv:invalid-002",
       "returned": [
-        "item-0034"
+        "item-0034",
+        "item-0126"
       ]
     },
     {
@@ -1108,7 +1278,8 @@
       "expected": "inv:invalid-002",
       "returned": [
         "item-0506",
-        "item-0507"
+        "item-0507",
+        "item-0148"
       ]
     },
     {
@@ -1118,6 +1289,7 @@
       "expected": "inv:invalid-002",
       "returned": [
         "item-0176",
+        "item-0145",
         "item-0247"
       ]
     },
@@ -1133,14 +1305,23 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-003",
-      "returned": []
+      "returned": [
+        "item-0079",
+        "item-0078",
+        "item-0397"
+      ]
     },
     {
       "id": "dup:invalid/invalid-003/129.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-003",
-      "returned": []
+      "returned": [
+        "item-0519",
+        "item-0154",
+        "item-0210",
+        "item-0170"
+      ]
     }
   ],
   "tool_errors": [],

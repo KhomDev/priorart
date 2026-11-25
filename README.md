@@ -27,8 +27,11 @@ shared claim component plus an absolute document frequency does not lower the
 Code4rena false-alarm rate (Maia 8/15 = 53.3%, Panoptic 6/11 = 54.5%) and the
 two sealed corpora are 3/9 = 33.3% [12.1-64.6] each. It also destroys duplicate
 recall (Maia 87/289 -> 7/289, Panoptic 38/80 -> 3/80, Party 0/132). The
-warning stays off; the 0.3.0 alarm gate is not fit to ship, while the harness
-fixes are. Table and decision note: [docs/benchmark.md](docs/benchmark.md) and
+0.3.0 matcher was reverted; **0.2.2 ships the harness fixes only**, and the
+unchanged matcher re-measures materially as P1 (Tapioca 15/60 = 25.0% FAR,
+35/64 = 54.7% duplicate recall; Maia 8/15 and Panoptic 6/11 unchanged; the
+formerly sealed pairs 3/9 = 33.3% and 4/9 = 44.4%, 7/18 = 38.9% pooled). The
+warning stays off. Tables: [docs/benchmark.md](docs/benchmark.md) and
 `eval/benchmark/BENCHMARK.md`.
 
 **On two Code4rena-judged corpora the matcher's false-alarm rate is above the
@@ -62,6 +65,7 @@ Measured benchmark (0 tool errors):
 | PoolTogether, 0.2.0 `06fdf195` | False-alarm rate, 40 judged paid+unique | **9/40 = 22.5%** | 12.3-37.5% |
 | PoolTogether, 0.2.0 `06fdf195` | Duplicate recall@5, 85 judged duplicates | **32/85 = 37.6%** | 28.1-48.3% |
 | PoolTogether, 0.2.0 `06fdf195` | Known-prior recall@5 | n=2, 0 hits | not a rate |
+| PoolTogether, 0.2.2 `b9459878` | Known-prior recall@5 (heading identifiers) | n=2, 1 hit | not a rate |
 | Maia (Code4rena-judged), 0.2.0 `06fdf195` | False-alarm rate, 15 judged paid+unique | **8/15 = 53.3%** | 30.1-75.2% |
 | Maia (Code4rena-judged), 0.2.0 `06fdf195` | Duplicate recall@5, 289 judged duplicates | **87/289 = 30.1%** | 25.1-35.6% |
 | Panoptic (Code4rena-judged), 0.2.0 `06fdf195` | False-alarm rate, 11 judged paid+unique | **6/11 = 54.5%** | 28.0-78.7% |
@@ -108,7 +112,7 @@ priorart check finding.md --dossier my-program/my-program.dossier
 
 <!-- BEGIN GENERATED EXAMPLE (scripts/regen-readme-examples.sh) -->
 $ priorart build examples/dossier-demo
-priorart 0.3.0 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.2.2 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
   3 source(s), 13 item(s)
     audit-finding    1
     known-issue      2
@@ -122,7 +126,7 @@ priorart 0.3.0 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossie
 Next: priorart check <finding.md> --dossier examples/dossier-demo/dossier-demo.dossier
 
 $ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
-priorart 0.3.0 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.2.2 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
 
 HAS THIS BEEN FOUND?  2 prior items to read (share >=2 symbol identifiers)
   [audit: internal-review.md p.1, section M-03 Fee index rounding]  "The consistency check in `FeeLedger.distributeFees` reverts with `FeeAccountingMismatch` when the fee index rounds up past the collected balance."
@@ -158,7 +162,7 @@ same script and checked by `tests/docs.rs`.
 
 <!-- BEGIN GENERATED HTML EXAMPLE (scripts/regen-readme-examples.sh) -->
 $ priorart build tests/fixtures/html-program
-priorart 0.3.0 - dossier html-program (tests/fixtures/html-program/html-program.dossier)
+priorart 0.2.2 - dossier html-program (tests/fixtures/html-program/html-program.dossier)
   1 source(s), 7 item(s)
     payout-tier      3
     scope-clause     2
@@ -168,7 +172,7 @@ priorart 0.3.0 - dossier html-program (tests/fixtures/html-program/html-program.
 Next: priorart check <finding.md> --dossier tests/fixtures/html-program/html-program.dossier
 
 $ priorart check tests/fixtures/html-finding.md --dossier tests/fixtures/html-program/html-program.dossier
-priorart 0.3.0 - tests/fixtures/html-finding.md against dossier html-program (tests/fixtures/html-program/html-program.dossier)
+priorart 0.2.2 - tests/fixtures/html-finding.md against dossier html-program (tests/fixtures/html-program/html-program.dossier)
 
 HAS THIS BEEN FOUND?  nothing ranked (no prior item shares >=2 symbol identifiers)
 

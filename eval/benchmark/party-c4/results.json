@@ -37,8 +37,8 @@
   },
   "tool": {
     "path": "target/release/priorart.exe",
-    "version": "priorart 0.3.0",
-    "binary_sha256": "6bfc20d381350f7b8e2f6fbe534b5ca8724268faa80ce08494772fb8530b2d5b",
+    "version": "priorart 0.2.2",
+    "binary_sha256": "b94598788be205483a3795b3097182564d2218e7a717857511e78d9865137128",
     "matching_rule": ">= 2 strong identifiers, ranked top-k (EXECUTION-BRIEF 3.3)"
   },
   "frozen": {
@@ -71,11 +71,11 @@
     },
     "duplicate_recall": {
       "n": 132,
-      "hits": 0,
-      "recall": 0.0,
+      "hits": 40,
+      "recall": 0.303,
       "wilson95": [
-        0.0,
-        0.0283
+        0.2311,
+        0.3861
       ],
       "status": "measured",
       "note": "supplementary judged-duplicate retrieval, not the plan's known-issue metric"
@@ -83,9 +83,9 @@
   },
   "run_history": [],
   "release": {
-    "measured_binary_sha256": "6bfc20d381350f7b8e2f6fbe534b5ca8724268faa80ce08494772fb8530b2d5b",
+    "measured_binary_sha256": "b94598788be205483a3795b3097182564d2218e7a717857511e78d9865137128",
     "release_binary_sha256": null,
-    "source_commit": "f983d038b2ffef481589d39343ff9456867d2a4b",
+    "source_commit": "ef065da30193704d2e90d34b0a25741f1940a091",
     "tag": null,
     "status": "the measured binary is a local release-profile build; record the published release binary hash and tag here when this corpus's measurement is tied to a release"
   },
@@ -157,7 +157,10 @@
       "expected": "acc:127-M",
       "returned": [
         "item-0250",
-        "item-1102"
+        "item-1102",
+        "item-0972",
+        "item-0485",
+        "item-0629"
       ]
     },
     {
@@ -165,21 +168,39 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:127-M",
-      "returned": []
+      "returned": [
+        "item-0485",
+        "item-0078",
+        "item-0250",
+        "item-1102",
+        "item-0629"
+      ]
     },
     {
       "id": "dup:127-M/262.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:127-M",
-      "returned": []
+      "returned": [
+        "item-0485",
+        "item-0078",
+        "item-0007",
+        "item-0002",
+        "item-1037"
+      ]
     },
     {
       "id": "dup:127-M/336.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:127-M",
-      "returned": []
+      "returned": [
+        "item-0485",
+        "item-0078",
+        "item-0007",
+        "item-0577",
+        "item-1038"
+      ]
     },
     {
       "id": "dup:127-M/449.md",
@@ -193,14 +214,25 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:127-M",
-      "returned": []
+      "returned": [
+        "item-0629",
+        "item-0577",
+        "item-0972",
+        "item-1106",
+        "item-1102"
+      ]
     },
     {
       "id": "dup:127-M/539.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:127-M",
-      "returned": []
+      "returned": [
+        "item-0002",
+        "item-1037",
+        "item-0247",
+        "item-0577"
+      ]
     },
     {
       "id": "dup:127-M/552.md",
@@ -219,90 +251,145 @@
     {
       "id": "dup:233-H/075.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
-      "returned": []
+      "returned": [
+        "item-0795",
+        "item-0013",
+        "item-1173",
+        "item-0539",
+        "item-0540"
+      ]
     },
     {
       "id": "dup:233-H/156.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
       "returned": [
         "item-0082",
-        "item-0795"
+        "item-0013",
+        "item-0750",
+        "item-1187",
+        "item-0862"
       ]
     },
     {
       "id": "dup:233-H/241.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
-      "returned": []
+      "returned": [
+        "item-0082",
+        "item-0013",
+        "item-1187",
+        "item-0862",
+        "item-0867"
+      ]
     },
     {
       "id": "dup:233-H/258.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
-      "returned": []
+      "returned": [
+        "item-0795",
+        "item-0013",
+        "item-1173",
+        "item-0539",
+        "item-0540"
+      ]
     },
     {
       "id": "dup:233-H/288.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
-      "returned": []
+      "returned": [
+        "item-0795",
+        "item-0013",
+        "item-1173",
+        "item-0539",
+        "item-0540"
+      ]
     },
     {
       "id": "dup:233-H/315.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
-      "returned": []
+      "returned": [
+        "item-0795",
+        "item-0013",
+        "item-1173",
+        "item-0539",
+        "item-0540"
+      ]
     },
     {
       "id": "dup:233-H/322.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
       "returned": [
-        "item-0082"
+        "item-0082",
+        "item-0013",
+        "item-1187",
+        "item-0066",
+        "item-0862"
       ]
     },
     {
       "id": "dup:233-H/323.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
       "returned": [
         "item-0082",
-        "item-0795"
+        "item-0013",
+        "item-1187",
+        "item-0750",
+        "item-0862"
       ]
     },
     {
       "id": "dup:233-H/331.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
-      "returned": []
+      "returned": [
+        "item-0013",
+        "item-0795",
+        "item-1173",
+        "item-0539",
+        "item-0540"
+      ]
     },
     {
       "id": "dup:233-H/370.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
       "returned": [
         "item-0082",
-        "item-0795"
+        "item-0013",
+        "item-0750",
+        "item-1187",
+        "item-0862"
       ]
     },
     {
       "id": "dup:233-H/396.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
-      "returned": []
+      "returned": [
+        "item-0013",
+        "item-0783",
+        "item-0212",
+        "item-0795",
+        "item-0014"
+      ]
     },
     {
       "id": "dup:233-H/444.md",
@@ -311,7 +398,10 @@
       "expected": "acc:233-H",
       "returned": [
         "item-0985",
-        "item-1172"
+        "item-1172",
+        "item-0293",
+        "item-1106",
+        "item-0232"
       ]
     },
     {
@@ -324,9 +414,15 @@
     {
       "id": "dup:233-H/507.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:233-H",
-      "returned": []
+      "returned": [
+        "item-0013",
+        "item-0750",
+        "item-0862",
+        "item-0066",
+        "item-0703"
+      ]
     },
     {
       "id": "dup:233-H/538.md",
@@ -334,8 +430,11 @@
       "hit": false,
       "expected": "acc:233-H",
       "returned": [
+        "item-0942",
+        "item-0040",
         "item-0957",
-        "item-0795"
+        "item-0703",
+        "item-0750"
       ]
     },
     {
@@ -343,14 +442,26 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:237-M",
-      "returned": []
+      "returned": [
+        "item-0737",
+        "item-0925",
+        "item-1161",
+        "item-0206",
+        "item-0208"
+      ]
     },
     {
       "id": "dup:237-M/333.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:237-M",
-      "returned": []
+      "returned": [
+        "item-0738",
+        "item-0017",
+        "item-0737",
+        "item-0925",
+        "item-1161"
+      ]
     },
     {
       "id": "dup:237-M/469.md",
@@ -373,36 +484,60 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:295-M",
-      "returned": []
+      "returned": [
+        "item-0795",
+        "item-0999",
+        "item-0160"
+      ]
     },
     {
       "id": "dup:295-M/413.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:295-M",
-      "returned": []
+      "returned": [
+        "item-0212",
+        "item-0020",
+        "item-0783",
+        "item-0286",
+        "item-0301"
+      ]
     },
     {
       "id": "dup:340-M/187.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:340-M",
-      "returned": []
+      "returned": [
+        "item-0345",
+        "item-0957",
+        "item-0024",
+        "item-0026",
+        "item-0028"
+      ]
     },
     {
       "id": "dup:340-M/392.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:340-M",
-      "returned": []
+      "returned": [
+        "item-0024",
+        "item-0026",
+        "item-0028"
+      ]
     },
     {
       "id": "dup:340-M/399.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:340-M",
       "returned": [
-        "item-0894"
+        "item-0024",
+        "item-0026",
+        "item-0894",
+        "item-0127",
+        "item-0128"
       ]
     },
     {
@@ -424,7 +559,13 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:418-M",
-      "returned": []
+      "returned": [
+        "item-0885",
+        "item-0712",
+        "item-0908",
+        "item-0232",
+        "item-0762"
+      ]
     },
     {
       "id": "dup:418-M/248.md",
@@ -436,44 +577,78 @@
     {
       "id": "dup:418-M/311.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:418-M",
-      "returned": []
+      "returned": [
+        "item-0714",
+        "item-0881",
+        "item-0030",
+        "item-0909",
+        "item-0710"
+      ]
     },
     {
       "id": "dup:418-M/334.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:418-M",
-      "returned": []
+      "returned": [
+        "item-0485",
+        "item-0250",
+        "item-1102"
+      ]
     },
     {
       "id": "dup:418-M/433.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:418-M",
-      "returned": []
+      "returned": [
+        "item-0485",
+        "item-0912",
+        "item-0250",
+        "item-0881",
+        "item-0616"
+      ]
     },
     {
       "id": "dup:418-M/459.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "acc:418-M",
-      "returned": []
+      "returned": [
+        "item-1124",
+        "item-0714",
+        "item-0885",
+        "item-0250",
+        "item-0167"
+      ]
     },
     {
       "id": "dup:475-M/118.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:475-M",
-      "returned": []
+      "returned": [
+        "item-0750",
+        "item-0037",
+        "item-0936",
+        "item-0035",
+        "item-0758"
+      ]
     },
     {
       "id": "dup:475-M/267.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "acc:475-M",
-      "returned": []
+      "returned": [
+        "item-0750",
+        "item-0037",
+        "item-0386",
+        "item-0082",
+        "item-0531"
+      ]
     },
     {
       "id": "dup:invalid/invalid-049/002.md",
@@ -494,16 +669,28 @@
     {
       "id": "dup:invalid/invalid-124/307.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-124",
-      "returned": []
+      "returned": [
+        "item-1106",
+        "item-0783",
+        "item-0212",
+        "item-0286",
+        "item-0569"
+      ]
     },
     {
       "id": "dup:invalid/invalid-190/024.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-190",
-      "returned": []
+      "returned": [
+        "item-0651",
+        "item-0725",
+        "item-0726",
+        "item-0250",
+        "item-1102"
+      ]
     },
     {
       "id": "dup:invalid/invalid-190/159.md",
@@ -524,7 +711,13 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-224",
-      "returned": []
+      "returned": [
+        "item-1102",
+        "item-0250",
+        "item-0750",
+        "item-0957",
+        "item-0972"
+      ]
     },
     {
       "id": "dup:invalid/invalid-227/016.md",
@@ -564,44 +757,76 @@
     {
       "id": "dup:invalid/invalid-239/082.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-239",
-      "returned": []
+      "returned": [
+        "item-1124",
+        "item-0030",
+        "item-0714"
+      ]
     },
     {
       "id": "dup:invalid/invalid-239/229.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-239",
-      "returned": []
+      "returned": [
+        "item-1124",
+        "item-0030",
+        "item-0714"
+      ]
     },
     {
       "id": "dup:invalid/invalid-239/292.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-239",
-      "returned": []
+      "returned": [
+        "item-0714",
+        "item-0030",
+        "item-1124",
+        "item-0881",
+        "item-0710"
+      ]
     },
     {
       "id": "dup:invalid/invalid-242/221.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-242",
-      "returned": []
+      "returned": [
+        "item-0013",
+        "item-0750",
+        "item-0082",
+        "item-1187",
+        "item-0898"
+      ]
     },
     {
       "id": "dup:invalid/invalid-242/246.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-242",
-      "returned": []
+      "returned": [
+        "item-0410",
+        "item-0349",
+        "item-0350",
+        "item-0703",
+        "item-0750"
+      ]
     },
     {
       "id": "dup:invalid/invalid-242/412.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-242",
-      "returned": []
+      "returned": [
+        "item-0013",
+        "item-0349",
+        "item-0350",
+        "item-1128",
+        "item-0014"
+      ]
     },
     {
       "id": "dup:invalid/invalid-301/299.md",
@@ -615,14 +840,26 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-339",
-      "returned": []
+      "returned": [
+        "item-0737",
+        "item-0925",
+        "item-1161",
+        "item-0206",
+        "item-0208"
+      ]
     },
     {
       "id": "dup:invalid/invalid-342/074.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-342",
-      "returned": []
+      "returned": [
+        "item-1031",
+        "item-0521",
+        "item-1038",
+        "item-1042",
+        "item-1142"
+      ]
     },
     {
       "id": "dup:invalid/invalid-369/280.md",
@@ -634,16 +871,28 @@
     {
       "id": "dup:invalid/invalid-387/286.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-387",
-      "returned": []
+      "returned": [
+        "item-0410",
+        "item-0737",
+        "item-1152",
+        "item-1157",
+        "item-1158"
+      ]
     },
     {
       "id": "dup:invalid/invalid-402/230.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-402",
-      "returned": []
+      "returned": [
+        "item-1157",
+        "item-0737",
+        "item-1152",
+        "item-1158",
+        "item-0017"
+      ]
     },
     {
       "id": "dup:invalid/invalid-406/249.md",
@@ -666,7 +915,10 @@
       "expected": "inv:invalid-414",
       "returned": [
         "item-0250",
-        "item-1102"
+        "item-1102",
+        "item-0737",
+        "item-1013",
+        "item-0206"
       ]
     },
     {
@@ -681,42 +933,78 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-429",
-      "returned": []
+      "returned": [
+        "item-0013",
+        "item-0281",
+        "item-1013",
+        "item-1165",
+        "item-0017"
+      ]
     },
     {
       "id": "dup:invalid/invalid-429/154.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-429",
-      "returned": []
+      "returned": [
+        "item-0013",
+        "item-0281",
+        "item-1013",
+        "item-0795",
+        "item-1173"
+      ]
     },
     {
       "id": "dup:invalid/invalid-429/162.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-429",
-      "returned": []
+      "returned": [
+        "item-0013",
+        "item-0082",
+        "item-0862",
+        "item-0867",
+        "item-1187"
+      ]
     },
     {
       "id": "dup:invalid/invalid-429/332.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-429",
-      "returned": []
+      "returned": [
+        "item-0013",
+        "item-0942",
+        "item-0040",
+        "item-0957",
+        "item-0281"
+      ]
     },
     {
       "id": "dup:invalid/invalid-429/442.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-429",
-      "returned": []
+      "returned": [
+        "item-0013",
+        "item-0082",
+        "item-0862",
+        "item-0867",
+        "item-0898"
+      ]
     },
     {
       "id": "dup:invalid/invalid-434/058.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-434",
-      "returned": []
+      "returned": [
+        "item-1215",
+        "item-1176",
+        "item-0455",
+        "item-0899",
+        "item-0089"
+      ]
     },
     {
       "id": "dup:invalid/invalid-434/578.md",
@@ -737,49 +1025,91 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-435",
-      "returned": []
+      "returned": [
+        "item-0925",
+        "item-0737",
+        "item-1161",
+        "item-0206",
+        "item-0208"
+      ]
     },
     {
       "id": "dup:invalid/invalid-435/274.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-435",
-      "returned": []
+      "returned": [
+        "item-0925",
+        "item-1161",
+        "item-0017",
+        "item-0206",
+        "item-0208"
+      ]
     },
     {
       "id": "dup:invalid/invalid-435/388.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-435",
-      "returned": []
+      "returned": [
+        "item-0206",
+        "item-0208",
+        "item-0238",
+        "item-1226",
+        "item-0925"
+      ]
     },
     {
       "id": "dup:invalid/invalid-480/097.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-480",
-      "returned": []
+      "returned": [
+        "item-0026",
+        "item-1235",
+        "item-0874",
+        "item-1060",
+        "item-1187"
+      ]
     },
     {
       "id": "dup:invalid/invalid-480/259.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-480",
-      "returned": []
+      "returned": [
+        "item-0082",
+        "item-1187",
+        "item-0750",
+        "item-0013",
+        "item-0862"
+      ]
     },
     {
       "id": "dup:invalid/invalid-480/341.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-480",
-      "returned": []
+      "returned": [
+        "item-0237",
+        "item-0026",
+        "item-0874",
+        "item-0236",
+        "item-0235"
+      ]
     },
     {
       "id": "dup:invalid/invalid-480/353.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-480",
-      "returned": []
+      "returned": [
+        "item-1013",
+        "item-0024",
+        "item-0156",
+        "item-0546",
+        "item-0226"
+      ]
     },
     {
       "id": "dup:invalid/invalid-480/361.md",
@@ -793,7 +1123,13 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-480",
-      "returned": []
+      "returned": [
+        "item-0226",
+        "item-1231",
+        "item-0206",
+        "item-0208",
+        "item-0238"
+      ]
     },
     {
       "id": "dup:invalid/invalid-480/476.md",
@@ -814,7 +1150,13 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-489",
-      "returned": []
+      "returned": [
+        "item-0714",
+        "item-0881",
+        "item-0909",
+        "item-0710",
+        "item-0226"
+      ]
     },
     {
       "id": "dup:invalid/invalid-489/170.md",
@@ -828,21 +1170,39 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-489",
-      "returned": []
+      "returned": [
+        "item-0871",
+        "item-1165",
+        "item-0714",
+        "item-0881",
+        "item-0898"
+      ]
     },
     {
       "id": "dup:invalid/invalid-489/377.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-489",
-      "returned": []
+      "returned": [
+        "item-0881",
+        "item-0909",
+        "item-0714",
+        "item-0741",
+        "item-0223"
+      ]
     },
     {
       "id": "dup:invalid/invalid-489/485.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-489",
-      "returned": []
+      "returned": [
+        "item-0972",
+        "item-0712",
+        "item-0250",
+        "item-1102",
+        "item-0629"
+      ]
     },
     {
       "id": "dup:invalid/invalid-498/079.md",
@@ -850,7 +1210,10 @@
       "hit": false,
       "expected": "inv:invalid-498",
       "returned": [
-        "item-0485"
+        "item-0485",
+        "item-0078",
+        "item-0007",
+        "item-0972"
       ]
     },
     {
@@ -875,7 +1238,11 @@
       "hit": false,
       "expected": "inv:invalid-504",
       "returned": [
-        "item-0750"
+        "item-0082",
+        "item-0750",
+        "item-0013",
+        "item-0942",
+        "item-1187"
       ]
     },
     {
@@ -883,14 +1250,26 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-504",
-      "returned": []
+      "returned": [
+        "item-0013",
+        "item-0082",
+        "item-1187",
+        "item-0862",
+        "item-0867"
+      ]
     },
     {
       "id": "dup:invalid/invalid-504/169.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-504",
-      "returned": []
+      "returned": [
+        "item-0212",
+        "item-0013",
+        "item-0795",
+        "item-0301",
+        "item-1173"
+      ]
     },
     {
       "id": "dup:invalid/invalid-504/411.md",
@@ -898,8 +1277,11 @@
       "hit": false,
       "expected": "inv:invalid-504",
       "returned": [
+        "item-1172",
         "item-0985",
-        "item-1172"
+        "item-0013",
+        "item-0293",
+        "item-1106"
       ]
     },
     {
@@ -907,14 +1289,26 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-505",
-      "returned": []
+      "returned": [
+        "item-0485",
+        "item-0078",
+        "item-0007",
+        "item-0227",
+        "item-0249"
+      ]
     },
     {
       "id": "dup:invalid/invalid-505/401.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-505",
-      "returned": []
+      "returned": [
+        "item-0485",
+        "item-0078",
+        "item-0627",
+        "item-0007",
+        "item-0002"
+      ]
     },
     {
       "id": "dup:invalid/invalid-512/455.md",
@@ -926,9 +1320,15 @@
     {
       "id": "dup:invalid/invalid-514/484.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-514",
-      "returned": []
+      "returned": [
+        "item-0899",
+        "item-0151",
+        "item-0803",
+        "item-0455",
+        "item-1214"
+      ]
     },
     {
       "id": "dup:invalid/invalid-517/493.md",
@@ -942,35 +1342,65 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-528",
-      "returned": []
+      "returned": [
+        "item-1018",
+        "item-1047",
+        "item-1243",
+        "item-1020",
+        "item-1048"
+      ]
     },
     {
       "id": "dup:invalid/invalid-528/086.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-528",
-      "returned": []
+      "returned": [
+        "item-0950",
+        "item-0964",
+        "item-1223",
+        "item-1018",
+        "item-1047"
+      ]
     },
     {
       "id": "dup:invalid/invalid-528/231.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-528",
-      "returned": []
+      "returned": [
+        "item-0950",
+        "item-0964",
+        "item-1018",
+        "item-1047",
+        "item-1243"
+      ]
     },
     {
       "id": "dup:invalid/invalid-529/313.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-529",
-      "returned": []
+      "returned": [
+        "item-0737",
+        "item-1226",
+        "item-0206",
+        "item-0208",
+        "item-0238"
+      ]
     },
     {
       "id": "dup:invalid/invalid-532/161.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-532",
-      "returned": []
+      "returned": [
+        "item-0771",
+        "item-0258",
+        "item-0460",
+        "item-0960",
+        "item-0826"
+      ]
     },
     {
       "id": "dup:invalid/invalid-532/235.md",
@@ -1003,30 +1433,51 @@
     {
       "id": "dup:invalid/invalid-536/477.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-536",
-      "returned": []
+      "returned": [
+        "item-1226",
+        "item-1231"
+      ]
     },
     {
       "id": "dup:invalid/invalid-545/172.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-545",
-      "returned": []
+      "returned": [
+        "item-0455",
+        "item-1034",
+        "item-0912",
+        "item-0457",
+        "item-0841"
+      ]
     },
     {
       "id": "dup:invalid/invalid-545/348.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-545",
-      "returned": []
+      "returned": [
+        "item-1013",
+        "item-0297",
+        "item-0017",
+        "item-0898",
+        "item-1165"
+      ]
     },
     {
       "id": "dup:invalid/invalid-545/351.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-545",
-      "returned": []
+      "returned": [
+        "item-0762",
+        "item-1013",
+        "item-1106",
+        "item-0293",
+        "item-0175"
+      ]
     },
     {
       "id": "dup:invalid/invalid-547/542.md",
@@ -1038,16 +1489,24 @@
     {
       "id": "dup:invalid/invalid-551/139.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-551",
-      "returned": []
+      "returned": [
+        "item-1241",
+        "item-1214",
+        "item-1018",
+        "item-1047",
+        "item-1243"
+      ]
     },
     {
       "id": "dup:invalid/invalid-551/410.md",
       "measure": "duplicate_recall",
-      "hit": false,
+      "hit": true,
       "expected": "inv:invalid-551",
-      "returned": []
+      "returned": [
+        "item-1241"
+      ]
     },
     {
       "id": "dup:invalid/invalid-556/496.md",
@@ -1069,7 +1528,11 @@
       "hit": false,
       "expected": "inv:invalid-568",
       "returned": [
-        "item-0020"
+        "item-0020",
+        "item-0293",
+        "item-0008",
+        "item-0175",
+        "item-0762"
       ]
     },
     {
@@ -1077,14 +1540,26 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-568",
-      "returned": []
+      "returned": [
+        "item-0410",
+        "item-0703",
+        "item-0750",
+        "item-0020",
+        "item-0462"
+      ]
     },
     {
       "id": "dup:invalid/invalid-568/398.md",
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-568",
-      "returned": []
+      "returned": [
+        "item-0410",
+        "item-1098",
+        "item-0703",
+        "item-0750",
+        "item-0020"
+      ]
     },
     {
       "id": "dup:invalid/invalid-573/003.md",
@@ -1112,7 +1587,13 @@
       "measure": "duplicate_recall",
       "hit": false,
       "expected": "inv:invalid-573",
-      "returned": []
+      "returned": [
+        "item-1214",
+        "item-0258",
+        "item-1018",
+        "item-1047",
+        "item-1243"
+      ]
     }
   ],
   "tool_errors": [],

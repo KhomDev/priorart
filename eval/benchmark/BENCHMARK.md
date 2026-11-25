@@ -782,3 +782,38 @@ it loses most of the duplicate retrieval. A release that keeps the harness
 fixes and the recall-preserving parts, and either reverts the alarm gate or
 ships it off by default, is the operator's decision; this file records the
 measurement, not a release.
+
+## 0.2.2 measurement: the harness fixes alone (2026-11-25)
+
+The 0.3.0 alarm rule was reverted (see above); 0.2.2 ships the benchmark
+harness fixes with the matcher unchanged from 0.2.1. Re-measured on all six
+corpora with binary
+`b94598788be205483a3795b3097182564d2218e7a717857511e78d9865137128`
+(priorart 0.2.2).
+
+| Corpus | FAR | Duplicate recall@5 |
+|---|---|---|
+| Tapioca (in-sample) | 15/60 = 25.0% [15.8-37.2] | 35/64 = 54.7% [42.6-66.3] |
+| PoolTogether (in-sample) | 9/40 = 22.5% [12.3-37.5] | 32/85 = 37.6% [28.1-48.3] |
+| Maia (in-sample) | 8/15 = 53.3% [30.1-75.2] | 87/289 = 30.1% [25.1-35.6] |
+| Panoptic (in-sample) | 6/11 = 54.5% [28.0-78.7] | 38/80 = 47.5% [36.9-58.3] |
+| Party (in-sample now) | 3/9 = 33.3% [12.1-64.6] | 40/132 = 30.3% [23.1-38.6] |
+| Wildcat (in-sample now) | 4/9 = 44.4% [18.9-73.3] | 23/46 = 50.0% [36.1-63.9] |
+| Sealed-pair pooled | 7/18 = 38.9% [20.3-61.4] | 63/178 = 35.4% [28.7-42.7] |
+| All six pooled | 45/144 = 31.2% [24.2-39.2] | 255/696 = 36.6% [33.1-40.3] |
+| Code4rena pooled | 21/44 = 47.7% [33.8-62.1] | 188/547 = 34.4% |
+| Sherlock pooled | 24/100 = 24.0% [16.7-33.2] | 67/149 = 45.0% |
+
+**What the harness fixes did.** On the four in-sample corpora the numbers are
+materially the same as P1 (Tapioca FAR 25.0%, recall 56.3% -> 54.7%;
+PoolTogether and the two Maia/Panoptic rates unchanged). The last-slice fix
+did not change a measured alarm on these corpora, and the heading/bullet
+changes changed recall by at most one duplicate. The two sealed pairs, now
+in-sample (their results were opened), are 33.3% and 44.4% false alarms,
+7/18 = 38.9% pooled, and 63/178 duplicate recall. **The 30% trigger remains
+met and the "shares identifiers" warning stays off.**
+
+The harness fixes are still correct and worth shipping (they remove a known
+way Low/QA text enters dossier A, and they make heading and wrapped-bullet
+identifiers count), but they are not a precision lever. The next lever is a
+different alarm rule, to be developed on the dev splits and measured fresh.
