@@ -40,8 +40,8 @@
   },
   "tool": {
     "path": "target/release/priorart.exe",
-    "version": "priorart 0.2.0",
-    "binary_sha256": "06fdf195989e5c6e739285047e29dc3fe873252ee567e52e16e24f3804a85783",
+    "version": "priorart 0.2.2",
+    "binary_sha256": "b94598788be205483a3795b3097182564d2218e7a717857511e78d9865137128",
     "matching_rule": ">= 2 strong identifiers, ranked top-k (EXECUTION-BRIEF 3.3)"
   },
   "frozen": {
@@ -50,16 +50,16 @@
     "manifest_sha256": "36eac6fdfec56a7a7169610d945913c7034ce3da09115d2a40ee6c441576fe0f",
     "labels_sha256": "2400932fca934b981e54226184bcb6a5232dee32e3ed21420e53cac8f65551d5",
     "heldout_opened": true,
-    "harness_sha256": "7c7a7f167d11916e2d829825dc6970425c05855b24957cfb4a082f25eb06a015"
+    "harness_sha256": "25c9e17a69c076cf504582d23a17469343bb6a778f0d61ef9df3d5a728a13b6a"
   },
   "measurements": {
     "known_prior_recall": {
       "n": 2,
-      "hits": 0,
-      "recall": 0.0,
+      "hits": 1,
+      "recall": 0.5,
       "wilson95": [
-        0.0,
-        0.6576
+        0.0945,
+        0.9055
       ],
       "status": "underpowered",
       "reason": "fewer than 5 defensible known-prior positives exist in this corpus; the value is reported with its n but is not a rate (see BENCHMARK.md dead ends)"
@@ -89,9 +89,9 @@
   },
   "run_history": [],
   "release": {
-    "measured_binary_sha256": "06fdf195989e5c6e739285047e29dc3fe873252ee567e52e16e24f3804a85783",
+    "measured_binary_sha256": "b94598788be205483a3795b3097182564d2218e7a717857511e78d9865137128",
     "release_binary_sha256": null,
-    "source_commit": "eabd6b3b6399466725cf83e1ff4bd558e0ec9000",
+    "source_commit": "ef065da30193704d2e90d34b0a25741f1940a091",
     "tag": null,
     "status": "the measured binary is a local release-profile build; record the published release binary hash and tag here when this corpus's measurement is tied to a release"
   },
@@ -99,9 +99,11 @@
     {
       "id": "inv:009",
       "measure": "known_prior_recall",
-      "hit": false,
+      "hit": true,
       "expected": "c4-2024-03:M-03",
-      "returned": []
+      "returned": [
+        "item-0005"
+      ]
     },
     {
       "id": "inv:invalid-010",
@@ -913,8 +915,8 @@
         "item-0425",
         "item-0450",
         "item-0226",
-        "item-0107",
-        "item-0448"
+        "item-0448",
+        "item-0107"
       ]
     },
     {
@@ -933,8 +935,8 @@
         "item-0425",
         "item-0450",
         "item-0226",
-        "item-0107",
-        "item-0448"
+        "item-0448",
+        "item-0107"
       ]
     },
     {
@@ -946,8 +948,8 @@
         "item-0374",
         "item-0155",
         "item-0179",
-        "item-0149",
-        "item-0158"
+        "item-0072",
+        "item-0338"
       ]
     },
     {
@@ -959,8 +961,8 @@
         "item-0143",
         "item-0072",
         "item-0146",
-        "item-0142",
-        "item-0070"
+        "item-0070",
+        "item-0141"
       ]
     },
     {
@@ -969,11 +971,11 @@
       "hit": false,
       "expected": "inv:invalid-004",
       "returned": [
+        "item-0107",
+        "item-0072",
         "item-0425",
         "item-0450",
-        "item-0094",
-        "item-0107",
-        "item-0072"
+        "item-0094"
       ]
     },
     {

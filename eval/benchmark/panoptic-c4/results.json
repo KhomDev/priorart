@@ -40,8 +40,8 @@
   },
   "tool": {
     "path": "target/release/priorart.exe",
-    "version": "priorart 0.2.0",
-    "binary_sha256": "06fdf195989e5c6e739285047e29dc3fe873252ee567e52e16e24f3804a85783",
+    "version": "priorart 0.2.2",
+    "binary_sha256": "b94598788be205483a3795b3097182564d2218e7a717857511e78d9865137128",
     "matching_rule": ">= 2 strong identifiers, ranked top-k (EXECUTION-BRIEF 3.3)"
   },
   "frozen": {
@@ -50,7 +50,7 @@
     "manifest_sha256": "6607c4d6c9f6807d6c30b974a8b5d90095d6cdafbf4200f5946055454cfd6336",
     "labels_sha256": "88d4812d8b3dbe6b0e4cd6e16db131b8e0f2b9d59cae861bda8d545dd79f1778",
     "heldout_opened": true,
-    "harness_sha256": "5060f019f88dd2304ced1572c28022d5de538b81377ec8c994e19e4a600fd1e0"
+    "harness_sha256": "25c9e17a69c076cf504582d23a17469343bb6a778f0d61ef9df3d5a728a13b6a"
   },
   "measurements": {
     "known_prior_recall": {
@@ -89,9 +89,9 @@
   },
   "run_history": [],
   "release": {
-    "measured_binary_sha256": "06fdf195989e5c6e739285047e29dc3fe873252ee567e52e16e24f3804a85783",
+    "measured_binary_sha256": "b94598788be205483a3795b3097182564d2218e7a717857511e78d9865137128",
     "release_binary_sha256": null,
-    "source_commit": "6bce4575ade9c856bc184b6c79031fe71715b3ed",
+    "source_commit": "ef065da30193704d2e90d34b0a25741f1940a091",
     "tag": null,
     "status": "the measured binary is a local release-profile build; record the published release binary hash and tag here when this corpus's measurement is tied to a release"
   },
@@ -102,8 +102,7 @@
       "hit": false,
       "expected": "c4-2023-11:M-02",
       "returned": [
-        "item-0021",
-        "item-0027"
+        "item-0021"
       ]
     },
     {
@@ -149,8 +148,7 @@
       "measure": "false_alarm_rate",
       "alarm": true,
       "returned": [
-        "item-0021",
-        "item-0027"
+        "item-0021"
       ]
     },
     {
@@ -158,8 +156,7 @@
       "measure": "false_alarm_rate",
       "alarm": true,
       "returned": [
-        "item-0021",
-        "item-0027"
+        "item-0021"
       ]
     },
     {

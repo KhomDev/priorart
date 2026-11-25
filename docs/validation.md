@@ -10,6 +10,11 @@ this release withdraws.
 
 | Claim | Command or file | Date | Status |
 |---|---|---|---|
+| P1-C: six-corpus re-measurement (matcher 0.3.0, binary `6bfc20d3…`): sealed Party and Wildcat FAR 3/9 = 33.3% [12.1-64.6] each, 6/18 = 33.3% [16.3-56.3] pooled; Maia 8/15 = 53.3% [30.1-75.2], Panoptic 6/11 = 54.5% [28.0-78.7]; duplicate recall@5 Maia 7/289 = 2.4% [1.2-4.9], Panoptic 3/80 = 3.8% [1.3-10.4], Party 0/132 | `eval/benchmark/*/results.json`, `BENCHMARK.md` "P1-C re-measurement results", `pool_p1c.py` | 2026-11-25 | validated (published) |
+| The 0.3.0 alarm rule is not fit to ship: it does not lower Code4rena false alarms and destroys duplicate recall | same table; `BENCHMARK.md` decision note | 2026-11-25 | validated (negative result) |
+| The benchmark's last High/Medium slice stops at the next top-level section | `run.py:prior_slices`, `run.py --self-test`, `slice_self_test` | 2026-11-25 | validated |
+| A prior item's heading identifiers are counted | `src/dossier/import.rs::a_heading_identifier_is_part_of_the_item` | 2026-11-25 | validated |
+| A wrapped known-issues bullet is one item | `src/dossier/import.rs::a_wrapped_bullet_is_one_item_not_several`, `fetch.py:known_issue_items`, `run.py --self-test` | 2026-11-25 | validated |
 | Code4rena-judged corpora: FAR Maia 8/15 = 53.3% [30.1-75.2], Panoptic 6/11 = 54.5% [28.0-78.7], pooled 14/26 = 53.8% [35.5-71.2]; duplicate recall@5 Maia 87/289 = 30.1% [25.1-35.6], Panoptic 38/80 = 47.5% [36.9-58.3], pooled 125/369 = 33.9% [29.2-38.9] | `eval/benchmark/maia-c4/results.json`, `eval/benchmark/panoptic-c4/results.json`, `BENCHMARK.md` "Third and fourth corpora"; binary `06fdf195...` (0.2.0) | 2026-11-25 | validated (published) |
 | The C4 label mapping reproduces the published reports' paid findings | `fetch.py` `c4_layout` vs each later contest's `report.md`: 15/15 (Maia), 11/11 (Panoptic), same severity | 2026-11-25 | validated |
 | Known-prior label agreement on the C4 samples is 38/40 = 95.0% [83.5-98.6] | `maia-c4/labels.yaml`, `panoptic-c4/labels.yaml` agreement blocks (blinded AI second reader; for Maia the first reader saw the blind labels first) | 2026-11-25 | validated (published) |

@@ -1,0 +1,2187 @@
+version: 1
+schema: priorart.benchmark.manifest/v1
+seed: priorart-bench-wildcat-c4-2026-11-25
+note: 'Pointers and labels only: repo@commit + path per finding, plus the prior-item
+  locators it is labelled against. No finding body is stored here. The bodies are
+  fetched into eval/cache/benchmark/ by fetch.py. A label without method ''reader''
+  is a platform label or the frozen rubric, not a person''s judgement; see eval/benchmark/BENCHMARK.md.'
+sources:
+  prior_audit:
+    id: c4-2023-10-wildcat-audit
+    repo: code-423n4/2023-10-wildcat-findings
+    commit: 0d8afef82271eb3a4042def79527c3dcd330c0df
+    path: report.md
+  known_issues:
+    id: c4-2024-08-wildcat-contest
+    repo: code-423n4/2024-08-wildcat
+    commit: 7c5d8389b2a368ce6c4fc79e50c39eac3516ea5e
+    path: docs/Known Issues.md
+    section: docs/Known Issues.md
+prior_items:
+  prior_audit_and_known:
+  - id: c4-2023-10:H-01
+    source: c4-2023-10-wildcat-audit
+    locator: H-01
+    title: Borrowers can escape from paying half of the penalty fees by closing the
+      market, and those remaining
+  - id: c4-2023-10:H-02
+    source: c4-2023-10-wildcat-audit
+    locator: H-02
+    title: '`codehash` check in factory contracts does not account for non-empty addresses'
+  - id: c4-2023-10:H-03
+    source: c4-2023-10-wildcat-audit
+    locator: H-03
+    title: Borrower has no way to update `maxTotalSupply` of `market` or close market.
+  - id: c4-2023-10:H-04
+    source: c4-2023-10-wildcat-audit
+    locator: H-04
+    title: When `withdrawalBatchDuration` is set to zero lenders can withdraw more
+      then allocated to a batch
+  - id: c4-2023-10:H-05
+    source: c4-2023-10-wildcat-audit
+    locator: H-05
+    title: Lenders can escape the blacklisting of their accounts because they can
+      move their MarketTokens to di
+  - id: c4-2023-10:H-06
+    source: c4-2023-10-wildcat-audit
+    locator: H-06
+    title: Borrower can drain all funds of a sanctioned lender
+  - id: c4-2023-10:M-01
+    source: c4-2023-10-wildcat-audit
+    locator: M-01
+    title: When a batch of withdrawals expires, that batch is often underpaid their
+      owed interest
+  - id: c4-2023-10:M-02
+    source: c4-2023-10-wildcat-audit
+    locator: M-02
+    title: Blocked accounts keep earning interest contrary to the WhitePaper
+  - id: c4-2023-10:M-03
+    source: c4-2023-10-wildcat-audit
+    locator: M-03
+    title: Protocol markets are incompatible with rebasing tokens
+  - id: c4-2023-10:M-04
+    source: c4-2023-10-wildcat-audit
+    locator: M-04
+    title: Calculation for lender withdrawals in `_applyWithdrawalBatchPayment()`
+      should not round up
+  - id: c4-2023-10:M-05
+    source: c4-2023-10-wildcat-audit
+    locator: M-05
+    title: '`collectFees()` updates delinquency wrongly as `_writeState()` is called
+      before assets are transferr'
+  - id: c4-2023-10:M-06
+    source: c4-2023-10-wildcat-audit
+    locator: M-06
+    title: '`create2WithStoredInitCode()` does not revert if contract deployment failed'
+  - id: c4-2023-10:M-07
+    source: c4-2023-10-wildcat-audit
+    locator: M-07
+    title: Removing markets from `WildcatArchController` gives lenders immunity from
+      sanctions
+  - id: c4-2023-10:M-08
+    source: c4-2023-10-wildcat-audit
+    locator: M-08
+    title: '`setAnnualInterestBips()` can be abused to keep a market''s reserve ratio
+      at 90%'
+  - id: c4-2023-10:M-09
+    source: c4-2023-10-wildcat-audit
+    locator: M-09
+    title: Pending withdrawal batch debt cannot be paid by the borrower until the
+      cycle ends
+  - id: c4-2023-10:M-10
+    source: c4-2023-10-wildcat-audit
+    locator: M-10
+    title: Function `WildcatMarketController.setAnnualInterestBips` allows for values
+      outside the factory range
+  - id: c4-2023-10:M-11
+    source: c4-2023-10-wildcat-audit
+    locator: M-11
+    title: Return values of `transfer()`/`transferFrom()` not checked and unsafe usage
+  - id: ki-2024-08:1
+    source: c4-2024-08-wildcat-contest
+    locator: KI-1
+    text: Avoiding delinquency fees
+    aliases:
+    - avoiding delinquency fees
+  - id: ki-2024-08:2
+    source: c4-2024-08-wildcat-contest
+    locator: KI-2
+    text: If the borrower closes the market while still in penalized delinquency,
+      they will not have to pay ou
+    aliases:
+    - if the borrower closes the market while still in penalized delinquency, they
+      will not have to pay ou
+  - id: ki-2024-08:3
+    source: c4-2024-08-wildcat-contest
+    locator: KI-3
+    text: Malicious or delinquent borrowers can lead to loss of funds
+    aliases:
+    - malicious or delinquent borrowers can lead to loss of funds
+  - id: ki-2024-08:4
+    source: c4-2024-08-wildcat-contest
+    locator: KI-4
+    text: This one is fairly obvious but worth stating - if a borrower fails to repay
+      their debt for any reaso
+    aliases:
+    - this one is fairly obvious but worth stating - if a borrower fails to repay
+      their debt for any reaso
+  - id: ki-2024-08:5
+    source: c4-2024-08-wildcat-contest
+    locator: KI-5
+    text: 'If the borrower is malicious, they can hurt lenders in a variety of ways,
+      including but not limited '
+    aliases:
+    - 'if the borrower is malicious, they can hurt lenders in a variety of ways, including
+      but not limited '
+  - id: ki-2024-08:6
+    source: c4-2024-08-wildcat-contest
+    locator: KI-6
+    text: While the example of not repaying the loan would not be considered a valid
+      finding, we do still enco
+    aliases:
+    - while the example of not repaying the loan would not be considered a valid finding,
+      we do still enco
+  - id: ki-2024-08:7
+    source: c4-2024-08-wildcat-contest
+    locator: KI-7
+    text: Newer withdrawals lose some of their accrued interest to previous withdrawals
+      in the same batch
+    aliases:
+    - newer withdrawals lose some of their accrued interest to previous withdrawals
+      in the same batch
+  - id: ki-2024-08:8
+    source: c4-2024-08-wildcat-contest
+    locator: KI-8
+    text: This one is intentional but may initially seem erroneous. If Alice creates
+      a withdrawal batch with a
+    aliases:
+    - this one is intentional but may initially seem erroneous. if alice creates a
+      withdrawal batch with a
+  - id: ki-2024-08:9
+    source: c4-2024-08-wildcat-contest
+    locator: KI-9
+    text: The example given is also an extreme one, in reality it'd much more likely
+      be a fraction of a percen
+    aliases:
+    - the example given is also an extreme one, in reality it'd much more likely be
+      a fraction of a percen
+  - id: ki-2024-08:10
+    source: c4-2024-08-wildcat-contest
+    locator: KI-10
+    text: Bad hooks implementations
+    aliases:
+    - bad hooks implementations
+  - id: ki-2024-08:11
+    source: c4-2024-08-wildcat-contest
+    locator: KI-11
+    text: 'If any of the hooks that are enabled for a market can revert unexpectedly,
+      the corresponding market '
+    aliases:
+    - 'if any of the hooks that are enabled for a market can revert unexpectedly,
+      the corresponding market '
+  - id: ki-2024-08:12
+    source: c4-2024-08-wildcat-contest
+    locator: KI-12
+    text: Sanctioned account handling can lead to unexpected behavior on markets with
+      withdrawal restrictions
+    aliases:
+    - sanctioned account handling can lead to unexpected behavior on markets with
+      withdrawal restrictions
+  - id: ki-2024-08:13
+    source: c4-2024-08-wildcat-contest
+    locator: KI-13
+    text: If a market uses a hook with a withdrawal restriction, e.g. to prevent withdrawals
+      before a specifie
+    aliases:
+    - if a market uses a hook with a withdrawal restriction, e.g. to prevent withdrawals
+      before a specifie
+  - id: ki-2024-08:14
+    source: c4-2024-08-wildcat-contest
+    locator: KI-14
+    text: Hooks lack some specificity
+    aliases:
+    - hooks lack some specificity
+  - id: ki-2024-08:15
+    source: c4-2024-08-wildcat-contest
+    locator: KI-15
+    text: While one of the stated objectives of hooks is to enable auxiliary behavior
+      based on the state of th
+    aliases:
+    - while one of the stated objectives of hooks is to enable auxiliary behavior
+      based on the state of th
+  - id: ki-2024-08:16
+    source: c4-2024-08-wildcat-contest
+    locator: KI-16
+    text: We anticipate that, for any features added in the future, considering an
+      account to have burned thei
+    aliases:
+    - we anticipate that, for any features added in the future, considering an account
+      to have burned thei
+  - id: ki-2024-08:17
+    source: c4-2024-08-wildcat-contest
+    locator: KI-17
+    text: Any other issues with the ability of a hooks instance to track the state
+      of the market should be rep
+    aliases:
+    - any other issues with the ability of a hooks instance to track the state of
+      the market should be rep
+  - id: ki-2024-08:18
+    source: c4-2024-08-wildcat-contest
+    locator: KI-18
+    text: Conversion between scaled and normalized amounts has some rounding error
+    aliases:
+    - conversion between scaled and normalized amounts has some rounding error
+  - id: ki-2024-08:19
+    source: c4-2024-08-wildcat-contest
+    locator: KI-19
+    text: We are aware that deposits, withdrawals, and even transfers incur some inevitable
+      rounding error. We
+    aliases:
+    - we are aware that deposits, withdrawals, and even transfers incur some inevitable
+      rounding error. we
+  - id: ki-2024-08:20
+    source: c4-2024-08-wildcat-contest
+    locator: KI-20
+    text: This dust is sufficient to break something in the market, or
+    aliases:
+    - this dust is sufficient to break something in the market, or
+  - id: ki-2024-08:21
+    source: c4-2024-08-wildcat-contest
+    locator: KI-21
+    text: The rounding error can realistically be more than dust
+    aliases:
+    - the rounding error can realistically be more than dust
+  - id: ki-2024-08:22
+    source: c4-2024-08-wildcat-contest
+    locator: KI-22
+    text: So for example, we would not accept a finding that says you could do ten
+      million transfers to accumu
+    aliases:
+    - so for example, we would not accept a finding that says you could do ten million
+      transfers to accumu
+  - id: ki-2024-08:23
+    source: c4-2024-08-wildcat-contest
+    locator: KI-23
+    text: Some assembly blocks leave dirty bytes in memory
+    aliases:
+    - some assembly blocks leave dirty bytes in memory
+  - id: ki-2024-08:24
+    source: c4-2024-08-wildcat-contest
+    locator: KI-24
+    text: For example, in `HooksConfig`, all of the calls from a market to the various
+      hook functions are done
+    aliases:
+    - for example, in `hooksconfig`, all of the calls from a market to the various
+      hook functions are done
+  - id: ki-2024-08:25
+    source: c4-2024-08-wildcat-contest
+    locator: KI-25
+    text: It is possible for markets to be constructed in a way that makes it impossible
+      for anyone to request
+    aliases:
+    - it is possible for markets to be constructed in a way that makes it impossible
+      for anyone to request
+  - id: ki-2024-08:26
+    source: c4-2024-08-wildcat-contest
+    locator: KI-26
+    text: While we tried our best to ensure lenders who deposit to a market can not
+      have their withdrawal righ
+    aliases:
+    - while we tried our best to ensure lenders who deposit to a market can not have
+      their withdrawal righ
+  - id: ki-2024-08:27
+    source: c4-2024-08-wildcat-contest
+    locator: KI-27
+    text: 'The way this would work is:'
+    aliases:
+    - 'the way this would work is:'
+  - id: ki-2024-08:28
+    source: c4-2024-08-wildcat-contest
+    locator: KI-28
+    text: Create a market with credentials required for withdrawals but not for deposits
+      or transfers.
+    aliases:
+    - create a market with credentials required for withdrawals but not for deposits
+      or transfers.
+  - id: ki-2024-08:29
+    source: c4-2024-08-wildcat-contest
+    locator: KI-29
+    text: Never add any role providers.
+    aliases:
+    - never add any role providers.
+  - id: ki-2024-08:30
+    source: c4-2024-08-wildcat-contest
+    locator: KI-30
+    text: Lenders can deposit, but since they'll never have a credential, they will
+      never be given the `isKnow
+    aliases:
+    - lenders can deposit, but since they'll never have a credential, they will never
+      be given the `isknow
+  - id: ki-2024-08:31
+    source: c4-2024-08-wildcat-contest
+    locator: KI-31
+    text: 'Unfortunately it is not possible to remove this problem without eliminating
+      certain kinds of market '
+    aliases:
+    - 'unfortunately it is not possible to remove this problem without eliminating
+      certain kinds of market '
+  - id: ki-2024-08:32
+    source: c4-2024-08-wildcat-contest
+    locator: KI-32
+    text: Reliance on Chainalysis
+    aliases:
+    - reliance on chainalysis
+  - id: ki-2024-08:33
+    source: c4-2024-08-wildcat-contest
+    locator: KI-33
+    text: If the Chainalysis sanctions oracle were to be compromised or otherwise
+      start flagging accounts as s
+    aliases:
+    - if the chainalysis sanctions oracle were to be compromised or otherwise start
+      flagging accounts as s
+  - id: ki-2024-08:34
+    source: c4-2024-08-wildcat-contest
+    locator: KI-34
+    text: Deposits can be accepted despite being under the minimum deposit
+    aliases:
+    - deposits can be accepted despite being under the minimum deposit
+  - id: ki-2024-08:35
+    source: c4-2024-08-wildcat-contest
+    locator: KI-35
+    text: Because `onDeposit` takes a scaled token amount which gets normalized using
+      the scale factor, it's p
+    aliases:
+    - because `ondeposit` takes a scaled token amount which gets normalized using
+      the scale factor, it's p
+  judged_primary:
+  - id: acc:011-M
+    source: code-423n4/2024-08-wildcat-findings
+    locator: acc:011-M
+    title: AccessControlHooks onQueueWithdrawal() does not check if market is hooked
+      which could lead to unexpe
+    variant: judged_primary
+  - id: acc:049-M
+    source: code-423n4/2024-08-wildcat-findings
+    locator: acc:049-M
+    title: Role providers cannot be EOAs as stated in the documentation.
+    variant: judged_primary
+  - id: acc:052-M
+    source: code-423n4/2024-08-wildcat-findings
+    locator: acc:052-M
+    title: No lender is able to exit even after the market is closed
+    variant: judged_primary
+  - id: acc:057-M
+    source: code-423n4/2024-08-wildcat-findings
+    locator: acc:057-M
+    title: Role providers can bypass intended restrictions and lower expiry set by
+      other providers
+    variant: judged_primary
+  - id: acc:060-M
+    source: code-423n4/2024-08-wildcat-findings
+    locator: acc:060-M
+    title: '`FixedTermLoanHook` looks at `block.timestamp` instead of `expiry`'
+    variant: judged_primary
+  - id: acc:062-M
+    source: code-423n4/2024-08-wildcat-findings
+    locator: acc:062-M
+    title: Inconsistency across multiple repaying functions causing lender to pay
+      extra fees.
+    variant: judged_primary
+  - id: acc:064-H
+    source: code-423n4/2024-08-wildcat-findings
+    locator: acc:064-H
+    title: User could withdraw more than supposed to, forcing last user withdraw to
+      fail
+    variant: judged_primary
+  - id: acc:077-M
+    source: code-423n4/2024-08-wildcat-findings
+    locator: acc:077-M
+    title: '`FixedTermLoanHooks` allow Borrower to update Annual Interest before end
+      of the "Fixed Term Period"'
+    variant: judged_primary
+  - id: acc:121-M
+    source: code-423n4/2024-08-wildcat-findings
+    locator: acc:121-M
+    title: Users are incentivized to not withdraw immediately after the market is
+      closed.
+    variant: judged_primary
+  - id: inv:004
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:004
+    title: The new withdrawal batch may be prioritized over the expired withdrawal
+      batch for repayment
+    variant: judged_primary
+  - id: inv:005
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:005
+    title: The protocol has not charged the protocol fee.
+    variant: judged_primary
+  - id: inv:008
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:008
+    title: pushProtocolFeeBipsUpdates will unexpectedly revert on closed markets
+    variant: judged_primary
+  - id: inv:009
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:009
+    title: Malicios users can grief admin calls to pushProtocolFeeBipsUpdates causing
+      tranasctions to revert
+    variant: judged_primary
+  - id: inv:012
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:012
+    title: Lenders can avoid sanction restrictions in `FixedTermLoanHooks` by transferring
+      to another account
+    variant: judged_primary
+  - id: inv:013
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:013
+    title: Minimum deposit requirement can be bypassed
+    variant: judged_primary
+  - id: inv:015
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:015
+    title: Lack of slippage control on deposit functions
+    variant: judged_primary
+  - id: inv:016
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:016
+    title: Lenders lose funds if deposits continue to operate when Borrower has been
+      sanctioned
+    variant: judged_primary
+  - id: inv:020
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:020
+    title: '`repay` opearation can be effectively simulated bypassing `state.isClosed`
+      and hooks'
+    variant: judged_primary
+  - id: inv:027
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:027
+    title: FixedTermLoanHooks Allows Borrower to Increase Loan Term
+    variant: judged_primary
+  - id: inv:028
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:028
+    title: Malicious Lender Can Block Other Lenders from Withdrawing Funds
+    variant: judged_primary
+  - id: inv:029
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:029
+    title: Incorrect Calculation in _calculateTemporaryReserveRatioBips Function
+    variant: judged_primary
+  - id: inv:030
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:030
+    title: Allowed amounts for Deposit, Transfer, and Withdrawal are increasing as
+      the scale factor increases w
+    variant: judged_primary
+  - id: inv:031
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:031
+    title: Memory Corruption Risk in LibStoredInitCode Due to Scratch Space Overuse
+    variant: judged_primary
+  - id: inv:032
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:032
+    title: Deposits/borrows deviate from intended implementation
+    variant: judged_primary
+  - id: inv:033
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:033
+    title: Lack of validation of the `FixedTermLoanHooks.setFixedTermEndTime` function
+      can lead to unintended b
+    variant: judged_primary
+  - id: inv:034
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:034
+    title: lenders are unable to get full repayment amount
+    variant: judged_primary
+  - id: inv:035
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:035
+    title: Increasing APR when reserve ratio is zero and borrower uses all the funds
+      moves the account to delin
+    variant: judged_primary
+  - id: inv:037
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:037
+    title: Sanctioned Addresses Can Bypass Checks Due to Incorrect Assembly Code
+    variant: judged_primary
+  - id: inv:038
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:038
+    title: '`onExecuteWithdrawal` hook uses an incorrect function signature definition'
+    variant: judged_primary
+  - id: inv:040
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:040
+    title: Inconsistent Access Control Allows Known Lenders to Bypass Deposit Restrictions
+      via Transfers
+    variant: judged_primary
+  - id: inv:041
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:041
+    title: Inconsistent Minimum Balance Checks Enable Known Lender Status Bypass via
+      `onTransfer` function
+    variant: judged_primary
+  - id: inv:043
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:043
+    title: Excessive Interest and Fees Due to Multiple Repayments
+    variant: judged_primary
+  - id: inv:044
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:044
+    title: Accounts blocked from deposits can ultimately mimic the exact state as
+      a depositor
+    variant: judged_primary
+  - id: inv:048
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:048
+    title: The APR can neither be increased nor locked if the market becomes delinquent
+      following a reduction o
+    variant: judged_primary
+  - id: inv:051
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:051
+    title: '`WildcatMarketConfig#nukeFromOrbit()` reverts even if the lender has been
+      marked as sanctioned'
+    variant: judged_primary
+  - id: inv:053
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:053
+    title: A `borrower` can remove itself from role providers of Hooks
+    variant: judged_primary
+  - id: inv:055
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:055
+    title: The penalty APR to be returned can be manipulated
+    variant: judged_primary
+  - id: inv:059
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:059
+    title: The contract goes back to being in a Delinquent state 1 seconds after repaying
+      all DelinquentDebt be
+    variant: judged_primary
+  - id: inv:063
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:063
+    title: FIFO queue is not strict enough
+    variant: judged_primary
+  - id: inv:065
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:065
+    title: 'WildcatSanctionsSentinel:: createEscrow allows unregistered market to
+      used to create escrow'
+    variant: judged_primary
+  - id: inv:105
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:105
+    title: '`WildcantMarketWithdrawals.sol::executeWithdrawals` function does not
+      have validation check for the '
+    variant: judged_primary
+  - id: inv:124
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:124
+    title: Inability to Override Erroneous Chainalysis Sanction Flag for Borrowers
+      in WildcatMarket.borrow Func
+    variant: judged_primary
+  - id: inv:125
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:125
+    title: lender that's mistakenly flagged can lose access to funds
+    variant: judged_primary
+  - id: inv:invalid-003
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-003
+    title: The `setHooksAddress` implementation is incorrect.
+    variant: judged_primary
+  - id: inv:invalid-014
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-014
+    title: Borrower can reduce the maxTotalSupply below the current `totalSupply()`
+    variant: judged_primary
+  - id: inv:invalid-018
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-018
+    title: Incorrect use of `state.isDelinquent` in `updateTimeDelinquentAndGetPenaltyTime`
+      function - total mi
+    variant: judged_primary
+  - id: inv:invalid-019
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-019
+    title: Wrong calculation of delinquent penalty time in `updateTimeDelinquentAndGetPenaltyTime`
+      function
+    variant: judged_primary
+  - id: inv:invalid-024
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-024
+    title: 'A borrower cannot prevent the transfer of market tokens if the market
+      allows deposits only when the '
+    variant: judged_primary
+  - id: inv:invalid-025
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-025
+    title: Market using `stETH` might still be delinquent after `repayDeliquentDebt`
+    variant: judged_primary
+  - id: inv:invalid-036
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-036
+    title: Hook deployment is vulnerable to reorg situations
+    variant: judged_primary
+  - id: inv:invalid-039
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-039
+    title: Borrower Can Permanently Invalidate Push Provider Credentials Through Block/Unblock
+      Actions
+    variant: judged_primary
+  - id: inv:invalid-042
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-042
+    title: No any external functions in `HooksFactory` are protected by SphereX
+    variant: judged_primary
+  - id: inv:invalid-046
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-046
+    title: The `reserveRatioBips` will be incorrect if a market APR is reduced again
+      two weeks after the initia
+    variant: judged_primary
+  - id: inv:invalid-050
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-050
+    title: Once hooks are disabled, there is no way to enable or add them again.
+    variant: judged_primary
+  - id: inv:invalid-054
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-054
+    title: '`state.scaleFactor` is calculated incorrectly when handling the current
+      expired withdrawal batch'
+    variant: judged_primary
+  - id: inv:invalid-056
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-056
+    title: Improper validation on the `HooksFactory::_validateFees` function precisely
+      on the `OriginationFee`a
+    variant: judged_primary
+  - id: inv:invalid-058
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-058
+    title: '`SphereXConfig::constructor` argument `engine` set as `0` in `WildcatArchController::constructor`
+      wi'
+    variant: judged_primary
+  - id: inv:invalid-061
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-061
+    title: Borrower can fully bypass the `onRepay` hook
+    variant: judged_primary
+  - id: inv:invalid-066
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-066
+    title: Blacklisted Assets Can Be Used as Origination Fee Assets in Hooks Templates
+    variant: judged_primary
+  - id: inv:invalid-067
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-067
+    title: Borrowers could still deploy market while the template is diabled
+    variant: judged_primary
+  - id: inv:invalid-070
+    source: code-423n4/2024-08-wildcat-findings
+    locator: inv:invalid-070
+    title: A Sanctioned Address Can Directly Repay Debt via repay() and repayOutstandingDebt()
+      in WildcatMarket
+    variant: judged_primary
+findings:
+- id: acc:011-M
+  judged: accepted
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 011-M/011-best.md
+  group_files: 6
+  files:
+  - 011-M/011-best.md
+  - 011-M/022.md
+  - 011-M/026.md
+  - 011-M/078.md
+  - 011-M/083.md
+  - 011-M/123.md
+  title: AccessControlHooks onQueueWithdrawal() does not check if market is hooked
+    which could lead to unexpe
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:049-M
+  judged: accepted
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 049-M/049-best.md
+  group_files: 2
+  files:
+  - 049-M/049-best.md
+  - 049-M/074.md
+  title: Role providers cannot be EOAs as stated in the documentation.
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:052-M
+  judged: accepted
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 052-M/052-best.md
+  group_files: 3
+  files:
+  - 052-M/052-best.md
+  - 052-M/087.md
+  - 052-M/101.md
+  title: No lender is able to exit even after the market is closed
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:057-M
+  judged: accepted
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 057-M/057-best.md
+  group_files: 3
+  files:
+  - 057-M/010.md
+  - 057-M/057-best.md
+  - 057-M/086.md
+  title: Role providers can bypass intended restrictions and lower expiry set by other
+    providers
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:060-M
+  judged: accepted
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 060-M/060-best.md
+  group_files: 1
+  files:
+  - 060-M/060-best.md
+  title: '`FixedTermLoanHook` looks at `block.timestamp` instead of `expiry`'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:062-M
+  judged: accepted
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 062-M/062-best.md
+  group_files: 6
+  files:
+  - 062-M/047.md
+  - 062-M/062-best.md
+  - 062-M/072.md
+  - 062-M/073.md
+  - 062-M/096.md
+  - 062-M/100.md
+  title: Inconsistency across multiple repaying functions causing lender to pay extra
+    fees.
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:064-H
+  judged: accepted
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 064-H/064-best.md
+  group_files: 1
+  files:
+  - 064-H/064-best.md
+  title: User could withdraw more than supposed to, forcing last user withdraw to
+    fail
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:077-M
+  judged: accepted
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 077-M/077-best.md
+  group_files: 3
+  files:
+  - 077-M/023.md
+  - 077-M/077-best.md
+  - 077-M/095.md
+  title: '`FixedTermLoanHooks` allow Borrower to update Annual Interest before end
+    of the "Fixed Term Period"'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:121-M
+  judged: accepted
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 121-M/121-best.md
+  group_files: 1
+  files:
+  - 121-M/121-best.md
+  title: Users are incentivized to not withdraw immediately after the market is closed.
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:004
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/004.md
+  group_files: 1
+  files:
+  - invalid/004.md
+  title: The new withdrawal batch may be prioritized over the expired withdrawal batch
+    for repayment
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:005
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/005.md
+  group_files: 1
+  files:
+  - invalid/005.md
+  title: The protocol has not charged the protocol fee.
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:008
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/008.md
+  group_files: 1
+  files:
+  - invalid/008.md
+  title: pushProtocolFeeBipsUpdates will unexpectedly revert on closed markets
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:009
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/009.md
+  group_files: 1
+  files:
+  - invalid/009.md
+  title: Malicios users can grief admin calls to pushProtocolFeeBipsUpdates causing
+    tranasctions to revert
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:012
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/012.md
+  group_files: 1
+  files:
+  - invalid/012.md
+  title: Lenders can avoid sanction restrictions in `FixedTermLoanHooks` by transferring
+    to another account
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:013
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/013.md
+  group_files: 1
+  files:
+  - invalid/013.md
+  title: Minimum deposit requirement can be bypassed
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:015
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/015.md
+  group_files: 1
+  files:
+  - invalid/015.md
+  title: Lack of slippage control on deposit functions
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:016
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/016.md
+  group_files: 1
+  files:
+  - invalid/016.md
+  title: Lenders lose funds if deposits continue to operate when Borrower has been
+    sanctioned
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:020
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/020.md
+  group_files: 1
+  files:
+  - invalid/020.md
+  title: '`repay` opearation can be effectively simulated bypassing `state.isClosed`
+    and hooks'
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:027
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/027.md
+  group_files: 1
+  files:
+  - invalid/027.md
+  title: FixedTermLoanHooks Allows Borrower to Increase Loan Term
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:028
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/028.md
+  group_files: 1
+  files:
+  - invalid/028.md
+  title: Malicious Lender Can Block Other Lenders from Withdrawing Funds
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:029
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/029.md
+  group_files: 1
+  files:
+  - invalid/029.md
+  title: Incorrect Calculation in _calculateTemporaryReserveRatioBips Function
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:030
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/030.md
+  group_files: 1
+  files:
+  - invalid/030.md
+  title: Allowed amounts for Deposit, Transfer, and Withdrawal are increasing as the
+    scale factor increases w
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:031
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/031.md
+  group_files: 1
+  files:
+  - invalid/031.md
+  title: Memory Corruption Risk in LibStoredInitCode Due to Scratch Space Overuse
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:032
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/032.md
+  group_files: 1
+  files:
+  - invalid/032.md
+  title: Deposits/borrows deviate from intended implementation
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:033
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/033.md
+  group_files: 1
+  files:
+  - invalid/033.md
+  title: Lack of validation of the `FixedTermLoanHooks.setFixedTermEndTime` function
+    can lead to unintended b
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:034
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/034.md
+  group_files: 1
+  files:
+  - invalid/034.md
+  title: lenders are unable to get full repayment amount
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:035
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/035.md
+  group_files: 1
+  files:
+  - invalid/035.md
+  title: Increasing APR when reserve ratio is zero and borrower uses all the funds
+    moves the account to delin
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:037
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/037.md
+  group_files: 1
+  files:
+  - invalid/037.md
+  title: Sanctioned Addresses Can Bypass Checks Due to Incorrect Assembly Code
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:038
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/038.md
+  group_files: 1
+  files:
+  - invalid/038.md
+  title: '`onExecuteWithdrawal` hook uses an incorrect function signature definition'
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:040
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/040.md
+  group_files: 1
+  files:
+  - invalid/040.md
+  title: Inconsistent Access Control Allows Known Lenders to Bypass Deposit Restrictions
+    via Transfers
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:041
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/041.md
+  group_files: 1
+  files:
+  - invalid/041.md
+  title: Inconsistent Minimum Balance Checks Enable Known Lender Status Bypass via
+    `onTransfer` function
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:043
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/043.md
+  group_files: 1
+  files:
+  - invalid/043.md
+  title: Excessive Interest and Fees Due to Multiple Repayments
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:044
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/044.md
+  group_files: 1
+  files:
+  - invalid/044.md
+  title: Accounts blocked from deposits can ultimately mimic the exact state as a
+    depositor
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:048
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/048.md
+  group_files: 1
+  files:
+  - invalid/048.md
+  title: The APR can neither be increased nor locked if the market becomes delinquent
+    following a reduction o
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:051
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/051.md
+  group_files: 1
+  files:
+  - invalid/051.md
+  title: '`WildcatMarketConfig#nukeFromOrbit()` reverts even if the lender has been
+    marked as sanctioned'
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:053
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/053.md
+  group_files: 1
+  files:
+  - invalid/053.md
+  title: A `borrower` can remove itself from role providers of Hooks
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:055
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/055.md
+  group_files: 1
+  files:
+  - invalid/055.md
+  title: The penalty APR to be returned can be manipulated
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:059
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/059.md
+  group_files: 1
+  files:
+  - invalid/059.md
+  title: The contract goes back to being in a Delinquent state 1 seconds after repaying
+    all DelinquentDebt be
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:063
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/063.md
+  group_files: 1
+  files:
+  - invalid/063.md
+  title: FIFO queue is not strict enough
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:065
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/065.md
+  group_files: 1
+  files:
+  - invalid/065.md
+  title: 'WildcatSanctionsSentinel:: createEscrow allows unregistered market to used
+    to create escrow'
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:105
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/105.md
+  group_files: 1
+  files:
+  - invalid/105.md
+  title: '`WildcantMarketWithdrawals.sol::executeWithdrawals` function does not have
+    validation check for the '
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:124
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/124.md
+  group_files: 1
+  files:
+  - invalid/124.md
+  title: Inability to Override Erroneous Chainalysis Sanction Flag for Borrowers in
+    WildcatMarket.borrow Func
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:125
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/125.md
+  group_files: 1
+  files:
+  - invalid/125.md
+  title: lender that's mistakenly flagged can lose access to funds
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-003
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-003/003-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-003/003-best.md
+  - invalid/invalid-003/085.md
+  title: The `setHooksAddress` implementation is incorrect.
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-014
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-014/014-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-014/014-best.md
+  - invalid/invalid-014/090.md
+  title: Borrower can reduce the maxTotalSupply below the current `totalSupply()`
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-018
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-018/018-best.md
+  group_files: 4
+  files:
+  - invalid/invalid-018/018-best.md
+  - invalid/invalid-018/021.md
+  - invalid/invalid-018/093.md
+  - invalid/invalid-018/103.md
+  title: Incorrect use of `state.isDelinquent` in `updateTimeDelinquentAndGetPenaltyTime`
+    function - total mi
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-019
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-019/019-best.md
+  group_files: 3
+  files:
+  - invalid/invalid-019/019-best.md
+  - invalid/invalid-019/075.md
+  - invalid/invalid-019/089.md
+  title: Wrong calculation of delinquent penalty time in `updateTimeDelinquentAndGetPenaltyTime`
+    function
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-024
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-024/024-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-024/024-best.md
+  - invalid/invalid-024/102.md
+  title: 'A borrower cannot prevent the transfer of market tokens if the market allows
+    deposits only when the '
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-025
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-025/025-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-025/025-best.md
+  - invalid/invalid-025/080.md
+  title: Market using `stETH` might still be delinquent after `repayDeliquentDebt`
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-036
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-036/036-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-036/036-best.md
+  - invalid/invalid-036/079.md
+  title: Hook deployment is vulnerable to reorg situations
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-039
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-039/039-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-039/039-best.md
+  - invalid/invalid-039/081.md
+  title: Borrower Can Permanently Invalidate Push Provider Credentials Through Block/Unblock
+    Actions
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-042
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-042/042-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-042/042-best.md
+  - invalid/invalid-042/088.md
+  title: No any external functions in `HooksFactory` are protected by SphereX
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-046
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-046/046-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-046/045.md
+  - invalid/invalid-046/046-best.md
+  title: The `reserveRatioBips` will be incorrect if a market APR is reduced again
+    two weeks after the initia
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-050
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-050/050-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-050/050-best.md
+  - invalid/invalid-050/082.md
+  title: Once hooks are disabled, there is no way to enable or add them again.
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-054
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-054/054-best.md
+  group_files: 4
+  files:
+  - invalid/invalid-054/054-best.md
+  - invalid/invalid-054/076.md
+  - invalid/invalid-054/097.md
+  - invalid/invalid-054/098.md
+  title: '`state.scaleFactor` is calculated incorrectly when handling the current
+    expired withdrawal batch'
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-056
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-056/056-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-056/056-best.md
+  - invalid/invalid-056/094.md
+  title: Improper validation on the `HooksFactory::_validateFees` function precisely
+    on the `OriginationFee`a
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-058
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-058/058-best.md
+  group_files: 3
+  files:
+  - invalid/invalid-058/058-best.md
+  - invalid/invalid-058/099.md
+  - invalid/invalid-058/107.md
+  title: '`SphereXConfig::constructor` argument `engine` set as `0` in `WildcatArchController::constructor`
+    wi'
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-061
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-061/061-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-061/061-best.md
+  - invalid/invalid-061/084.md
+  title: Borrower can fully bypass the `onRepay` hook
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-066
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-066/066-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-066/066-best.md
+  - invalid/invalid-066/104.md
+  title: Blacklisted Assets Can Be Used as Origination Fee Assets in Hooks Templates
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-067
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-067/067-best.md
+  group_files: 5
+  files:
+  - invalid/invalid-067/007.md
+  - invalid/invalid-067/067-best.md
+  - invalid/invalid-067/071.md
+  - invalid/invalid-067/091.md
+  - invalid/invalid-067/106.md
+  title: Borrowers could still deploy market while the template is diabled
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:invalid-070
+  judged: invalid
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-070/070-best.md
+  group_files: 4
+  files:
+  - invalid/invalid-070/068.md
+  - invalid/invalid-070/069.md
+  - invalid/invalid-070/070-best.md
+  - invalid/invalid-070/092.md
+  title: A Sanctioned Address Can Directly Repay Debt via repay() and repayOutstandingDebt()
+    in WildcatMarket
+  label: invalid_unmapped
+  label_method: unlabelled
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+duplicates:
+- id: dup:011-M/022.md
+  expected: acc:011-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 011-M/022.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:011-M/026.md
+  expected: acc:011-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 011-M/026.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:011-M/078.md
+  expected: acc:011-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 011-M/078.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:011-M/083.md
+  expected: acc:011-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 011-M/083.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:011-M/123.md
+  expected: acc:011-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 011-M/123.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:049-M/074.md
+  expected: acc:049-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 049-M/074.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:052-M/087.md
+  expected: acc:052-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 052-M/087.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:052-M/101.md
+  expected: acc:052-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 052-M/101.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:057-M/010.md
+  expected: acc:057-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 057-M/010.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:057-M/086.md
+  expected: acc:057-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 057-M/086.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:062-M/047.md
+  expected: acc:062-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 062-M/047.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:062-M/072.md
+  expected: acc:062-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 062-M/072.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:062-M/073.md
+  expected: acc:062-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 062-M/073.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:062-M/096.md
+  expected: acc:062-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 062-M/096.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:062-M/100.md
+  expected: acc:062-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 062-M/100.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:077-M/023.md
+  expected: acc:077-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 077-M/023.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:077-M/095.md
+  expected: acc:077-M
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: 077-M/095.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-003/085.md
+  expected: inv:invalid-003
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-003/085.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-014/090.md
+  expected: inv:invalid-014
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-014/090.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-018/021.md
+  expected: inv:invalid-018
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-018/021.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-018/093.md
+  expected: inv:invalid-018
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-018/093.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-018/103.md
+  expected: inv:invalid-018
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-018/103.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-019/075.md
+  expected: inv:invalid-019
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-019/075.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-019/089.md
+  expected: inv:invalid-019
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-019/089.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-024/102.md
+  expected: inv:invalid-024
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-024/102.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-025/080.md
+  expected: inv:invalid-025
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-025/080.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-036/079.md
+  expected: inv:invalid-036
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-036/079.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-039/081.md
+  expected: inv:invalid-039
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-039/081.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-042/088.md
+  expected: inv:invalid-042
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-042/088.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-046/045.md
+  expected: inv:invalid-046
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-046/045.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-050/082.md
+  expected: inv:invalid-050
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-050/082.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-054/076.md
+  expected: inv:invalid-054
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-054/076.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-054/097.md
+  expected: inv:invalid-054
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-054/097.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-054/098.md
+  expected: inv:invalid-054
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-054/098.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-056/094.md
+  expected: inv:invalid-056
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-056/094.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-058/099.md
+  expected: inv:invalid-058
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-058/099.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-058/107.md
+  expected: inv:invalid-058
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-058/107.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-061/084.md
+  expected: inv:invalid-061
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-061/084.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-066/104.md
+  expected: inv:invalid-066
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-066/104.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-067/007.md
+  expected: inv:invalid-067
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-067/007.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-067/071.md
+  expected: inv:invalid-067
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-067/071.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-067/091.md
+  expected: inv:invalid-067
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-067/091.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-067/106.md
+  expected: inv:invalid-067
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-067/106.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-070/068.md
+  expected: inv:invalid-070
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-070/068.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-070/069.md
+  expected: inv:invalid-070
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-070/069.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-070/092.md
+  expected: inv:invalid-070
+  pointer:
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    path: invalid/invalid-070/092.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+evaluation:
+  known_prior_recall:
+    dossier: prior_audit_and_known
+    queries: findings labelled known_prior
+    expected: the prior item in prior_ref
+    k: 5
+  false_alarm_rate:
+    dossier: prior_audit_and_known
+    queries: findings labelled unique_valid (judged paid Medium/High, unique)
+    alarm: any returned prior_art item (the matcher requires >= 2 strong identifiers)
+  duplicate_recall:
+    dossier: judged_primary
+    queries: duplicates[] entries
+    expected: the duplicate's expected judged representative
+    k: 5
+    note: 'supplementary: judged within-contest duplicate retrieval, not the plan''s
+      known-issue metric'
+counts:
+  prior_items: 52
+  findings: 61
+  accepted: 9
+  invalid: 52
+  duplicates: 46
+  known_prior: 0
+  reader_labelled: 0

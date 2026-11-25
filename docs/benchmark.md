@@ -6,7 +6,7 @@ it is a judged contest that published its prior audit and a later contest's
 judging on the same code. Everything is stored as pointers and labels:
 `repo@commit` plus a path or issue id, never finding text.
 
-There are four corpora on four protocols and two judging platforms. Judged by
+There are six corpora on six protocols and two judging platforms (the last two were added for P1-C and are sealed). Judged by
 Sherlock: Tapioca (Code4rena 2023-07 -> Sherlock 2024-02) and PoolTogether V5
 (Code4rena 2024-03 -> Sherlock 2024-05). Judged by Code4rena: Maia (Code4rena
 2023-05 -> Code4rena 2023-09) and Panoptic (Code4rena 2023-11 -> Code4rena
@@ -155,7 +155,7 @@ One corpus, one frozen measurement, on the priorart 0.2.0 release-profile build
 |---|---|---|
 | False-alarm rate, 40 judged paid+unique | **9/40 = 22.5%** | 12.3-37.5% |
 | Duplicate recall@5, 85 judge-grouped duplicates | **32/85 = 37.6%** | 28.1-48.3% |
-| Known-prior recall@5 | n=2, 0 hits | not a rate |
+| Known-prior recall@5 | n=2, 1 hit (0.2.2; heading identifiers) | not a rate |
 
 The two known-prior positives (`inv:009` repeats C4 M-03 on
 `maxDeposit()`/`_depositAndMint()`, and `inv:invalid-010` repeats M-08 on
@@ -314,3 +314,22 @@ to a binary hash: the published release-profile binary hashes differently again,
 so its sha256 is not the one above. The debug-build sha256 in `results.json` is
 recorded so a reader can reproduce the run with the same harness and the same
 per-query rows; it identifies the measured artifact, not the one you install.
+
+
+## P1-C re-measurement (2026-11-25, matcher 0.3.0)
+
+The 0.3.0 alarm rule (a shared claim component; absolute document frequency;
+heading identifiers; joined known-issues bullets) was measured on all six
+corpora with the frozen binary `6bfc20d3…`. It **does not work**: the sealed
+Code4rena corpora are at 3/9 = 33.3% [12.1-64.6] false alarms each (6/18 =
+33.3% pooled), above the 30% trigger; Maia and Panoptic are unchanged at
+53.3% and 54.5%; and duplicate recall@5 collapses (Maia 30.1% -> 2.4%,
+Panoptic 47.5% -> 3.8%, Party 0/132). The harness fixes (last-slice, heading
+identifiers, bullet joining) are keepers; the alarm gate is not. The 0.3.0 matcher was reverted; **0.2.2 ships the
+harness fixes only** and re-measures the unchanged matcher: in-sample numbers
+are materially the same as P1 (Tapioca 15/60 = 25.0% FAR, 35/64 = 54.7%
+duplicate recall; Maia 8/15 and Panoptic 6/11 unchanged), and the two
+formerly sealed pairs are 3/9 = 33.3% and 4/9 = 44.4%, 7/18 = 38.9% pooled.
+The trigger remains met; the warning stays off. Full tables:
+`eval/benchmark/BENCHMARK.md`, "P1-C re-measurement results" and "0.2.2
+measurement".

@@ -150,8 +150,8 @@ fn benchmark_docs_quote_the_measured_numbers() {
             "duplicate_recall",
             "hits",
             64,
-            36,
-            "36/64 = 56.3%",
+            35,
+            "35/64 = 54.7%",
         ),
         (
             &pooltogether,
@@ -184,16 +184,16 @@ fn benchmark_docs_quote_the_measured_numbers() {
         );
     }
 
-    for (doc, n) in [(&tapioca, 1), (&pooltogether, 2)] {
+    for (doc, n, hits) in [(&tapioca, 1, 0), (&pooltogether, 2, 1)] {
         let row = &doc["measurements"]["known_prior_recall"];
         assert_eq!(row["n"].as_u64(), Some(n), "known_prior_recall: n drifted");
         assert_eq!(
             row["hits"].as_u64(),
-            Some(0),
+            Some(hits),
             "known_prior_recall: hits drifted"
         );
     }
-    for needle in ["n=1, 0 hits", "n=2, 0 hits"] {
+    for needle in ["n=1, 0 hits", "n=2, 1 hit"] {
         assert!(
             docs.contains(needle) && readme.contains(needle),
             "the known-prior count {needle} is missing from the docs"

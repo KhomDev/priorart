@@ -2,7 +2,7 @@
   "schema": "priorart.dossier/v1",
   "tool": {
     "name": "priorart",
-    "version": "0.2.1"
+    "version": "0.2.2"
   },
   "program": {
     "id": "html-program",
@@ -124,11 +124,11 @@
       "title": "scope.html",
       "section": "Out of scope",
       "page": 1,
-      "quote": "Issues already listed in the known-issues section",
+      "quote": "Issues already listed in the known-issues section Page text kept as plain text, with an entity that is decoded: © 2026.",
       "identifiers": [],
       "mechanism_class": null,
       "clause_class": "known_issue",
-      "text": "Issues already listed in the known-issues section"
+      "text": "Issues already listed in the known-issues section Page text kept as plain text, with an entity that is decoded: © 2026."
     }
   ]
 }

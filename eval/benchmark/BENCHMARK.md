@@ -687,3 +687,133 @@ priorart binary at all; CI could run it on every change.
 | `pooltogether/results.json` | yes | the PoolTogether numbers, per query and with the binary hash |
 | `eval/cache/benchmark/` | no (gitignored) | fetched finding bodies and built dossiers (Tapioca) |
 | `eval/cache/benchmark/pooltogether/` | no (gitignored) | fetched finding bodies and built dossiers (PoolTogether) |
+
+## P1-C matcher revision and fresh corpora (preregistered 2026-11-25)
+
+Written before the revised matcher is run on any corpus. The P1 numbers above
+are unchanged; the new numbers are added beside them with their dates.
+
+**What changes in the matcher (0.3.0).**
+
+1. The alarm rule requires a **shared claim component**: at least one shared
+   specific symbol with document frequency 1 in the relevant set, or a shared
+   file path. Two shared identifiers alone no longer alarm.
+2. Specificity is **absolute**: a shared symbol may appear in at most
+   `MAX_SPECIFIC_DF = 2` items. Before this, the threshold was also a share of
+   the relevant items, so a larger dossier made more identifiers look specific
+   and raised alarms by itself.
+3. A prior item's **heading identifiers** are counted (the PoolTogether
+   `inv:009` / M-03 miss).
+4. A wrapped **known-issues bullet is one item**; continuation lines join the
+   bullet above them.
+
+**Harness fix.** The last High/Medium slice of a prior `report.md` stops at the
+next top-level section instead of running to the end of the file, so Low/QA/gas
+sections no longer enter dossier A.
+
+**Corpora.** Four in-sample corpora (their held-out halves were opened in P1):
+Tapioca, PoolTogether, Maia, Panoptic. Two **sealed** corpora are the
+out-of-sample headline, pinned before the matcher change:
+`party-c4` (Party 2023-04 -> 2023-10) and `wildcat-c4` (Wildcat 2023-10 ->
+2024-08). The paid-finding mapping was verified one-to-one against each later
+contest's `report.md` before any label or run (Party 9/9, Wildcat 9/9, same
+severity).
+
+**Analysis plan.**
+
+- False-alarm rate: paid, unique findings for which any prior item is
+  returned; duplicate recall@5 against the judged representatives; known-prior
+  recall@5 on the seeded sample of excluded findings.
+- Every rate carries n and a Wilson 95% interval; pooled rates also carry a
+  **source-clustered bootstrap** interval (resample sources, 10,000 draws,
+  seed `priorart-bootstrap-p1c-2026-11-25`).
+- The preregistered 30% trigger is unchanged: above 30% false alarms on judged
+  unique findings, the release ships retrieval only and no "shares
+  identifiers" warning.
+- Known-prior samples: the 20 excluded findings with the smallest
+  `sha256(seed + ':label:' + id)` per corpus, labelled before the frozen run
+  by one reader; a blinded second reader on titles and the prior-item list.
+
+**Expected outcome, stated in advance.** The claim-component requirement
+should lower the false-alarm rate on both platforms and may lower duplicate
+recall, because a duplicate that shares only two common identifiers no longer
+matches. If the fresh corpora still exceed 30%, the trigger stays met and the
+warning stays off.
+
+## P1-C re-measurement results (2026-11-25, matcher 0.3.0)
+
+Frozen matcher 0.3.0 at commit `f983d03`; binary
+`target/release/priorart.exe` sha256
+`6bfc20d381350f7b8e2f6fbe534b5ca8724268faa80ce08494772fb8530b2d5b`.
+All six corpora were re-measured in full (`--split all`; the two sealed
+corpora got their dev-split `freeze.json` first). Every rate is k/n with a
+Wilson 95% interval; pooled rows also carry a source-clustered bootstrap
+(10,000 draws, seed `priorart-bootstrap-p1c-2026-11-25`).
+
+| Corpus | Platform | False-alarm rate | Duplicate recall@5 | Known-prior |
+|---|---|---|---|---|
+| Tapioca | Sherlock | 14/60 = 23.3% [14.4-35.4] | 14/64 = 21.9% [13.5-33.4] | 0/1 (count) |
+| PoolTogether | Sherlock | 9/40 = 22.5% [12.3-37.5] | 16/85 = 18.8% [11.9-28.4] | 1/2 (count) |
+| Maia | Code4rena | 8/15 = 53.3% [30.1-75.2] | 7/289 = 2.4% [1.2-4.9] | 0/1 (count) |
+| Panoptic | Code4rena | 6/11 = 54.5% [28.0-78.7] | 3/80 = 3.8% [1.3-10.4] | 0/3 (count) |
+| **Party** (sealed) | Code4rena | **3/9 = 33.3% [12.1-64.6]** | **0/132 = 0.0% [0.0-2.8]** | 0/0 (unlabelled) |
+| **Wildcat** (sealed) | Code4rena | **3/9 = 33.3% [12.1-64.6]** | **9/46 = 19.6% [10.7-33.2]** | 0/0 (unlabelled) |
+| Sealed pooled | Code4rena | **6/18 = 33.3% [16.3-56.3]**; bootstrap [16.3-56.3] | 9/178 = 5.1% [2.7-9.3] | — |
+| Code4rena pooled | Code4rena | 20/44 = 45.5% [31.7-59.9]; bootstrap [33.3-53.8] | 19/547 = 3.5% | — |
+| Sherlock pooled | Sherlock | 23/100 = 23.0% [15.8-32.1]; bootstrap [22.5-23.3] | 30/149 = 20.1% | — |
+| All six pooled | both | 43/144 = 29.9% [23.0-37.8]; bootstrap [23.9-48.6] | 49/696 = 7.0% | — |
+
+**The redesign does not work.** The claim-component requirement barely moved
+the false-alarm rate on the Code4rena corpora (Maia 53.3% and Panoptic 54.5%
+are unchanged to the flag; the pooled Code4rena rate falls only from 53.8% to
+45.5% because the two new corpora are lower), and the sealed corpora are
+33.3%, above the 30% trigger. What it did do is destroy duplicate recall:
+Tapioca 56.3% -> 21.9%, PoolTogether 37.6% -> 18.8%, Maia 30.1% -> 2.4%,
+Panoptic 47.5% -> 3.8%, Party 0/132, Wildcat 19.6%. The requirement that a
+shared symbol be unique to one prior item, or that the two findings name the
+same file, rejects almost every judge-grouped duplicate, which by construction
+share common function names with several representatives.
+
+**Decision against the preregistered trigger.** The 30% trigger is met on the
+sealed pooled interval (lower bound 16.3% is below 30%, upper 56.3% above; the
+point estimate is above). The warning stays off, as it has since 0.1.0. The
+0.3.0 alarm rule is **not fit to ship**: it is not better on false alarms and
+it loses most of the duplicate retrieval. A release that keeps the harness
+fixes and the recall-preserving parts, and either reverts the alarm gate or
+ships it off by default, is the operator's decision; this file records the
+measurement, not a release.
+
+## 0.2.2 measurement: the harness fixes alone (2026-11-25)
+
+The 0.3.0 alarm rule was reverted (see above); 0.2.2 ships the benchmark
+harness fixes with the matcher unchanged from 0.2.1. Re-measured on all six
+corpora with binary
+`b94598788be205483a3795b3097182564d2218e7a717857511e78d9865137128`
+(priorart 0.2.2).
+
+| Corpus | FAR | Duplicate recall@5 |
+|---|---|---|
+| Tapioca (in-sample) | 15/60 = 25.0% [15.8-37.2] | 35/64 = 54.7% [42.6-66.3] |
+| PoolTogether (in-sample) | 9/40 = 22.5% [12.3-37.5] | 32/85 = 37.6% [28.1-48.3] |
+| Maia (in-sample) | 8/15 = 53.3% [30.1-75.2] | 87/289 = 30.1% [25.1-35.6] |
+| Panoptic (in-sample) | 6/11 = 54.5% [28.0-78.7] | 38/80 = 47.5% [36.9-58.3] |
+| Party (in-sample now) | 3/9 = 33.3% [12.1-64.6] | 40/132 = 30.3% [23.1-38.6] |
+| Wildcat (in-sample now) | 4/9 = 44.4% [18.9-73.3] | 23/46 = 50.0% [36.1-63.9] |
+| Sealed-pair pooled | 7/18 = 38.9% [20.3-61.4] | 63/178 = 35.4% [28.7-42.7] |
+| All six pooled | 45/144 = 31.2% [24.2-39.2] | 255/696 = 36.6% [33.1-40.3] |
+| Code4rena pooled | 21/44 = 47.7% [33.8-62.1] | 188/547 = 34.4% |
+| Sherlock pooled | 24/100 = 24.0% [16.7-33.2] | 67/149 = 45.0% |
+
+**What the harness fixes did.** On the four in-sample corpora the numbers are
+materially the same as P1 (Tapioca FAR 25.0%, recall 56.3% -> 54.7%;
+PoolTogether and the two Maia/Panoptic rates unchanged). The last-slice fix
+did not change a measured alarm on these corpora, and the heading/bullet
+changes changed recall by at most one duplicate. The two sealed pairs, now
+in-sample (their results were opened), are 33.3% and 44.4% false alarms,
+7/18 = 38.9% pooled, and 63/178 duplicate recall. **The 30% trigger remains
+met and the "shares identifiers" warning stays off.**
+
+The harness fixes are still correct and worth shipping (they remove a known
+way Low/QA text enters dossier A, and they make heading and wrapped-bullet
+identifiers count), but they are not a precision lever. The next lever is a
+different alarm rule, to be developed on the dev splits and measured fresh.

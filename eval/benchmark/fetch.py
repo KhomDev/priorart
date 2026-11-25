@@ -36,6 +36,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -168,7 +169,10 @@ def fetch_source(source: dict) -> dict[str, str]:
     dest = CACHE / sid
     hashes: dict[str, str] = {}
     if source["kind"] == "single":
-        data = get(f"{API}/repos/{source['repo']}/contents/{source['path']}?ref={source['commit']}")
+        # A path may contain spaces (Wildcat's `docs/Known Issues.md`); quote
+        # it, keeping the separators.
+        quoted = urllib.parse.quote(source["path"], safe="/")
+        data = get(f"{API}/repos/{source['repo']}/contents/{quoted}?ref={source['commit']}")
         if isinstance(data, list) or data.get("type") != "file":
             raise RuntimeError(f"{sid}: {source['path']} is not a file")
         raw = base64.b64decode(data["content"])
@@ -397,22 +401,34 @@ def prior_items(audit_text: str, item_prefix: str, source_id: str) -> list[dict]
 def known_issue_items(readme_text: str, item_prefix: str, source_id: str,
                       pattern: str = LEGACY_CORPUS["known_issue_pattern"]) -> list[dict]:
     """The sponsor's known-issues section (group 1 of `pattern`). Bullets become
-    items; a one-line answer becomes one item. Kept as short locators."""
+    items; a wrapped bullet's continuation lines are joined into it. Kept as
+    short locators."""
     m = re.search(pattern, readme_text)
     if not m:
         return []
     body = m.group(1).strip()
-    lines = [l.strip(" -*") for l in body.splitlines() if l.strip(" -*")]
-    items = []
-    for i, line in enumerate(lines, 1):
-        items.append({
+    items: list[str] = []
+    for raw in body.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        bullet = line[:2] in ("- ", "* ") or line.startswith("•")
+        if bullet or not items:
+            items.append(line.strip(" -*•").strip())
+        else:
+            # A continuation line belongs to the bullet above it; before this
+            # fix every wrapped line became an item of its own.
+            items[-1] = f"{items[-1]} {line.strip(' -*•').strip()}".strip()
+    out = []
+    for i, line in enumerate(items, 1):
+        out.append({
             "id": f"{item_prefix}:{i}",
             "source": source_id,
             "locator": f"KI-{i}",
             "text": re.sub(r"\s+", " ", line)[:100],
             "aliases": [re.sub(r"\s+", " ", line).lower()[:100]],
         })
-    return items
+    return out
 
 
 def title_of(path: Path) -> str:

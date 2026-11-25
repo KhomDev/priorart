@@ -13,6 +13,34 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-25
+
+A harness release. The matcher is byte-identical to 0.2.1: the P1-C
+claim-component redesign was frozen, measured on six corpora and **reverted**
+because it did not lower the Code4rena false-alarm rate and collapsed
+duplicate recall (BENCHMARK.md, "P1-C re-measurement results"). What ships is
+the benchmark harness fixes, which do not change the matcher:
+
+### Fixed (P1-C, benchmark harness)
+
+- **The last High/Medium slice stops at the next top-level section.** It used
+  to run to the end of `report.md`, so Low/QA/gas sections became dossier
+  items and one Maia alarm came only from such an item.
+- **`fetch.py` quotes a source path containing spaces**, so Wildcat's
+  `docs/Known Issues.md` can be fetched.
+- **A prior item's heading is part of its identifiers.** A symbol named only
+  in the item's heading is counted, which the PoolTogether `inv:009` / M-03
+  miss exposed.
+- **A wrapped known-issues bullet is one item.** Continuation lines join the
+  bullet above them instead of becoming items of their own.
+
+### Reverted before release
+
+- The 0.3.0 alarm rule (shared claim component, absolute document frequency)
+  was measured and rejected: sealed Party and Wildcat FAR 3/9 = 33.3% each,
+  and duplicate recall collapsed (Maia 30.1% -> 2.4%). The matcher is
+  unchanged from 0.2.1.
+
 ## [0.2.1] - 2026-11-25
 
 An evidence release. The crate's code is unchanged from 0.2.0 (`git diff
