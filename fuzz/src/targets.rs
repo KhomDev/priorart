@@ -137,3 +137,10 @@ pub fn html_normalize(data: &[u8]) {
     let text = String::from_utf8_lossy(data);
     let _ = priorart::dossier::html::to_text(&text);
 }
+
+/// The mechanism/impact/asset classifier on arbitrary bytes read as lossy UTF-8
+/// (the CLI refuses non-UTF-8 before the extractor, so this is the hostile path).
+pub fn taxonomy(data: &[u8]) {
+    let text = String::from_utf8_lossy(data);
+    let _ = priorart::taxonomy::classify(&text);
+}

@@ -12,6 +12,7 @@ priorart ledger validate <ledger.yaml...> [--json] [--strict] [--example-mode]
                             [--taxonomy]
 priorart vocab list [--json]
 priorart vocab show <tier-shapes|clause-classes|gate-crossref> [--json]
+priorart taxonomy classify <file>... [--json]
 priorart init [dir] [--force]
 priorart explain <clause-class-id|gate-id|tier-shape-id>
 priorart rejections summary [--json]
@@ -191,6 +192,17 @@ tier shapes (5) - vocab/tier-shapes.yaml
   unknown            pays: nothing
 ...
 ```
+
+## taxonomy classify
+
+Prints the root-cause classes, impacts and assets a finding (or any text)
+asserts, using the deterministic lexicon in `vocab/taxonomy.yaml` and the
+clause-level negation rules in `src/taxonomy/`. It is a reading aid, not a
+verdict: the classes are cue matches, and per-class precision is measured only
+by the benchmark. `--json` prints `priorart.taxonomy-classify/v1`. A file that
+is missing, not regular, not UTF-8 or over 16 MiB exits 2 before any output;
+an abstention (no class, impact or asset) exits 0 with `abstain_reason:
+"no-mechanism"`.
 
 ## init
 

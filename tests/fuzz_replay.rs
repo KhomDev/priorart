@@ -13,7 +13,7 @@ use std::path::PathBuf;
 
 type Target = fn(&[u8]);
 
-const TARGETS: [(&str, Target); 8] = [
+const TARGETS: [(&str, Target); 9] = [
     ("markdown_import", targets::markdown_import),
     ("pdf_scrape", targets::pdf_scrape),
     ("html_normalize", targets::html_normalize),
@@ -22,6 +22,7 @@ const TARGETS: [(&str, Target); 8] = [
     ("ledger_yaml", targets::ledger_yaml),
     ("dossier_json", targets::dossier_json),
     ("finding_profile", targets::finding_profile),
+    ("taxonomy", targets::taxonomy),
 ];
 
 fn corpus_dir(name: &str) -> PathBuf {
