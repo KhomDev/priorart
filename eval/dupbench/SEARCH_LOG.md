@@ -11,15 +11,15 @@ budget. Pointers plus hashes only; the text lives in the gitignored
   3,454 judged duplicates, 780 invalid, 101 contests with at least one
   duplicate group; report to data join **1,102/1,102**. Span
   **2022-11-03..2024-12-10** (25 months).
-- **Under the preregistered split, validation [2025-09-01, 2026-05-01) and
-  FINAL [2026-05-01, inf) are empty.** The newest `code-423n4/*-findings` repo
-  is 2024-12 — 66 C4 contest repos for 2025-2026 exist, **none with a public
+- **The original split is unfillable.** Validation [2025-09-01, 2026-05-01) and
+  FINAL [2026-05-01, inf) are empty: the newest `code-423n4/*-findings` repo is
+  2024-12 — 66 C4 contest repos for 2025-2026 exist, **none with a public
   findings repo** — and the newest `sherlock-audit/*-judging` repo is 2025-07.
-  The preregistered T/T2 cut slices that no public duplicate grouping fills;
-  all 111 contests are train.
-- A replacement split inside the available span is computed below and
-  **reported for approval only**. No split change is committed; the
-  preregistration still says T=2025-09-01/T2=2026-05-01.
+  Under the original dates all 111 contests are train.
+- **Amendment 1** (`eval/P2R_PREREGISTRATION_AMENDMENT_1.md`, committed
+  2026-11-26 before any PA-B4 work) fixes T=2024-03-01, T2=2024-09-01: train 58
+  contests / 564 paid / 1,237 duplicates, validation 36 / 380 / 1,441, FINAL 17
+  / 158 / 776. The FINAL slice meets both minima and is sealed.
 
 ## Sources searched
 
@@ -49,18 +49,21 @@ carries `issueId`, `risk`, `title`, `originalIssueId`.
   `duplicates_pointing_at_qa_or_missing` for labels whose target is not an H/M
   primary.
 
-## Counts by split (preregistered T/T2)
+## Counts by split (Amendment 1: T=2024-03-01, T2=2024-09-01)
 
 | Split | Contests | Paid-unique | Duplicates | Invalid |
 |---|---:|---:|---:|---:|
-| train (< 2025-09-01) | 111 | 1,102 | 3,454 | 780 |
-| validation [2025-09-01, 2026-05-01) | 0 | 0 | 0 | 0 |
-| FINAL (>= 2026-05-01) | 0 | 0 | 0 | 0 |
+| train (< 2024-03-01) | 58 | 564 | 1,237 | 588 |
+| validation [2024-03-01, 2024-09-01) | 36 | 380 | 1,441 | 176 |
+| FINAL (>= 2024-09-01) | 17 | 158 | 776 | 16 |
+
+The original T=2025-09-01/T2=2026-05-01 put all 111 contests in train
+(1,102 / 3,454 / 780) and left validation and FINAL empty.
 
 Date coverage: 2022-11 (1), 2023-01..2023-12 (2-7 per month), 2024-01..2024-12
 (2-11 per month); 25 months, no month after 2024-12.
 
-## Split proposal (reported, not applied)
+## Split proposal (adopted by Amendment 1)
 
 All 111 labeled contests, candidates inside the available span. Format is
 contests / paid-unique / duplicates.
@@ -74,14 +77,14 @@ contests / paid-unique / duplicates.
 | 2023-09-01 | 2024-03-01 | 31 / 293 / 636 | 27 / 271 / 601 | 53 / 538 / 2,217 | yes |
 | 2023-07-01 (fallback) | 2023-09-01 | 19 / 187 / 399 | 12 / 106 / 237 | 80 / 809 / 2,818 | yes |
 
-**Proposal:** T=2024-03-01, T2=2024-09-01. It gives a 58-contest train (564
-paid-unique, 1,237 duplicates) for PA-B4, a 36-contest validation slice for
-hyperparameters and calibration, and a sealed FINAL of 17 contests (158
-paid-unique, 776 duplicates) — both FINAL minima met with margin. The
-coordinator's fallback T=2023-07-01/T2=2023-09-01 also meets them but leaves a
-19-contest train and puts 72% of the contests in FINAL; it is the fallback, not
-the recommendation. Approval and the re-preregistration commit are the
-orchestrator's, not this corpus's.
+**Adopted by Amendment 1:** T=2024-03-01, T2=2024-09-01. It gives a 58-contest
+train (564 paid-unique, 1,237 duplicates) for PA-B4, a 36-contest validation
+slice for hyperparameters and calibration, and a sealed FINAL of 17 contests
+(158 paid-unique, 776 duplicates) — both FINAL minima met with margin. The
+manager's fallback T=2023-07-01/T2=2023-09-01 also meets them but leaves a
+19-contest train and puts 72% of the contests in FINAL; it was not chosen. The
+dates were chosen from judging dates and label counts only, before any model
+work; see the amendment for the full statement.
 
 ## Sealed pairs
 

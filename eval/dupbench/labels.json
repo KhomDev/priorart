@@ -3050,7 +3050,7 @@
    }
   },
   "2024-01-opus": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "9",
     "11",
@@ -3099,7 +3099,7 @@
    }
   },
   "2024-02-thruster": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "12",
     "24",
@@ -3134,7 +3134,7 @@
    }
   },
   "2024-03-pooltogether": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "51",
     "59",
@@ -3238,7 +3238,7 @@
    }
   },
   "2024-02-spectra": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "111",
     "210"
@@ -3283,7 +3283,7 @@
    }
   },
   "2024-02-hydradx": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "22",
     "51",
@@ -3346,7 +3346,7 @@
    }
   },
   "2024-02-uniswap-foundation": {
-   "split": "train",
+   "split": "validation",
    "primaries": [],
    "duplicates": {},
    "counts": {
@@ -3356,7 +3356,7 @@
    }
   },
   "2024-03-phala-network": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "43",
     "44",
@@ -3376,7 +3376,7 @@
    }
   },
   "2024-01-salty": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "16",
     "18",
@@ -3864,7 +3864,7 @@
    }
   },
   "2024-03-gitcoin": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "9"
    ],
@@ -3882,7 +3882,7 @@
    }
   },
   "2023-07-amphora": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "90",
     "233",
@@ -3940,7 +3940,7 @@
    }
   },
   "2024-03-ondo-finance": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "32",
     "142",
@@ -3989,7 +3989,7 @@
    }
   },
   "2024-03-neobase": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "5",
     "10",
@@ -4026,7 +4026,7 @@
    }
   },
   "2024-03-taiko": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "60",
     "97",
@@ -4130,7 +4130,7 @@
    }
   },
   "2024-03-coinbase": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "39",
     "110",
@@ -4154,7 +4154,7 @@
    }
   },
   "2024-03-acala": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "7",
     "8",
@@ -4198,7 +4198,7 @@
    }
   },
   "2024-02-wise-lending": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "27",
     "31",
@@ -4277,7 +4277,7 @@
    }
   },
   "2024-03-abracadabra-money": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "7",
     "27",
@@ -4349,7 +4349,7 @@
    }
   },
   "2024-02-tapioca": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "10",
     "14",
@@ -4532,7 +4532,7 @@
    }
   },
   "2024-03-zksync": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "34",
     "53",
@@ -4566,7 +4566,7 @@
    }
   },
   "2024-04-lavarage": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "10",
     "11",
@@ -4605,7 +4605,7 @@
    }
   },
   "2024-05-loop": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "33"
    ],
@@ -4658,7 +4658,7 @@
    }
   },
   "2024-05-arbitrum-foundation": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "2",
     "5",
@@ -4686,7 +4686,7 @@
    }
   },
   "2024-05-bakerfi": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "2",
     "11",
@@ -4743,7 +4743,7 @@
    }
   },
   "2024-06-panoptic": {
-   "split": "train",
+   "split": "validation",
    "primaries": [],
    "duplicates": {
     "38": [
@@ -4757,7 +4757,7 @@
    }
   },
   "2024-03-dittoeth": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "32",
     "33",
@@ -4834,7 +4834,7 @@
    }
   },
   "2024-06-krystal-defi": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "10",
     "17",
@@ -4858,7 +4858,7 @@
    }
   },
   "2024-05-predy": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "22",
     "26",
@@ -5039,7 +5039,7 @@
    }
   },
   "2024-04-gondi": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "3",
     "6",
@@ -5148,7 +5148,7 @@
    }
   },
   "2024-07-dittoeth": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "2",
     "7",
@@ -5171,7 +5171,7 @@
    }
   },
   "2024-06-badger": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "14",
     "31"
@@ -5211,7 +5211,7 @@
    }
   },
   "2024-06-thorchain": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "17",
     "44",
@@ -5284,7 +5284,7 @@
    }
   },
   "2024-06-vultisig": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "41",
     "42",
@@ -5401,7 +5401,7 @@
    }
   },
   "2024-05-olas": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "4",
     "5",
@@ -5499,7 +5499,7 @@
    }
   },
   "2024-07-munchables": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "30",
     "42",
@@ -5703,7 +5703,7 @@
    }
   },
   "2024-07-optimism": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "6",
     "13",
@@ -5777,7 +5777,7 @@
    }
   },
   "2024-05-canto": {
-   "split": "train",
+   "split": "validation",
    "primaries": [
     "2",
     "5",
@@ -5800,7 +5800,7 @@
    }
   },
   "2024-07-basin": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "17",
     "22",
@@ -5868,7 +5868,7 @@
    }
   },
   "2024-07-benddao": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "4",
     "5",
@@ -5967,7 +5967,7 @@
    }
   },
   "2024-08-basin": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "5"
    ],
@@ -5979,7 +5979,7 @@
    }
   },
   "2024-06-size": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "10",
     "15",
@@ -6288,7 +6288,7 @@
    }
   },
   "2024-07-reserve": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "6",
     "18",
@@ -6314,7 +6314,7 @@
    }
   },
   "2024-07-karak": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "4",
     "7",
@@ -6370,7 +6370,7 @@
    }
   },
   "2024-08-phi": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "11",
     "14",
@@ -6659,7 +6659,7 @@
    }
   },
   "2024-09-panoptic": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [],
    "duplicates": {},
    "counts": {
@@ -6669,7 +6669,7 @@
    }
   },
   "2024-09-fenix-finance": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "4",
     "5",
@@ -6700,7 +6700,7 @@
    }
   },
   "2024-08-superposition": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "8",
     "10",
@@ -6857,7 +6857,7 @@
    }
   },
   "2024-08-wildcat": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "11",
     "49",
@@ -6907,7 +6907,7 @@
    }
   },
   "2024-10-kleidi": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "9",
     "17",
@@ -6948,7 +6948,7 @@
    }
   },
   "2024-10-ronin": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [],
    "duplicates": {},
    "counts": {
@@ -6958,7 +6958,7 @@
    }
   },
   "2024-11-ethena-labs": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "13",
     "15"
@@ -6975,7 +6975,7 @@
    }
   },
   "2024-10-ramses-exchange": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "3",
     "39"
@@ -6996,7 +6996,7 @@
    }
   },
   "2024-10-coded-estate": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "2",
     "3",
@@ -7063,7 +7063,7 @@
    }
   },
   "2024-09-kakarot": {
-   "split": "train",
+   "split": "FINAL",
    "primaries": [
     "13",
     "29",

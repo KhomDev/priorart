@@ -12,19 +12,14 @@ labels collected**, spanning **2022-11-03 to 2024-12-10** (25 months):
 101 contests with at least one duplicate group. The report↔data join is
 **1,102/1,102**.
 
-**Under the preregistered split, validation and FINAL are empty.** T =
-2025-09-01 and T2 = 2026-05-01 cut two slices that no public judged repository
-fills: the newest `code-423n4/*-findings` repo is 2024-12 (66 C4 contest repos
-for 2025-2026 exist, none with a public findings repo) and the newest
-`sherlock-audit/*-judging` repo is 2025-07. All 111 contests are train.
-
-A replacement split inside the available span has been computed and is
-**reported for approval, not applied** (see `SEARCH_LOG.md`). The
-preregistration remains T=2025-09-01/T2=2026-05-01 until the orchestrator
-commits a new one. Best candidate: **T=2024-03-01, T2=2024-09-01** — train 58
-contests / 564 paid / 1,237 duplicates, validation 36 / 380 / 1,441, FINAL 17 /
-158 / 776; the FINAL slice meets the ≥ 60 paid-unique and ≥ 300 duplicates
-minimums.
+**The original split (T = 2025-09-01, T2 = 2026-05-01) is unfillable** because
+no public judged repository exists after 2024-12 (C4; 66 contest repos for
+2025-2026, none with a public findings repo) or 2025-07 (Sherlock).
+**Amendment 1** (`eval/P2R_PREREGISTRATION_AMENDMENT_1.md`, committed
+2026-11-26 before any PA-B4 work) fixes **T = 2024-03-01, T2 = 2024-09-01**:
+train 58 contests / 564 paid / 1,237 duplicates, validation 36 / 380 / 1,441,
+FINAL 17 / 158 / 776. The FINAL slice meets both minima (≥ 60 paid, ≥ 300
+duplicates) and is sealed: no runner, matcher, ranker or reader has consumed it.
 
 ## What a contest row records
 
@@ -71,7 +66,7 @@ audits" statement and the drift is stated per pair.
 | Path | What it is |
 |---|---|
 | `sources.json` | 111 contests with findings-repo commit, report date, curated count |
-| `manifest.json` | per-contest counts and split under the preregistered T/T2 |
+| `manifest.json` | per-contest counts and split under the amended T/T2 |
 | `labels.json` | judge grouping: primaries and duplicate issue numbers |
 | `cache.lock.json` | per-contest report/data/label-page pins |
 | `pairs.json` | 6 sealed pairs with prior-report hashes and codebase pins |
