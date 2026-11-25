@@ -70,6 +70,10 @@ pub struct SymbolInfo {
     /// For a function: `function`, `constructor`, `fallback`, `receive` or
     /// `modifier`. `None` for contracts and state variables.
     pub function_kind: Option<String>,
+    /// For a state variable: the last segment of a user-defined type
+    /// (`BalanceSheet` in `BalanceSheet internal sheet`). `None` otherwise.
+    /// Used to resolve `sheet.addDebt(...)` to `BalanceSheet.addDebt`.
+    pub var_type: Option<String>,
 }
 
 /// What was learned from one file.
@@ -221,6 +225,8 @@ pub(crate) struct RepoLookup {
     pub(crate) functions_by_contract: BTreeMap<String, Vec<usize>>,
     pub(crate) vars_by_contract: BTreeMap<String, BTreeSet<String>>,
     pub(crate) bases: BTreeMap<String, Vec<String>>,
+    /// `Contract.var` -> the last segment of its user-defined type.
+    pub(crate) var_types: BTreeMap<String, String>,
     /// A copy of the function declarations, so call resolution does not need
     /// a borrow of the repository that owns the lookup.
     functions: Vec<SymbolInfo>,
@@ -241,12 +247,16 @@ impl RepoLookup {
             }
         }
         let mut vars_by_contract: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+        let mut var_types: BTreeMap<String, String> = BTreeMap::new();
         for v in repo.state_variables.iter() {
             if let Some(c) = &v.contract {
                 vars_by_contract
                     .entry(c.clone())
                     .or_default()
                     .insert(v.name.clone());
+                if let Some(ty) = &v.var_type {
+                    var_types.insert(format!("{c}.{}", v.name), ty.clone());
+                }
             }
         }
         let mut bases: BTreeMap<String, Vec<String>> = BTreeMap::new();
@@ -260,6 +270,7 @@ impl RepoLookup {
             functions_by_contract,
             vars_by_contract,
             bases,
+            var_types,
             functions: repo.functions.clone(),
         }
     }
@@ -464,6 +475,16 @@ impl RepoLookup {
         })
     }
 
+    /// The declared user-defined type of a visible state variable, if any.
+    fn var_type(&self, contract: &str, name: &str) -> Option<String> {
+        for c in self.hierarchy(contract) {
+            if let Some(ty) = self.var_types.get(&format!("{c}.{name}")) {
+                return Some(ty.clone());
+            }
+        }
+        None
+    }
+
     /// Resolve a raw call to zero or more function ids.
     fn resolve_raw_call(&self, raw: &RawCall) -> Vec<String> {
         match raw.kind {
@@ -497,7 +518,19 @@ impl RepoLookup {
                     if self.contracts_by_name.contains_key(receiver) {
                         self.find_in_hierarchy(Some(receiver), &raw.name, false)
                     } else {
-                        Vec::new()
+                        // A call through a state variable whose declared type
+                        // is an indexed contract: `sheet.addDebt(...)` with
+                        // `BalanceSheet internal sheet`.
+                        let target = raw
+                            .contract
+                            .as_deref()
+                            .and_then(|caller| self.var_type(caller, receiver));
+                        match target {
+                            Some(ty) if self.contracts_by_name.contains_key(&ty) => {
+                                self.find_in_hierarchy(Some(&ty), &raw.name, false)
+                            }
+                            _ => Vec::new(),
+                        }
                     }
                 }
                 None => {
@@ -676,6 +709,7 @@ fn extract_file(source: &SourceFile, rel: &str, ast: &ast::SourceUnit<'_>) -> Fi
                     contract: None,
                     bases: bases.clone(),
                     function_kind: None,
+                    var_type: None,
                 });
                 // Own state variables are collected first; inheritance is
                 // filled in during index assembly by name, not here.
@@ -692,6 +726,7 @@ fn extract_file(source: &SourceFile, rel: &str, ast: &ast::SourceUnit<'_>) -> Fi
                                     contract: Some(c.name.as_str().to_string()),
                                     bases: Vec::new(),
                                     function_kind: None,
+                                    var_type: custom_type_name(&var.ty),
                                 });
                             }
                         }
@@ -750,6 +785,7 @@ fn extract_file(source: &SourceFile, rel: &str, ast: &ast::SourceUnit<'_>) -> Fi
                         contract: None,
                         bases: Vec::new(),
                         function_kind: None,
+                        var_type: custom_type_name(&var.ty),
                     });
                 }
             }
@@ -844,6 +880,7 @@ fn extract_function(
         contract: contract.map(|c| c.to_string()),
         bases: Vec::new(),
         function_kind: Some(kind_name.to_string()),
+        var_type: None,
     };
 
     let mut walker = Walker {
@@ -875,6 +912,16 @@ fn extract_function(
         writes: walker.writes.into_iter().collect(),
     };
     (symbol, rw, walker.calls)
+}
+
+/// The last path segment of a user-defined type, so `BalanceSheet internal
+/// sheet` yields `BalanceSheet`. Elementary, array and mapping types yield
+/// `None`.
+fn custom_type_name(ty: &ast::Type<'_>) -> Option<String> {
+    match &ty.kind {
+        ast::TypeKind::Custom(path) => Some(path.last().as_str().to_string()),
+        _ => None,
+    }
 }
 
 fn function_id(contract: Option<&str>, kind: FunctionKind, name: &str, file: &str) -> String {
@@ -1337,7 +1384,7 @@ mod tests {
             .iter()
             .map(|v| v.name.as_str())
             .collect();
-        for want in ["totalAssets", "balances", "baseValue"] {
+        for want in ["totalAssets", "balances", "baseValue", "baseRef"] {
             assert!(vars.contains(&want), "missing {want} in {vars:?}");
         }
     }
@@ -1355,6 +1402,11 @@ mod tests {
             .get("Vault::useHelper")
             .unwrap_or_else(|| panic!("no useHelper entry"));
         assert_eq!(use_helper, &vec!["Vault::_helper".to_string()]);
+        let peek_base = idx
+            .call_graph
+            .get("Vault::peekBase")
+            .unwrap_or_else(|| panic!("no peekBase entry"));
+        assert_eq!(peek_base, &vec!["Base::peek".to_string()]);
         assert!(!idx.call_graph.contains_key("Vault::deposit"));
     }
 
@@ -1382,6 +1434,9 @@ mod tests {
         let helper = &idx.read_write["Vault::_helper"];
         assert!(helper.reads.is_empty(), "{helper:?}");
         assert!(helper.writes.is_empty(), "{helper:?}");
+        let peek_base = &idx.read_write["Vault::peekBase"];
+        assert_eq!(peek_base.reads, vec!["Vault.baseRef".to_string()]);
+        assert!(peek_base.writes.is_empty(), "{peek_base:?}");
     }
 
     #[test]

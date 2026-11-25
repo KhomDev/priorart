@@ -26,4 +26,10 @@ contract Vault is Base {
     function useHelper(uint256 y) external pure returns (uint256) {
         return _helper(y);
     }
+
+    Base internal baseRef;
+
+    function peekBase() external view returns (uint256) {
+        return baseRef.peek();
+    }
 }
