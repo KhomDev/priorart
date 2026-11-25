@@ -1,6 +1,7 @@
 //! The command line. Every flag here is documented in docs/cli.md, and every
 //! command and exit code is exercised by tests/cli.rs.
 
+use crate::anchors::{bench, parse_repo, resolve_text, BenchOptions, IndexOptions, IndexSet};
 use crate::check;
 use crate::dossier::{build, import, load};
 use crate::error::EVIDENCE_EXIT;
@@ -105,8 +106,71 @@ enum Command {
         #[command(subcommand)]
         action: RejectionsAction,
     },
+    /// Resolve the code a finding cites to spans in an audited repository
+    Anchors {
+        #[command(subcommand)]
+        action: AnchorsAction,
+    },
     /// What the gates check, on one page
     Rules,
+}
+
+#[derive(Subcommand)]
+enum AnchorsAction {
+    /// Parse a Solidity repository and print its contracts, functions, state
+    /// variables, call graph and read/write sets
+    Index {
+        /// Repository root
+        repo: PathBuf,
+        /// Repository id, `owner/name` (default: the directory name)
+        #[arg(long, value_name = "ID")]
+        repo_id: Option<String>,
+        /// Pinned commit the checkout is at
+        #[arg(long, value_name = "SHA", default_value = "")]
+        commit: String,
+        /// Print the index JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Resolve every code citation in one finding or prior-item text
+    Resolve {
+        /// Repository root; repeat for several checkouts
+        #[arg(long = "repo", value_name = "DIR", required = true)]
+        repos: Vec<PathBuf>,
+        /// Repository id, `owner/name` (single-repository runs only)
+        #[arg(long, value_name = "ID")]
+        repo_id: Option<String>,
+        /// Pinned commit the checkout is at
+        #[arg(long, value_name = "SHA", default_value = "")]
+        commit: String,
+        /// Text file to resolve
+        #[arg(long, value_name = "FILE")]
+        text_file: PathBuf,
+        /// Print priorart.anchors/v1 JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Measure code-citation resolution over the DEV corpora under eval/benchmark
+    Bench {
+        /// Benchmark root (the directory holding tapioca's and the five corpus directories)
+        #[arg(long, value_name = "DIR", default_value = "eval/benchmark")]
+        benchmark_root: PathBuf,
+        /// Fetch cache root written by eval/benchmark/fetch.py
+        #[arg(long, value_name = "DIR")]
+        cache_root: PathBuf,
+        /// Directory holding one checkout per corpus: <sources-root>/<corpus>/
+        #[arg(long, value_name = "DIR")]
+        sources_root: PathBuf,
+        /// Corpus to measure; repeat to override the default six
+        #[arg(long = "corpus", value_name = "NAME")]
+        corpora: Vec<String>,
+        /// Accept a checkout whose git HEAD is not the pinned commit
+        #[arg(long)]
+        allow_unverified_commit: bool,
+        /// Print priorart.anchors-bench/v1 JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -302,11 +366,91 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
                 Ok(ExitCode::SUCCESS)
             }
         },
+        Command::Anchors { action } => run_anchors(action),
         Command::Rules => {
             print!("{}", text::rules());
             Ok(ExitCode::SUCCESS)
         }
     }
+}
+
+fn run_anchors(action: AnchorsAction) -> Result<ExitCode, String> {
+    match action {
+        AnchorsAction::Index {
+            repo,
+            repo_id,
+            commit,
+            json,
+        } => {
+            let id = repo_id.unwrap_or_else(|| repo_id_from_dir(&repo));
+            let index = parse_repo(&repo, &id, &commit, &IndexOptions::default())?;
+            if json {
+                print!("{}", json::pretty(&index)?);
+            } else {
+                print!("{}", text::anchors_index(&index));
+            }
+            Ok(ExitCode::SUCCESS)
+        }
+        AnchorsAction::Resolve {
+            repos,
+            repo_id,
+            commit,
+            text_file,
+            json,
+        } => {
+            if repos.len() > 1 && repo_id.is_some() {
+                return Err("--repo-id names one repository; pass one --repo with it".to_string());
+            }
+            if repos.len() > 1 && !commit.is_empty() {
+                return Err("--commit names one repository; pass one --repo with it".to_string());
+            }
+            let mut indexes = Vec::new();
+            for (i, repo) in repos.iter().enumerate() {
+                let id = if i == 0 {
+                    repo_id.clone().unwrap_or_else(|| repo_id_from_dir(repo))
+                } else {
+                    repo_id_from_dir(repo)
+                };
+                indexes.push(parse_repo(repo, &id, &commit, &IndexOptions::default())?);
+            }
+            let text = std::fs::read_to_string(&text_file)
+                .map_err(|e| format!("cannot read {}: {e}", text_file.display()))?;
+            let set = resolve_text(&text, &IndexSet::new(indexes));
+            if json {
+                print!("{}", json::pretty(&set)?);
+            } else {
+                print!("{}", text::anchors_resolve(&set));
+            }
+            Ok(ExitCode::SUCCESS)
+        }
+        AnchorsAction::Bench {
+            benchmark_root,
+            cache_root,
+            sources_root,
+            corpora,
+            allow_unverified_commit,
+            json,
+        } => {
+            let mut options = BenchOptions::new(benchmark_root, cache_root, sources_root);
+            options.allow_unverified_commit = allow_unverified_commit;
+            if !corpora.is_empty() {
+                options.corpora = corpora;
+            }
+            let report = bench(&options)?;
+            if json {
+                print!("{}", json::pretty(&report)?);
+            } else {
+                print!("{}", text::anchors_bench(&report));
+            }
+            Ok(ExitCode::SUCCESS)
+        }
+    }
+}
+
+fn repo_id_from_dir(repo: &Path) -> String {
+    repo.file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_else(|| "repository".to_string())
 }
 
 fn run_check(

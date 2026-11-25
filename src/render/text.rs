@@ -1,6 +1,7 @@
 //! Text output. Human-readable, deterministic, and never wider than a
 //! terminal needs it to be.
 
+use crate::anchors::{AnchorKind, AnchorSet, BenchReport, CorpusStatus, RepoIndex};
 use crate::dossier::build::BuildOutcome;
 use crate::matching::{self, Severity};
 use crate::model::{CheckReport, Dossier};
@@ -552,4 +553,174 @@ pub fn rejections_summary() -> String {
 /// The severity label for a parsed severity, used by --json consumers.
 pub fn severity_label(s: Severity) -> &'static str {
     s.label()
+}
+
+// ------------------------------------------------------------------ anchors
+
+fn anchor_kind_label(kind: AnchorKind) -> &'static str {
+    match kind {
+        AnchorKind::Contract => "contract",
+        AnchorKind::Function => "function",
+        AnchorKind::StateVar => "state-var",
+        AnchorKind::File => "file",
+    }
+}
+
+/// What `priorart anchors index` prints.
+pub fn anchors_index(index: &RepoIndex) -> String {
+    let mut out = String::new();
+    out.push_str(&format!(
+        "repository: {}@{}\n",
+        sanitize(&index.repo),
+        if index.commit.is_empty() {
+            "unpinned".to_string()
+        } else {
+            sanitize(&index.commit)
+        }
+    ));
+    let parsed = index.files.values().filter(|f| f.parsed).count();
+    let failed = index.files.len() - parsed;
+    out.push_str(&format!(
+        "files: {} ({} parsed, {} failed)\n",
+        index.files.len(),
+        parsed,
+        failed
+    ));
+    out.push_str(&format!(
+        "contracts: {}  functions: {}  state variables: {}\n",
+        index.contracts.len(),
+        index.functions.len(),
+        index.state_variables.len()
+    ));
+    let resolved_edges: usize = index.call_graph.values().map(|v| v.len()).sum();
+    let unresolved = index.calls.iter().filter(|c| c.callee.is_none()).count();
+    out.push_str(&format!(
+        "call edges: {} resolved, {} call sites without a single target\n",
+        resolved_edges, unresolved
+    ));
+    out.push_str(&format!(
+        "functions with a read/write set: {}\n",
+        index.read_write.len()
+    ));
+    for failure in &index.parse_failures {
+        out.push_str(&format!(
+            "parse failure: {} ({})\n",
+            sanitize(&failure.file),
+            sanitize(&failure.reason)
+        ));
+    }
+    sanitize(&out)
+}
+
+/// What `priorart anchors resolve` prints.
+pub fn anchors_resolve(set: &AnchorSet) -> String {
+    let mut out = String::new();
+    out.push_str(&format!(
+        "citations: {}  anchors: {}  abstentions: {}\n",
+        set.citations.len(),
+        set.anchors.len(),
+        set.abstentions.len()
+    ));
+    if !set.cites_code {
+        out.push_str("the text cites no code under the fixed definition\n");
+    }
+    for anchor in &set.anchors {
+        out.push_str(&format!(
+            "ANCHOR {:<10} {}:{}-{} {} ({}%) {}@{} bytes {}-{}\n",
+            anchor_kind_label(anchor.kind),
+            sanitize(&anchor.file),
+            anchor.span.start_line,
+            anchor.span.end_line,
+            sanitize(&anchor.symbol),
+            anchor.confidence,
+            sanitize(&anchor.repo),
+            if anchor.commit.is_empty() {
+                "unpinned"
+            } else {
+                anchor.commit.as_str()
+            },
+            anchor.span.start_byte,
+            anchor.span.end_byte
+        ));
+    }
+    for abstention in &set.abstentions {
+        out.push_str(&format!(
+            "ABSTAIN {}: {} ({})\n",
+            abstention.reason.as_str(),
+            sanitize(&abstention.detail),
+            sanitize(abstention.citation.as_deref().unwrap_or("-"))
+        ));
+    }
+    sanitize(&out)
+}
+
+/// What `priorart anchors bench` prints.
+pub fn anchors_bench(report: &BenchReport) -> String {
+    let mut out = String::new();
+    out.push_str(
+        "cites code: a .sol path, a GitHub .sol URL, a backticked identifier, `function name`, or Contract.member\n",
+    );
+    out.push_str(&format!(
+        "{:<14} {:<9} {:>8} {:>7} {:>9} {:>8}  {}\n",
+        "corpus", "status", "findings", "cited", "resolved", "rate", "blocked reason"
+    ));
+    for row in &report.corpora {
+        let status = match row.status {
+            CorpusStatus::Measured => "measured",
+            CorpusStatus::Blocked => "blocked",
+        };
+        let resolved = row
+            .findings_resolved
+            .map(|n| n.to_string())
+            .unwrap_or_else(|| "-".to_string());
+        let rate = row
+            .resolution_rate
+            .as_ref()
+            .map(|r| format!("{:.1}%", r.point * 100.0))
+            .unwrap_or_else(|| "-".to_string());
+        out.push_str(&format!(
+            "{:<14} {:<9} {:>8} {:>7} {:>9} {:>8}  {}\n",
+            sanitize(&row.corpus),
+            status,
+            row.findings_total,
+            row.findings_citing_code,
+            resolved,
+            rate,
+            sanitize(row.blocked_reason.as_deref().unwrap_or(""))
+        ));
+        if row.status == CorpusStatus::Measured {
+            if let (Some(indexed), Some(unparsed)) = (row.files_indexed, row.files_unparsed) {
+                out.push_str(&format!(
+                    "  index: {indexed} Solidity files, {unparsed} unparsed\n"
+                ));
+            }
+            for (reason, count) in &row.unresolved_findings_by_reason {
+                out.push_str(&format!("  unresolved {reason}: {count}\n"));
+            }
+        }
+    }
+    match &report.pooled {
+        Some(pooled) => {
+            let rate = pooled.resolution_rate.point * 100.0;
+            out.push_str(&format!(
+                "pooled: {}/{} = {:.1}% over {} measured corpora ({} blocked)\n",
+                pooled.findings_resolved,
+                pooled.findings_citing_code,
+                rate,
+                pooled.measured_corpora,
+                pooled.blocked_corpora
+            ));
+            if let Some([lo, hi]) = pooled.resolution_rate.wilson {
+                out.push_str(&format!(
+                    "Wilson 95%: {:.1}% - {:.1}%\n",
+                    lo * 100.0,
+                    hi * 100.0
+                ));
+            }
+        }
+        None => {
+            out.push_str("pooled: no corpus could be measured; every corpus is blocked\n");
+        }
+    }
+    sanitize(&out)
 }

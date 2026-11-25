@@ -15,6 +15,7 @@
 
 #![forbid(unsafe_code)]
 
+pub mod anchors;
 pub mod check;
 pub mod cli;
 pub mod dossier;
