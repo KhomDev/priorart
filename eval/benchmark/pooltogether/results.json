@@ -1,0 +1,1231 @@
+{
+  "schema": "priorart.benchmark.results/v1",
+  "generated_by": "eval/benchmark/run.py",
+  "corpus": {
+    "manifest_sha256": "36eac6fdfec56a7a7169610d945913c7034ce3da09115d2a40ee6c441576fe0f",
+    "labels_sha256": "2400932fca934b981e54226184bcb6a5232dee32e3ed21420e53cac8f65551d5",
+    "sources": {
+      "prior_audit": {
+        "id": "c4-2024-03-pooltogether-audit",
+        "repo": "code-423n4/2024-03-pooltogether-findings",
+        "commit": "87f1b837fc3af84b32433b3d82538694b490b9f9",
+        "path": "report.md"
+      },
+      "known_issues": {
+        "id": "sherlock-2024-05-pooltogether-contest",
+        "repo": "sherlock-audit/2024-05-pooltogether",
+        "commit": "1aa1b8c028b659585e4c7a6b9b652fb075f86db3",
+        "path": "README.md",
+        "section": "Q: Please list any known issues/acceptable risks that should not result in a valid finding."
+      }
+    },
+    "prior_items": 10,
+    "findings": 78,
+    "accepted": 40,
+    "invalid": 38,
+    "duplicates": 85,
+    "known_prior": 2,
+    "seed": "priorart-bench-pooltogether-2026-11-24"
+  },
+  "label_agreement": {
+    "n": 38,
+    "agree": 35,
+    "rate": 0.9211,
+    "wilson95": [
+      0.792,
+      0.9728
+    ],
+    "method": "blinded title-only first pass vs the full-text labels, same reader, recorded before reading any finding body",
+    "note": "label stability of one reader, not correctness; the labels and the sample are published"
+  },
+  "tool": {
+    "path": "target/release/priorart.exe",
+    "version": "priorart 0.2.0",
+    "binary_sha256": "06fdf195989e5c6e739285047e29dc3fe873252ee567e52e16e24f3804a85783",
+    "matching_rule": ">= 2 strong identifiers, ranked top-k (EXECUTION-BRIEF 3.3)"
+  },
+  "frozen": {
+    "k": 5,
+    "seed": "priorart-bench-pooltogether-2026-11-24",
+    "manifest_sha256": "36eac6fdfec56a7a7169610d945913c7034ce3da09115d2a40ee6c441576fe0f",
+    "labels_sha256": "2400932fca934b981e54226184bcb6a5232dee32e3ed21420e53cac8f65551d5",
+    "heldout_opened": true,
+    "harness_sha256": "7c7a7f167d11916e2d829825dc6970425c05855b24957cfb4a082f25eb06a015"
+  },
+  "measurements": {
+    "known_prior_recall": {
+      "n": 2,
+      "hits": 0,
+      "recall": 0.0,
+      "wilson95": [
+        0.0,
+        0.6576
+      ],
+      "status": "underpowered",
+      "reason": "fewer than 5 defensible known-prior positives exist in this corpus; the value is reported with its n but is not a rate (see BENCHMARK.md dead ends)"
+    },
+    "false_alarm_rate": {
+      "n": 40,
+      "alarms": 9,
+      "rate": 0.225,
+      "wilson95": [
+        0.1232,
+        0.375
+      ],
+      "status": "measured",
+      "tool_errors": 0
+    },
+    "duplicate_recall": {
+      "n": 85,
+      "hits": 32,
+      "recall": 0.3765,
+      "wilson95": [
+        0.2809,
+        0.4827
+      ],
+      "status": "measured",
+      "note": "supplementary judged-duplicate retrieval, not the plan's known-issue metric"
+    }
+  },
+  "run_history": [],
+  "release": {
+    "measured_binary_sha256": "06fdf195989e5c6e739285047e29dc3fe873252ee567e52e16e24f3804a85783",
+    "release_binary_sha256": null,
+    "source_commit": "eabd6b3b6399466725cf83e1ff4bd558e0ec9000",
+    "tag": null,
+    "status": "the measured binary is a local release-profile build; record the published release binary hash and tag here when this corpus's measurement is tied to a release"
+  },
+  "per_query": [
+    {
+      "id": "inv:009",
+      "measure": "known_prior_recall",
+      "hit": false,
+      "expected": "c4-2024-03:M-03",
+      "returned": []
+    },
+    {
+      "id": "inv:invalid-010",
+      "measure": "known_prior_recall",
+      "hit": false,
+      "expected": "c4-2024-03:M-08",
+      "returned": []
+    },
+    {
+      "id": "acc:001-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:002-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:003-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:004-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:005-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0003"
+      ]
+    },
+    {
+      "id": "acc:006-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:007-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:008-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:009-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:010-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:011-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0009",
+        "item-0007"
+      ]
+    },
+    {
+      "id": "acc:012-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0003"
+      ]
+    },
+    {
+      "id": "acc:013-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:014-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:015-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:016-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0003"
+      ]
+    },
+    {
+      "id": "acc:017-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:018-H",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0003"
+      ]
+    },
+    {
+      "id": "acc:019-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:020-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:021-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:022-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:023-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:024-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:025-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0007"
+      ]
+    },
+    {
+      "id": "acc:026-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0007"
+      ]
+    },
+    {
+      "id": "acc:027-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:028-H",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:029-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:030-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:031-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:032-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:033-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:034-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0003"
+      ]
+    },
+    {
+      "id": "acc:035-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:036-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:037-M",
+      "measure": "false_alarm_rate",
+      "alarm": true,
+      "returned": [
+        "item-0007"
+      ]
+    },
+    {
+      "id": "acc:038-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:039-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "acc:040-M",
+      "measure": "false_alarm_rate",
+      "alarm": false,
+      "returned": []
+    },
+    {
+      "id": "dup:001-H/025.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:001-H",
+      "returned": [
+        "item-0005",
+        "item-0220",
+        "item-0214",
+        "item-0231",
+        "item-0222"
+      ]
+    },
+    {
+      "id": "dup:001-H/047.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:001-H",
+      "returned": []
+    },
+    {
+      "id": "dup:001-H/100.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:001-H",
+      "returned": [
+        "item-0073"
+      ]
+    },
+    {
+      "id": "dup:001-H/123.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:001-H",
+      "returned": []
+    },
+    {
+      "id": "dup:001-H/140.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:001-H",
+      "returned": [
+        "item-0003",
+        "item-0072"
+      ]
+    },
+    {
+      "id": "dup:001-H/147.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:001-H",
+      "returned": []
+    },
+    {
+      "id": "dup:002-M/021.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:002-M",
+      "returned": [
+        "item-0103",
+        "item-0011",
+        "item-0082",
+        "item-0216",
+        "item-0119"
+      ]
+    },
+    {
+      "id": "dup:002-M/099.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:002-M",
+      "returned": [
+        "item-0082",
+        "item-0088",
+        "item-0010",
+        "item-0009",
+        "item-0011"
+      ]
+    },
+    {
+      "id": "dup:002-M/105.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:002-M",
+      "returned": [
+        "item-0103",
+        "item-0011",
+        "item-0082",
+        "item-0216",
+        "item-0088"
+      ]
+    },
+    {
+      "id": "dup:002-M/115.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:002-M",
+      "returned": [
+        "item-0103",
+        "item-0011"
+      ]
+    },
+    {
+      "id": "dup:002-M/117.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:002-M",
+      "returned": [
+        "item-0011",
+        "item-0009",
+        "item-0082",
+        "item-0088"
+      ]
+    },
+    {
+      "id": "dup:002-M/159.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:002-M",
+      "returned": [
+        "item-0011",
+        "item-0103",
+        "item-0216"
+      ]
+    },
+    {
+      "id": "dup:003-M/070.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:003-M",
+      "returned": [
+        "item-0094"
+      ]
+    },
+    {
+      "id": "dup:003-M/101.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:003-M",
+      "returned": [
+        "item-0027",
+        "item-0014",
+        "item-0015",
+        "item-0384",
+        "item-0094"
+      ]
+    },
+    {
+      "id": "dup:003-M/110.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:003-M",
+      "returned": [
+        "item-0298",
+        "item-0040",
+        "item-0094",
+        "item-0367"
+      ]
+    },
+    {
+      "id": "dup:003-M/122.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:003-M",
+      "returned": [
+        "item-0094"
+      ]
+    },
+    {
+      "id": "dup:003-M/131.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:003-M",
+      "returned": []
+    },
+    {
+      "id": "dup:004-M/024.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:004-M",
+      "returned": [
+        "item-0020",
+        "item-0119",
+        "item-0344"
+      ]
+    },
+    {
+      "id": "dup:004-M/098.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:004-M",
+      "returned": []
+    },
+    {
+      "id": "dup:004-M/119.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:004-M",
+      "returned": []
+    },
+    {
+      "id": "dup:004-M/139.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:004-M",
+      "returned": []
+    },
+    {
+      "id": "dup:005-M/057.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:005-M",
+      "returned": []
+    },
+    {
+      "id": "dup:005-M/086.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:005-M",
+      "returned": [
+        "item-0027",
+        "item-0298"
+      ]
+    },
+    {
+      "id": "dup:005-M/141.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:005-M",
+      "returned": [
+        "item-0027",
+        "item-0030",
+        "item-0026"
+      ]
+    },
+    {
+      "id": "dup:005-M/146.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:005-M",
+      "returned": [
+        "item-0027",
+        "item-0298"
+      ]
+    },
+    {
+      "id": "dup:006-M/002.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:006-M",
+      "returned": []
+    },
+    {
+      "id": "dup:006-M/007.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:006-M",
+      "returned": []
+    },
+    {
+      "id": "dup:006-M/043.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:006-M",
+      "returned": []
+    },
+    {
+      "id": "dup:006-M/120.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:006-M",
+      "returned": []
+    },
+    {
+      "id": "dup:007-M/037.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:007-M",
+      "returned": [
+        "item-0027",
+        "item-0040",
+        "item-0094",
+        "item-0030",
+        "item-0298"
+      ]
+    },
+    {
+      "id": "dup:007-M/082.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:007-M",
+      "returned": [
+        "item-0094"
+      ]
+    },
+    {
+      "id": "dup:007-M/161.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:007-M",
+      "returned": [
+        "item-0027",
+        "item-0014",
+        "item-0015",
+        "item-0384",
+        "item-0068"
+      ]
+    },
+    {
+      "id": "dup:008-M/006.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:008-M",
+      "returned": []
+    },
+    {
+      "id": "dup:008-M/015.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:008-M",
+      "returned": []
+    },
+    {
+      "id": "dup:008-M/106.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:008-M",
+      "returned": [
+        "item-0393"
+      ]
+    },
+    {
+      "id": "dup:009-M/090.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:009-M",
+      "returned": []
+    },
+    {
+      "id": "dup:009-M/091.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:009-M",
+      "returned": [
+        "item-0304",
+        "item-0149",
+        "item-0301"
+      ]
+    },
+    {
+      "id": "dup:009-M/132.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:009-M",
+      "returned": [
+        "item-0149",
+        "item-0304",
+        "item-0425",
+        "item-0450",
+        "item-0155"
+      ]
+    },
+    {
+      "id": "dup:010-M/013.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:010-M",
+      "returned": [
+        "item-0057",
+        "item-0231",
+        "item-0113"
+      ]
+    },
+    {
+      "id": "dup:010-M/153.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:010-M",
+      "returned": []
+    },
+    {
+      "id": "dup:011-M/014.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:011-M",
+      "returned": [
+        "item-0061",
+        "item-0352",
+        "item-0350",
+        "item-0062",
+        "item-0286"
+      ]
+    },
+    {
+      "id": "dup:011-M/107.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:011-M",
+      "returned": [
+        "item-0061",
+        "item-0352",
+        "item-0450",
+        "item-0350",
+        "item-0062"
+      ]
+    },
+    {
+      "id": "dup:012-H/071.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:012-H",
+      "returned": [
+        "item-0072",
+        "item-0107",
+        "item-0226",
+        "item-0207",
+        "item-0070"
+      ]
+    },
+    {
+      "id": "dup:012-H/084.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:012-H",
+      "returned": [
+        "item-0027",
+        "item-0298",
+        "item-0275",
+        "item-0014",
+        "item-0015"
+      ]
+    },
+    {
+      "id": "dup:013-M/012.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:013-M",
+      "returned": [
+        "item-0076"
+      ]
+    },
+    {
+      "id": "dup:013-M/111.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:013-M",
+      "returned": [
+        "item-0076",
+        "item-0079",
+        "item-0107",
+        "item-0425",
+        "item-0450"
+      ]
+    },
+    {
+      "id": "dup:014-M/113.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:014-M",
+      "returned": []
+    },
+    {
+      "id": "dup:015-M/142.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:015-M",
+      "returned": []
+    },
+    {
+      "id": "dup:016-M/158.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:016-M",
+      "returned": []
+    },
+    {
+      "id": "dup:017-M/121.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:017-M",
+      "returned": [
+        "item-0103",
+        "item-0011",
+        "item-0216",
+        "item-0119",
+        "item-0122"
+      ]
+    },
+    {
+      "id": "dup:018-H/053.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "acc:018-H",
+      "returned": []
+    },
+    {
+      "id": "dup:019-M/144.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "acc:019-M",
+      "returned": [
+        "item-0057",
+        "item-0231",
+        "item-0107",
+        "item-0143",
+        "item-0113"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-001/103.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-001",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-002/003.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-002",
+      "returned": [
+        "item-0419",
+        "item-0420"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-002/004.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-002",
+      "returned": [
+        "item-0419",
+        "item-0420"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-003/022.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-003",
+      "returned": [
+        "item-0425",
+        "item-0450",
+        "item-0226",
+        "item-0107",
+        "item-0448"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-003/023.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-003",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-003/031.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-003",
+      "returned": [
+        "item-0425",
+        "item-0450",
+        "item-0226",
+        "item-0107",
+        "item-0448"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-004/017.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-004",
+      "returned": [
+        "item-0374",
+        "item-0155",
+        "item-0179",
+        "item-0149",
+        "item-0158"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-004/034.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-004",
+      "returned": [
+        "item-0143",
+        "item-0072",
+        "item-0146",
+        "item-0142",
+        "item-0070"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-004/035.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-004",
+      "returned": [
+        "item-0425",
+        "item-0450",
+        "item-0094",
+        "item-0107",
+        "item-0072"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-004/041.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-004",
+      "returned": [
+        "item-0119",
+        "item-0344",
+        "item-0263",
+        "item-0393",
+        "item-0020"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-004/042.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-004",
+      "returned": [
+        "item-0119",
+        "item-0103",
+        "item-0011",
+        "item-0122"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-004/054.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-004",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-004/072.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-004",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-004/097.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-004",
+      "returned": [
+        "item-0323",
+        "item-0195"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-004/143.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-004",
+      "returned": [
+        "item-0374"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-004/150.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-004",
+      "returned": [
+        "item-0193",
+        "item-0161",
+        "item-0207",
+        "item-0088",
+        "item-0430"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-004/160.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-004",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-005/068.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-005",
+      "returned": [
+        "item-0079"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-006/067.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-006",
+      "returned": [
+        "item-0374",
+        "item-0423"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-007/016.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-007",
+      "returned": [
+        "item-0094",
+        "item-0027",
+        "item-0040"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-007/051.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-007",
+      "returned": [
+        "item-0450",
+        "item-0425",
+        "item-0226",
+        "item-0448",
+        "item-0286"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-007/058.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-007",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-007/059.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-007",
+      "returned": [
+        "item-0107",
+        "item-0057"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-007/064.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-007",
+      "returned": [
+        "item-0448",
+        "item-0149",
+        "item-0155",
+        "item-0362",
+        "item-0425"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-007/069.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-007",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-007/074.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-007",
+      "returned": []
+    },
+    {
+      "id": "dup:invalid/invalid-007/149.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-007",
+      "returned": [
+        "item-0450",
+        "item-0425",
+        "item-0226",
+        "item-0448",
+        "item-0149"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-007/151.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-007",
+      "returned": [
+        "item-0088",
+        "item-0430",
+        "item-0027",
+        "item-0082",
+        "item-0207"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-007/156.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-007",
+      "returned": [
+        "item-0450",
+        "item-0425",
+        "item-0374",
+        "item-0448",
+        "item-0179"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-008/075.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-008",
+      "returned": [
+        "item-0076"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-009/135.md",
+      "measure": "duplicate_recall",
+      "hit": true,
+      "expected": "inv:invalid-009",
+      "returned": [
+        "item-0269",
+        "item-0272",
+        "item-0461"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-010/008.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-010",
+      "returned": [
+        "item-0269",
+        "item-0272",
+        "item-0461"
+      ]
+    },
+    {
+      "id": "dup:invalid/invalid-010/052.md",
+      "measure": "duplicate_recall",
+      "hit": false,
+      "expected": "inv:invalid-010",
+      "returned": []
+    }
+  ],
+  "tool_errors": [],
+  "not_claimed": [
+    "not a measurement of whether priorart finds bugs: the corpus is judged human findings",
+    "not a false-positive rate on model-written hypotheses",
+    "not a duplicate-detector score for submissions against public reports: the duplicate variant is a reading list and never a duplicate verdict",
+    "the known-prior positives are one reader's grounding, not the judge's published reason",
+    "the corpus is smaller than the Tapioca corpus (9 audit prior items), so the false-alarm denominator is not comparable across the two corpora",
+    "the first measured run opened this corpus's frozen held-out split; the number is out-of-sample with respect to matcher development, but no held-out remainder is left"
+  ]
+}

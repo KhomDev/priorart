@@ -1,0 +1,166 @@
+# Labels for the Code4rena-judged corpus eval/benchmark/maia-c4/manifest.yaml.
+#
+# Store pointers and labels only; never a finding body.
+#
+# The paid findings carry the platform label unique_valid (the manifest
+# applies it). Excluded findings are labelled only on the preregistered
+# seeded sample: the 20 with the smallest sha256(seed + ':label:' + id).
+# Every other excluded finding is unlabelled and is not a known-prior query.
+#
+# label values: known_prior (the judge excluded it AND its text repeats one
+# specific prior item's claim; prior_ref names it) or invalid_unmapped (no
+# prior item reproduces its claim). Rubric as for the PoolTogether corpus.
+#
+# method: reader (one AI reader, full text, 2026-11-25). See BENCHMARK.md.
+version: 1
+schema: priorart.benchmark.labels/v1
+seed: "priorart-bench-maia-c4-2026-11-25"
+reader: "bench-eval (one AI reader, 2026-11-25); not ground truth, see BENCHMARK.md"
+
+findings:
+  inv:477:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/477.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:891:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/891.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:045:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/045.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:134:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/134.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:465:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/465.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:742:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/742.md: addBridgeAgentFactory negates toggleBridgeAgentFactory; prior M-28 is addBridgeAgentFactory being non-functional, a different failure"
+    notes: ""
+  inv:743:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/743.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:340:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/340.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:008:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/008.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:093:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/093.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:041:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/041.md: CREATE2 redeploy of an approved strategy; prior M-04 is reorg on create, a different mechanism"
+    notes: ""
+  inv:736:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/736.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:702:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/702.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:448:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/448.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:invalid-394:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/invalid-394/394-best.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:483:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/483.md: ArbitrumBranchBridgeAgent._performCall does not check empty calldata; prior H-27 is the unhandled return value of the same function, a different claim"
+    notes: "the blind title-only reader mapped it to H-27"
+  inv:230:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/230.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:754:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/754.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:683:
+    label: known_prior
+    prior_ref: c4-2023-05:M-04
+    method: reader
+    confidence: high
+    provenance: "invalid/683.md: createBridgeAgent deployed with create is open to reorg; prior M-04 makes the reorg claim for the create methods"
+    notes: ""
+  inv:588:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/588.md: redeemDeposit with a non-existent nonce; prior H-08 is retrieveDeposit with an invalid nonce, a different function and path"
+    notes: ""
+
+agreement:
+  method: "blinded second reader (a separate AI subagent) labelled the same 20 from the title and the prior-item list only, without the first reader's labels; the first reader's Maia labels were written after the blind result was available, so for this corpus only the second reader is blind"
+  sample: [inv:477, inv:891, inv:045, inv:134, inv:465, inv:742, inv:743, inv:340, inv:008, inv:093, inv:041, inv:736, inv:702, inv:448, inv:invalid-394, inv:483, inv:230, inv:754, inv:683, inv:588]
+  blind:
+    inv:477: invalid_unmapped
+    inv:891: invalid_unmapped
+    inv:045: invalid_unmapped
+    inv:134: invalid_unmapped
+    inv:465: invalid_unmapped
+    inv:742: invalid_unmapped
+    inv:743: invalid_unmapped
+    inv:340: invalid_unmapped
+    inv:008: invalid_unmapped
+    inv:093: invalid_unmapped
+    inv:041: invalid_unmapped
+    inv:736: invalid_unmapped
+    inv:702: invalid_unmapped
+    inv:448: invalid_unmapped
+    inv:invalid-394: invalid_unmapped
+    inv:483: known_prior
+    inv:230: invalid_unmapped
+    inv:754: invalid_unmapped
+    inv:683: known_prior
+    inv:588: invalid_unmapped

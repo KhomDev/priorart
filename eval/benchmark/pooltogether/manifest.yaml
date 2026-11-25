@@ -1,0 +1,2711 @@
+version: 1
+schema: priorart.benchmark.manifest/v1
+seed: priorart-bench-pooltogether-2026-11-24
+note: 'Pointers and labels only: repo@commit + path per finding, plus the prior-item
+  locators it is labelled against. No finding body is stored here. The bodies are
+  fetched into eval/cache/benchmark/ by fetch.py. A label without method ''reader''
+  is a platform label or the frozen rubric, not a person''s judgement; see eval/benchmark/BENCHMARK.md.'
+sources:
+  prior_audit:
+    id: c4-2024-03-pooltogether-audit
+    repo: code-423n4/2024-03-pooltogether-findings
+    commit: 87f1b837fc3af84b32433b3d82538694b490b9f9
+    path: report.md
+  known_issues:
+    id: sherlock-2024-05-pooltogether-contest
+    repo: sherlock-audit/2024-05-pooltogether
+    commit: 1aa1b8c028b659585e4c7a6b9b652fb075f86db3
+    path: README.md
+    section: 'Q: Please list any known issues/acceptable risks that should not result
+      in a valid finding.'
+prior_items:
+  prior_audit_and_known:
+  - id: c4-2024-03:H-01
+    source: c4-2024-03-pooltogether-audit
+    locator: H-01
+    title: Any fee claim lesser than the total `yieldFeeBalance` as unit of shares
+      is lost and locked in the `P
+  - id: c4-2024-03:M-01
+    source: c4-2024-03-pooltogether-audit
+    locator: M-01
+    title: The winner can steal claimer fees, and force him to pay for the gas
+  - id: c4-2024-03:M-02
+    source: c4-2024-03-pooltogether-audit
+    locator: M-02
+    title: '`_maxYieldVaultWithdraw()` uses `yieldVault.convertToAssets()`'
+  - id: c4-2024-03:M-03
+    source: c4-2024-03-pooltogether-audit
+    locator: M-03
+    title: '`maxDeposit()` uses `yieldVault.maxDeposit()` but `_depositAndMint()`
+      uses `yieldVault.mint()`'
+  - id: c4-2024-03:M-04
+    source: c4-2024-03-pooltogether-audit
+    locator: M-04
+    title: Lack of Slippage Protection in `withdraw`/`redeem` Functions of the Vault
+  - id: c4-2024-03:M-05
+    source: c4-2024-03-pooltogether-audit
+    locator: M-05
+    title: '`yieldFeeBalance` wouldn''t be claimed after calling `transferTokensOut()`'
+  - id: c4-2024-03:M-06
+    source: c4-2024-03-pooltogether-audit
+    locator: M-06
+    title: Funds locked due to missing transfer check
+  - id: c4-2024-03:M-07
+    source: c4-2024-03-pooltogether-audit
+    locator: M-07
+    title: '`PrizeVault.maxDeposit()` doesn''t take into account produced fees'
+  - id: c4-2024-03:M-08
+    source: c4-2024-03-pooltogether-audit
+    locator: M-08
+    title: Permit doesn't work with DAI
+  - id: ki-2024-05:1
+    source: sherlock-2024-05-pooltogether-contest
+    locator: KI-1
+    text: The Witnet RNG is generated via a RANDAO process, but the result is bridged.
+      Their next upgrade will
+    aliases:
+    - the witnet rng is generated via a randao process, but the result is bridged.
+      their next upgrade will
+  judged_primary:
+  - id: acc:001-H
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:001-H
+    title: Draw auction rewards likely exceed the available rewards, resulting in
+      overpaying rewards or running
+    variant: judged_primary
+  - id: acc:002-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:002-M
+    title: '`DrawManager.canStartDraw` does not consider retried RNG requests when
+      determining if a new draw auc'
+    variant: judged_primary
+  - id: acc:003-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:003-M
+    title: Gas Manipulation by Malicious Winners in claimPrizes Function
+    variant: judged_primary
+  - id: acc:004-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:004-M
+    title: Potential ETH Loss Due to transfer Usage in Requestor Contract on `zkSync`
+    variant: judged_primary
+  - id: acc:005-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:005-M
+    title: '`Claimers` can receive less `feePerClaim` than they should if some prizes
+      are already claimed or if '
+    variant: judged_primary
+  - id: acc:006-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:006-M
+    title: Witnet is not available on some networks listed
+    variant: judged_primary
+  - id: acc:007-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:007-M
+    title: The claimer's fee will be stolen by the winner
+    variant: judged_primary
+  - id: acc:008-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:008-M
+    title: '`PUSH0` opcode Is Not Supported on Linea yet'
+    variant: judged_primary
+  - id: acc:009-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:009-M
+    title: '`maxDeposit` doesn''t comply with ERC-4626'
+    variant: judged_primary
+  - id: acc:010-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:010-M
+    title: Distributing liquidity based on the last `grandPrizePeriodDraws` days post-shutdown
+      is problematic
+    variant: judged_primary
+  - id: acc:011-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:011-M
+    title: Withdrawals in the `PrizeVault` will not work for some vaults due to using
+      `previewWithdraw()` and t
+    variant: judged_primary
+  - id: acc:012-H
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:012-H
+    title: When `PrizePool` reserves are low and more than expected number of prizes
+      are won, race conditions a
+    variant: judged_primary
+  - id: acc:013-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:013-M
+    title: Unfair Manipulation of Winning Chances Due to Stolen Yield on `Blast`
+    variant: judged_primary
+  - id: acc:014-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:014-M
+    title: '`DrawManager.startDraw()` can be called after prize pool shutdown, even
+      though `finishDraw()` always'
+    variant: judged_primary
+  - id: acc:015-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:015-M
+    title: '`drawTimeoutAt()` causes the prize pool to shutdown one draw earlier'
+    variant: judged_primary
+  - id: acc:016-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:016-M
+    title: 'Hardcoded Gas for Hooks May Prevent Winners from Receiving Prizes Due
+      to Insufficiency on Different '
+    variant: judged_primary
+  - id: acc:017-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:017-M
+    title: A new draw auction for the same draw cannot be started if the RNG request
+      succeeded but the `finishD
+    variant: judged_primary
+  - id: acc:018-H
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:018-H
+    title: User's might be able to claim their prizes even after shutdown
+    variant: judged_primary
+  - id: acc:019-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:019-M
+    title: '`shutdownBalanceOf` calculation can overflow'
+    variant: judged_primary
+  - id: acc:020-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:020-M
+    title: Draws can be retried even if a random number is available or the current
+      draw has finished
+    variant: judged_primary
+  - id: acc:021-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:021-M
+    title: Undistributed prize liquidity due to `tierLiquidityUtilizationRate` remains
+      stuck in the prize pool
+    variant: judged_primary
+  - id: acc:022-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:022-M
+    title: '`uint96` is too small for `_directlyContributedReserve`, which is cumulative'
+    variant: judged_primary
+  - id: acc:023-H
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:023-H
+    title: Inconsistent result from `DrawAccumulator.binarySearch()` causes prize
+      pool calculations to be incor
+    variant: judged_primary
+  - id: acc:024-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:024-M
+    title: '`TierCalculationLib.calculateWinningZone()` rounding down could severely
+      reduce a user''s chances of '
+    variant: judged_primary
+  - id: acc:025-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:025-M
+    title: Price formula in `TpdaLiquidationPair._computePrice()` does not account
+      for a jump in liquidatable b
+    variant: judged_primary
+  - id: acc:026-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:026-M
+    title: '`TpdaLiquidationPair.swapExactAmountOut()` can be DOSed by a vault''s
+      mint limit'
+    variant: judged_primary
+  - id: acc:027-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:027-M
+    title: '`getDisbursedBetween` may return incorrect values when `ringBufferInfo.cardinality
+      = 1`'
+    variant: judged_primary
+  - id: acc:028-H
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:028-H
+    title: 'Attackers can create invalid observations by contributing 0 PrizeToken,
+      causing getDisbursedBetween '
+    variant: judged_primary
+  - id: acc:029-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:029-M
+    title: The number of tiers is incorrectly used when claiming rewards.
+    variant: judged_primary
+  - id: acc:030-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:030-M
+    title: DoSed liquidations as `PrizeVault::liquidatableBalanceOf()` does not take
+      into account the `mintLimi
+    variant: judged_primary
+  - id: acc:031-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:031-M
+    title: Current Tpda liquidations can not deal with upwards yield fluctuations,
+      leading to yield loss in som
+    variant: judged_primary
+  - id: acc:032-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:032-M
+    title: Some tiers will not be awarded in the PrizePool when the last observation
+      has been erased in the Twa
+    variant: judged_primary
+  - id: acc:033-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:033-M
+    title: Estimated prize draws in TieredLiquidityDistributor are off due to rounding
+      down when calculating th
+    variant: judged_primary
+  - id: acc:034-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:034-M
+    title: 'Vault portion calculation in `PrizePool::getVaultPortion()` is incorrect
+      as `_startDrawIdInclusive` '
+    variant: judged_primary
+  - id: acc:035-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:035-M
+    title: 'The RNG finish draw auction rewards are overpaid due to missing to account
+      for the time it takes to '
+    variant: judged_primary
+  - id: acc:036-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:036-M
+    title: Entire prize pool reserve is used up after a draw is awarded, preventing
+      building up a larger reserv
+    variant: judged_primary
+  - id: acc:037-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:037-M
+    title: '`maxRedeem` doesn''t comply with ERC-4626'
+    variant: judged_primary
+  - id: acc:038-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:038-M
+    title: Vault beneficiary contribution may be shared to all in case of shutdown
+    variant: judged_primary
+  - id: acc:039-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:039-M
+    title: User's might be able to add already errored witnet requests on L2's
+    variant: judged_primary
+  - id: acc:040-M
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: acc:040-M
+    title: Users can setup hooks to control the expannsion of tiers
+    variant: judged_primary
+  - id: inv:001
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:001
+    title: Vulnerable to fee-on-transfer
+    variant: judged_primary
+  - id: inv:005
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:005
+    title: When a prizeVault owner changes the `yieldFeePercentage` it applies to
+      all the yield accrued till th
+    variant: judged_primary
+  - id: inv:009
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:009
+    title: The `maxDeposit()` function is not ERC4626 compliant
+    variant: judged_primary
+  - id: inv:010
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:010
+    title: Protocol does not refund excess funds after calling `RngWitnet.startDraw`
+    variant: judged_primary
+  - id: inv:018
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:018
+    title: '`PrizeVault.sol#depositWithPermit` function restrict the caller to `_owner`.'
+    variant: judged_primary
+  - id: inv:020
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:020
+    title: Claim bots might be deceived by protocol
+    variant: judged_primary
+  - id: inv:040
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:040
+    title: '`prizeVault.previewDeposit()` and `prizeVault.previewMint()` don''t comply
+      to ERC4626 standard'
+    variant: judged_primary
+  - id: inv:044
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:044
+    title: An attacker can take advantage of a yield vault that made a loss, at the
+      expense of all other users
+    variant: judged_primary
+  - id: inv:045
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:045
+    title: YieldVaults with fee on deposit are incompatible with the protocol
+    variant: judged_primary
+  - id: inv:048
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:048
+    title: _directlyContributedReserve doesn't work as expected
+    variant: judged_primary
+  - id: inv:049
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:049
+    title: Functions Missing Parameters
+    variant: judged_primary
+  - id: inv:055
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:055
+    title: Liquidator can avoid paying the yieldFee by liquidating small amounts
+    variant: judged_primary
+  - id: inv:061
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:061
+    title: Prize Pool Tier Manipulation via Claim Counts
+    variant: judged_primary
+  - id: inv:062
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:062
+    title: Inconsistent TWAB Calculation for Zero Balances in TwabController
+    variant: judged_primary
+  - id: inv:063
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:063
+    title: TPDA Dutch Auction Manipulation in PoolTogether V5
+    variant: judged_primary
+  - id: inv:065
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:065
+    title: Lack Of Zero Address Checks
+    variant: judged_primary
+  - id: inv:066
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:066
+    title: Avoiding Contradictions in Conditional Logic
+    variant: judged_primary
+  - id: inv:077
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:077
+    title: Reorgs attack issue while deploying using create , will result in fund
+      lost for Requester contract
+    variant: judged_primary
+  - id: inv:078
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:078
+    title: Potential Revert on Insufficient Balance Transactions
+    variant: judged_primary
+  - id: inv:083
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:083
+    title: 'TpdaLiquidationPair does not enforce the TpdaLiquidationRouter contract
+      is the only possible caller '
+    variant: judged_primary
+  - id: inv:085
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:085
+    title: PrizeVault:transferTokensOut miscalculates the yield fee
+    variant: judged_primary
+  - id: inv:087
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:087
+    title: Missing Zero Address Check for _rewardRecipient
+    variant: judged_primary
+  - id: inv:108
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:108
+    title: '`TpdaLiquidationPair.swapExactAmountOut` does not refund excess inTokens
+      if not called from `TpdaLiq'
+    variant: judged_primary
+  - id: inv:109
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:109
+    title: Reentrancy Vulnerability in The _claim function
+    variant: judged_primary
+  - id: inv:118
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:118
+    title: Result of transfer / transferFrom not checked
+    variant: judged_primary
+  - id: inv:148
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:148
+    title: 'Griefing Attack: requests[requestId] Overflow Due to Large Request Volume
+      and Short Block Time.'
+    variant: judged_primary
+  - id: inv:152
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:152
+    title: Lack of Access Control on `sponsor` Function
+    variant: judged_primary
+  - id: inv:155
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:155
+    title: Missing Authorization Check in `delegate` Function
+    variant: judged_primary
+  - id: inv:invalid-001
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:invalid-001
+    title: Unrestricted Access to mint Function
+    variant: judged_primary
+  - id: inv:invalid-002
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:invalid-002
+    title: Critical Access Control Flaw in PoolTogether V5 Prize Pool Contract - Potential
+      for Prize Manipulati
+    variant: judged_primary
+  - id: inv:invalid-003
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:invalid-003
+    title: after the TWAB limit is reached, back-running a call to `withdraw` with
+      a liquidation of yield is ex
+    variant: judged_primary
+  - id: inv:invalid-004
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:invalid-004
+    title: The result of the function `calculatePseudoNumber` can be previewed before
+      calling `claimPrize`
+    variant: judged_primary
+  - id: inv:invalid-005
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:invalid-005
+    title: gas yield can never be claimed and all yield will be lost
+    variant: judged_primary
+  - id: inv:invalid-006
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:invalid-006
+    title: The swap mechanism does not have a deadline parameter
+    variant: judged_primary
+  - id: inv:invalid-007
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:invalid-007
+    title: An attacker can force a prizeVault into a state to delay liquidations for
+      a greater profit
+    variant: judged_primary
+  - id: inv:invalid-008
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:invalid-008
+    title: If a user calls `contributePrizeTokens` they are vulnerable to a frontrunning
+      attack
+    variant: judged_primary
+  - id: inv:invalid-009
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:invalid-009
+    title: '`PrizeVault::depositWithPermit()` still allows griefing attacks, despite
+      the attempts of the code an'
+    variant: judged_primary
+  - id: inv:invalid-010
+    source: sherlock-audit/2024-05-pooltogether-judging
+    locator: inv:invalid-010
+    title: '`permit` is not compatible with DAI'
+    variant: judged_primary
+findings:
+- id: acc:001-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 001-H/125-best.md
+  group_files: 7
+  files:
+  - 001-H/025.md
+  - 001-H/047.md
+  - 001-H/100.md
+  - 001-H/123.md
+  - 001-H/125-best.md
+  - 001-H/140.md
+  - 001-H/147.md
+  title: Draw auction rewards likely exceed the available rewards, resulting in overpaying
+    rewards or running
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:002-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 002-M/129-best.md
+  group_files: 7
+  files:
+  - 002-M/021.md
+  - 002-M/099.md
+  - 002-M/105.md
+  - 002-M/115.md
+  - 002-M/117.md
+  - 002-M/129-best.md
+  - 002-M/159.md
+  title: '`DrawManager.canStartDraw` does not consider retried RNG requests when determining
+    if a new draw auc'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:003-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 003-M/163-best.md
+  group_files: 6
+  files:
+  - 003-M/070.md
+  - 003-M/101.md
+  - 003-M/110.md
+  - 003-M/122.md
+  - 003-M/131.md
+  - 003-M/163-best.md
+  title: Gas Manipulation by Malicious Winners in claimPrizes Function
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:004-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 004-M/080-best.md
+  group_files: 5
+  files:
+  - 004-M/024.md
+  - 004-M/080-best.md
+  - 004-M/098.md
+  - 004-M/119.md
+  - 004-M/139.md
+  title: Potential ETH Loss Due to transfer Usage in Requestor Contract on `zkSync`
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:005-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 005-M/124-best.md
+  group_files: 5
+  files:
+  - 005-M/057.md
+  - 005-M/086.md
+  - 005-M/124-best.md
+  - 005-M/141.md
+  - 005-M/146.md
+  title: '`Claimers` can receive less `feePerClaim` than they should if some prizes
+    are already claimed or if '
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:006-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 006-M/127-best.md
+  group_files: 5
+  files:
+  - 006-M/002.md
+  - 006-M/007.md
+  - 006-M/043.md
+  - 006-M/120.md
+  - 006-M/127-best.md
+  title: Witnet is not available on some networks listed
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:007-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 007-M/073-best.md
+  group_files: 4
+  files:
+  - 007-M/037.md
+  - 007-M/073-best.md
+  - 007-M/082.md
+  - 007-M/161.md
+  title: The claimer's fee will be stolen by the winner
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:008-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 008-M/079-best.md
+  group_files: 4
+  files:
+  - 008-M/006.md
+  - 008-M/015.md
+  - 008-M/079-best.md
+  - 008-M/106.md
+  title: '`PUSH0` opcode Is Not Supported on Linea yet'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:009-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 009-M/134-best.md
+  group_files: 4
+  files:
+  - 009-M/090.md
+  - 009-M/091.md
+  - 009-M/132.md
+  - 009-M/134-best.md
+  title: '`maxDeposit` doesn''t comply with ERC-4626'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:010-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 010-M/036-best.md
+  group_files: 3
+  files:
+  - 010-M/013.md
+  - 010-M/036-best.md
+  - 010-M/153.md
+  title: Distributing liquidity based on the last `grandPrizePeriodDraws` days post-shutdown
+    is problematic
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:011-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 011-M/092-best.md
+  group_files: 3
+  files:
+  - 011-M/014.md
+  - 011-M/092-best.md
+  - 011-M/107.md
+  title: Withdrawals in the `PrizeVault` will not work for some vaults due to using
+    `previewWithdraw()` and t
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:012-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 012-H/112-best.md
+  group_files: 3
+  files:
+  - 012-H/071.md
+  - 012-H/084.md
+  - 012-H/112-best.md
+  title: When `PrizePool` reserves are low and more than expected number of prizes
+    are won, race conditions a
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:013-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 013-M/114-best.md
+  group_files: 3
+  files:
+  - 013-M/012.md
+  - 013-M/111.md
+  - 013-M/114-best.md
+  title: Unfair Manipulation of Winning Chances Due to Stolen Yield on `Blast`
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:014-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 014-M/026-best.md
+  group_files: 2
+  files:
+  - 014-M/026-best.md
+  - 014-M/113.md
+  title: '`DrawManager.startDraw()` can be called after prize pool shutdown, even
+    though `finishDraw()` always'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:015-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 015-M/028-best.md
+  group_files: 2
+  files:
+  - 015-M/028-best.md
+  - 015-M/142.md
+  title: '`drawTimeoutAt()` causes the prize pool to shutdown one draw earlier'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:016-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 016-M/081-best.md
+  group_files: 2
+  files:
+  - 016-M/081-best.md
+  - 016-M/158.md
+  title: 'Hardcoded Gas for Hooks May Prevent Winners from Receiving Prizes Due to
+    Insufficiency on Different '
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:017-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 017-M/130-best.md
+  group_files: 2
+  files:
+  - 017-M/121.md
+  - 017-M/130-best.md
+  title: A new draw auction for the same draw cannot be started if the RNG request
+    succeeded but the `finishD
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:018-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 018-H/133-best.md
+  group_files: 2
+  files:
+  - 018-H/053.md
+  - 018-H/133-best.md
+  title: User's might be able to claim their prizes even after shutdown
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:019-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 019-M/137-best.md
+  group_files: 2
+  files:
+  - 019-M/137-best.md
+  - 019-M/144.md
+  title: '`shutdownBalanceOf` calculation can overflow'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:020-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 020-M/027-best.md
+  group_files: 1
+  files:
+  - 020-M/027-best.md
+  title: Draws can be retried even if a random number is available or the current
+    draw has finished
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:021-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 021-M/029-best.md
+  group_files: 1
+  files:
+  - 021-M/029-best.md
+  title: Undistributed prize liquidity due to `tierLiquidityUtilizationRate` remains
+    stuck in the prize pool
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:022-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 022-M/030-best.md
+  group_files: 1
+  files:
+  - 022-M/030-best.md
+  title: '`uint96` is too small for `_directlyContributedReserve`, which is cumulative'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:023-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 023-H/032-best.md
+  group_files: 1
+  files:
+  - 023-H/032-best.md
+  title: Inconsistent result from `DrawAccumulator.binarySearch()` causes prize pool
+    calculations to be incor
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:024-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 024-M/033-best.md
+  group_files: 1
+  files:
+  - 024-M/033-best.md
+  title: '`TierCalculationLib.calculateWinningZone()` rounding down could severely
+    reduce a user''s chances of '
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:025-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 025-M/038-best.md
+  group_files: 1
+  files:
+  - 025-M/038-best.md
+  title: Price formula in `TpdaLiquidationPair._computePrice()` does not account for
+    a jump in liquidatable b
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:026-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 026-M/039-best.md
+  group_files: 1
+  files:
+  - 026-M/039-best.md
+  title: '`TpdaLiquidationPair.swapExactAmountOut()` can be DOSed by a vault''s mint
+    limit'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:027-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 027-M/046-best.md
+  group_files: 1
+  files:
+  - 027-M/046-best.md
+  title: '`getDisbursedBetween` may return incorrect values when `ringBufferInfo.cardinality
+    = 1`'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:028-H
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 028-H/050-best.md
+  group_files: 1
+  files:
+  - 028-H/050-best.md
+  title: 'Attackers can create invalid observations by contributing 0 PrizeToken,
+    causing getDisbursedBetween '
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:029-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 029-M/076-best.md
+  group_files: 1
+  files:
+  - 029-M/076-best.md
+  title: The number of tiers is incorrectly used when claiming rewards.
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:030-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 030-M/088-best.md
+  group_files: 1
+  files:
+  - 030-M/088-best.md
+  title: DoSed liquidations as `PrizeVault::liquidatableBalanceOf()` does not take
+    into account the `mintLimi
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:031-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 031-M/093-best.md
+  group_files: 1
+  files:
+  - 031-M/093-best.md
+  title: Current Tpda liquidations can not deal with upwards yield fluctuations, leading
+    to yield loss in som
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:032-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 032-M/094-best.md
+  group_files: 1
+  files:
+  - 032-M/094-best.md
+  title: Some tiers will not be awarded in the PrizePool when the last observation
+    has been erased in the Twa
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:033-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 033-M/095-best.md
+  group_files: 1
+  files:
+  - 033-M/095-best.md
+  title: Estimated prize draws in TieredLiquidityDistributor are off due to rounding
+    down when calculating th
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:034-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 034-M/096-best.md
+  group_files: 1
+  files:
+  - 034-M/096-best.md
+  title: 'Vault portion calculation in `PrizePool::getVaultPortion()` is incorrect
+    as `_startDrawIdInclusive` '
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:035-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 035-M/126-best.md
+  group_files: 1
+  files:
+  - 035-M/126-best.md
+  title: 'The RNG finish draw auction rewards are overpaid due to missing to account
+    for the time it takes to '
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:036-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 036-M/128-best.md
+  group_files: 1
+  files:
+  - 036-M/128-best.md
+  title: Entire prize pool reserve is used up after a draw is awarded, preventing
+    building up a larger reserv
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:037-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 037-M/136-best.md
+  group_files: 1
+  files:
+  - 037-M/136-best.md
+  title: '`maxRedeem` doesn''t comply with ERC-4626'
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:038-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 038-M/145-best.md
+  group_files: 1
+  files:
+  - 038-M/145-best.md
+  title: Vault beneficiary contribution may be shared to all in case of shutdown
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:039-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 039-M/154-best.md
+  group_files: 1
+  files:
+  - 039-M/154-best.md
+  title: User's might be able to add already errored witnet requests on L2's
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: acc:040-M
+  judged: accepted
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 040-M/162-best.md
+  group_files: 1
+  files:
+  - 040-M/162-best.md
+  title: Users can setup hooks to control the expannsion of tiers
+  label: unique_valid
+  label_method: platform
+  prior_ref: null
+  provenance: null
+  confidence: null
+  notes: null
+- id: inv:001
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/001.md
+  group_files: 1
+  files:
+  - invalid/001.md
+  title: Vulnerable to fee-on-transfer
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/001.md: fee-on-transfer balance check in PrizePool.donatePrizeTokens/contributeReserve;
+    prior M-06 is an unchecked transfer result in PrizeVault._withdraw, a different
+    function and claim'
+  confidence: medium
+  notes: ''
+- id: inv:005
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/005.md
+  group_files: 1
+  files:
+  - invalid/005.md
+  title: When a prizeVault owner changes the `yieldFeePercentage` it applies to all
+    the yield accrued till th
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/005.md: changing yieldFeePercentage applies to yield accrued
+    under the old percentage; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:009
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/009.md
+  group_files: 1
+  files:
+  - invalid/009.md
+  title: The `maxDeposit()` function is not ERC4626 compliant
+  label: known_prior
+  label_method: reader
+  prior_ref: c4-2024-03:M-03
+  provenance: 'invalid/009.md: maxDeposit() returns yieldVault.maxDeposit() while
+    _depositAndMint() uses yieldVault.mint(), so depositing maxDeposit() can revert;
+    C4 M-03 makes the same PrizeVault.maxDeposit claim'
+  confidence: high
+  notes: M-03's report comment records the judge decreasing it to Low, but the C4
+    report lists it under Medium Risk Findings; the prior-item set is the report's
+    High/Medium headings
+- id: inv:010
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/010.md
+  group_files: 1
+  files:
+  - invalid/010.md
+  title: Protocol does not refund excess funds after calling `RngWitnet.startDraw`
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/010.md: RngWitnet.startDraw does not refund excess ETH; prior
+    KI-1 is the Witnet RNG bridge trust assumption, not a refund claim'
+  confidence: high
+  notes: ''
+- id: inv:018
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/018.md
+  group_files: 1
+  files:
+  - invalid/018.md
+  title: '`PrizeVault.sol#depositWithPermit` function restrict the caller to `_owner`.'
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/018.md: depositWithPermit restricts the caller to _owner; prior
+    M-08 is DAI''s incompatible permit signature, a different failure'
+  confidence: medium
+  notes: permit topic overlap
+- id: inv:020
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/020.md
+  group_files: 1
+  files:
+  - invalid/020.md
+  title: Claim bots might be deceived by protocol
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/020.md: computeMaxFee returns the canary max while _computeFeePerClaim
+    pays the canary prize size; prior M-01 is a winner griefing a claimer over fees,
+    a different actor and claim'
+  confidence: medium
+  notes: claimer-fee topic overlap
+- id: inv:040
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/040.md
+  group_files: 1
+  files:
+  - invalid/040.md
+  title: '`prizeVault.previewDeposit()` and `prizeVault.previewMint()` don''t comply
+    to ERC4626 standard'
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/040.md: previewDeposit/previewMint round in the wrong direction;
+    prior M-02 and M-03 concern maxWithdraw/maxDeposit limits, not preview rounding'
+  confidence: medium
+  notes: ERC4626 topic overlap
+- id: inv:044
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/044.md
+  group_files: 1
+  files:
+  - invalid/044.md
+  title: An attacker can take advantage of a yield vault that made a loss, at the
+    expense of all other users
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/044.md: front-running a yield-vault loss so the attacker withdraws
+    before losses are socialized; prior M-04 is missing user slippage protection on
+    withdraw/redeem, a different claim'
+  confidence: medium
+  notes: yield-loss topic overlap
+- id: inv:045
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/045.md
+  group_files: 1
+  files:
+  - invalid/045.md
+  title: YieldVaults with fee on deposit are incompatible with the protocol
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/045.md: yield vaults with a deposit fee revert the _depositAndMint
+    loss check; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:048
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/048.md
+  group_files: 1
+  files:
+  - invalid/048.md
+  title: _directlyContributedReserve doesn't work as expected
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/048.md: _directlyContributedReserve is always recycled into
+    the next draw; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:049
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/049.md
+  group_files: 1
+  files:
+  - invalid/049.md
+  title: Functions Missing Parameters
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/049.md: claims maxDeposit/transferTokensOut/verifyTokensIn/targetOf
+    are missing parameters; prior M-03/M-07 are concrete maxDeposit limit and fee-accounting
+    mismatches, not missing parameters'
+  confidence: medium
+  notes: maxDeposit topic overlap
+- id: inv:055
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/055.md
+  group_files: 1
+  files:
+  - invalid/055.md
+  title: Liquidator can avoid paying the yieldFee by liquidating small amounts
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/055.md: a liquidator chooses an amountOut whose yieldFee rounds
+    to zero; prior H-01 is a partial claimYieldFeeShares that wipes the remaining
+    yieldFeeBalance and prior M-05 is a TWAB-limit mint failure, both different claims'
+  confidence: medium
+  notes: yield-fee topic overlap
+- id: inv:061
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/061.md
+  group_files: 1
+  files:
+  - invalid/061.md
+  title: Prize Pool Tier Manipulation via Claim Counts
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/061.md: computeNextNumberOfTiers can be influenced through
+    claimCount; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:062
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/062.md
+  group_files: 1
+  files:
+  - invalid/062.md
+  title: Inconsistent TWAB Calculation for Zero Balances in TwabController
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/062.md: TwabController does not record a zero-balance observation;
+    no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:063
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/063.md
+  group_files: 1
+  files:
+  - invalid/063.md
+  title: TPDA Dutch Auction Manipulation in PoolTogether V5
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/063.md: TPDA Dutch auction price can be manipulated by timing;
+    no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:065
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/065.md
+  group_files: 1
+  files:
+  - invalid/065.md
+  title: Lack Of Zero Address Checks
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/065.md: generic lack of zero-address checks around onlyLiquidationPair;
+    no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:066
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/066.md
+  group_files: 1
+  files:
+  - invalid/066.md
+  title: Avoiding Contradictions in Conditional Logic
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/066.md: claims both branches of the transferTokensOut if/else-if
+    can execute; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:077
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/077.md
+  group_files: 1
+  files:
+  - invalid/077.md
+  title: Reorgs attack issue while deploying using create , will result in fund lost
+    for Requester contract
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/077.md: a reorg can strand the Requester deployed with create;
+    no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:078
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/078.md
+  group_files: 1
+  files:
+  - invalid/078.md
+  title: Potential Revert on Insufficient Balance Transactions
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/078.md: _withdraw reverts when the vault lacks assets; prior
+    M-06 is the unchecked-false-return path that locks funds, a different outcome
+    and mechanism'
+  confidence: medium
+  notes: _withdraw topic overlap
+- id: inv:083
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/083.md
+  group_files: 1
+  files:
+  - invalid/083.md
+  title: 'TpdaLiquidationPair does not enforce the TpdaLiquidationRouter contract
+    is the only possible caller '
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/083.md: TpdaLiquidationPair does not restrict swapExactAmountOut
+    to the router; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:085
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/085.md
+  group_files: 1
+  files:
+  - invalid/085.md
+  title: PrizeVault:transferTokensOut miscalculates the yield fee
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/085.md: transferTokensOut''s yield-fee formula is algebraically
+    wrong; prior H-01 is a partial fee claim wiping the balance and prior M-05 is
+    a TWAB-limit mint failure, so neither reproduces this claim'
+  confidence: medium
+  notes: yield-fee topic overlap
+- id: inv:087
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/087.md
+  group_files: 1
+  files:
+  - invalid/087.md
+  title: Missing Zero Address Check for _rewardRecipient
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/087.md: missing zero-address check on _rewardRecipient in claimPrize;
+    no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:108
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/108.md
+  group_files: 1
+  files:
+  - invalid/108.md
+  title: '`TpdaLiquidationPair.swapExactAmountOut` does not refund excess inTokens
+    if not called from `TpdaLiq'
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/108.md: swapExactAmountOut does not refund excess inTokens
+    outside the router; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:109
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/109.md
+  group_files: 1
+  files:
+  - invalid/109.md
+  title: Reentrancy Vulnerability in The _claim function
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/109.md: reentrancy through _vault.claimPrize in _claim; no
+    prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:118
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/118.md
+  group_files: 1
+  files:
+  - invalid/118.md
+  title: Result of transfer / transferFrom not checked
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/118.md: unchecked transfer result in Requestor.withdraw; prior
+    M-06 is an unchecked transfer result in PrizeVault._withdraw with a concrete locked-funds
+    path, a different contract and impact'
+  confidence: medium
+  notes: same pattern, different contract and claim
+- id: inv:148
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/148.md
+  group_files: 1
+  files:
+  - invalid/148.md
+  title: 'Griefing Attack: requests[requestId] Overflow Due to Large Request Volume
+    and Short Block Time.'
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/148.md: uint32 requestId overflow under high request volume;
+    no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:152
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/152.md
+  group_files: 1
+  files:
+  - invalid/152.md
+  title: Lack of Access Control on `sponsor` Function
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/152.md: TwabController.sponsor has no access control; no prior
+    item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:155
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/155.md
+  group_files: 1
+  files:
+  - invalid/155.md
+  title: Missing Authorization Check in `delegate` Function
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/155.md: TwabController.delegate has no authorization check;
+    no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:invalid-001
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-001/102-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-001/102-best.md
+  - invalid/invalid-001/103.md
+  title: Unrestricted Access to mint Function
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-001/102-best.md: TwabController.mint has no access
+    control; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:invalid-002
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-002/060-best.md
+  group_files: 3
+  files:
+  - invalid/invalid-002/003.md
+  - invalid/invalid-002/004.md
+  - invalid/invalid-002/060-best.md
+  title: Critical Access Control Flaw in PoolTogether V5 Prize Pool Contract - Potential
+    for Prize Manipulati
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-002/060-best.md: PrizePool.setDrawManager lacks access
+    control and validation; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:invalid-003
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-003/019-best.md
+  group_files: 4
+  files:
+  - invalid/invalid-003/019-best.md
+  - invalid/invalid-003/022.md
+  - invalid/invalid-003/023.md
+  - invalid/invalid-003/031.md
+  title: after the TWAB limit is reached, back-running a call to `withdraw` with a
+    liquidation of yield is ex
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-003/019-best.md: after the TWAB supply limit is reached,
+    a liquidator back-runs a withdraw with a liquidation bought at a decayed auction
+    price; prior M-05 mentions the TWAB limit but claims unclaimed yieldFeeBalance,
+    not auction-price profit'
+  confidence: medium
+  notes: TWAB-limit topic overlap
+- id: inv:invalid-004
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/104-best.md
+  group_files: 12
+  files:
+  - invalid/invalid-004/017.md
+  - invalid/invalid-004/034.md
+  - invalid/invalid-004/035.md
+  - invalid/invalid-004/041.md
+  - invalid/invalid-004/042.md
+  - invalid/invalid-004/054.md
+  - invalid/invalid-004/072.md
+  - invalid/invalid-004/097.md
+  - invalid/invalid-004/104-best.md
+  - invalid/invalid-004/143.md
+  - invalid/invalid-004/150.md
+  - invalid/invalid-004/160.md
+  title: The result of the function `calculatePseudoNumber` can be previewed before
+    calling `claimPrize`
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-004/104-best.md: calculatePseudoNumber can be previewed
+    before claimPrize; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:invalid-005
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-005/011-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-005/011-best.md
+  - invalid/invalid-005/068.md
+  title: gas yield can never be claimed and all yield will be lost
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-005/011-best.md: Blast gas yield is never configured
+    or claimed; prior H-01 and M-05 are PrizeVault yieldFeeBalance claims, not gas
+    yield'
+  confidence: high
+  notes: ''
+- id: inv:invalid-006
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-006/157-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-006/067.md
+  - invalid/invalid-006/157-best.md
+  title: The swap mechanism does not have a deadline parameter
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-006/157-best.md: TpdaLiquidationPair.swapExactAmountOut
+    has no deadline; prior M-04 is vault withdraw/redeem slippage, a different function'
+  confidence: high
+  notes: ''
+- id: inv:invalid-007
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-007/116-best.md
+  group_files: 11
+  files:
+  - invalid/invalid-007/016.md
+  - invalid/invalid-007/051.md
+  - invalid/invalid-007/058.md
+  - invalid/invalid-007/059.md
+  - invalid/invalid-007/064.md
+  - invalid/invalid-007/069.md
+  - invalid/invalid-007/074.md
+  - invalid/invalid-007/116-best.md
+  - invalid/invalid-007/149.md
+  - invalid/invalid-007/151.md
+  - invalid/invalid-007/156.md
+  title: An attacker can force a prizeVault into a state to delay liquidations for
+    a greater profit
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-007/116-best.md: an attacker can force zero yield-vault
+    shares to delay liquidations; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:invalid-008
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-008/056-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-008/056-best.md
+  - invalid/invalid-008/075.md
+  title: If a user calls `contributePrizeTokens` they are vulnerable to a frontrunning
+    attack
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-008/056-best.md: contributePrizeTokens can be front-run
+    to redirect a contribution; no prior item makes this claim'
+  confidence: high
+  notes: ''
+- id: inv:invalid-009
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-009/089-best.md
+  group_files: 2
+  files:
+  - invalid/invalid-009/089-best.md
+  - invalid/invalid-009/135.md
+  title: '`PrizeVault::depositWithPermit()` still allows griefing attacks, despite
+    the attempts of the code an'
+  label: invalid_unmapped
+  label_method: reader
+  prior_ref: null
+  provenance: 'invalid/invalid-009/089-best.md: depositWithPermit is DoSed when a
+    prior allowance exists; prior M-08 is DAI''s incompatible permit signature, a
+    different failure'
+  confidence: medium
+  notes: permit topic overlap
+- id: inv:invalid-010
+  judged: invalid
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-010/138-best.md
+  group_files: 3
+  files:
+  - invalid/invalid-010/008.md
+  - invalid/invalid-010/052.md
+  - invalid/invalid-010/138-best.md
+  title: '`permit` is not compatible with DAI'
+  label: known_prior
+  label_method: reader
+  prior_ref: c4-2024-03:M-08
+  provenance: 'invalid/invalid-010/138-best.md: DAI''s permit has a different signature,
+    so depositWithPermit reverts for DAI; C4 M-08 makes the same claim about PrizeVault.depositWithPermit'
+  confidence: high
+  notes: ''
+duplicates:
+- id: dup:001-H/025.md
+  expected: acc:001-H
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 001-H/025.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:001-H/047.md
+  expected: acc:001-H
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 001-H/047.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:001-H/100.md
+  expected: acc:001-H
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 001-H/100.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:001-H/123.md
+  expected: acc:001-H
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 001-H/123.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:001-H/140.md
+  expected: acc:001-H
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 001-H/140.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:001-H/147.md
+  expected: acc:001-H
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 001-H/147.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:002-M/021.md
+  expected: acc:002-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 002-M/021.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:002-M/099.md
+  expected: acc:002-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 002-M/099.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:002-M/105.md
+  expected: acc:002-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 002-M/105.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:002-M/115.md
+  expected: acc:002-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 002-M/115.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:002-M/117.md
+  expected: acc:002-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 002-M/117.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:002-M/159.md
+  expected: acc:002-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 002-M/159.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:003-M/070.md
+  expected: acc:003-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 003-M/070.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:003-M/101.md
+  expected: acc:003-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 003-M/101.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:003-M/110.md
+  expected: acc:003-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 003-M/110.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:003-M/122.md
+  expected: acc:003-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 003-M/122.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:003-M/131.md
+  expected: acc:003-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 003-M/131.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:004-M/024.md
+  expected: acc:004-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 004-M/024.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:004-M/098.md
+  expected: acc:004-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 004-M/098.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:004-M/119.md
+  expected: acc:004-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 004-M/119.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:004-M/139.md
+  expected: acc:004-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 004-M/139.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:005-M/057.md
+  expected: acc:005-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 005-M/057.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:005-M/086.md
+  expected: acc:005-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 005-M/086.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:005-M/141.md
+  expected: acc:005-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 005-M/141.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:005-M/146.md
+  expected: acc:005-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 005-M/146.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:006-M/002.md
+  expected: acc:006-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 006-M/002.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:006-M/007.md
+  expected: acc:006-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 006-M/007.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:006-M/043.md
+  expected: acc:006-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 006-M/043.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:006-M/120.md
+  expected: acc:006-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 006-M/120.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:007-M/037.md
+  expected: acc:007-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 007-M/037.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:007-M/082.md
+  expected: acc:007-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 007-M/082.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:007-M/161.md
+  expected: acc:007-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 007-M/161.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:008-M/006.md
+  expected: acc:008-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 008-M/006.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:008-M/015.md
+  expected: acc:008-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 008-M/015.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:008-M/106.md
+  expected: acc:008-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 008-M/106.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:009-M/090.md
+  expected: acc:009-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 009-M/090.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:009-M/091.md
+  expected: acc:009-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 009-M/091.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:009-M/132.md
+  expected: acc:009-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 009-M/132.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:010-M/013.md
+  expected: acc:010-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 010-M/013.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:010-M/153.md
+  expected: acc:010-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 010-M/153.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:011-M/014.md
+  expected: acc:011-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 011-M/014.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:011-M/107.md
+  expected: acc:011-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 011-M/107.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:012-H/071.md
+  expected: acc:012-H
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 012-H/071.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:012-H/084.md
+  expected: acc:012-H
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 012-H/084.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:013-M/012.md
+  expected: acc:013-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 013-M/012.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:013-M/111.md
+  expected: acc:013-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 013-M/111.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:014-M/113.md
+  expected: acc:014-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 014-M/113.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:015-M/142.md
+  expected: acc:015-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 015-M/142.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:016-M/158.md
+  expected: acc:016-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 016-M/158.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:017-M/121.md
+  expected: acc:017-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 017-M/121.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:018-H/053.md
+  expected: acc:018-H
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 018-H/053.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:019-M/144.md
+  expected: acc:019-M
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: 019-M/144.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-001/103.md
+  expected: inv:invalid-001
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-001/103.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-002/003.md
+  expected: inv:invalid-002
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-002/003.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-002/004.md
+  expected: inv:invalid-002
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-002/004.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-003/022.md
+  expected: inv:invalid-003
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-003/022.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-003/023.md
+  expected: inv:invalid-003
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-003/023.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-003/031.md
+  expected: inv:invalid-003
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-003/031.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-004/017.md
+  expected: inv:invalid-004
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/017.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-004/034.md
+  expected: inv:invalid-004
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/034.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-004/035.md
+  expected: inv:invalid-004
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/035.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-004/041.md
+  expected: inv:invalid-004
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/041.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-004/042.md
+  expected: inv:invalid-004
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/042.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-004/054.md
+  expected: inv:invalid-004
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/054.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-004/072.md
+  expected: inv:invalid-004
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/072.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-004/097.md
+  expected: inv:invalid-004
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/097.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-004/143.md
+  expected: inv:invalid-004
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/143.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-004/150.md
+  expected: inv:invalid-004
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/150.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-004/160.md
+  expected: inv:invalid-004
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-004/160.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-005/068.md
+  expected: inv:invalid-005
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-005/068.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-006/067.md
+  expected: inv:invalid-006
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-006/067.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-007/016.md
+  expected: inv:invalid-007
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-007/016.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-007/051.md
+  expected: inv:invalid-007
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-007/051.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-007/058.md
+  expected: inv:invalid-007
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-007/058.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-007/059.md
+  expected: inv:invalid-007
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-007/059.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-007/064.md
+  expected: inv:invalid-007
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-007/064.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-007/069.md
+  expected: inv:invalid-007
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-007/069.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-007/074.md
+  expected: inv:invalid-007
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-007/074.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-007/149.md
+  expected: inv:invalid-007
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-007/149.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-007/151.md
+  expected: inv:invalid-007
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-007/151.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-007/156.md
+  expected: inv:invalid-007
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-007/156.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-008/075.md
+  expected: inv:invalid-008
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-008/075.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-009/135.md
+  expected: inv:invalid-009
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-009/135.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-010/008.md
+  expected: inv:invalid-010
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-010/008.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+- id: dup:invalid/invalid-010/052.md
+  expected: inv:invalid-010
+  pointer:
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    path: invalid/invalid-010/052.md
+  provenance: 'judged duplicate: the judging repository groups this file in the same
+    directory as the representative (the judge''s own grouping)'
+  label_method: platform
+evaluation:
+  known_prior_recall:
+    dossier: prior_audit_and_known
+    queries: findings labelled known_prior
+    expected: the prior item in prior_ref
+    k: 5
+  false_alarm_rate:
+    dossier: prior_audit_and_known
+    queries: findings labelled unique_valid (judged paid Medium/High, unique)
+    alarm: any returned prior_art item (the matcher requires >= 2 strong identifiers)
+  duplicate_recall:
+    dossier: judged_primary
+    queries: duplicates[] entries
+    expected: the duplicate's expected judged representative
+    k: 5
+    note: 'supplementary: judged within-contest duplicate retrieval, not the plan''s
+      known-issue metric'
+counts:
+  prior_items: 10
+  findings: 78
+  accepted: 40
+  invalid: 38
+  duplicates: 85
+  known_prior: 2
+  reader_labelled: 38

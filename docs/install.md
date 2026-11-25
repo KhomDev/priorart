@@ -10,13 +10,13 @@ carried them is frozen at 0.9.0.
 cargo install priorart
 # or, if you have cargo-binstall:
 cargo binstall priorart
-priorart --version   # priorart 0.2.0
+priorart --version   # priorart 0.2.1
 ```
 
 Or straight from the release tag on GitHub:
 
 ```sh
-cargo install --git https://github.com/KhomDev/priorart --tag v0.2.0
+cargo install --git https://github.com/KhomDev/priorart --tag v0.2.1
 ```
 
 Rust 1.89 or newer (`rust-version` in `Cargo.toml`). No system dependencies: the
@@ -42,7 +42,7 @@ GitHub's workflow for this repository, that names the archive's SHA-256 and the
 commit and workflow that built it. Check it with the GitHub CLI:
 
 ```sh
-gh attestation verify priorart-v0.2.0-x86_64-unknown-linux-gnu.tar.gz --repo KhomDev/priorart
+gh attestation verify priorart-v0.2.1-x86_64-unknown-linux-gnu.tar.gz --repo KhomDev/priorart
 ```
 
 The release also carries `SHA256SUMS` and a CycloneDX software bill of materials

@@ -1,0 +1,168 @@
+# Labels for the Code4rena-judged corpus eval/benchmark/panoptic-c4/manifest.yaml.
+#
+# Store pointers and labels only; never a finding body.
+#
+# The paid findings carry the platform label unique_valid (the manifest
+# applies it). Excluded findings are labelled only on the preregistered
+# seeded sample: the 20 with the smallest sha256(seed + ':label:' + id).
+# Every other excluded finding is unlabelled and is not a known-prior query.
+#
+# label values: known_prior (the judge excluded it AND its text repeats one
+# specific prior item's claim; prior_ref names it) or invalid_unmapped (no
+# prior item reproduces its claim). Rubric as for the PoolTogether corpus.
+#
+# method: reader (one AI reader, full text, 2026-11-25). See BENCHMARK.md.
+version: 1
+schema: priorart.benchmark.labels/v1
+seed: "priorart-bench-panoptic-c4-2026-11-25"
+reader: "bench-eval (one AI reader, 2026-11-25); not ground truth, see BENCHMARK.md"
+
+findings:
+  inv:425:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/425.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:492:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/492.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:216:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/216.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:088:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/088.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:017:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/017.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:228:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/228.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:512:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/512.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:583:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/583.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:424:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/424.md: slippage checks disabled when tickLimitLow == tickLimitHigh is a code path, not the user's slippage choice in known issue 12"
+    notes: ""
+  inv:276:
+    label: known_prior
+    prior_ref: c4-2023-11:M-02
+    method: reader
+    confidence: high
+    provenance: "invalid/276.md: underflow of removedLiquidity locks other users' deposits; the finding itself cites the prior C4 report, M-02 makes the same claim"
+    notes: ""
+  inv:477:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/477.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:019:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/019.md: abi.encodePacked collision claim; prior M-05 is a birthday attack on validateCallback's address computation, a different claim"
+    notes: ""
+  inv:242:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/242.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:168:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/168.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:005:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/005.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:invalid-435:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/invalid-435/435-best.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:487:
+    label: known_prior
+    prior_ref: ki-2024-04:16
+    method: reader
+    confidence: high
+    provenance: "invalid/487.md: premium accumulator in addCapped freezes at the cap and is never reset; known issue 16 states premium accumulation can become permanently capped"
+    notes: ""
+  inv:544:
+    label: invalid_unmapped
+    method: reader
+    confidence: high
+    provenance: "invalid/544.md: read in full; no prior item or known issue makes this claim"
+    notes: ""
+  inv:422:
+    label: invalid_unmapped
+    method: reader
+    confidence: medium
+    provenance: "invalid/422.md: flash-loan manipulation of pool utilization (atomic); known issues 7/9 cover non-atomic price manipulation"
+    notes: ""
+  inv:390:
+    label: known_prior
+    prior_ref: ki-2024-04:7
+    method: reader
+    confidence: medium
+    provenance: "invalid/390.md: manipulating Uniswap observations over several blocks to bypass solvency checks; known issue 7 puts non-atomic, multi-block oracle manipulation out of scope"
+    notes: "the blind title-only reader did not map it"
+
+agreement:
+  method: "blinded second reader (a separate AI subagent) labelled the same 20 from the title and the prior-item list only, without the first reader's labels; the first reader's labels were stated before the blind result arrived"
+  sample: [inv:425, inv:492, inv:216, inv:088, inv:017, inv:228, inv:512, inv:583, inv:424, inv:276, inv:477, inv:019, inv:242, inv:168, inv:005, inv:invalid-435, inv:487, inv:544, inv:422, inv:390]
+  blind:
+    inv:425: invalid_unmapped
+    inv:492: invalid_unmapped
+    inv:216: invalid_unmapped
+    inv:088: invalid_unmapped
+    inv:017: invalid_unmapped
+    inv:228: invalid_unmapped
+    inv:512: invalid_unmapped
+    inv:583: invalid_unmapped
+    inv:424: invalid_unmapped
+    inv:276: known_prior
+    inv:477: invalid_unmapped
+    inv:019: invalid_unmapped
+    inv:242: invalid_unmapped
+    inv:168: invalid_unmapped
+    inv:005: invalid_unmapped
+    inv:invalid-435: invalid_unmapped
+    inv:487: known_prior
+    inv:544: invalid_unmapped
+    inv:422: invalid_unmapped
+    inv:390: invalid_unmapped

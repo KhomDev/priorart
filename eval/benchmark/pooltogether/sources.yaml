@@ -1,0 +1,72 @@
+# Pinned public inputs for the second priorart public benchmark corpus.
+#
+# This file is the only place that names a network endpoint. fetch.py reads it
+# with the network and writes eval/cache/benchmark/pooltogether/ (gitignored),
+# plus cache.lock.json (committed: repo, commit and sha256 of every fetched
+# file). run.py never touches the network. Nothing in this repository
+# contains a finding body: the manifest stores pointers (repo@commit + path)
+# and labels.
+#
+# Platform pair: Code4rena prior audit -> Sherlock judged contest, the same
+# pair as the Tapioca corpus. It was believed to be the only public
+# combination that publishes both judge-grouped duplicate submissions and
+# excluded findings; that was wrong (2026-11-25): Code4rena publishes its
+# judging as issue labels, see maia-c4/ and panoptic-c4/.
+# The protocol and codebase are different (PoolTogether V5).
+#
+# Ajna was tried first (C4 2023-05 + Sherlock 2023-09 judging) and rejected:
+# the Sherlock judging repository has 18 accepted findings, every one a single
+# file, and no judge-grouped duplicate submissions, so the duplicate-recall
+# measurement would have n=0. See eval/benchmark/BENCHMARK.md.
+version: 1
+# Committed sampling seed. Used for the dev/held-out split and for the
+# hand-labelled agreement sample. Never change it without a new corpus version.
+seed: "priorart-bench-pooltogether-2026-11-24"
+
+# Generator parameters. The original Tapioca corpus predates --corpus-dir and
+# keeps equivalent defaults in fetch.py; this block makes the new corpus
+# self-describing without changing any Tapioca file.
+corpus:
+  name: pooltogether-sherlock-2024-05
+  prior_item_prefix: c4-2024-03
+  known_item_prefix: ki-2024-05
+  known_issue_section: "Q: Please list any known issues/acceptable risks that should not result in a valid finding."
+
+sources:
+  # The prior audit: Code4rena's judged report for PoolTogether V5 (2024-03).
+  # Its High/Medium headings are the prior-item candidates the matcher is
+  # asked to retrieve. Stored as one pointer; fetch.py downloads the markdown.
+  - id: c4-2024-03-pooltogether-audit
+    role: prior-audit
+    kind: single
+    repo: code-423n4/2024-03-pooltogether-findings
+    commit: 87f1b837fc3af84b32433b3d82538694b490b9f9
+    path: report.md
+    terms: "public findings repository, no LICENSE file; Code4rena Terms of Service (code4rena.com/terms); pointers and labels only"
+
+  # The later contest's public README: its Q&A answers are the sponsor's
+  # known issues / acceptable risks. That is the known-issues input to the
+  # dossier. The answer is one paragraph (the Witnet RNG bridge).
+  - id: sherlock-2024-05-pooltogether-contest
+    role: known-issues
+    kind: single
+    repo: sherlock-audit/2024-05-pooltogether
+    commit: 1aa1b8c028b659585e4c7a6b9b652fb075f86db3
+    path: README.md
+    terms: "public contest repository, no LICENSE file; Sherlock Terms of Service (sherlock.xyz/terms); pointers and labels only"
+
+  # The judging artifacts: one directory per accepted finding (NNN-H / NNN-M,
+  # the *-best.md file is the representative submission; other files in the
+  # directory are the judge-grouped duplicates) and invalid/ for the findings
+  # the judge excluded, including invalid-NNN/ duplicate groups. Judge labels
+  # are the only machine-readable provenance; the judging repos do not publish
+  # the reason for an invalid.
+  - id: sherlock-2024-05-pooltogether-judging
+    role: judging
+    kind: tree
+    repo: sherlock-audit/2024-05-pooltogether-judging
+    commit: 88298eacec6f178fd0b5f9f13e4605c58aa58072
+    include:
+      - "^[0-9]{3}-[HM]/"
+      - "^invalid/"
+    terms: "public judging repository, no LICENSE file; Sherlock Terms of Service (sherlock.xyz/terms); pointers and labels only"

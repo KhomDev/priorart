@@ -1,0 +1,54 @@
+# Pinned public inputs for a priorart benchmark corpus judged on Code4rena.
+#
+# This file is the only place that names a network endpoint. fetch.py reads it
+# with the network and writes eval/cache/benchmark/maia-c4-2023-09/ (gitignored), plus
+# cache.lock.json (committed: repo, commit and sha256 of every written file).
+# run.py never touches the network. Nothing in this repository contains a
+# finding body: the manifest stores pointers and labels.
+#
+# Platform pair: Code4rena prior audit -> Code4rena judged contest. The judging
+# platform is not Sherlock. Code4rena publishes its judging as GitHub issue
+# labels on the findings repository (duplicate-N, report ids H-NN/M-NN,
+# satisfactory/unsatisfactory, downgraded by judge); fetch.py's c4-issues kind
+# maps them onto the judged layout the Sherlock corpora use. The mapping rules
+# are in fetch.py (c4_layout) and BENCHMARK.md, frozen with this corpus.
+# Selected 2026-11-25 by the criteria in BENCHMARK.md ("Third and fourth
+# corpora"), written before any measurement.
+version: 1
+seed: "priorart-bench-maia-c4-2026-11-25"
+
+corpus:
+  name: maia-c4-2023-09
+  prior_item_prefix: c4-2023-05
+  known_item_prefix: ki-2023-09
+  known_issue_section: "### Publicly Known Issues"
+  known_issue_pattern: '(?ms)^###\s*Publicly Known Issues\s*\n(.*?)(?=^#)'
+  platform: code4rena
+  url: https://code4rena.com/audits/2023-09-maia-dao-ulysses
+
+sources:
+  - id: c4-2023-05-maia-audit
+    role: prior-audit
+    kind: single
+    repo: code-423n4/2023-05-maia-findings
+    commit: fa2bd134824cd6bfcbc99ee6012885d727f04104
+    path: report.md
+    terms: "public findings repository, no LICENSE file; Code4rena Terms of Service (code4rena.com/terms); pointers and labels only"
+
+  - id: c4-2023-09-maia-contest
+    role: known-issues
+    kind: single
+    repo: code-423n4/2023-09-maia
+    commit: 1aa8a7b5b7159dd77da94229c017b0aea520386b
+    path: README.md
+    terms: "public contest repository; Code4rena Terms of Service; pointers and labels only"
+
+  # Judging: every issue of the later contest's findings repository. Issues
+  # are not in git; `commit` is the repository tip when pinned (context only),
+  # and cache.lock.json pins every generated file by sha256.
+  - id: c4-2023-09-maia-judging
+    role: judging
+    kind: c4-issues
+    repo: code-423n4/2023-09-maia-findings
+    commit: b3043c4d52ead935f236e4ea5c4d40110d1b0468
+    terms: "public findings repository issues, no LICENSE file; Code4rena Terms of Service; pointers and labels only"
