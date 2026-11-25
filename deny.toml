@@ -23,6 +23,12 @@ ignore = [
     # release without it. Listed with its reason so the exception is visible;
     # remove it when solar drops the dependency.
     { id = "RUSTSEC-2024-0436", reason = "transitive through solar-parse 0.2.0; unmaintained, no known vulnerability, no upstream fix" },
+    # RUSTSEC-2026-0387: timing variability in crypto-bigint 0.5.5 on secret
+    # integers, transitive through solar -> alloy -> k256 -> elliptic-curve;
+    # the parent requires ^0.5, so the patched 0.7 is not selectable. priorart
+    # performs no secret-key operation, so the affected paths are unreachable
+    # with secret material. Also recorded in .cargo/audit.toml.
+    { id = "RUSTSEC-2026-0387", reason = "transitive k256/elliptic-curve requires crypto-bigint ^0.5; priorart performs no secret-key operation" },
 ]
 # Deny on any advisory with a known fix. An advisory with no fix is reported but
 # does not block, because blocking on it would mean blocking on upstream.
