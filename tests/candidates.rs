@@ -372,3 +372,56 @@ fn a_prepared_corpus_from_another_pin_is_a_usage_error() {
         r.stderr
     );
 }
+
+#[test]
+fn a_repository_index_file_is_equivalent_to_a_checkout() {
+    let tmp = TempDir::new("candidates-index");
+    let index_file = tmp.join("index.json");
+    let indexed = run(&[
+        "anchors",
+        "index",
+        &repo(),
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--json",
+    ]);
+    assert_eq!(indexed.code, 0, "{}", indexed.stderr);
+    std::fs::write(&index_file, indexed.stdout.as_bytes()).expect("write index");
+
+    let direct = run(&[
+        "candidates",
+        &finding("finding-distance.md"),
+        "--corpus",
+        &corpus("corpus"),
+        "--repo",
+        &repo(),
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--json",
+    ]);
+    let from_file = run(&[
+        "candidates",
+        &finding("finding-distance.md"),
+        "--corpus",
+        &corpus("corpus"),
+        "--index",
+        index_file.to_str().unwrap(),
+        "--json",
+    ]);
+    assert_eq!(direct.code, 0, "{}", direct.stderr);
+    assert_eq!(from_file.code, 0, "{}", from_file.stderr);
+    let direct: Value = serde_json::from_str(&direct.stdout).expect("direct");
+    let from_file: Value = serde_json::from_str(&from_file.stdout).expect("index");
+    assert_eq!(
+        serde_json::to_vec(&direct["candidates"]).unwrap(),
+        serde_json::to_vec(&from_file["candidates"]).unwrap()
+    );
+    assert_eq!(
+        from_file["index"]["repositories"][0],
+        "example/candidates-fixture@0000000000000000000000000000000000000000"
+    );
+}
