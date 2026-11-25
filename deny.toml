@@ -1,8 +1,10 @@
 # cargo-deny configuration.
 #
-# The dependency graph is deliberately small: five direct crates, 49 packages
-# total. Every addition is a supply-chain decision, so the checks here are strict
-# rather than advisory.
+# The dependency graph was small until PA-B1 added `solar-parse 0.2.0` (the
+# Solidity parser): six direct crates, 322 packages total. Every addition is a
+# supply-chain decision, so the checks below stay strict; the exceptions the
+# parser forced are listed individually with a reason rather than by relaxing a
+# whole class of check.
 
 [graph]
 targets = [
@@ -15,7 +17,13 @@ targets = [
 
 [advisories]
 version = 2
-ignore = []
+ignore = [
+    # RUSTSEC-2024-0436: `paste` is unmaintained (archived, no known
+    # vulnerability). It is transitive through solar-parse 0.2.0; solar has no
+    # release without it. Listed with its reason so the exception is visible;
+    # remove it when solar drops the dependency.
+    { id = "RUSTSEC-2024-0436", reason = "transitive through solar-parse 0.2.0; unmaintained, no known vulnerability, no upstream fix" },
+]
 # Deny on any advisory with a known fix. An advisory with no fix is reported but
 # does not block, because blocking on it would mean blocking on upstream.
 yanked = "deny"
@@ -57,7 +65,14 @@ deny = [
     { name = "openssl" },
     { name = "tungstenite" },
 ]
-skip = []
+# Transitive duplicates introduced by solar-parse 0.2.0. Each pair cannot be
+# collapsed without an upstream release; the exact older versions are skipped,
+# so the exception names what it permits rather than disabling the check.
+skip = [
+    { name = "cpufeatures", version = "=0.2.17" },
+    { name = "hashbrown", version = "=0.14.5" },
+    { name = "syn", version = "=2.0.119" },
+]
 skip-tree = []
 
 [sources]
