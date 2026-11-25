@@ -1,0 +1,679 @@
+# Mechanism and impact taxonomy - the closed vocabulary for
+# `priorart taxonomy classify`.
+#
+# A finding says WHAT is wrong (a root cause), WHAT it costs (an impact) and
+# WHICH asset is involved. Programs word these three things differently
+# everywhere and mean one of about twenty root causes, five impacts and five
+# asset classes. This file is DATA: classes only, in industry-standard wording,
+# with no finding or program quoted and no program named.
+#
+# Extraction is deterministic and offline. A cue is a term or phrase matched
+# case-insensitively on word boundaries. An anti-cue is the fix-side spelling of
+# the same words ("reentrancy guard"): a cue occurrence inside an anti-cue span
+# is ignored unless the anti-cue is itself described as missing or absent. A
+# cue negated in its own clause ("no reentrancy risk", "prevents reentrancy")
+# is ignored; a second, unnegated clause still asserts the class.
+#
+# A match is a prompt to read the finding, never a verdict.
+
+version: 1
+
+root_causes:
+  - id: reentrancy
+    name: Reentrancy
+    definition: "An external call lets the callee re-enter before the effect of the first call is committed."
+    cues:
+      - reentrancy
+      - re-entrancy
+      - reentrant
+      - re-entrant
+      - re-enters
+      - re-enter
+      - cross-function reentrancy
+      - external call before the state update
+      - callback before the balance update
+    anti_cues:
+      - reentrancy guard
+      - reentrancy-guard
+      - reentrancyguard
+      - non-reentrant
+      - nonreentrant
+      - reentrancy protection
+      - protected against reentrancy
+
+  - id: rounding-precision
+    name: Rounding and precision
+    definition: "Integer division or rounding leaves dust or drifts a value away from the amount the protocol owes."
+    cues:
+      - rounding
+      - round down
+      - round up
+      - rounds down
+      - rounds up
+      - truncated
+      - truncation
+      - precision loss
+      - precision error
+      - integer division
+      - dust
+      - one wei
+    anti_cues:
+      - rounding is correct
+      - rounds correctly
+      - rounding direction is correct
+      - rounding is intentional
+      - precision loss is bounded
+      - dust is negligible
+
+  - id: oracle-staleness
+    name: Oracle staleness
+    definition: "A price or data feed is consumed without a freshness check, or the freshness bound is too loose."
+    cues:
+      - stale price
+      - price is stale
+      - stale oracle
+      - stale feed
+      - stale data
+      - staleness
+      - outdated price
+      - outdated oracle
+      - heartbeat
+      - updatedat
+      - answeredinround
+      - freshness check
+      - staleness check
+      - last update was
+    anti_cues:
+      - freshness check is present
+      - freshness check is implemented
+      - freshness check is enforced
+      - staleness check is present
+      - staleness check is enforced
+      - heartbeat check is enforced
+      - checks the updatedat
+
+  - id: oracle-manipulation
+    name: Oracle manipulation
+    definition: "A price or pool state can be pushed by an attacker within one transaction before the protocol reads it."
+    cues:
+      - oracle manipulation
+      - price manipulation
+      - manipulate the oracle
+      - manipulate the price
+      - manipulation of the price
+      - spot price
+      - twap manipulation
+      - flash loan price
+      - pump the price
+      - sandwich the oracle
+      - price can be moved
+    anti_cues:
+      - oracle manipulation is not possible
+      - price manipulation is prevented
+      - spot price is not used
+      - price manipulation is not possible
+
+  - id: access-control
+    name: Access control
+    definition: "A privileged action or piece of state is reachable without the role or check the protocol requires."
+    cues:
+      - access control
+      - access-control
+      - missing modifier
+      - onlyowner
+      - only owner modifier
+      - authorization check
+      - authorisation check
+      - unauthorized
+      - unauthorised
+      - anyone can call
+      - any user can call
+      - permissionless
+      - privilege escalation
+      - missing role check
+      - lacks authorization
+      - lacks authorisation
+      - msg.sender check
+      - caller is not checked
+    anti_cues:
+      - access control is enforced
+      - access control is present
+      - authorization check is present
+      - role check is enforced
+      - onlyowner is applied
+      - properly authorized
+      - properly authorised
+
+  - id: accounting-desync
+    name: Accounting desync
+    definition: "Stored accounting diverges from the token balances it tracks, or one stored total drifts from another."
+    cues:
+      - accounting desync
+      - accounting mismatch
+      - accounting error
+      - out of sync
+      - desynchron
+      - stale accounting
+      - balance mismatch
+      - internal accounting
+      - double counts
+      - double-count
+      - does not reflect the actual balance
+      - totalassets mismatch
+      - total supply mismatch
+      - misaccount
+    anti_cues:
+      - accounting mismatch is not possible
+      - accounting error is not possible
+      - internal accounting is correct
+      - internal accounting is consistent
+      - accounting is in sync
+
+  - id: signature-replay
+    name: Signature replay
+    definition: "A signed authorization can be used more than once, or in a context other than the one it was signed for."
+    cues:
+      - replay
+      - replayed
+      - signature reuse
+      - reused signature
+      - reused nonce
+      - nonce reuse
+      - same signature
+      - domain separator
+      - eip-712
+      - eip712
+      - cross-chain replay
+      - signature is valid twice
+      - permit can be reused
+    anti_cues:
+      - replay protection
+      - replay is prevented
+      - nonce prevents replay
+      - domain separator is enforced
+      - replay-protected
+      - nonce is enforced
+
+  - id: unchecked-return
+    name: Unchecked return
+    definition: "The return value or success flag of a call or token transfer is ignored, so a failed operation looks successful."
+    cues:
+      - unchecked return
+      - unchecked call
+      - return value is ignored
+      - ignores the return value
+      - ignores the result of the call
+      - does not check the return value
+      - fails to check the return
+      - return value is not checked
+      - without checking the success
+      - transfer returns false
+      - low-level call is not checked
+      - success flag is ignored
+      - the success of the call is ignored
+    anti_cues:
+      - return value is checked
+      - checks the return value
+      - require(success)
+      - success is checked
+      - return value is validated
+
+  - id: dos-unbounded-loop
+    name: Denial of service by unbounded loop
+    definition: "A loop or array scan has no bound the caller can control, so its gas cost can be pushed past the block limit."
+    cues:
+      - unbounded loop
+      - unbounded array
+      - unbounded iteration
+      - unbounded growth
+      - loop over all
+      - iterate over all
+      - iterates over the entire
+      - no upper bound
+      - block gas limit
+      - out of gas
+      - gas exhaustion
+      - array grows without bound
+      - gas griefing
+    anti_cues:
+      - bounded loop
+      - loop is bounded
+      - bounded array
+      - batch size is bounded
+      - uses pagination
+      - paginated
+
+  - id: frontrunning-mev
+    name: Front-running and MEV
+    definition: "Another actor can profit by placing, ordering or sandwiching transactions around a user's transaction."
+    cues:
+      - front-run
+      - front-runs
+      - front-runner
+      - front-running
+      - frontrun
+      - front run
+      - sandwich
+      - sandwiched
+      - mev
+      - back-run
+      - backrun
+      - mempool
+      - transaction ordering
+      - priority gas
+      - just-in-time liquidity
+    anti_cues:
+      - front-running is not possible
+      - commit-reveal
+      - private mempool
+      - mev protection
+      - sandwich-resistant
+      - no mempool
+
+  - id: initialisation
+    name: Initialisation
+    definition: "A constructor, initializer or one-time setup can be called twice, called by anyone, or left unset."
+    cues:
+      - uninitialized
+      - uninitialised
+      - reinitialization
+      - reinitialisation
+      - initialize function
+      - initializer
+      - not initialized
+      - initialize twice
+      - unprotected initializer
+      - public initializer
+      - front-run the deployment
+      - owner is unset
+      - constructor sets the owner to zero
+    anti_cues:
+      - initializer is protected
+      - initializer is guarded
+      - initialize is restricted
+      - initialized exactly once
+      - initializer can only be called once
+      - initializer is disabled
+
+  - id: upgrade-storage-collision
+    name: Upgrade and storage collision
+    definition: "A proxy upgrade or delegatecall layout shares a storage slot or shifts the layout the implementation expects."
+    cues:
+      - storage collision
+      - storage layout
+      - slot collision
+      - storage slot
+      - storage gap
+      - upgradeable proxy
+      - delegatecall proxy
+      - implementation slot
+      - eip-1967
+      - uups
+      - transparent proxy
+      - append-only storage
+    anti_cues:
+      - storage layout is preserved
+      - storage layout is unchanged
+      - storage gaps are reserved
+      - eip-1967 slot is used
+      - implementation slot is reserved
+
+  - id: fee-on-transfer
+    name: Fee-on-transfer token
+    definition: "The code assumes a transfer credits the full amount, which is false for tokens that take a fee in transit."
+    cues:
+      - fee-on-transfer
+      - fee on transfer
+      - fot token
+      - transfer fee
+      - tax token
+      - deflationary token
+      - received amount differs
+      - balance before and after the transfer
+      - the amount received is less
+    anti_cues:
+      - fee-on-transfer is not supported
+      - fee-on-transfer tokens are not supported
+      - no fee-on-transfer
+      - standard erc20 only
+      - does not support fee-on-transfer
+
+  - id: rebasing-token
+    name: Rebasing token
+    definition: "A token balance changes without a transfer, so any stored balance or share price computed from it drifts."
+    cues:
+      - rebasing
+      - rebase
+      - negative rebase
+      - positive rebase
+      - elastic supply
+      - balance changes without a transfer
+      - steth
+      - wsteth
+      - yield-bearing token
+      - balance increases automatically
+    anti_cues:
+      - non-rebasing
+      - rebasing is not supported
+      - rebasing tokens are not supported
+      - rebase is disabled
+      - supports rebasing tokens
+
+  - id: liquidation-logic
+    name: Liquidation logic
+    definition: "Liquidation thresholds, bonuses or partial-liquidation math allow bad debt or unfair seizure of collateral."
+    cues:
+      - liquidation
+      - liquidate
+      - liquidator
+      - liquidation threshold
+      - health factor
+      - collateral factor
+      - bad debt
+      - liquidation bonus
+      - liquidation penalty
+      - partial liquidation
+      - self-liquidation
+    anti_cues:
+      - liquidation is disabled
+      - liquidations are disabled
+      - liquidation is correctly handled
+      - liquidation logic is correct
+      - bad debt is not possible
+
+  - id: arithmetic-overflow
+    name: Arithmetic overflow
+    definition: "Arithmetic wraps, truncates through a cast, or uses a type that cannot hold the values the protocol produces."
+    cues:
+      - overflow
+      - underflow
+      - arithmetic overflow
+      - integer overflow
+      - wrap around
+      - wraps around
+      - unchecked math
+      - unchecked arithmetic
+      - downcast
+      - type cast
+      - truncates the value
+    anti_cues:
+      - overflow is not possible
+      - no overflow
+      - underflow is not possible
+      - checked arithmetic
+      - checked math
+
+  - id: delegatecall
+    name: Delegatecall
+    definition: "A delegatecall runs untrusted code, or runs trusted code against a storage layout it was not written for."
+    cues:
+      - delegatecall
+      - delegate call
+      - callcode
+      - arbitrary call
+      - untrusted target
+      - attacker-controlled target
+      - calldata is controlled
+      - storage context
+      - library call
+    anti_cues:
+      - delegatecall target is immutable
+      - delegatecall to a trusted
+      - no delegatecall
+      - delegatecall is not used
+      - target is hardcoded
+
+  - id: price-impact
+    name: Price impact and slippage
+    definition: "The protocol's own trade moves the price it executes against, or the caller's slippage bound is missing."
+    cues:
+      - price impact
+      - slippage
+      - min amount out
+      - minimum amount out
+      - amountoutminimum
+      - trade moves the price
+      - moves the price against
+      - spot price
+      - no slippage limit
+      - slippage limit
+    anti_cues:
+      - slippage protection
+      - slippage check
+      - slippage is bounded
+      - min amount out is enforced
+      - slippage limit is enforced
+      - slippage is not an issue
+
+  - id: donation-inflation
+    name: Donation and share inflation
+    definition: "An attacker donates to a vault or pool to inflate a share price or exchange rate before another user enters."
+    cues:
+      - donation attack
+      - donation to the vault
+      - donate to the vault
+      - inflation attack
+      - share inflation
+      - first depositor
+      - empty vault
+      - exchange rate manipulation
+      - inflate the share price
+      - seed the vault with one wei
+    anti_cues:
+      - virtual shares
+      - dead shares
+      - inflation attack is mitigated
+      - donation attack is mitigated
+      - inflation attack is prevented
+      - donation attack is prevented
+
+  - id: pause-freeze
+    name: Pause and freeze
+    definition: "A pause, freeze or blocklist control can stop users from exiting, or can be triggered without a bound."
+    cues:
+      - pause
+      - paused
+      - freeze
+      - frozen
+      - halt
+      - circuit breaker
+      - emergency stop
+      - blacklist
+      - blocklist
+      - cannot withdraw
+      - withdrawals are blocked
+    anti_cues:
+      - pause does not block withdrawals
+      - pause is reversible
+      - pause is time-limited
+      - can still withdraw
+      - withdrawals remain open
+
+impacts:
+  - id: fund-loss
+    name: Fund loss
+    definition: "Value leaves the protocol or a user irrecoverably, or can be taken by an attacker."
+    cues:
+      - fund loss
+      - loss of funds
+      - lose funds
+      - loses funds
+      - funds are lost
+      - funds can be stolen
+      - steal funds
+      - drain funds
+      - drain
+      - drained
+      - theft
+      - stolen
+      - permanent loss
+      - extract funds
+      - loss of user funds
+    anti_cues:
+      - no fund loss
+      - fund loss is not possible
+      - funds are safe
+      - no loss of funds
+
+  - id: freeze
+    name: Freeze
+    definition: "Funds or positions cannot be moved or withdrawn for a material period."
+    cues:
+      - freeze
+      - frozen
+      - locked forever
+      - permanently locked
+      - funds are stuck
+      - stuck funds
+      - cannot withdraw
+      - withdrawal is blocked
+      - withdrawals are blocked
+      - locked funds
+    anti_cues:
+      - funds are not frozen
+      - withdrawals remain open
+      - can still withdraw
+      - no freeze
+      - freeze is not possible
+
+  - id: dos
+    name: Denial of service
+    definition: "A function, market or protocol path cannot be used by the parties who should be able to use it."
+    cues:
+      - denial of service
+      - dos
+      - liveness
+      - outage
+      - unavailable
+      - transaction reverts
+      - blocks all
+      - halt the protocol
+      - gas griefing
+    anti_cues:
+      - denial of service is not possible
+      - no denial of service
+      - remains available
+      - no dos
+
+  - id: griefing
+    name: Griefing
+    definition: "An attacker spends value or effort to harm another user without necessarily profiting."
+    cues:
+      - griefing
+      - grief
+      - spam
+      - attacker can force
+      - without profit
+      - block another user
+      - prevent another user
+    anti_cues:
+      - griefing is not possible
+      - no griefing
+      - griefing is not profitable
+
+  - id: governance
+    name: Governance
+    definition: "Voting power, proposals or a governance-controlled parameter can be captured or manipulated."
+    cues:
+      - governance
+      - voting power
+      - quorum
+      - proposal
+      - delegate votes
+      - governance attack
+      - hijack governance
+      - veto
+    anti_cues:
+      - governance is unaffected
+      - governance is not affected
+      - no governance change
+
+assets:
+  - id: native
+    name: Native asset (ETH and wei)
+    definition: "The chain's native asset, including msg.value and wei-denominated amounts."
+    cues:
+      - native token
+      - native eth
+      - native asset
+      - ether
+      - msg.value
+      - wei
+    anti_cues:
+      - wrapped ether
+      - weth
+      - non-native
+
+  - id: erc20
+    name: ERC20 fungible token
+    definition: "A fungible token that follows the ERC20 interface."
+    cues:
+      - erc20
+      - erc-20
+      - fungible token
+      - erc20 token
+    anti_cues:
+      - non-erc20
+      - erc721
+      - erc-721
+
+  - id: erc721-erc1155
+    name: ERC721 and ERC1155 tokens
+    definition: "Non-fungible or semi-fungible tokens that follow the ERC721 or ERC1155 interfaces."
+    cues:
+      - erc721
+      - erc-721
+      - erc1155
+      - erc-1155
+      - nft
+      - non-fungible
+    anti_cues:
+      - no nft
+      - non-fungible token is not used
+
+  - id: lst-rebasing
+    name: Liquid staking and rebasing token
+    definition: "A liquid staking token or other token whose balance rebases rather than changing only on transfer."
+    cues:
+      - liquid staking token
+      - liquid staking
+      - lst
+      - steth
+      - wsteth
+      - rebasing token
+      - yield-bearing token
+    anti_cues:
+      - non-rebasing
+      - rebasing tokens are not supported
+      - no lst
+
+  - id: specific-token
+    name: Named token symbol
+    definition: "A token named by symbol in the text; only symbols written inside quotes are extracted."
+    symbols:
+      - USDC
+      - USDT
+      - DAI
+      - WETH
+      - WBTC
+      - USDS
+      - FRAX
+      - LUSD
+      - GHO
+      - PYUSD
+      - BUSD
+      - TUSD
+      - CRV
+      - AAVE
+      - UNI
+      - LINK
+      - ARB
+      - OP
+      - MATIC
+      - stETH
+      - rETH
+      - wstETH
+      - cbETH
+      - sfrxETH
+      - USDe
+      - sUSDe

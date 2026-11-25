@@ -9,7 +9,7 @@ use crate::ledger;
 use crate::matching::{DEFAULT_TOP_K, MAX_TOP_K};
 use crate::model::Dossier;
 use crate::render::{json, text};
-use crate::{init, rejections, vocab};
+use crate::{init, rejections, taxonomy, vocab};
 use clap::{CommandFactory, FromArgMatches, Parser, Subcommand};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -111,8 +111,26 @@ enum Command {
         #[command(subcommand)]
         action: AnchorsAction,
     },
+    /// Classify finding or prior-item text into the mechanism taxonomy
+    Taxonomy {
+        #[command(subcommand)]
+        action: TaxonomyAction,
+    },
     /// What the gates check, on one page
     Rules,
+}
+
+#[derive(Subcommand)]
+enum TaxonomyAction {
+    /// Extract root-cause, impact and asset classes from one or more text files
+    Classify {
+        /// UTF-8 text files to classify
+        #[arg(value_name = "FILE", required = true)]
+        files: Vec<PathBuf>,
+        /// Print priorart.taxonomy-classify/v1 JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -367,6 +385,9 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             }
         },
         Command::Anchors { action } => run_anchors(action),
+        Command::Taxonomy { action } => match action {
+            TaxonomyAction::Classify { files, json } => run_taxonomy_classify(&files, json),
+        },
         Command::Rules => {
             print!("{}", text::rules());
             Ok(ExitCode::SUCCESS)
@@ -451,6 +472,62 @@ fn repo_id_from_dir(repo: &Path) -> String {
     repo.file_name()
         .map(|n| n.to_string_lossy().to_string())
         .unwrap_or_else(|| "repository".to_string())
+}
+
+/// `priorart taxonomy classify <file>... [--json]`.
+///
+/// The extractor is pure; this handler is the only place that reads a file.
+/// A non-regular file, a non-UTF-8 file or a file over the cap is a usage
+/// error that names the reason, never a panic and never a partial result.
+fn run_taxonomy_classify(files: &[PathBuf], as_json: bool) -> Result<ExitCode, String> {
+    if files.is_empty() {
+        return Err("at least one text file is required".to_string());
+    }
+    let mut results = Vec::new();
+    for file in files {
+        let meta =
+            crate::dossier::import::require_regular_file_from(file, "text").map_err(|e| {
+                format!(
+                    "{}. Pass a UTF-8 text file with the finding.",
+                    e.trim_end_matches('.')
+                )
+            })?;
+        let refuse = |len: u64| -> Result<(), String> {
+            if len > taxonomy::MAX_TEXT_BYTES as u64 {
+                return Err(format!(
+                    "text {} is {}; priorart classifies text up to {} MiB. Quote the relevant section in a smaller file.",
+                    file.display(),
+                    crate::dossier::import::mib(len),
+                    taxonomy::MAX_TEXT_BYTES / (1024 * 1024)
+                ));
+            }
+            Ok(())
+        };
+        refuse(meta.len())?;
+        let bytes =
+            std::fs::read(file).map_err(|e| format!("cannot read text {}: {e}", file.display()))?;
+        refuse(bytes.len() as u64)?;
+        let text = String::from_utf8(bytes).map_err(|_| {
+            format!(
+                "{} is not UTF-8 text; priorart classifies UTF-8 text files only.",
+                file.display()
+            )
+        })?;
+        let mechanism = taxonomy::classify(&text);
+        results.push(taxonomy::FileClassification {
+            file: file.to_string_lossy().replace('\\', "/"),
+            text_sha256: crate::dossier::sha256::hex(text.as_bytes()),
+            text_bytes: text.len(),
+            mechanism,
+        });
+    }
+    let report = taxonomy::ClassifyReport::new(results);
+    if as_json {
+        print!("{}", json::pretty(&report)?);
+    } else {
+        print!("{}", taxonomy::render_text(&report));
+    }
+    Ok(ExitCode::SUCCESS)
 }
 
 fn run_check(
