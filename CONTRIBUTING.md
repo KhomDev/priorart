@@ -36,7 +36,7 @@ docs and the binary disagree. Both are more useful than a new feature.
 ```sh
 git clone https://github.com/KhomDev/priorart
 cd priorart
-cargo build            # Rust 1.89 or newer
+cargo build            # Rust 1.95 or newer
 cargo test --locked    # unit + integration tests, offline
 python scripts/check_links.py   # every relative doc link resolves
 ```

@@ -93,7 +93,7 @@ priorart --version
 ```
 
 No API key, no network, no data directory: the vocabularies and the rejection
-dataset are compiled into the binary. Rust 1.89 or newer.
+dataset are compiled into the binary. Rust 1.95 or newer.
 
 ## Quickstart
 

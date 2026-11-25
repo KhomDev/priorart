@@ -13,6 +13,25 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+### Added (P2)
+
+- **Code anchors.** `priorart anchors index|resolve|bench` resolves a finding's
+  cited contracts, functions, files and state variables to spans in the audited
+  repository at its pinned commit, using a `solar-parse` call graph and
+  state-variable read/write sets. Resolution is deterministic and offline;
+  unresolved citations abstain with a reason (`no-citation`, `file-missing`,
+  `not-found`, `ambiguous`, `parse-failure`, `commit-mismatch`, …). Existing
+  commands, schemas and output are unchanged.
+  On the six DEV corpora, **1296 of 1299 findings that cite code resolve to at
+  least one span (99.77%, Wilson 95% [99.32%, 99.92%])**; the command is
+  `priorart anchors bench`, reproducible offline once the pinned codebases are
+  present.
+
+### Changed (P2)
+
+- **The MSRV is now Rust 1.95** (was 1.89): `solar-parse 0.2.0` is edition 2024
+  and declares `rust-version = "1.95"`. Release binaries are unaffected.
+
 ## [0.2.2] - 2026-11-25
 
 A harness release. The matcher is byte-identical to 0.2.1: the P1-C
