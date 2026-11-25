@@ -7,31 +7,27 @@ budget. Pointers plus hashes only; the text lives in the gitignored
 
 ## Result, uncomfortable part first
 
-- **111 contests pinned; 46 labeled.** 450 paid-unique findings, 1,035 judged
-  duplicates, 523 invalid, 41 contests with at least one duplicate group.
-- **All 46 labeled contests are in train.** Validation [2025-09-01, 2026-05-01)
-  and FINAL [2026-05-01, inf) are **empty**.
-- Two independent causes, both recorded:
-  1. **No public judged repository exists in those windows.** The newest
-     `code-423n4/*-findings` repo is 2024-12 (there are 66 C4 contest repos for
-     2025-2026, but **zero have a public `-findings` repo**); the newest
-     `sherlock-audit/*-judging` repo is 2025-07. The preregistered T/T2 cut
-     slices that no public duplicate grouping fills.
-  2. **Label collection stopped at the earliest 46 of 111** before the budget
-     ran out (the API calls on this host averaged far above the 7 s floor).
-     The fetcher is resumable; the remaining 65 contests are pinned but
-     `labels_status: not-collected` and are excluded from every count.
-- The FINAL minima (>= 60 paid-unique, >= 300 duplicates) are exceeded by the
-  labeled set as a whole (450/1,035) but **not by any FINAL slice, because
-  there is none**.
+- **111 contests pinned and all 111 labeled.** 1,102 paid-unique findings,
+  3,454 judged duplicates, 780 invalid, 101 contests with at least one
+  duplicate group; report to data join **1,102/1,102**. Span
+  **2022-11-03..2024-12-10** (25 months).
+- **Under the preregistered split, validation [2025-09-01, 2026-05-01) and
+  FINAL [2026-05-01, inf) are empty.** The newest `code-423n4/*-findings` repo
+  is 2024-12 — 66 C4 contest repos for 2025-2026 exist, **none with a public
+  findings repo** — and the newest `sherlock-audit/*-judging` repo is 2025-07.
+  The preregistered T/T2 cut slices that no public duplicate grouping fills;
+  all 111 contests are train.
+- A replacement split inside the available span is computed below and
+  **reported for approval only**. No split change is committed; the
+  preregistration still says T=2025-09-01/T2=2026-05-01.
 
 ## Sources searched
 
 | Class | What was done | Result |
 |---|---|---|
-| Code4rena findings repos | Listed all 881 `code-423n4` repos; 376 are `*-findings`. Cloned 210. Parsed every `report.md` and `data/*.json`. | 2,457 H/M report sections; 111 contests selected and pinned (span 2022-11..2024-12). |
-| Code4rena duplicate labels | GitHub issue labels per contest (`duplicate-N`, `primary issue`, `selected for report`, `2 (Med Risk)`, `3 (High Risk)`, `invalid`, `out of scope`). | 46 contests labeled; grouping verified on 3 contests. |
-| Code4rena 2025-2026 | 66 contest repos (2025-01..2026-07) exist; **none has a public `-findings` repo**, so no duplicate labels. | 0 contests in validation/FINAL. |
+| Code4rena findings repos | Listed all 881 `code-423n4` repos; 376 are `*-findings`. Cloned 210. Parsed every `report.md` and `data/*.json`. | 2,457 H/M report sections; 111 contests selected and pinned. |
+| Code4rena duplicate labels | GitHub issue labels per contest (`duplicate-N`, `primary issue`, `selected for report`, `2 (Med Risk)`, `3 (High Risk)`, `invalid`, `out of scope`). | 111 contests labeled; grouping verified on 3 contests. |
+| Code4rena 2025-2026 | 66 contest repos (2025-01..2026-07) exist; **none has a public `-findings` repo**, so no duplicate labels. | 0 contests in the preregistered validation/FINAL. |
 | Sherlock judging repos | Cloned `2024-11-hats-protocol-judging`; `comments.csv` is empty, issue files carry severity only, README lists final findings. Newest judging repo is 2025-07. | Not usable for Dup-Bench grouping; 0 contests. |
 | Cantina / CodeHawks / Hats / Immunefi | Not reached for Dup-Bench (Cantina findings private; CodeHawks live Vercel-checkpointed; no bulk duplicate-label repos of this shape). | 0. |
 
@@ -53,33 +49,39 @@ carries `issueId`, `risk`, `title`, `originalIssueId`.
   `duplicates_pointing_at_qa_or_missing` for labels whose target is not an H/M
   primary.
 
-## Counts by split (labeled contests only)
+## Counts by split (preregistered T/T2)
 
 | Split | Contests | Paid-unique | Duplicates | Invalid |
 |---|---:|---:|---:|---:|
-| train (< 2025-09-01) | 46 | 450 | 1,035 | 523 |
+| train (< 2025-09-01) | 111 | 1,102 | 3,454 | 780 |
 | validation [2025-09-01, 2026-05-01) | 0 | 0 | 0 | 0 |
 | FINAL (>= 2026-05-01) | 0 | 0 | 0 | 0 |
 
-The 46 labeled contests span 2022-11-03..2023-11-21 (label collection is in
-source order, so the early contests were labeled first). The full pinned set of
-111 spans 2022-11-03..2024-12-10 (25 months).
+Date coverage: 2022-11 (1), 2023-01..2023-12 (2-7 per month), 2024-01..2024-12
+(2-11 per month); 25 months, no month after 2024-12.
 
-## Split arithmetic if the preregistration were reopened
+## Split proposal (reported, not applied)
 
-With the 46 labeled contests, a split inside their span that gives all three
-slices (computed, not applied):
+All 111 labeled contests, candidates inside the available span. Format is
+contests / paid-unique / duplicates.
 
-| T | T2 | train (c/paid/dups) | validation | FINAL |
-|---|---|---|---|---|
-| 2023-01-01 | 2023-06-01 | 1 / 33 / 0 | 13 / 94 / 190 | 32 / 323 / 845 |
-| 2023-02-01 | 2023-07-01 | 2 / 36 / 9 | 17 / 151 / 390 | 27 / 263 / 636 |
-| 2022-12-01 | 2023-04-01 | 1 / 33 / 0 | 6 / 30 / 53 | 39 / 387 / 982 |
+| T | T2 | train | validation | FINAL | FINAL meets >=60 paid and >=300 dups |
+|---|---|---|---|---:|---|
+| **2024-03-01** | **2024-09-01** | **58 / 564 / 1,237** | **36 / 380 / 1,441** | **17 / 158 / 776** | **yes** |
+| 2024-06-01 | 2024-10-01 | 78 / 792 / 2,022 | 20 / 202 / 977 | 13 / 108 / 455 | yes |
+| 2024-01-01 | 2024-07-01 | 50 / 487 / 1,156 | 33 / 338 / 955 | 28 / 277 / 1,343 | yes |
+| 2023-12-01 | 2024-06-01 | 46 / 450 / 1,035 | 32 / 342 / 987 | 33 / 310 / 1,432 | yes |
+| 2023-09-01 | 2024-03-01 | 31 / 293 / 636 | 27 / 271 / 601 | 53 / 538 / 2,217 | yes |
+| 2023-07-01 (fallback) | 2023-09-01 | 19 / 187 / 399 | 12 / 106 / 237 | 80 / 809 / 2,818 | yes |
 
-None has a usable train slice: the labeled 46 are the earliest contests and are
-dominated by 2023. Collecting the remaining 65 labels (2023-11..2024-12) is the
-prerequisite for any split with a real train and a real FINAL. That work is
-resumable with `fetch.py`; it is not claimed here.
+**Proposal:** T=2024-03-01, T2=2024-09-01. It gives a 58-contest train (564
+paid-unique, 1,237 duplicates) for PA-B4, a 36-contest validation slice for
+hyperparameters and calibration, and a sealed FINAL of 17 contests (158
+paid-unique, 776 duplicates) — both FINAL minima met with margin. The
+coordinator's fallback T=2023-07-01/T2=2023-09-01 also meets them but leaves a
+19-contest train and puts 72% of the contests in FINAL; it is the fallback, not
+the recommendation. Approval and the re-preregistration commit are the
+orchestrator's, not this corpus's.
 
 ## Sealed pairs
 
@@ -106,24 +108,24 @@ rather than proved.
 | Sherlock judging repos after 2025-07 | none exist |
 | Sherlock 2024-11 Hats Protocol | no duplicate metadata in the files (empty comments.csv) |
 | 61 contests with > 500 curated submissions in the window | excluded to bound the label-API budget (documented selection rule) |
-| 65 pinned contests without labels | `labels_status: not-collected`; not counted |
 | Wise Lending prior audit | `app.wiselending.com/omni-audit-v1.pdf` does not resolve |
 | Superposition prior audits | `fluidity-money/long.so` audits/ holds only LFS pointer stubs |
 
 ## Blockers
 
 - No public judged repository after 2024-12 (C4) / 2025-07 (Sherlock): the
-  preregistered temporal split cannot be populated.
-- Label API pace on this host: 46 contests in roughly 90 minutes of wall clock
-  (far above the 7 s-per-call floor); 100+ contests did not fit the budget.
+  preregistered temporal split cannot be populated. This is the one blocker
+  that a corpus cannot fix.
 - The collection environment lacks PyYAML, so the bulk format is documented
   JSON instead of the YAML convention.
 - Windows long paths break a full clone of some contest repositories
   (`discord-export/`); only `report.md` + `data/` are needed and were copied.
+- Labeling all 111 contests took about two hours at the 7 s-per-call floor;
+  it completed (exit 0), it did not time out.
 
 ## Verification
 
 `build_manifest.py --check` matches `manifest.json`, `labels.json` and
 `cache.lock.json`. `fetch.py --check` verifies every contest's report hash,
-data listing hash and label-page hashes offline. A random 10% re-fetch is left
-to the orchestrator.
+data listing hash and label-page hashes offline (111 pin sets). A random 10%
+re-fetch is left to the orchestrator.

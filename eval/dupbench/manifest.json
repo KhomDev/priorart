@@ -841,15 +841,15 @@
    "report_date": "2023-12-06",
    "split": "train",
    "paid_unique": 5,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 2,
+   "invalid": 3,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 5,
    "curated_jsons": 35,
-   "label_issues": 0,
+   "label_issues": 36,
    "join_report_to_data": "5/5",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 2,
+   "labels_status": "collected"
   },
   {
    "slug": "2023-07-lens",
@@ -859,15 +859,15 @@
    "report_date": "2023-12-11",
    "split": "train",
    "paid_unique": 11,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 14,
+   "invalid": 10,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 11,
    "curated_jsons": 190,
-   "label_issues": 0,
+   "label_issues": 191,
    "join_report_to_data": "11/11",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 19,
+   "labels_status": "collected"
   },
   {
    "slug": "2023-03-aragon",
@@ -877,15 +877,15 @@
    "report_date": "2023-12-12",
    "split": "train",
    "paid_unique": 4,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 2,
+   "invalid": 10,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 4,
    "curated_jsons": 188,
-   "label_issues": 0,
+   "label_issues": 193,
    "join_report_to_data": "4/4",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 2,
+   "labels_status": "collected"
   },
   {
    "slug": "2023-10-opendollar",
@@ -895,15 +895,15 @@
    "report_date": "2023-12-20",
    "split": "train",
    "paid_unique": 17,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 103,
+   "invalid": 7,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 17,
    "curated_jsons": 449,
-   "label_issues": 0,
+   "label_issues": 450,
    "join_report_to_data": "17/17",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 106,
+   "labels_status": "collected"
   },
   {
    "slug": "2023-11-shellprotocol",
@@ -914,14 +914,14 @@
    "split": "train",
    "paid_unique": 0,
    "duplicates": 0,
-   "invalid": 0,
+   "invalid": 8,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 0,
    "curated_jsons": 340,
-   "label_issues": 0,
+   "label_issues": 341,
    "join_report_to_data": "0/0",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 153,
+   "labels_status": "collected"
   },
   {
    "slug": "2023-12-initcapital",
@@ -931,15 +931,15 @@
    "report_date": "2024-01-16",
    "split": "train",
    "paid_unique": 15,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 9,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 15,
    "curated_jsons": 46,
-   "label_issues": 0,
+   "label_issues": 47,
    "join_report_to_data": "15/15",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 2,
+   "labels_status": "collected"
   },
   {
    "slug": "2023-12-particle",
@@ -949,15 +949,15 @@
    "report_date": "2024-01-26",
    "split": "train",
    "paid_unique": 19,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 24,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 19,
    "curated_jsons": 64,
-   "label_issues": 0,
+   "label_issues": 65,
    "join_report_to_data": "19/19",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 2,
+   "labels_status": "collected"
   },
   {
    "slug": "2023-09-asymmetry",
@@ -967,15 +967,15 @@
    "report_date": "2024-02-06",
    "split": "train",
    "paid_unique": 15,
-   "duplicates": 0,
+   "duplicates": 24,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 15,
    "curated_jsons": 73,
-   "label_issues": 0,
+   "label_issues": 74,
    "join_report_to_data": "15/15",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 3,
+   "labels_status": "collected"
   },
   {
    "slug": "2023-12-autonolas",
@@ -985,15 +985,15 @@
    "report_date": "2024-02-06",
    "split": "train",
    "paid_unique": 10,
-   "duplicates": 0,
+   "duplicates": 3,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 10,
    "curated_jsons": 459,
-   "label_issues": 0,
+   "label_issues": 100,
    "join_report_to_data": "10/10",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 7,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-01-canto",
@@ -1003,15 +1003,15 @@
    "report_date": "2024-02-07",
    "split": "train",
    "paid_unique": 4,
-   "duplicates": 0,
+   "duplicates": 3,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 4,
    "curated_jsons": 17,
-   "label_issues": 0,
+   "label_issues": 18,
    "join_report_to_data": "4/4",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 2,
+   "labels_status": "collected"
   },
   {
    "slug": "2023-10-badger",
@@ -1021,15 +1021,15 @@
    "report_date": "2024-02-13",
    "split": "train",
    "paid_unique": 7,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 9,
+   "invalid": 23,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 7,
    "curated_jsons": 327,
-   "label_issues": 0,
+   "label_issues": 328,
    "join_report_to_data": "7/7",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 28,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-01-init-capital-invitational",
@@ -1039,15 +1039,15 @@
    "report_date": "2024-02-22",
    "split": "train",
    "paid_unique": 7,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 9,
+   "invalid": 2,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 7,
    "curated_jsons": 39,
-   "label_issues": 0,
+   "label_issues": 40,
    "join_report_to_data": "7/7",
    "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "labels_status": "collected"
   },
   {
    "slug": "2024-01-opus",
@@ -1057,15 +1057,15 @@
    "report_date": "2024-03-08",
    "split": "train",
    "paid_unique": 13,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 14,
+   "invalid": 5,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 13,
    "curated_jsons": 241,
-   "label_issues": 0,
+   "label_issues": 242,
    "join_report_to_data": "13/13",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 31,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-02-thruster",
@@ -1075,15 +1075,15 @@
    "report_date": "2024-03-28",
    "split": "train",
    "paid_unique": 5,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 10,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 5,
    "curated_jsons": 31,
-   "label_issues": 0,
+   "label_issues": 32,
    "join_report_to_data": "5/5",
    "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "labels_status": "collected"
   },
   {
    "slug": "2024-03-pooltogether",
@@ -1093,15 +1093,15 @@
    "report_date": "2024-04-04",
    "split": "train",
    "paid_unique": 9,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 69,
+   "invalid": 9,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 9,
    "curated_jsons": 358,
-   "label_issues": 0,
+   "label_issues": 357,
    "join_report_to_data": "9/9",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 100,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-02-spectra",
@@ -1111,15 +1111,15 @@
    "report_date": "2024-04-05",
    "split": "train",
    "paid_unique": 2,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 27,
+   "invalid": 9,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 2,
    "curated_jsons": 307,
-   "label_issues": 0,
+   "label_issues": 308,
    "join_report_to_data": "2/2",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 79,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-02-hydradx",
@@ -1129,15 +1129,15 @@
    "report_date": "2024-04-10",
    "split": "train",
    "paid_unique": 11,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 26,
+   "invalid": 2,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 11,
    "curated_jsons": 204,
-   "label_issues": 0,
+   "label_issues": 205,
    "join_report_to_data": "11/11",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 33,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-02-uniswap-foundation",
@@ -1148,14 +1148,14 @@
    "split": "train",
    "paid_unique": 0,
    "duplicates": 0,
-   "invalid": 0,
+   "invalid": 14,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 0,
    "curated_jsons": 419,
-   "label_issues": 0,
+   "label_issues": 420,
    "join_report_to_data": "0/0",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 121,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-03-phala-network",
@@ -1165,15 +1165,15 @@
    "report_date": "2024-04-11",
    "split": "train",
    "paid_unique": 4,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 2,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 4,
    "curated_jsons": 98,
-   "label_issues": 0,
+   "label_issues": 99,
    "join_report_to_data": "4/4",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 13,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-01-salty",
@@ -1183,15 +1183,15 @@
    "report_date": "2024-04-19",
    "split": "train",
    "paid_unique": 37,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 371,
+   "invalid": 34,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 37,
    "curated_jsons": 1064,
-   "label_issues": 0,
+   "label_issues": 1066,
    "join_report_to_data": "37/37",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 124,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-03-gitcoin",
@@ -1201,15 +1201,15 @@
    "report_date": "2024-04-19",
    "split": "train",
    "paid_unique": 1,
-   "duplicates": 0,
+   "duplicates": 3,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 1,
    "curated_jsons": 16,
-   "label_issues": 0,
+   "label_issues": 17,
    "join_report_to_data": "1/1",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 2,
+   "labels_status": "collected"
   },
   {
    "slug": "2023-07-amphora",
@@ -1219,15 +1219,15 @@
    "report_date": "2024-04-22",
    "split": "train",
    "paid_unique": 6,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 32,
+   "invalid": 10,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 6,
    "curated_jsons": 433,
-   "label_issues": 0,
+   "label_issues": 434,
    "join_report_to_data": "6/6",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 77,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-03-ondo-finance",
@@ -1237,15 +1237,15 @@
    "report_date": "2024-04-24",
    "split": "train",
    "paid_unique": 5,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 24,
+   "invalid": 6,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 5,
    "curated_jsons": 345,
-   "label_issues": 0,
+   "label_issues": 346,
    "join_report_to_data": "5/5",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 127,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-03-neobase",
@@ -1255,15 +1255,15 @@
    "report_date": "2024-04-26",
    "split": "train",
    "paid_unique": 8,
-   "duplicates": 0,
+   "duplicates": 7,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 8,
    "curated_jsons": 24,
-   "label_issues": 0,
+   "label_issues": 25,
    "join_report_to_data": "8/8",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 1,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-03-taiko",
@@ -1273,15 +1273,15 @@
    "report_date": "2024-04-26",
    "split": "train",
    "paid_unique": 19,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 43,
+   "invalid": 11,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 19,
    "curated_jsons": 381,
-   "label_issues": 0,
+   "label_issues": 382,
    "join_report_to_data": "19/19",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 42,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-03-coinbase",
@@ -1291,15 +1291,15 @@
    "report_date": "2024-05-01",
    "split": "train",
    "paid_unique": 3,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 3,
+   "invalid": 3,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 3,
    "curated_jsons": 200,
-   "label_issues": 0,
+   "label_issues": 201,
    "join_report_to_data": "3/3",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 55,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-03-acala",
@@ -1309,15 +1309,15 @@
    "report_date": "2024-05-02",
    "split": "train",
    "paid_unique": 7,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 11,
+   "invalid": 5,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 7,
    "curated_jsons": 110,
-   "label_issues": 0,
+   "label_issues": 111,
    "join_report_to_data": "7/7",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 1,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-02-wise-lending",
@@ -1327,15 +1327,15 @@
    "report_date": "2024-05-03",
    "split": "train",
    "paid_unique": 22,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 25,
+   "invalid": 12,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 22,
    "curated_jsons": 309,
-   "label_issues": 0,
+   "label_issues": 310,
    "join_report_to_data": "22/22",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 16,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-03-abracadabra-money",
@@ -1345,15 +1345,15 @@
    "report_date": "2024-05-03",
    "split": "train",
    "paid_unique": 20,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 22,
+   "invalid": 11,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 20,
    "curated_jsons": 259,
-   "label_issues": 0,
+   "label_issues": 261,
    "join_report_to_data": "20/20",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 58,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-02-tapioca",
@@ -1363,15 +1363,15 @@
    "report_date": "2024-05-23",
    "split": "train",
    "paid_unique": 44,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 73,
+   "invalid": 4,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 44,
    "curated_jsons": 186,
-   "label_issues": 0,
+   "label_issues": 187,
    "join_report_to_data": "44/44",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 19,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-03-zksync",
@@ -1381,15 +1381,15 @@
    "report_date": "2024-05-29",
    "split": "train",
    "paid_unique": 5,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 13,
+   "invalid": 2,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 5,
    "curated_jsons": 134,
-   "label_issues": 0,
+   "label_issues": 135,
    "join_report_to_data": "5/5",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 3,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-04-lavarage",
@@ -1399,15 +1399,15 @@
    "report_date": "2024-05-29",
    "split": "train",
    "paid_unique": 7,
-   "duplicates": 0,
+   "duplicates": 10,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 7,
    "curated_jsons": 33,
-   "label_issues": 0,
+   "label_issues": 34,
    "join_report_to_data": "7/7",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 1,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-05-loop",
@@ -1417,15 +1417,15 @@
    "report_date": "2024-06-12",
    "split": "train",
    "paid_unique": 1,
-   "duplicates": 0,
+   "duplicates": 38,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 1,
    "curated_jsons": 132,
-   "label_issues": 0,
+   "label_issues": 136,
    "join_report_to_data": "1/1",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 22,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-05-arbitrum-foundation",
@@ -1435,15 +1435,15 @@
    "report_date": "2024-06-17",
    "split": "train",
    "paid_unique": 4,
-   "duplicates": 0,
+   "duplicates": 6,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 4,
    "curated_jsons": 70,
-   "label_issues": 0,
+   "label_issues": 72,
    "join_report_to_data": "4/4",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 13,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-05-bakerfi",
@@ -1453,15 +1453,15 @@
    "report_date": "2024-06-24",
    "split": "train",
    "paid_unique": 12,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 17,
+   "invalid": 3,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 12,
    "curated_jsons": 48,
-   "label_issues": 0,
+   "label_issues": 49,
    "join_report_to_data": "12/12",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 1,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-06-panoptic",
@@ -1471,15 +1471,15 @@
    "report_date": "2024-06-24",
    "split": "train",
    "paid_unique": 0,
-   "duplicates": 0,
+   "duplicates": 1,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 0,
    "curated_jsons": 49,
-   "label_issues": 0,
+   "label_issues": 51,
    "join_report_to_data": "0/0",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 2,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-03-dittoeth",
@@ -1489,15 +1489,15 @@
    "report_date": "2024-06-25",
    "split": "train",
    "paid_unique": 16,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 27,
+   "invalid": 16,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 16,
    "curated_jsons": 304,
-   "label_issues": 0,
+   "label_issues": 305,
    "join_report_to_data": "16/16",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 54,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-06-krystal-defi",
@@ -1507,15 +1507,15 @@
    "report_date": "2024-07-12",
    "split": "train",
    "paid_unique": 5,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 3,
+   "invalid": 6,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 5,
    "curated_jsons": 33,
-   "label_issues": 0,
+   "label_issues": 35,
    "join_report_to_data": "5/5",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 1,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-05-predy",
@@ -1525,15 +1525,15 @@
    "report_date": "2024-07-16",
    "split": "train",
    "paid_unique": 12,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 139,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 12,
    "curated_jsons": 308,
-   "label_issues": 0,
+   "label_issues": 310,
    "join_report_to_data": "12/12",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 103,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-04-gondi",
@@ -1543,15 +1543,15 @@
    "report_date": "2024-07-25",
    "split": "train",
    "paid_unique": 37,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 26,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 37,
    "curated_jsons": 83,
-   "label_issues": 0,
+   "label_issues": 84,
    "join_report_to_data": "37/37",
    "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "labels_status": "collected"
   },
   {
    "slug": "2024-07-dittoeth",
@@ -1561,15 +1561,15 @@
    "report_date": "2024-07-29",
    "split": "train",
    "paid_unique": 5,
-   "duplicates": 0,
+   "duplicates": 2,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 5,
    "curated_jsons": 16,
-   "label_issues": 0,
+   "label_issues": 18,
    "join_report_to_data": "5/5",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 2,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-06-badger",
@@ -1579,15 +1579,15 @@
    "report_date": "2024-08-05",
    "split": "train",
    "paid_unique": 2,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 22,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 2,
    "curated_jsons": 48,
-   "label_issues": 0,
+   "label_issues": 50,
    "join_report_to_data": "2/2",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 3,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-06-thorchain",
@@ -1597,15 +1597,15 @@
    "report_date": "2024-08-05",
    "split": "train",
    "paid_unique": 4,
-   "duplicates": 0,
+   "duplicates": 49,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 4,
    "curated_jsons": 103,
-   "label_issues": 0,
+   "label_issues": 105,
    "join_report_to_data": "4/4",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 25,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-06-vultisig",
@@ -1615,15 +1615,15 @@
    "report_date": "2024-08-05",
    "split": "train",
    "paid_unique": 6,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 87,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 6,
    "curated_jsons": 228,
-   "label_issues": 0,
+   "label_issues": 229,
    "join_report_to_data": "6/6",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 77,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-05-olas",
@@ -1633,15 +1633,15 @@
    "report_date": "2024-08-06",
    "split": "train",
    "paid_unique": 22,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 38,
+   "invalid": 2,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 22,
    "curated_jsons": 121,
-   "label_issues": 0,
+   "label_issues": 123,
    "join_report_to_data": "22/22",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 7,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-07-munchables",
@@ -1651,15 +1651,15 @@
    "report_date": "2024-08-16",
    "split": "train",
    "paid_unique": 6,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 174,
+   "invalid": 2,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 6,
    "curated_jsons": 325,
-   "label_issues": 0,
+   "label_issues": 327,
    "join_report_to_data": "6/6",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 104,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-07-optimism",
@@ -1669,15 +1669,15 @@
    "report_date": "2024-08-16",
    "split": "train",
    "paid_unique": 16,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 24,
+   "invalid": 4,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 16,
    "curated_jsons": 124,
-   "label_issues": 0,
+   "label_issues": 127,
    "join_report_to_data": "16/16",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 13,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-05-canto",
@@ -1687,15 +1687,15 @@
    "report_date": "2024-08-19",
    "split": "train",
    "paid_unique": 4,
-   "duplicates": 0,
+   "duplicates": 3,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 4,
    "curated_jsons": 35,
-   "label_issues": 0,
+   "label_issues": 36,
    "join_report_to_data": "4/4",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 9,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-07-basin",
@@ -1705,15 +1705,15 @@
    "report_date": "2024-09-03",
    "split": "train",
    "paid_unique": 4,
-   "duplicates": 0,
+   "duplicates": 48,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 4,
    "curated_jsons": 90,
-   "label_issues": 0,
+   "label_issues": 92,
    "join_report_to_data": "4/4",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 8,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-07-benddao",
@@ -1723,15 +1723,15 @@
    "report_date": "2024-09-03",
    "split": "train",
    "paid_unique": 28,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 27,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 28,
    "curated_jsons": 67,
-   "label_issues": 0,
+   "label_issues": 69,
    "join_report_to_data": "28/28",
    "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "labels_status": "collected"
   },
   {
    "slug": "2024-08-basin",
@@ -1742,14 +1742,14 @@
    "split": "train",
    "paid_unique": 1,
    "duplicates": 0,
-   "invalid": 0,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 1,
    "curated_jsons": 5,
-   "label_issues": 0,
+   "label_issues": 6,
    "join_report_to_data": "1/1",
    "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "labels_status": "collected"
   },
   {
    "slug": "2024-06-size",
@@ -1759,15 +1759,15 @@
    "report_date": "2024-09-16",
    "split": "train",
    "paid_unique": 17,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 246,
+   "invalid": 4,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 17,
    "curated_jsons": 434,
-   "label_issues": 0,
+   "label_issues": 435,
    "join_report_to_data": "17/17",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 40,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-07-reserve",
@@ -1777,15 +1777,15 @@
    "report_date": "2024-10-03",
    "split": "train",
    "paid_unique": 7,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 3,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 7,
    "curated_jsons": 117,
-   "label_issues": 0,
+   "label_issues": 119,
    "join_report_to_data": "7/7",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 15,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-07-karak",
@@ -1795,15 +1795,15 @@
    "report_date": "2024-10-07",
    "split": "train",
    "paid_unique": 9,
-   "duplicates": 0,
+   "duplicates": 23,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 9,
    "curated_jsons": 102,
-   "label_issues": 0,
+   "label_issues": 104,
    "join_report_to_data": "9/9",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 25,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-08-phi",
@@ -1813,15 +1813,15 @@
    "report_date": "2024-10-07",
    "split": "train",
    "paid_unique": 15,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 236,
+   "invalid": 4,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 15,
    "curated_jsons": 378,
-   "label_issues": 0,
+   "label_issues": 382,
    "join_report_to_data": "15/15",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 54,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-09-panoptic",
@@ -1832,14 +1832,14 @@
    "split": "train",
    "paid_unique": 0,
    "duplicates": 0,
-   "invalid": 0,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 0,
    "curated_jsons": 7,
-   "label_issues": 0,
+   "label_issues": 8,
    "join_report_to_data": "0/0",
    "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "labels_status": "collected"
   },
   {
    "slug": "2024-09-fenix-finance",
@@ -1849,15 +1849,15 @@
    "report_date": "2024-10-11",
    "split": "train",
    "paid_unique": 7,
-   "duplicates": 0,
+   "duplicates": 4,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 7,
    "curated_jsons": 20,
-   "label_issues": 0,
+   "label_issues": 21,
    "join_report_to_data": "7/7",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 1,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-08-superposition",
@@ -1867,15 +1867,15 @@
    "report_date": "2024-10-18",
    "split": "train",
    "paid_unique": 19,
-   "duplicates": 0,
-   "invalid": 0,
+   "duplicates": 100,
+   "invalid": 3,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 19,
    "curated_jsons": 173,
-   "label_issues": 0,
+   "label_issues": 175,
    "join_report_to_data": "19/19",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 14,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-08-wildcat",
@@ -1885,15 +1885,15 @@
    "report_date": "2024-10-24",
    "split": "train",
    "paid_unique": 9,
-   "duplicates": 0,
+   "duplicates": 17,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 9,
    "curated_jsons": 123,
-   "label_issues": 0,
+   "label_issues": 124,
    "join_report_to_data": "9/9",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 29,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-10-kleidi",
@@ -1903,15 +1903,15 @@
    "report_date": "2024-11-20",
    "split": "train",
    "paid_unique": 3,
-   "duplicates": 0,
+   "duplicates": 20,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 3,
    "curated_jsons": 62,
-   "label_issues": 0,
+   "label_issues": 63,
    "join_report_to_data": "3/3",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 15,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-10-ronin",
@@ -1922,14 +1922,14 @@
    "split": "train",
    "paid_unique": 0,
    "duplicates": 0,
-   "invalid": 0,
+   "invalid": 1,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 0,
    "curated_jsons": 85,
-   "label_issues": 0,
+   "label_issues": 86,
    "join_report_to_data": "0/0",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 40,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-11-ethena-labs",
@@ -1939,15 +1939,15 @@
    "report_date": "2024-12-02",
    "split": "train",
    "paid_unique": 2,
-   "duplicates": 0,
+   "duplicates": 1,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 2,
    "curated_jsons": 15,
-   "label_issues": 0,
+   "label_issues": 16,
    "join_report_to_data": "2/2",
    "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "labels_status": "collected"
   },
   {
    "slug": "2024-10-ramses-exchange",
@@ -1957,15 +1957,15 @@
    "report_date": "2024-12-03",
    "split": "train",
    "paid_unique": 2,
-   "duplicates": 0,
+   "duplicates": 3,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 2,
    "curated_jsons": 44,
-   "label_issues": 0,
+   "label_issues": 45,
    "join_report_to_data": "2/2",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 6,
+   "labels_status": "collected"
   },
   {
    "slug": "2024-10-coded-estate",
@@ -1975,15 +1975,15 @@
    "report_date": "2024-12-04",
    "split": "train",
    "paid_unique": 18,
-   "duplicates": 0,
+   "duplicates": 15,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 18,
    "curated_jsons": 46,
-   "label_issues": 0,
+   "label_issues": 47,
    "join_report_to_data": "18/18",
    "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "labels_status": "collected"
   },
   {
    "slug": "2024-09-kakarot",
@@ -1993,30 +1993,30 @@
    "report_date": "2024-12-10",
    "split": "train",
    "paid_unique": 17,
-   "duplicates": 0,
+   "duplicates": 33,
    "invalid": 0,
    "invalid_source": "issue labels in the findings repo",
    "hm_sections": 17,
    "curated_jsons": 131,
-   "label_issues": 0,
+   "label_issues": 132,
    "join_report_to_data": "17/17",
-   "duplicates_pointing_at_qa_or_missing": 0,
-   "labels_status": "not-collected"
+   "duplicates_pointing_at_qa_or_missing": 15,
+   "labels_status": "collected"
   }
  ],
  "counts": {
   "contests": 111,
-  "contests_labeled": 46,
+  "contests_labeled": 111,
   "span": [
    "2022-11-03",
    "2024-12-10"
   ],
   "by_split": {
    "train": {
-    "contests": 46,
-    "paid_unique": 450,
-    "duplicates": 1035,
-    "invalid": 523
+    "contests": 111,
+    "paid_unique": 1102,
+    "duplicates": 3454,
+    "invalid": 780
    },
    "validation": {
     "contests": 0,
@@ -2038,6 +2038,6 @@
    }
   },
   "join_report_to_data": "1102/1102",
-  "contests_with_grouping": 41
+  "contests_with_grouping": 101
  }
 }
