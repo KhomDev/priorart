@@ -28,6 +28,7 @@ pub mod matching;
 pub mod model;
 pub mod rejections;
 pub mod render;
+pub mod taxonomy;
 pub mod vocab;
 
 /// The tool name every output and error prefix uses.
