@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "schema": "priorart.dupbench.pairs/v1",
+  "note": "Sealed pairs for the alarm: a prior public audit report of the same project plus a later judged contest with public duplicate grouping. Files are pinned by sha256 in the gitignored cache; no report text is committed.",
+  "sponsors_used_before": [
+    "Party",
+    "Wildcat",
+    "PoolTogether",
+    "Tapioca",
+    "Maia",
+    "Panoptic"
+  ],
+  "pairs": [
+    {
+      "pair_id": "basin-2023",
+      "sponsor": "Basin",
+      "prior_report": {
+        "project": "Basin",
+        "file": "basin-prior-cyfrin.pdf",
+        "url": "https://basin.exchange/cyfrin-basin-audit.pdf",
+        "sha256": "fcbc731dc2408a1f49e1fe0f142a4fecd0a162feb26a783e3f2a4809b41f7c29",
+        "firm": "Cyfrin",
+        "date_note": "published before the July 2023 contest"
+      },
+      "contest": {
+        "slug": "2023-07-basin",
+        "repo": "code-423n4/2023-07-basin-findings",
+        "commit": "55abdd66057ecb372b7efb669c8c2522095bc725",
+        "report_date": "2023-10-05"
+      },
+      "codebase": {
+        "repo": "https://github.com/code-423n4/2023-07-basin",
+        "commit": "73f7133b380ea027048f0b9aaa284b14f3ce43b4",
+        "source": "c4-sponsor-snapshot"
+      },
+      "same_codebase_evidence": "the contest README lists the Cyfrin and Halborn Basin audits under 'Previous audits'",
+      "drift": "prior audit predates the contest snapshot; the prior report's commit is not stated in the README, so only the project identity is proved"
+    },
+    {
+      "pair_id": "revert-lend-2024",
+      "sponsor": "Revert Finance",
+      "prior_report": {
+        "project": "Revert Finance Vault",
+        "file": "2024-03-revert-lend-prior-HYDN_-_Revert_Finance_Vault_Audit_Report.docx.pdf",
+        "url": "https://github.com/code-423n4/2024-03-revert-lend/blob/main/audits/HYDN_-_Revert_Finance_Vault_Audit_Report.docx.pdf",
+        "sha256": "37fe72b3229ba40644bfa472d1c26a30a0d90eb4d9b36e3877e3e3a4a796cfa5",
+        "firm": "HYDN",
+        "date_note": "stored in the contest repo's audits/ directory"
+      },
+      "contest": {
+        "slug": "2024-03-revert-lend",
+        "repo": "code-423n4/2024-03-revert-lend-findings",
+        "commit": "5fd5466a646d1870367733b8c2bf352af5f9298d",
+        "report_date": "2024-05-22"
+      },
+      "codebase": {
+        "repo": "https://github.com/code-423n4/2024-03-revert-lend",
+        "commit": "62ad70e634082930aed861e153d2c1e0cc94e44e",
+        "source": "c4-sponsor-snapshot"
+      },
+      "same_codebase_evidence": "the contest repo ships the HYDN report in audits/ and the README cites it under 'Previous audits'",
+      "drift": "prior audit predates the contest snapshot; commit drift not stated in the README"
+    },
+    {
+      "pair_id": "size-2024",
+      "sponsor": "Size",
+      "prior_report": {
+        "project": "Size",
+        "file": "2024-06-size-prior-2024-03-19-LightChaserV3.md",
+        "url": "https://github.com/code-423n4/2024-06-size/blob/main/audits/2024-03-19-LightChaserV3.md",
+        "sha256": "77db9f0c37637c2f538f7835ce867050aa74504571a7c9a25b5741c23cc49a25",
+        "firm": "LightChaser (with a Solidified report alongside)",
+        "date_note": "2024-03-19"
+      },
+      "contest": {
+        "slug": "2024-06-size",
+        "repo": "code-423n4/2024-06-size-findings",
+        "commit": "d5ff2c6088cde2c98820128ef7a412375f721989",
+        "report_date": "2024-09-16"
+      },
+      "codebase": {
+        "repo": "https://github.com/code-423n4/2024-06-size",
+        "commit": "4c61f1a5d07e3a201c1990546dd8905b2d2ddf92",
+        "source": "c4-sponsor-snapshot"
+      },
+      "same_codebase_evidence": "the contest repo ships the LightChaser and Solidified reports in audits/ and the README cites them under 'Previous audits'",
+      "drift": "2024-03 audit to the 2024-06 contest snapshot; three months of drift, commit not stated"
+    },
+    {
+      "pair_id": "ethena-2024",
+      "sponsor": "Ethena Labs",
+      "prior_report": {
+        "project": "Ethena",
+        "file": "2024-11-ethena-labs-prior-Ethena_final_report_Quantstamp.pdf",
+        "url": "https://github.com/code-423n4/2024-11-ethena-labs/blob/main/audits/Ethena_final_report_Quantstamp.pdf",
+        "sha256": "471417c52cdcdd14b522f2e5008c7925b4f6992c4b48fcef4264c96854fc432d",
+        "firm": "Quantstamp",
+        "date_note": "final report in the contest repo's audits/"
+      },
+      "contest": {
+        "slug": "2024-11-ethena-labs",
+        "repo": "code-423n4/2024-11-ethena-labs-findings",
+        "commit": "94c52393ab0c2d5c901f3f5c8d02aa072a7589f9",
+        "report_date": "2024-12-02"
+      },
+      "codebase": {
+        "repo": "https://github.com/code-423n4/2024-11-ethena-labs",
+        "commit": "e93ee09b10f900bd3be385f392c80920898bf53e",
+        "source": "c4-sponsor-snapshot"
+      },
+      "same_codebase_evidence": "the contest repo ships the Quantstamp and October security-review reports in audits/ and the README cites them under 'Previous audits'",
+      "drift": "prior reports predate the November 2024 snapshot; exact commit drift not stated"
+    },
+    {
+      "pair_id": "loopfi-2024",
+      "sponsor": "LoopFi",
+      "prior_report": {
+        "project": "LoopFi",
+        "file": "loopfi-prior-july.pdf",
+        "url": "https://github.com/code-423n4/2024-10-loopfi/blob/main/LoopFi%20July%20Provisional%20Report.pdf",
+        "sha256": "93f17b2df405a2c7d5763f46951d4e217b848a2b9db3aedecf4016cea242ffa3",
+        "firm": "provisional report (firm not stated in the filename)",
+        "date_note": "July 2024"
+      },
+      "contest": {
+        "slug": "2024-10-loopfi",
+        "repo": "code-423n4/2024-10-loopfi-findings",
+        "commit": "98ee66dd1d8928b43c0ff8335595319809e6fd88",
+        "report_date": "2025-02-17"
+      },
+      "codebase": {
+        "repo": "https://github.com/code-423n4/2024-10-loopfi",
+        "commit": "d67538652ba9d5447d9c09aeb5d8d0362faeafb3",
+        "source": "c4-sponsor-snapshot"
+      },
+      "same_codebase_evidence": "the contest README cites the July provisional report under 'Previous audits' and ships it in the repo",
+      "drift": "July report to the October 2024 snapshot; commit drift not stated"
+    },
+    {
+      "pair_id": "salty-2024",
+      "sponsor": "Othernet Global / Salty",
+      "prior_report": {
+        "project": "SaltyIO",
+        "file": "salty-prior-abdk.pdf",
+        "url": "https://github.com/abdk-consulting/audits/blob/main/othernet_global_pte_ltd/ABDK_OthernetGlobalPTELTD_SaltyIO_v_2_0.pdf",
+        "sha256": "45f991b31ba732c174a659996e78449029b78fb6e542721f3cffbfa6d89c7203",
+        "firm": "ABDK",
+        "date_note": "SaltyIO v2.0 report"
+      },
+      "contest": {
+        "slug": "2024-01-salty",
+        "repo": "code-423n4/2024-01-salty-findings",
+        "commit": "124cf3d332c1d74705c294ee1827ed4afb4971ef",
+        "report_date": "2024-04-19"
+      },
+      "codebase": {
+        "repo": "https://github.com/code-423n4/2024-01-salty",
+        "commit": "01eb9e21f1d0aa7a058897914bbca9c994d314e0",
+        "source": "c4-sponsor-snapshot"
+      },
+      "same_codebase_evidence": "the contest README links the ABDK audit directory for Othernet Global PTE Ltd (the Salty sponsor) under 'Previous audits'",
+      "drift": "v2.0 report predates the January 2024 snapshot; commit drift not stated"
+    }
+  ]
+}
