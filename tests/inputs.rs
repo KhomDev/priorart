@@ -123,7 +123,7 @@ fn run_with_deadline(args: &[&str], limit: Duration) -> (support::Run, Duration)
                     let _ = s.read_to_string(&mut stderr);
                 }
                 return (
-                    Run {
+                    support::Run {
                         code: status.code().unwrap_or(-1),
                         stdout,
                         stderr,

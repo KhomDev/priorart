@@ -53,6 +53,10 @@ matcher, and the new ones say plainly that its alarm rule fires too often.
 ### Build
 
 - OSS-Fuzz local project config for the parser fuzz targets (no upstream PR).
+- **Fixed the Linux/macOS test build.** `tests/inputs.rs` constructed `Run`
+  in its Unix-only FIFO case without importing it, so CI's test and MSRV jobs
+  had failed since 0.2.0 (the crate itself was unaffected; Windows skips that
+  case). Two CLI tests now read `CARGO_PKG_VERSION` instead of a literal.
 
 ## [0.2.0] - 2026-11-22
 
