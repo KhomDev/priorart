@@ -16,6 +16,7 @@
 #![forbid(unsafe_code)]
 
 pub mod anchors;
+pub mod candidates;
 pub mod check;
 pub mod cli;
 pub mod dossier;
