@@ -1,0 +1,19 @@
+# Labels for the Code4rena-judged corpus eval/benchmark/wildcat-c4/manifest.yaml.
+#
+# Store pointers and labels only; never a finding body.
+#
+# The paid findings carry the platform label unique_valid (the manifest
+# applies it). Excluded findings are labelled only on the preregistered
+# seeded sample: the 20 with the smallest sha256(seed + ':label:' + id).
+# That sample is written after the corpus is pinned and before the frozen
+# measurement run; an empty findings map means "not labelled yet".
+#
+# label values: known_prior (the judge excluded it AND its text repeats one
+# specific prior item's claim; prior_ref names it) or invalid_unmapped (no
+# prior item reproduces its claim).
+version: 1
+schema: priorart.benchmark.labels/v1
+seed: "wildcat-c4-2026-11-25"
+reader: "not labelled yet (P1-C corpus pin)"
+
+findings: {}

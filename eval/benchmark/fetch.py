@@ -36,6 +36,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -168,7 +169,10 @@ def fetch_source(source: dict) -> dict[str, str]:
     dest = CACHE / sid
     hashes: dict[str, str] = {}
     if source["kind"] == "single":
-        data = get(f"{API}/repos/{source['repo']}/contents/{source['path']}?ref={source['commit']}")
+        # A path may contain spaces (Wildcat's `docs/Known Issues.md`); quote
+        # it, keeping the separators.
+        quoted = urllib.parse.quote(source["path"], safe="/")
+        data = get(f"{API}/repos/{source['repo']}/contents/{quoted}?ref={source['commit']}")
         if isinstance(data, list) or data.get("type") != "file":
             raise RuntimeError(f"{sid}: {source['path']} is not a file")
         raw = base64.b64decode(data["content"])

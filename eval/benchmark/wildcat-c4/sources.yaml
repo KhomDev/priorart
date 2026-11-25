@@ -1,0 +1,53 @@
+# Pinned public inputs for a priorart benchmark corpus judged on Code4rena.
+#
+# fetch.py reads this with the network and writes eval/cache/benchmark/wildcat-c4-2024-08/
+# (gitignored), plus cache.lock.json. run.py never touches the network.
+#
+# Platform pair: Code4rena prior audit -> Code4rena judged contest. Selected
+# 2026-11-25 by the criteria in BENCHMARK.md ("Third and fourth corpora"),
+# written before any measurement: Wildcat 2023-10 -> 2024-08, 9 paid findings,
+# 52 excluded groups, 46 judge-grouped duplicates, 17 prior H/M items, 55% file
+# overlap. The sponsor's known issues live in `docs/Known Issues.md`, which the
+# README's "Automated Findings / Publicly Known Issues" section incorporates by
+# reference; the doc is the known-issues source and the whole file is captured.
+#
+# Corpus pinned (fetched) 2026-11-25 for the P1-C fresh measurement. The
+# matcher must not be run on it until the matcher freeze.
+version: 1
+seed: "priorart-bench-wildcat-c4-2026-11-25"
+
+corpus:
+  name: wildcat-c4-2024-08
+  prior_item_prefix: c4-2023-10
+  known_item_prefix: ki-2024-08
+  known_issue_section: "docs/Known Issues.md"
+  known_issue_pattern: '(?ms)^(.*)$'
+  platform: code4rena
+  url: https://code4rena.com/audits/2024-08-wildcat
+
+sources:
+  - id: c4-2023-10-wildcat-audit
+    role: prior-audit
+    kind: single
+    repo: code-423n4/2023-10-wildcat-findings
+    commit: 0d8afef82271eb3a4042def79527c3dcd330c0df
+    path: report.md
+    terms: "public findings repository, no LICENSE file; Code4rena Terms of Service (code4rena.com/terms); pointers and labels only"
+
+  - id: c4-2024-08-wildcat-contest
+    role: known-issues
+    kind: single
+    repo: code-423n4/2024-08-wildcat
+    commit: 7c5d8389b2a368ce6c4fc79e50c39eac3516ea5e
+    path: docs/Known Issues.md
+    terms: "public contest repository; Code4rena Terms of Service; pointers and labels only"
+
+  # Judging: every issue of the later contest's findings repository. Issues
+  # are not in git; `commit` is the repository tip when pinned (context only),
+  # and cache.lock.json pins every generated file by sha256.
+  - id: c4-2024-08-wildcat-judging
+    role: judging
+    kind: c4-issues
+    repo: code-423n4/2024-08-wildcat-findings
+    commit: dc0352696795b2cb37e1712199b4a809e1b92646
+    terms: "public findings repository issues, no LICENSE file; Code4rena Terms of Service; pointers and labels only"

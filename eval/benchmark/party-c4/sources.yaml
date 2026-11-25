@@ -1,0 +1,54 @@
+# Pinned public inputs for a priorart benchmark corpus judged on Code4rena.
+#
+# This file is the only place that names a network endpoint. fetch.py reads it
+# with the network and writes eval/cache/benchmark/party-c4-2023-10/ (gitignored),
+# plus cache.lock.json (committed: repo, commit and sha256 of every written file).
+# run.py never touches the network. Nothing in this repository contains a
+# finding body: the manifest stores pointers and labels.
+#
+# Platform pair: Code4rena prior audit -> Code4rena judged contest. Selected
+# 2026-11-25 by the criteria in BENCHMARK.md ("Third and fourth corpora"),
+# written before any measurement: Party 2023-04 -> 2023-10, 9 paid findings,
+# 323 excluded groups, 132 judge-grouped duplicates, 20 prior H/M items, 78%
+# file overlap.
+#
+# Corpus pinned (fetched) 2026-11-25 for the P1-C fresh measurement. The
+# matcher must not be run on it until the matcher freeze.
+version: 1
+seed: "priorart-bench-party-c4-2026-11-25"
+
+corpus:
+  name: party-c4-2023-10
+  prior_item_prefix: c4-2023-04
+  known_item_prefix: ki-2023-10
+  known_issue_section: "## Automated Findings / Publicly Known Issues"
+  known_issue_pattern: '(?ms)^##\s*Automated Findings / Publicly Known Issues\s*\n(.*?)(?=^##\s|\Z)'
+  platform: code4rena
+  url: https://code4rena.com/audits/2023-10-party
+
+sources:
+  - id: c4-2023-04-party-audit
+    role: prior-audit
+    kind: single
+    repo: code-423n4/2023-04-party-findings
+    commit: 04f7ff6417d62b25d258eebf0261fef9f9df95a0
+    path: report.md
+    terms: "public findings repository, no LICENSE file; Code4rena Terms of Service (code4rena.com/terms); pointers and labels only"
+
+  - id: c4-2023-10-party-contest
+    role: known-issues
+    kind: single
+    repo: code-423n4/2023-10-party
+    commit: d2202cf30fa5d4733e2948827c4586981132c28a
+    path: README.md
+    terms: "public contest repository; Code4rena Terms of Service; pointers and labels only"
+
+  # Judging: every issue of the later contest's findings repository. Issues
+  # are not in git; `commit` is the repository tip when pinned (context only),
+  # and cache.lock.json pins every generated file by sha256.
+  - id: c4-2023-10-party-judging
+    role: judging
+    kind: c4-issues
+    repo: code-423n4/2023-10-party-findings
+    commit: 8fb21051f75830333b6a56b1becaab8807a39c9f
+    terms: "public findings repository issues, no LICENSE file; Code4rena Terms of Service; pointers and labels only"
