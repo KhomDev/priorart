@@ -175,7 +175,10 @@ LEGACY_META = {
 
 def corpus_meta() -> dict:
     meta = dict(LEGACY_META)
-    spec = yaml.safe_load((CORPUS / "sources.yaml").read_text(encoding="utf-8"))
+    path = CORPUS / "sources.yaml"
+    if not path.is_file():                     # the --self-test fixture corpus
+        return meta
+    spec = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     for key in LEGACY_META:
         if (spec.get("corpus") or {}).get(key):
             meta[key] = spec["corpus"][key]

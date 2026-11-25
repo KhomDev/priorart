@@ -6,15 +6,33 @@ it is a judged contest that published its prior audit and a later contest's
 judging on the same code. Everything is stored as pointers and labels:
 `repo@commit` plus a path or issue id, never finding text.
 
-There are two corpora on two protocols: Tapioca (Code4rena 2023-07 ->
-Sherlock 2024-02) and PoolTogether V5 (Code4rena 2024-03 -> Sherlock 2024-05).
-Both use the same platform pair because that is the only public combination
-found that publishes both judge-grouped duplicate submissions and excluded
-findings; the protocols and codebases are different.
+There are four corpora on four protocols and two judging platforms. Judged by
+Sherlock: Tapioca (Code4rena 2023-07 -> Sherlock 2024-02) and PoolTogether V5
+(Code4rena 2024-03 -> Sherlock 2024-05). Judged by Code4rena: Maia (Code4rena
+2023-05 -> Code4rena 2023-09) and Panoptic (Code4rena 2023-11 -> Code4rena
+2024-04). This page used to say the Code4rena -> Sherlock pair was the only
+public combination that publishes judge-grouped duplicates and excluded
+findings. That was wrong: Code4rena publishes its judging as labels on every
+findings-repository issue (`duplicate-N`, report ids, `unsatisfactory`,
+`downgraded by judge`), and `fetch.py`'s `c4-issues` source reads them.
+
+**Code4rena-judged corpora (2026-11-25, priorart 0.2.0 matcher, Wilson 95%):**
+
+| Corpus | False-alarm rate (paid) | Duplicate recall@5 | Known-prior |
+|---|---|---|---|
+| Maia | 8/15 = 53.3% [30.1-75.2] | 87/289 = 30.1% [25.1-35.6] | 0/1 (count) |
+| Panoptic | 6/11 = 54.5% [28.0-78.7] | 38/80 = 47.5% [36.9-58.3] | 0/3 (count) |
+| Pooled C4 (preregistered) | 14/26 = 53.8% [35.5-71.2] | 125/369 = 33.9% [29.2-38.9] | 0/4 (count) |
+
+Maia's interval and the pooled interval lie entirely above the preregistered
+30% trigger, so the "shares identifiers" warning stays off and the matcher's
+alarm rule is the thing to fix. A harness defect (the last High/Medium slice
+of the prior report carries its Low/QA sections) and its post-hoc sensitivity
+row are in `eval/benchmark/BENCHMARK.md`, "Third and fourth corpora".
 
 The committed source of truth is
 [`eval/benchmark/BENCHMARK.md`](../eval/benchmark/BENCHMARK.md) and the two
-`results.json` files. This page summarises them on 2026-11-24; if they
+`results.json` files. This page summarises them on 2026-11-25; if they
 disagree, the eval files win.
 
 **Status: 0.1.0 final, 0.1.3 re-measured, second corpus measured on 0.2.0.**

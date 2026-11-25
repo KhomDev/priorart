@@ -10,6 +10,10 @@ this release withdraws.
 
 | Claim | Command or file | Date | Status |
 |---|---|---|---|
+| Code4rena-judged corpora: FAR Maia 8/15 = 53.3% [30.1-75.2], Panoptic 6/11 = 54.5% [28.0-78.7], pooled 14/26 = 53.8% [35.5-71.2]; duplicate recall@5 Maia 87/289 = 30.1% [25.1-35.6], Panoptic 38/80 = 47.5% [36.9-58.3], pooled 125/369 = 33.9% [29.2-38.9] | `eval/benchmark/maia-c4/results.json`, `eval/benchmark/panoptic-c4/results.json`, `BENCHMARK.md` "Third and fourth corpora"; binary `06fdf195...` (0.2.0) | 2026-11-25 | validated (published) |
+| The C4 label mapping reproduces the published reports' paid findings | `fetch.py` `c4_layout` vs each later contest's `report.md`: 15/15 (Maia), 11/11 (Panoptic), same severity | 2026-11-25 | validated |
+| Known-prior label agreement on the C4 samples is 38/40 = 95.0% [83.5-98.6] | `maia-c4/labels.yaml`, `panoptic-c4/labels.yaml` agreement blocks (blinded AI second reader; for Maia the first reader saw the blind labels first) | 2026-11-25 | validated (published) |
+| Retraction: "Code4rena -> Sherlock is the only public pair with judge-grouped duplicates and excluded findings" | Code4rena issue labels, `fetch.py` `c4-issues` | 2026-11-25 | retracted |
 | Two builds of one program folder are byte-identical | `cargo test --locked`, `tests/cli.rs::build_writes_one_deterministic_dossier` | 2026-11-13 | validated |
 | `build --json` conforms to `schemas/dossier.schema.json` | `tests/cli.rs::build_json_is_valid_against_the_shipped_schema` | 2026-11-13 | validated |
 | `check --json` conforms to `schemas/check.schema.json` | `tests/cli.rs::check_json_is_valid_against_the_shipped_schema` | 2026-11-13 | validated |

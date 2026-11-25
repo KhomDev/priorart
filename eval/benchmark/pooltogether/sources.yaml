@@ -8,8 +8,10 @@
 # and labels.
 #
 # Platform pair: Code4rena prior audit -> Sherlock judged contest, the same
-# pair as the Tapioca corpus. It is the only public combination found that
-# publishes both judge-grouped duplicate submissions and excluded findings.
+# pair as the Tapioca corpus. It was believed to be the only public
+# combination that publishes both judge-grouped duplicate submissions and
+# excluded findings; that was wrong (2026-11-25): Code4rena publishes its
+# judging as issue labels, see maia-c4/ and panoptic-c4/.
 # The protocol and codebase are different (PoolTogether V5).
 #
 # Ajna was tried first (C4 2023-05 + Sherlock 2023-09 judging) and rejected:

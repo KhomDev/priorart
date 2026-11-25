@@ -13,10 +13,12 @@ pointers (repo@commit + path), labels and the generated results.
 
 A second corpus on a different protocol was added on 2026-11-24 and is
 described under "Second corpus: PoolTogether V5" below. It uses the same
-platform pair (Code4rena prior audit -> Sherlock judging) because that is the
-only public combination found that publishes both judge-grouped duplicate
-submissions and excluded findings; the protocol and codebase are new. The
-Tapioca corpus, its manifest and every number below are unchanged.
+platform pair (Code4rena prior audit -> Sherlock judging) because it was
+believed to be the only public combination that publishes both judge-grouped
+duplicate submissions and excluded findings; the protocol and codebase are new.
+(Correction, 2026-11-25: that was wrong. Code4rena publishes its judging as labels on every findings-repository issue; the third and fourth corpora below are judged on Code4rena.) Two Code4rena-judged corpora (Maia, Panoptic) were added on
+2026-11-25 under "Third and fourth corpora". The Tapioca corpus, its manifest
+and every number below are unchanged.
 
 Status: 0.1.0 FROZEN, dated 2026-11-13, measured on the shipped priorart 0.1.0
 binary, sha256
@@ -235,9 +237,9 @@ not alter it.
 The second corpus is PoolTogether V5: Code4rena audited the PrizeVault in
 2024-03 and Sherlock judged the wider V5 codebase in 2024-05. It is the same
 platform pair as Tapioca (C4 prior audit -> Sherlock judged contest) because
-that is the only public combination found that publishes both judge-grouped
-duplicate submissions and excluded findings. The protocol and codebase are
-different; the platform pair is not.
+it was believed to be the only public combination that publishes both
+judge-grouped duplicate submissions and excluded findings. (Correction, 2026-11-25: that was wrong. Code4rena publishes its judging as labels on every findings-repository issue; the third and fourth corpora below are judged on Code4rena.) The
+protocol and codebase are different; the platform pair is not.
 
 **Ajna was tried first and rejected.** The planned pair was
 `code-423n4/2023-05-ajna-findings` (25 High/Medium report headings) plus
@@ -437,6 +439,83 @@ known-prior hits as a count when n < 5. Pooled across the two Code4rena
 corpora: the summed counts with a Wilson interval, labelled pooled. The 30%
 trigger is applied to each interval and to the pooled one; a straddling
 interval keeps the warning off.
+
+**Freeze.** `run.py --split dev` wrote `freeze.json` for each corpus before
+any held-out query (commit `6bce457`): priorart 0.2.0, binary sha256
+`06fdf195989e5c6e739285047e29dc3fe873252ee567e52e16e24f3804a85783`,
+`source_dirty: false`. The full run used `--split all`, so no held-out
+remainder is left; the numbers are out-of-sample with respect to matcher
+development (no matcher change since 0.1.3).
+
+**Measurements** (0 tool errors, Wilson 95%):
+
+| Corpus | False-alarm rate (paid) | Duplicate recall@5 | Known-prior | Label agreement |
+|---|---|---|---|---|
+| Maia (C4 -> C4) | **8/15 = 53.3% [30.1-75.2]** | **87/289 = 30.1% [25.1-35.6]** | 0/1 (count) | 19/20 = 95.0% [76.4-99.1] |
+| Panoptic (C4 -> C4) | **6/11 = 54.5% [28.0-78.7]** | **38/80 = 47.5% [36.9-58.3]** | 0/3 (count) | 19/20 = 95.0% [76.4-99.1] |
+| Pooled C4 (preregistered) | **14/26 = 53.8% [35.5-71.2]** | **125/369 = 33.9% [29.2-38.9]** | 0/4 (count) | 38/40 = 95.0% [83.5-98.6] |
+| PoolTogether (C4 -> Sherlock), for comparison | 9/40 = 22.5% [12.3-37.5] | 32/85 = 37.6% [28.1-48.3] | 0/2 (count) | 35/38 |
+| Tapioca 0.1.3 (C4 -> Sherlock), for comparison | 15/60 = 25.0% [15.8-37.2] | 36/64 = 56.3% [44.1-67.7] | 0/1 (count) | 15/20 |
+
+Duplicate recall by the kind of group the duplicate belongs to: Maia paid
+groups 44/143 = 30.8% [23.8-38.8], excluded groups 43/146 = 29.5%
+[22.7-37.3]; Panoptic paid groups 13/17 = 76.5% [52.7-90.4], excluded groups
+25/63 = 39.7% [28.5-52.0].
+
+**The false alarms, inspected (reader judgment, not part of the metric).**
+Panoptic: all six alarms return prior H-02 (partial transfers and incorrect
+storage updates in the SFPM); none of the six paid findings states that claim
+(for example `acc:497-H` is `settleLongPremium` deducting premium in the wrong
+direction). Maia: the eight alarms return subsections of prior H-05 (decimal
+scaling, "Issue #2/#3"), M-10, H-31, M-27, H-27 and M-29; reading them, none of
+the paid findings restates the returned item's claim (`acc:710-M` is
+`_performFallbackCall` not refunding excess gas, which shares only the
+function family with H-27's unhandled return value).
+
+**Harness defect found by these corpora (affects all four corpora).**
+`write_dossier_a` cuts the prior report into one file per High/Medium heading,
+and the last slice runs to the end of `report.md`, so it also carries the
+report's Low/QA and gas sections. On Maia that slice (`M-44`) becomes 15
+dossier items, and one Maia alarm (`acc:564-M`) returned only such an item
+(`[L-08] Missing Event for initialize`). The measured numbers above use the
+frozen harness and stand. A post-hoc sensitivity row, not preregistered:
+without that one alarm Maia is 7/15 = 46.7% [24.8-69.9] and the pooled C4 FAR
+13/26 = 50.0% [32.1-67.9]. Panoptic's last slice (`M-05`) leaks one QA summary
+item that never appears without H-02, so Panoptic does not change. The fix
+(stop the last slice at the next top-level section) is a harness change for a
+new dated measurement of all four corpora, not for this one.
+
+**Ship decision against the preregistered 30% trigger.** Maia's interval
+[30.1, 75.2] and the pooled C4 interval [35.5, 71.2] lie entirely above 30%;
+Panoptic's [28.0, 78.7] straddles it. This is the first corpus on which the
+trigger is met, not merely not excluded: on Code4rena-judged contests with a
+large prior report, the frozen matcher returns a prior item for about half of
+the paid, unique findings. **The "shares identifiers" warning stays off**,
+retrieval-only is unchanged, and the matcher's alarm rule (any returned item at
+>= 2 strong identifiers) is the thing to fix before any warning ships.
+Why the rate is higher here than on the Sherlock corpora is not established;
+the prior dossier is larger (Maia 108 dossier items vs PoolTogether 11), and a
+larger dossier gives the >= 2-identifier rule more chances to fire.
+
+**Known-prior recall.** Four positives in the labelled samples (Maia M-04;
+Panoptic M-02, known issues 16 and 7); none returned its prior item in the top
+5. n=4 is a count, not a rate.
+
+**What these corpora do not settle.** Two protocols, one judging platform per
+corpus pair; one AI first reader with a blinded AI second reader on the
+known-prior samples only (the paid and duplicate labels are the judge's own);
+for Maia the first reader's sample labels were written after the blind labels
+were available. The excluded findings outside the seeded samples are not
+labelled, so known-prior recall covers 40 of 743 excluded findings.
+
+**Harness errata, 2026-11-25.** `fetch.py` gained the `c4-issues` source kind
+and per-corpus `known_issue_pattern`; `run.py` reads `platform`, `url` and
+`known_issue_pattern` from the corpus block with the old values as defaults.
+The Tapioca and PoolTogether manifests regenerate byte-identically and their
+`--check` runs pass. After the freeze, `corpus_meta()` was made to fall back to
+the defaults when a corpus has no `sources.yaml` (the `--self-test` fixture);
+the self-test output is identical to the pre-change harness, and no scored
+code path changed.
 
 ## Labels
 
