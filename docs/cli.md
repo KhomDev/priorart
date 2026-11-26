@@ -247,6 +247,15 @@ block has `threshold: null` and the warning stays off. A table that is not
 monotone, or whose threshold is not one of its block values, exits 2. Without
 the flag the output is unchanged.
 
+`--prose-anchors` runs a second extraction pass before a text would abstain on
+`no-anchor`: bare calls outside backticks (`rageQuit()`), a code-like name
+before `function` or `modifier` (`the batchMigrateFollows function`), and line
+references (`line 117`, `lines 12-34`, `L117-L120`) bound to the one `.sol`
+file the same text cites. The new citations go through the same resolver, so
+an unknown or ambiguous name still abstains. It applies to the finding and to
+every prior item with no anchor, including at `--prepare`. A text that already
+resolves an anchor is unchanged, and without the flag the output is unchanged.
+
 ## init
 
 Writes `program.yaml`, `scope.md`, `known-issues.md` and `audits/README.md`

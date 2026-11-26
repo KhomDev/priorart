@@ -287,12 +287,27 @@ fn read_capped(path: &Path, cap: u64, what: &str) -> Result<Vec<u8>, String> {
 /// Resolve and classify every item, producing the cache written by
 /// `priorart candidates --prepare`.
 pub fn prepare_corpus(corpus: &Corpus, index: Option<&IndexSet>) -> PreparedCorpus {
+    prepare_corpus_with(corpus, index, false)
+}
+
+/// [`prepare_corpus`], optionally resolving each item that has no PA-B1 anchor
+/// again with the prose pass ([`crate::anchors::resolve_text_with_prose`]).
+/// An item that already resolves gets exactly the anchors `prepare_corpus`
+/// gives it.
+pub fn prepare_corpus_with(
+    corpus: &Corpus,
+    index: Option<&IndexSet>,
+    prose_anchors: bool,
+) -> PreparedCorpus {
     let index = index.filter(|i| !i.repos.is_empty());
     let mut items = Vec::with_capacity(corpus.items.len());
     for item in &corpus.items {
         let anchors: Vec<Anchor> = match &item.anchors {
             Some(anchors) => anchors.clone(),
             None => match index {
+                Some(index) if prose_anchors => {
+                    crate::anchors::resolve_text_with_prose(&item.text, index).anchors
+                }
                 Some(index) => crate::anchors::resolve_text(&item.text, index).anchors,
                 None => Vec::new(),
             },

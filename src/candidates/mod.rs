@@ -38,7 +38,8 @@ pub use alarm::{
     Alarm, AlarmBlock, AlarmCalibration, AlarmReport, ALARM_CALIBRATION_SCHEMA, ALARM_WARNING,
 };
 pub use corpus::{
-    load_corpus, prepare_corpus, Corpus, CorpusItem, CorpusKind, PrepareReport, PreparedCorpus,
+    load_corpus, prepare_corpus, prepare_corpus_with, Corpus, CorpusItem, CorpusKind,
+    PrepareReport, PreparedCorpus,
 };
 pub use ranker::{Ranker, RANKER_ORDERING, RANKER_WEIGHTS_SCHEMA};
 
@@ -376,6 +377,11 @@ pub struct GenerateOptions<'a> {
     /// top candidate's ranker score, so it requires `ranker`; without a ranker
     /// the alarm reports no top score and never fires.
     pub alarm: Option<&'a Alarm>,
+    /// Before abstaining on "no anchor", resolve the finding (and every
+    /// unprepared prior item with no anchor) again with the prose pass
+    /// ([`crate::anchors::resolve_text_with_prose`]). Off by default: a text
+    /// that already resolves is unchanged either way.
+    pub prose_anchors: bool,
 }
 
 impl<'a> GenerateOptions<'a> {
@@ -387,6 +393,7 @@ impl<'a> GenerateOptions<'a> {
             exclude: BTreeSet::new(),
             ranker: None,
             alarm: None,
+            prose_anchors: false,
         }
     }
 }
@@ -452,6 +459,9 @@ pub fn generate(
 
     // The finding's own anchors and mechanism.
     let finding_anchors: AnchorSet = match index {
+        Some(index) if options.prose_anchors => {
+            crate::anchors::resolve_text_with_prose(finding_text, index)
+        }
         Some(index) => crate::anchors::resolve_text(finding_text, index),
         None => {
             let mut abstentions = Vec::new();
@@ -494,6 +504,9 @@ pub fn generate(
         let anchors = match &item.anchors {
             Some(anchors) => anchors.clone(),
             None => match index {
+                Some(index) if options.prose_anchors => {
+                    crate::anchors::resolve_text_with_prose(&item.text, index).anchors
+                }
                 Some(index) => crate::anchors::resolve_text(&item.text, index).anchors,
                 None => Vec::new(),
             },

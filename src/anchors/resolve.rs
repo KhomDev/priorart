@@ -18,7 +18,13 @@ use std::collections::BTreeSet;
 
 /// Resolve every citation in `text` against `index`.
 pub fn resolve_text(text: &str, index: &IndexSet) -> AnchorSet {
-    let citations = citations(text);
+    resolve_citations(citations(text), index)
+}
+
+/// Resolve an already-extracted citation list (sorted and deduplicated by the
+/// caller) against `index`. [`resolve_text`] is this over
+/// [`citations`]`(text)`; the prose pass adds its own citations first.
+pub(crate) fn resolve_citations(citations: Vec<Citation>, index: &IndexSet) -> AnchorSet {
     if citations.is_empty() {
         return AnchorSet {
             schema: ANCHORS_SCHEMA.to_string(),

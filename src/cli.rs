@@ -155,6 +155,11 @@ enum Command {
         /// calibration table (JSON); requires --ranker
         #[arg(long, value_name = "FILE")]
         alarm: Option<PathBuf>,
+        /// Before abstaining on "no anchor", also read bare calls (`name()`),
+        /// `name function` phrases and line references from the prose; applies
+        /// to the finding and to prior items (including --prepare)
+        #[arg(long)]
+        prose_anchors: bool,
         /// Print priorart.candidates/v1 JSON
         #[arg(long)]
         json: bool,
@@ -443,6 +448,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             exclude,
             ranker,
             alarm,
+            prose_anchors,
             json,
         } => run_candidates(
             finding.as_deref(),
@@ -456,6 +462,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             &exclude,
             ranker.as_deref(),
             alarm.as_deref(),
+            prose_anchors,
             json,
         ),
         Command::Rules => {
@@ -620,6 +627,7 @@ fn run_candidates(
     exclude: &[String],
     ranker_path: Option<&Path>,
     alarm_path: Option<&Path>,
+    prose_anchors: bool,
     as_json: bool,
 ) -> Result<ExitCode, String> {
     if top_k == 0 || top_k > candidates::MAX_TOP_K {
@@ -664,7 +672,7 @@ fn run_candidates(
         if alarm.is_some() {
             return Err("--alarm applies to a finding run, not --prepare.".to_string());
         }
-        let prepared = candidates::prepare_corpus(&corpus, index_set.as_ref());
+        let prepared = candidates::prepare_corpus_with(&corpus, index_set.as_ref(), prose_anchors);
         let with_anchors = prepared
             .items
             .iter()
@@ -745,6 +753,7 @@ fn run_candidates(
     options.exclude = exclude.iter().cloned().collect();
     options.ranker = ranker.as_ref();
     options.alarm = alarm.as_ref();
+    options.prose_anchors = prose_anchors;
     let report = candidates::generate(&finding_text, finding, &corpus, &options);
     if as_json {
         print!("{}", json::pretty(&report)?);

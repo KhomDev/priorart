@@ -1034,3 +1034,151 @@ fn the_alarm_run_is_byte_identical_twice() {
     assert_eq!(a.code, 0, "{}", a.stderr);
     assert_eq!(a.stdout, b.stdout);
 }
+
+// --- F5 prose anchors ------------------------------------------------------------
+
+fn prose_run(finding_name: &str, extra: &[&str]) -> support::Run {
+    let finding_path = format!("tests/fixtures/candidates/findings/{finding_name}");
+    let mut args = vec![
+        "candidates",
+        finding_path.as_str(),
+        "--corpus",
+        "tests/fixtures/candidates/corpus",
+        "--repo",
+        "tests/fixtures/candidates-repo",
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--json",
+    ];
+    args.extend_from_slice(extra);
+    run(&args)
+}
+
+#[test]
+fn a_prose_only_finding_abstains_by_default_and_resolves_with_prose_anchors() {
+    // finding-prose.md names `deposit()` without backticks: PA-B1 sees no
+    // citation, so the default run abstains on no-anchor; the prose pass reads
+    // the bare call, resolves it to Ledger.deposit and admits prior-deposit.
+    let off = prose_run("finding-prose.md", &[]);
+    assert_eq!(off.code, 0, "{}", off.stderr);
+    let off: Value = serde_json::from_str(&off.stdout).unwrap();
+    assert_eq!(off["abstention"]["reason"], "no-anchor");
+
+    let on = prose_run("finding-prose.md", &["--prose-anchors"]);
+    assert_eq!(on.code, 0, "{}", on.stderr);
+    let on: Value = serde_json::from_str(&on.stdout).unwrap();
+    assert_eq!(on["abstention"], Value::Null, "{on}");
+    assert_eq!(on["anchors"]["functions"], 1);
+    let ids: Vec<&str> = on["candidates"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|c| c["prior_id"].as_str().unwrap())
+        .collect();
+    assert!(ids.contains(&"prior-deposit"), "{ids:?}");
+}
+
+#[test]
+fn prose_anchors_leave_every_anchored_or_code_free_finding_byte_identical() {
+    // The prose pass runs only before a no-anchor abstention: a finding that
+    // resolves with PA-B1, or that has no prose anchor either, is unchanged.
+    for name in [
+        "finding-shared-function.md",
+        "finding-shared-state.md",
+        "finding-distance.md",
+        "finding-mechanism.md",
+        "finding-no-code.md",
+        "finding-no-mechanism.md",
+        "finding-vocabulary.md",
+    ] {
+        let off = prose_run(name, &[]);
+        let on = prose_run(name, &["--prose-anchors"]);
+        assert_eq!(off.code, 0, "{}", off.stderr);
+        assert_eq!(off.stdout, on.stdout, "{name}");
+    }
+}
+
+#[test]
+fn the_default_output_does_not_depend_on_the_prose_pass() {
+    // Without --prose-anchors the golden captured before F5 still matches.
+    let r = prose_run("finding-shared-function.md", &[]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let golden = std::fs::read_to_string(
+        manifest_dir().join("tests/fixtures/candidates/golden/candidates-default.json"),
+    )
+    .expect("golden");
+    let strip = |text: &str| {
+        text.lines()
+            .filter(|line| !line.contains("\"tool_version\""))
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+    assert_eq!(strip(&r.stdout), strip(&golden));
+}
+
+#[test]
+fn prose_anchors_apply_to_prepared_prior_items() {
+    // A prior item written only in prose gets its anchor at --prepare time
+    // when the flag is passed, and the finding then shares its function.
+    let tmp = TempDir::new("prose-prepare");
+    tmp.write(
+        "corpus/prior-prose.md",
+        "# Prior in prose\n\nA second deposit() in the same block is counted twice.\n",
+    );
+    let corpus_dir = tmp.join("corpus");
+    let prepared = tmp.join("prepared.json");
+    for (flag, expect_hit) in [(false, false), (true, true)] {
+        let mut args = vec![
+            "candidates",
+            "--corpus",
+            corpus_dir.to_str().unwrap(),
+            "--repo",
+            "tests/fixtures/candidates-repo",
+            "--repo-id",
+            "example/candidates-fixture",
+            "--commit",
+            "0000000000000000000000000000000000000000",
+            "--prepare",
+            prepared.to_str().unwrap(),
+            "--json",
+        ];
+        if flag {
+            args.push("--prose-anchors");
+        }
+        let r = run(&args);
+        assert_eq!(r.code, 0, "{}", r.stderr);
+        let report: Value = serde_json::from_str(&r.stdout).unwrap();
+        assert_eq!(report["anchors"], if flag { 1 } else { 0 }, "{report}");
+        let q = run(&[
+            "candidates",
+            "tests/fixtures/candidates/findings/finding-shared-function.md",
+            "--corpus",
+            prepared.to_str().unwrap(),
+            "--repo",
+            "tests/fixtures/candidates-repo",
+            "--repo-id",
+            "example/candidates-fixture",
+            "--commit",
+            "0000000000000000000000000000000000000000",
+            "--json",
+        ]);
+        assert_eq!(q.code, 0, "{}", q.stderr);
+        let q: Value = serde_json::from_str(&q.stdout).unwrap();
+        let hit = q["candidates"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|c| c["prior_id"] == "prior-prose");
+        assert_eq!(hit, expect_hit, "flag={flag}: {q}");
+    }
+}
+
+#[test]
+fn the_prose_run_is_byte_identical_twice() {
+    let a = prose_run("finding-prose.md", &["--prose-anchors"]);
+    let b = prose_run("finding-prose.md", &["--prose-anchors"]);
+    assert_eq!(a.code, 0, "{}", a.stderr);
+    assert_eq!(a.stdout, b.stdout);
+}
