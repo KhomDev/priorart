@@ -20,9 +20,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import sys
+import urllib.request
 import time
 import pathlib
 
@@ -97,6 +99,31 @@ def fetch(slug: str, repo: str, commit: str) -> None:
         page += 1
 
 
+def verify_codebases() -> list[str]:
+    errs = []
+    p = HERE / "codebases.json"
+    if not p.is_file():
+        return ["missing codebases.json"]
+    doc = json.loads(p.read_text(encoding="utf-8"))
+    for slug, e in doc.get("codebases", {}).items():
+        if e.get("status") not in ("repo+commit", "repo-only", "missing"):
+            errs.append(f"codebase {slug}: bad status")
+        if e.get("status") == "repo+commit" and not re.fullmatch(r"[0-9a-f]{40}", e.get("commit") or ""):
+            errs.append(f"codebase {slug}: bad commit")
+        if e.get("status") == "repo-only" and e.get("commit"):
+            errs.append(f"codebase {slug}: repo-only carries a commit")
+        if e.get("status") == "missing" and not e.get("reason"):
+            errs.append(f"codebase {slug}: missing without a reason")
+        r = e.get("readme") or {}
+        if r.get("sha256"):
+            rp = CACHE / r.get("file", "")
+            if not rp.is_file() or sha(rp) != r["sha256"]:
+                errs.append(f"codebase {slug}: README pin")
+    if len(doc.get("codebases", {})) != 111:
+        errs.append("codebases.json does not hold 111 entries")
+    return errs
+
+
 def verify(lock: dict) -> list[str]:
     errs = []
     for slug, c in lock["contests"].items():
@@ -121,7 +148,20 @@ def main(argv: list[str]) -> int:
     if not args.check:
         for slug, c in lock["contests"].items():
             fetch(slug, c["repo"], c["commit"])
-    errs = verify(lock)
+        cb = json.loads((HERE / "codebases.json").read_text(encoding="utf-8"))
+        for slug, e in cb.get("codebases", {}).items():
+            r = e.get("readme") or {}
+            rp = CACHE / r.get("file", "")
+            if r.get("sha256") and (not rp.is_file() or sha(rp) != r["sha256"]):
+                rp.parent.mkdir(parents=True, exist_ok=True)
+                req = urllib.request.Request(r["raw_url"], headers={"User-Agent": UA})
+                with urllib.request.urlopen(req, timeout=60) as resp:
+                    data = resp.read()
+                if hashlib.sha256(data).hexdigest() != r["sha256"]:
+                    raise SystemExit(f"{slug}: README sha mismatch")
+                rp.write_bytes(data)
+                print(f"readme: {slug}")
+    errs = verify(lock) + verify_codebases()
     if errs:
         print(f"{len(errs)} pin error(s):", file=sys.stderr)
         for e in errs[:30]:
