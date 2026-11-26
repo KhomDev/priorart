@@ -1,0 +1,226 @@
+{
+  "schema": "priorart.candidates/v1",
+  "tool_version": "0.2.2",
+  "finding": {
+    "path": "tests/fixtures/candidates/findings/finding-shared-function.md",
+    "text_sha256": "762fad002c9d4cacc20591a34943f0df27d49d5ebc6187a313679321c6d03209",
+    "text_bytes": 126
+  },
+  "corpus": {
+    "kind": "directory",
+    "path": "tests/fixtures/candidates/corpus",
+    "items": 6,
+    "prepared": false,
+    "repositories": []
+  },
+  "index": {
+    "supplied": true,
+    "repositories": [
+      "example/candidates-fixture@0000000000000000000000000000000000000000"
+    ]
+  },
+  "anchors": {
+    "cites_code": true,
+    "resolved": 4,
+    "functions": 1,
+    "state_variables": 2,
+    "contracts": [
+      "Ledger"
+    ],
+    "abstentions": {
+      "not-found": 1
+    }
+  },
+  "mechanism": {
+    "root_causes": [],
+    "impacts": [],
+    "abstain_reason": "no-mechanism"
+  },
+  "abstention": null,
+  "candidates": [
+    {
+      "prior_id": "prior-deposit",
+      "prior_title": null,
+      "reasons": [
+        {
+          "rule": "shared-function",
+          "anchors": [
+            "Ledger.deposit"
+          ],
+          "distance": null,
+          "finding_functions": [],
+          "prior_functions": [],
+          "root_causes": [],
+          "contracts": []
+        },
+        {
+          "rule": "shared-state",
+          "anchors": [
+            "Ledger.balances",
+            "Ledger.totalAssets"
+          ],
+          "distance": null,
+          "finding_functions": [],
+          "prior_functions": [],
+          "root_causes": [],
+          "contracts": []
+        }
+      ],
+      "features": {
+        "anchor_function_overlap": {
+          "shared": [
+            "Ledger.deposit"
+          ],
+          "finding": 1,
+          "prior": 1,
+          "ratio": 1.0
+        },
+        "anchor_state_overlap": {
+          "shared": [
+            "Ledger.balances",
+            "Ledger.totalAssets"
+          ],
+          "finding": 2,
+          "prior": 2,
+          "ratio": 1.0
+        },
+        "call_graph_distance": 0,
+        "mechanism_match": {
+          "shared_root_causes": [],
+          "same_contract": true,
+          "contracts": [
+            "Ledger"
+          ]
+        },
+        "impact_match": {
+          "shared_impacts": []
+        },
+        "identifier_score": {
+          "ranked": true,
+          "specific_symbols": 2,
+          "shared_symbols": 3,
+          "rarity": 6,
+          "shared": [
+            "depositledger",
+            "ledger.deposit",
+            "totalassets"
+          ]
+        }
+      }
+    },
+    {
+      "prior_id": "prior-leaf",
+      "prior_title": null,
+      "reasons": [
+        {
+          "rule": "shared-state",
+          "anchors": [
+            "Ledger.totalAssets"
+          ],
+          "distance": null,
+          "finding_functions": [],
+          "prior_functions": [],
+          "root_causes": [],
+          "contracts": []
+        }
+      ],
+      "features": {
+        "anchor_function_overlap": {
+          "shared": [],
+          "finding": 1,
+          "prior": 1,
+          "ratio": 0.0
+        },
+        "anchor_state_overlap": {
+          "shared": [
+            "Ledger.totalAssets"
+          ],
+          "finding": 2,
+          "prior": 1,
+          "ratio": 0.5
+        },
+        "call_graph_distance": null,
+        "mechanism_match": {
+          "shared_root_causes": [],
+          "same_contract": true,
+          "contracts": [
+            "Ledger"
+          ]
+        },
+        "impact_match": {
+          "shared_impacts": []
+        },
+        "identifier_score": {
+          "ranked": false,
+          "specific_symbols": 0,
+          "shared_symbols": 0,
+          "rarity": 0,
+          "shared": []
+        }
+      }
+    },
+    {
+      "prior_id": "prior-total-assets",
+      "prior_title": null,
+      "reasons": [
+        {
+          "rule": "shared-state",
+          "anchors": [
+            "Ledger.totalAssets"
+          ],
+          "distance": null,
+          "finding_functions": [],
+          "prior_functions": [],
+          "root_causes": [],
+          "contracts": []
+        }
+      ],
+      "features": {
+        "anchor_function_overlap": {
+          "shared": [],
+          "finding": 1,
+          "prior": 0,
+          "ratio": 0.0
+        },
+        "anchor_state_overlap": {
+          "shared": [
+            "Ledger.totalAssets"
+          ],
+          "finding": 2,
+          "prior": 1,
+          "ratio": 0.5
+        },
+        "call_graph_distance": null,
+        "mechanism_match": {
+          "shared_root_causes": [],
+          "same_contract": true,
+          "contracts": [
+            "Ledger"
+          ]
+        },
+        "impact_match": {
+          "shared_impacts": []
+        },
+        "identifier_score": {
+          "ranked": false,
+          "specific_symbols": 0,
+          "shared_symbols": 0,
+          "rarity": 0,
+          "shared": []
+        }
+      }
+    }
+  ],
+  "ordering": [
+    "anchor overlap total (function shared + state shared) descending",
+    "call-graph distance ascending, no distance last",
+    "shared root-cause count descending",
+    "identifier specific-symbol count descending, then rarity descending",
+    "prior item id ascending, byte order"
+  ],
+  "limits": {
+    "top_k": 20,
+    "max_candidate_distance": 2,
+    "excluded": 0
+  }
+}

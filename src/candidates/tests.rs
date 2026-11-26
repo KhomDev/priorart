@@ -651,3 +651,162 @@ fn the_ordering_array_is_the_documented_key() {
     assert!(ORDERING[0].starts_with("anchor overlap total"));
     assert!(ORDERING[4].starts_with("prior item id"));
 }
+
+// --- PA-B4 ranker inference -------------------------------------------------
+
+use super::ranker::{Ranker, RankerFeature, RankerWeights, RANKER_FEATURE_NAMES};
+
+fn ranker_candidate(distance: Option<u32>) -> Candidate {
+    Candidate {
+        prior_id: "prior-x".to_string(),
+        prior_title: None,
+        reasons: Vec::new(),
+        features: Features {
+            anchor_function_overlap: Overlap {
+                shared: vec!["Ledger.entry".to_string()],
+                finding: 1,
+                prior: 1,
+                ratio: Some(1.0),
+            },
+            anchor_state_overlap: Overlap {
+                shared: vec!["Ledger.s1".to_string(), "Ledger.s2".to_string()],
+                finding: 2,
+                prior: 2,
+                ratio: Some(1.0),
+            },
+            call_graph_distance: distance,
+            mechanism_match: MechanismMatch {
+                shared_root_causes: vec!["rounding-precision".to_string()],
+                same_contract: true,
+                contracts: vec!["Ledger".to_string()],
+            },
+            impact_match: ImpactMatch {
+                shared_impacts: Vec::new(),
+            },
+            identifier_score: IdentifierScore {
+                ranked: false,
+                specific_symbols: 0,
+                shared_symbols: 0,
+                rarity: 0,
+                shared: Vec::new(),
+            },
+        },
+        ranker_score: None,
+    }
+}
+
+fn fixture_weights() -> RankerWeights {
+    // The same hand-checkable arithmetic as the committed JSON fixture: a
+    // non-unit mean and scale (function overlap: mean 2.0, scale 0.5; distance:
+    // mean 1.0, scale 0.5), so a scorer that drops the mean or the scale
+    // cannot pass. This hand-built candidate's rarity is zero, so its log1p
+    // transform is a no-op here; the JSON fixture exercises it with a nonzero
+    // value.
+    let coefficients: BTreeMap<&str, f64> = BTreeMap::from([
+        ("anchor_function_overlap.shared", -0.5),
+        ("call_graph_distance", -0.25),
+        ("call_graph_distance_missing", 3.0),
+        ("mechanism_match.shared_root_causes", 1.0),
+        ("identifier_score.rarity", 0.5),
+    ]);
+    let features = RANKER_FEATURE_NAMES
+        .iter()
+        .map(|name| {
+            let (mean, scale) = match *name {
+                "anchor_function_overlap.shared" => (2.0, 0.5),
+                "call_graph_distance" => (1.0, 0.5),
+                _ => (0.0, 1.0),
+            };
+            let transform = if *name == "identifier_score.rarity" {
+                "log1p"
+            } else {
+                "identity"
+            };
+            RankerFeature {
+                name: (*name).to_string(),
+                kind: None,
+                transform: transform.to_string(),
+                missing_value: if name.ends_with(".ratio") {
+                    Some(0.0)
+                } else if *name == "call_graph_distance" {
+                    Some(3.0)
+                } else {
+                    None
+                },
+                mean,
+                scale,
+                coefficient: coefficients.get(name).copied().unwrap_or(0.0),
+            }
+        })
+        .collect();
+    RankerWeights {
+        schema: RANKER_WEIGHTS_SCHEMA.to_string(),
+        version: 1,
+        seed: 1,
+        code_commit: None,
+        features,
+        intercept: 0.0,
+    }
+}
+
+#[test]
+fn ranker_scores_a_hand_built_candidate_exactly() {
+    let ranker = Ranker::from_weights(fixture_weights()).expect("fixture weights validate");
+    // z = -0.5*(1-2)/0.5 (function shared, mean 2 scale 0.5)
+    //     + -0.25*(0-1)/0.5 (distance 0, mean 1 scale 0.5)
+    //     + 3*0 (not missing) + 1*1 (shared root cause) = 2.5.
+    let scored = ranker.score(&ranker_candidate(Some(0)));
+    assert!(
+        (scored - 0.9241418199787566).abs() < 1e-12,
+        "scored {scored}"
+    );
+    // A null distance uses missing_value 3.0 and sets the indicator:
+    // z = 1 - 0.25*(3-1)/0.5 + 3 + 1 = 1 - 1 + 3 + 1 = 4.0.
+    let null_distance = ranker.score(&ranker_candidate(None));
+    assert!(
+        (null_distance - 0.9820137900379085).abs() < 1e-12,
+        "scored {null_distance}"
+    );
+}
+
+#[test]
+fn ranker_validate_rejects_a_missing_feature() {
+    let mut weights = fixture_weights();
+    weights
+        .features
+        .retain(|feature| feature.name != "identifier_score.rarity");
+    let error = weights.validate().expect_err("missing feature is rejected");
+    assert!(
+        error.contains("identifier_score.rarity") && error.contains("missing"),
+        "{error}"
+    );
+}
+
+#[test]
+fn ranker_validate_rejects_unknown_and_duplicate_features() {
+    let mut unknown = fixture_weights();
+    unknown.features[0].name = "anchor_function_overlap.bogus".to_string();
+    let error = unknown.validate().expect_err("unknown feature is rejected");
+    assert!(error.contains("unknown feature"), "{error}");
+
+    let mut duplicate = fixture_weights();
+    duplicate.features[1].name = duplicate.features[0].name.clone();
+    let error = duplicate
+        .validate()
+        .expect_err("duplicate feature is rejected");
+    assert!(error.contains("more than once"), "{error}");
+}
+
+#[test]
+fn ranker_validate_requires_the_missingness_rule() {
+    let mut weights = fixture_weights();
+    for feature in &mut weights.features {
+        if feature.name == "call_graph_distance" {
+            feature.missing_value = None;
+        }
+    }
+    let error = weights
+        .validate()
+        .expect_err("null without a rule is rejected");
+    assert!(error.contains("missing_value"), "{error}");
+}

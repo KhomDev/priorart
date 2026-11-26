@@ -358,7 +358,7 @@ measure code-anchored duplicate detection on a temporally sealed split:
   the same-codebase evidence is the sponsor's "Previous audits" statement and
   the drift is declared per pair.
 
-Two P2 measurements exist, and neither is a duplicate-detector number:
+Two earlier P2 measurements exist, and neither is a duplicate-detector number:
 
 - **Code anchors** (`priorart anchors bench`): on the six DEV corpora,
   **1,296 of 1,299 findings that cite code resolve to at least one span
@@ -368,8 +368,23 @@ Two P2 measurements exist, and neither is a duplicate-detector number:
   least one root-cause class and 24.9% abstain. This is cue coverage, not
   judged accuracy; per-class precision is unmeasured.
 
-**No Dup-Bench recall@5 or FAR has been measured.** The candidate/feature layer
-(PA-B3), the fixed-weight ranker (PA-B4) and the calibrated alarm (PA-B5) are
-the items that produce those numbers; until they are measured on the sealed
-split, the only measured FAR and duplicate-recall values in this repository are
-the six-corpus 0.2.2 numbers above, and the warning stays off.
+**Dup-Bench ranker (PA-B4), measured 2026-11-26; reported, not a verdict.** The
+fixed-weight ranker (`eval/dupbench/weights/v1.json`; logistic regression
+fitted by `eval/dupbench/train_ranker.py`, seed 20261126) was measured with
+`eval/dupbench/build_ranker_data.py` over 83 contests whose checkout is at the
+pinned commit: 3,380 queries (train 1,163 judged duplicates + 472 paid-unique
+primaries against the other primaries; validation 1,392 + 353). The selection
+grid chose `log1p` count transforms and lambda 10.0 on validation log-loss
+(0.2193; validation AUC 0.9182). Train, in-sample: duplicate recall@5
+631/1,163 = 54.3% [51.4, 57.1] with the ranker versus 627/1,163 = 53.9%
+[51.0, 56.8] in the default order; FAR on paid-unique findings 34/472 = 7.2%
+[5.2, 9.9] at score 0.5 (baseline, any candidate: 269/472 = 57.0%
+[52.5, 61.4]); duplicate abstention 476/1,163 = 40.9% [38.1, 43.8].
+Validation, model-selection data and never a fresh result: recall@5
+990/1,392 = 71.1% [68.7, 73.4] versus 977/1,392 = 70.2% [67.7, 72.5]; FAR
+48/353 = 13.6% [10.4, 17.6] at 0.5, 11/353 = 3.1% [1.8, 5.5] at 0.8
+(baseline 211/353 = 59.8% [54.6, 64.8]); duplicate abstention 309/1,392 =
+22.2% [20.1, 24.5]. The validation decile curve is non-decreasing within
+sampling error (one near-inversion inside a large score tie). **No threshold is
+shipped**: the calibrated alarm is PA-B5's item. FINAL is sealed and no FINAL
+contest has been read; none of these numbers is a FINAL number.

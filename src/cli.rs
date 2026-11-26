@@ -147,6 +147,10 @@ enum Command {
         /// Prior item id to leave out; repeatable
         #[arg(long = "exclude", value_name = "ID")]
         exclude: Vec<String>,
+        /// Score candidates with a committed ranker weights table (JSON) and
+        /// order by score descending; the default order breaks ties
+        #[arg(long, value_name = "FILE")]
+        ranker: Option<PathBuf>,
         /// Print priorart.candidates/v1 JSON
         #[arg(long)]
         json: bool,
@@ -433,6 +437,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             commit,
             top_k,
             exclude,
+            ranker,
             json,
         } => run_candidates(
             finding.as_deref(),
@@ -444,6 +449,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             &commit,
             top_k,
             &exclude,
+            ranker.as_deref(),
             json,
         ),
         Command::Rules => {
@@ -606,6 +612,7 @@ fn run_candidates(
     commit: &str,
     top_k: usize,
     exclude: &[String],
+    ranker_path: Option<&Path>,
     as_json: bool,
 ) -> Result<ExitCode, String> {
     if top_k == 0 || top_k > candidates::MAX_TOP_K {
@@ -617,6 +624,10 @@ fn run_candidates(
     let corpus_path = corpus_path.ok_or_else(|| {
         "a corpus path is required. Pass --corpus <path>, e.g. --corpus eval/benchmark/build/dossier-a.dossier.".to_string()
     })?;
+    let ranker = match ranker_path {
+        Some(path) => Some(candidates::Ranker::load(path)?),
+        None => None,
+    };
     let index_set = build_candidate_index(repos, indexes, repo_id, commit)?;
     let corpus = candidates::load_corpus(corpus_path)?;
 
@@ -629,6 +640,9 @@ fn run_candidates(
         }
         if !exclude.is_empty() {
             return Err("--exclude applies to a finding run, not --prepare.".to_string());
+        }
+        if ranker.is_some() {
+            return Err("--ranker applies to a finding run, not --prepare.".to_string());
         }
         let prepared = candidates::prepare_corpus(&corpus, index_set.as_ref());
         let with_anchors = prepared
@@ -709,6 +723,7 @@ fn run_candidates(
     let mut options = candidates::GenerateOptions::new(index_set.as_ref(), finding_sha);
     options.top_k = top_k;
     options.exclude = exclude.iter().cloned().collect();
+    options.ranker = ranker.as_ref();
     let report = candidates::generate(&finding_text, finding, &corpus, &options);
     if as_json {
         print!("{}", json::pretty(&report)?);

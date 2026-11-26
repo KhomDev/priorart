@@ -74,6 +74,30 @@ contest codebase snapshot repo+commit. The prior report's commit is not stated
 in the READMEs, so same-codebase evidence is the sponsor's own "Previous
 audits" statement and the drift is stated per pair.
 
+## PA-B4 learned ranker (train and validation only)
+
+`build_ranker_data.py` builds the dataset: for each train/validation contest
+with a checkout at its pinned commit, it builds (or reuses, only when the
+recorded commit is the pin) the anchors index, prepares the prior corpus from
+the contest's paid-unique primaries, and runs `priorart candidates` for every
+judged duplicate (label 1 for its primary, 0 otherwise) and every primary
+against the other primaries (label 0). Each row records the raw feature
+vector, query id, candidate id, contest, split and label; an abstained query
+is recorded with its reason and is never turned into a negative. The dataset
+is written to a gitignored `target/ranker-data/` path; the issue texts never
+leave the gitignored cache and output. FINAL is never opened.
+
+`train_ranker.py` fits an L2-regularised logistic regression (pure standard
+library, deterministic Newton/IRLS) on **train only**, chooses the
+regularisation strength and the count transform on **validation only**, and
+writes `weights/v1.json`: schema, feature names and transforms, means/scales,
+coefficients, intercept, seed, train/validation contest ids, the selection
+grid, the validation decile calibration table, the split measurements and the
+code commit. Inference is one dot product per candidate
+(`priorart candidates --ranker weights/v1.json`); a null `call_graph_distance`
+maps to `MAX_CANDIDATE_DISTANCE + 1` with a missingness indicator feature,
+never a silent zero. Without `--ranker`, output is unchanged.
+
 ## Files
 
 | Path | What it is |
@@ -85,6 +109,10 @@ audits" statement and the drift is stated per pair.
 | `pairs.json` | 6 sealed pairs with prior-report hashes and codebase pins |
 | `build_manifest.py` | rebuilds the three corpus files offline; `--check` |
 | `fetch.py` | fetches every pin; `--check` verifies offline |
+| `clone_codebases.py` | clones the pinned audited codebases per split |
+| `build_ranker_data.py` | PA-B4 dataset builder (train + validation; FINAL refused) |
+| `train_ranker.py` | PA-B4 trainer, selection and measurement; writes `weights/v1.json` |
+| `weights/v1.json` | the committed, versioned ranker table read by `--ranker` |
 
 ## Reproduce
 
