@@ -327,7 +327,8 @@ def dupbench_index(slug: str, entry: dict | None) -> tuple[Path | None, str]:
 
     The only acceptable states are: no public repository pin (abstain),
     checkout absent (abstain), checkout at the wrong commit (abstain), or a
-    checkout at the pinned commit (index).
+    checkout at the pinned commit (index). A cached index is reused only when
+    its recorded commit is the pin, so a stale index cannot survive.
     """
     if not entry or entry.get("status") != "repo+commit" or not entry.get("commit"):
         return None, "no-public-repo"
@@ -342,9 +343,16 @@ def dupbench_index(slug: str, entry: dict | None) -> tuple[Path | None, str]:
     ).stdout.strip()
     if head.lower() != entry["commit"].lower():
         return None, "head-mismatch"
-    repo_id = entry["repo"].rstrip("/").split("github.com/")[-1]
     out = OUT / "index" / f"dupbench-{slug}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
+    if out.is_file():
+        try:
+            cached = json.loads(out.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            cached = None
+        if cached and str(cached.get("commit", "")).lower() == entry["commit"].lower():
+            return out, "indexed-cached"
+    repo_id = entry["repo"].rstrip("/").split("github.com/")[-1]
     with out.open("w", encoding="utf-8", newline="\n") as handle:
         proc = subprocess.run(
             [
@@ -502,6 +510,7 @@ def measure_dupbench_train() -> dict:
         ),
     }
     out = OUT / "results" / "dupbench-train.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=1) + "\n", encoding="utf-8", newline="\n")
     return result
 
