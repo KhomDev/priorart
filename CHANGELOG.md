@@ -27,6 +27,17 @@ appears here only if it came from a command that can be re-run.
   `priorart anchors bench`, reproducible offline once the pinned codebases are
   present.
 
+- **Structural candidates.** `priorart candidates` admits a prior item when it
+  shares a function or state-variable anchor with the finding, is a call-graph
+  neighbour within distance 2, or asserts the same root cause in the same
+  contract. Each pair carries the five features the ranker consumes (function
+  and state anchor overlap, call-graph distance, mechanism match, impact match,
+  today's identifier score). Shared identifiers alone never admit a candidate;
+  abstentions carry a reason. On the six DEV corpora, **504 of 696 judge-grouped
+  duplicates (72.41%, Wilson 95% [68.98%, 75.60%]) have their representative in
+  the candidate set**, with an 11.64% abstention rate; this is candidate recall
+  on DEV, not recall@5 or FAR (PA-B4/B5).
+
 ### Changed (P2)
 
 - **The MSRV is now Rust 1.95** (was 1.89): `solar-parse 0.2.0` is edition 2024

@@ -144,3 +144,10 @@ pub fn taxonomy(data: &[u8]) {
     let text = String::from_utf8_lossy(data);
     let _ = priorart::taxonomy::classify(&text);
 }
+
+/// A prepared candidate corpus (or an index/dossier) on arbitrary bytes.
+pub fn candidates_json(data: &[u8]) {
+    let s = Scratch::new();
+    let path = s.write("corpus.json", data);
+    let _ = priorart::candidates::load_corpus(&path);
+}

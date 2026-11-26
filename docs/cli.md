@@ -13,6 +13,10 @@ priorart ledger validate <ledger.yaml...> [--json] [--strict] [--example-mode]
 priorart vocab list [--json]
 priorart vocab show <tier-shapes|clause-classes|gate-crossref> [--json]
 priorart taxonomy classify <file>... [--json]
+priorart candidates [FINDING] --corpus <dossier|dir|prepared.json>
+                            [--repo DIR | --index FILE]... [--repo-id ID]
+                            [--commit SHA] [--top-k N] [--exclude ID]...
+                            [--prepare FILE] [--json]
 priorart init [dir] [--force]
 priorart explain <clause-class-id|gate-id|tier-shape-id>
 priorart rejections summary [--json]
@@ -203,6 +207,21 @@ by the benchmark. `--json` prints `priorart.taxonomy-classify/v1`. A file that
 is missing, not regular, not UTF-8 or over 16 MiB exits 2 before any output;
 an abstention (no class, impact or asset) exits 0 with `abstain_reason:
 "no-mechanism"`.
+
+## candidates
+
+Generates structural candidates for a finding (or, with `--prepare`, for a
+corpus) and prints them with the five pair features: function and state anchor
+overlap, call-graph distance (≤ 2), mechanism match (a shared root cause in a
+shared contract), impact match, and today's identifier score as one feature
+only. Shared identifiers alone never admit a candidate. An abstention carries a
+reason (`no-anchor`, `no-mechanism`, `no-candidates`, `corpus-missing`,
+`repo-missing`). The corpus is a dossier, a directory of `.md`/`.txt` items, or
+a prepared `priorart.candidates-corpus/v1` file; `--index` accepts a repository
+index saved by `priorart anchors index`, and a prepared corpus whose
+`repo@commit` pins do not match the supplied index exits 2. `--json` prints
+`priorart.candidates/v1`, ordered by anchor overlap, distance, shared root
+causes, identifier specificity and prior id.
 
 ## init
 
