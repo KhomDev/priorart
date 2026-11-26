@@ -810,3 +810,182 @@ fn ranker_validate_requires_the_missingness_rule() {
         .expect_err("null without a rule is rejected");
     assert!(error.contains("missing_value"), "{error}");
 }
+
+// --- PA-B5 calibrated alarm ---------------------------------------------------
+
+use super::alarm::{Alarm, AlarmBlock, AlarmCalibration};
+
+fn committed_alarm() -> Alarm {
+    Alarm::load(&manifest("eval/dupbench/weights/alarm-v1.json"))
+        .expect("the committed calibration table loads and validates")
+}
+
+fn scored_candidate(id: &str, score: f64) -> Candidate {
+    let mut candidate = ranker_candidate(Some(0));
+    candidate.prior_id = id.to_string();
+    candidate.ranker_score = Some(score);
+    candidate
+}
+
+fn block(score_lo: f64, score_hi: f64, value: f64) -> AlarmBlock {
+    AlarmBlock {
+        score_lo,
+        score_hi,
+        n: 10,
+        k: (value * 10.0).round() as u64,
+        value,
+    }
+}
+
+#[test]
+fn the_committed_calibration_is_monotone() {
+    let alarm = committed_alarm();
+    let table = alarm.calibration();
+    for pair in table.blocks.windows(2) {
+        assert!(pair[0].score_hi < pair[1].score_lo, "blocks overlap");
+        assert!(pair[0].value <= pair[1].value, "block values decrease");
+    }
+    // The step map itself is non-decreasing over the whole score range.
+    let mut previous = f64::NEG_INFINITY;
+    for step in 0..=10_000 {
+        let raw = f64::from(step) / 10_000.0;
+        let value = table.calibrate(raw);
+        assert!(value >= previous, "calibrate({raw}) = {value} < {previous}");
+        previous = value;
+    }
+}
+
+#[test]
+fn a_non_monotone_calibration_is_rejected() {
+    let table = AlarmCalibration {
+        schema: ALARM_CALIBRATION_SCHEMA.to_string(),
+        version: 1,
+        blocks: vec![block(0.0, 0.4, 0.6), block(0.5, 1.0, 0.3)],
+        threshold: None,
+        validation_contests: Vec::new(),
+    };
+    let error = table.validate().expect_err("a decreasing map is rejected");
+    assert!(error.contains("not monotone"), "{error}");
+
+    let overlapping = AlarmCalibration {
+        blocks: vec![block(0.0, 0.6, 0.2), block(0.5, 1.0, 0.3)],
+        ..table.clone()
+    };
+    assert!(overlapping.validate().is_err());
+
+    let foreign_threshold = AlarmCalibration {
+        blocks: vec![block(0.0, 0.4, 0.2), block(0.5, 1.0, 0.9)],
+        threshold: Some(0.85),
+        ..table
+    };
+    let error = foreign_threshold
+        .validate()
+        .expect_err("a threshold off the block values is rejected");
+    assert!(
+        error.contains("not one of the calibration block values"),
+        "{error}"
+    );
+}
+
+#[test]
+fn the_shipped_threshold_is_exact_at_its_block_edge() {
+    // Committed by eval/dupbench/calibrate_alarm.py on the validation split:
+    // bin 16 holds 122 queries with 110 true alarms, so its isotonic value is
+    // exactly 110/122; its tail (bins 16-18) is 149/162 with Wilson lower
+    // bound 0.8676 >= 0.80, and the tail from bin 15 (262/318) has lower
+    // bound 0.7782 < 0.80. The lowest raw score in bin 16 is 0.8548965723626742.
+    //
+    // serde_json's default float parser may land one ULP from the decimal in
+    // the file, so the comparisons with the hand-computed fractions allow
+    // 1e-15; every comparison between table values is exact.
+    let alarm = committed_alarm();
+    let table = alarm.calibration();
+    let threshold = table.threshold.expect("the committed alarm ships on");
+    assert!((threshold - 110.0 / 122.0).abs() < 1e-15, "{threshold}");
+    let shipped: Vec<&AlarmBlock> = table
+        .blocks
+        .iter()
+        .filter(|b| b.value == threshold)
+        .collect();
+    assert_eq!(shipped.len(), 1);
+    assert_eq!((shipped[0].n, shipped[0].k), (122, 110));
+    let edge = shipped[0].score_lo;
+    assert!((edge - 0.854_896_572_362_674_2).abs() < 1e-15, "{edge}");
+    // At the edge the calibrated value is exactly the threshold and fires.
+    assert_eq!(table.calibrate(edge), threshold);
+    assert!(table.fires(table.calibrate(edge)));
+    // One ULP below the edge is the bin-15 value (113/156) and does not fire.
+    let below = f64::from_bits(edge.to_bits() - 1);
+    let below_value = table.calibrate(below);
+    assert!((below_value - 113.0 / 156.0).abs() < 1e-15, "{below_value}");
+    assert!(below_value < threshold);
+    assert!(!table.fires(below_value));
+}
+
+#[test]
+fn the_alarm_compares_the_calibrated_value_not_the_raw_score() {
+    // A raw top score of 0.86 is below the calibrated threshold (0.9016...) but
+    // falls in bin 16, whose calibrated value is the threshold: the alarm must
+    // fire. Comparing the raw score with the threshold (skipping calibration)
+    // would not fire, and this test would fail.
+    let alarm = committed_alarm();
+    let report = alarm.evaluate(&[scored_candidate("prior-a", 0.86)]);
+    assert!(report.fires, "{report:?}");
+    assert_eq!(report.warning.as_deref(), Some(ALARM_WARNING));
+    assert_eq!(report.top_candidate.as_deref(), Some("prior-a"));
+    assert_eq!(report.top_score, Some(0.86));
+    assert_eq!(report.calibrated, alarm.calibration().threshold);
+    // And the other direction: 0.85 is raw-below too and calibrates to the
+    // bin-15 value, so nothing fires.
+    let quiet = alarm.evaluate(&[scored_candidate("prior-a", 0.85)]);
+    assert!(!quiet.fires, "{quiet:?}");
+    assert_eq!(quiet.warning, None);
+}
+
+#[test]
+fn an_alarm_that_ships_off_never_fires() {
+    let table = AlarmCalibration {
+        schema: ALARM_CALIBRATION_SCHEMA.to_string(),
+        version: 1,
+        blocks: vec![block(0.0, 0.4, 0.2), block(0.5, 1.0, 0.7)],
+        threshold: None,
+        validation_contests: Vec::new(),
+    };
+    let alarm = Alarm::from_calibration(table).expect("an off table validates");
+    for score in [0.0, 0.5, 0.99, 1.0] {
+        let report = alarm.evaluate(&[scored_candidate("prior-a", score)]);
+        assert!(!report.fires);
+        assert_eq!(report.status, "off");
+    }
+    let empty = alarm.evaluate(&[]);
+    assert!(!empty.fires && empty.top_candidate.is_none());
+}
+
+#[test]
+fn the_committed_calibration_names_no_final_contest() {
+    // FINAL refusal, checked on the committed artifact: every contest the
+    // calibration was fitted on is a validation contest in the Dup-Bench
+    // manifest, and none is FINAL.
+    let alarm = committed_alarm();
+    let manifest: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(manifest("eval/dupbench/manifest.json")).expect("manifest"),
+    )
+    .expect("manifest JSON");
+    let split_of = |slug: &str| -> Option<String> {
+        manifest["contests"]
+            .as_array()
+            .expect("contests")
+            .iter()
+            .find(|c| c["slug"] == slug)
+            .and_then(|c| c["split"].as_str().map(str::to_string))
+    };
+    let contests = &alarm.calibration().validation_contests;
+    assert!(!contests.is_empty());
+    for slug in contests {
+        assert_eq!(
+            split_of(slug).as_deref(),
+            Some("validation"),
+            "{slug} is not a validation contest"
+        );
+    }
+}

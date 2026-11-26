@@ -817,3 +817,220 @@ fn the_committed_weights_table_reproduces_an_exact_score() {
         "prior-deposit scored {got}, independently computed {expected}"
     );
 }
+
+// --- PA-B5 calibrated alarm ----------------------------------------------------
+
+fn alarm_run(finding_name: &str, corpus_dir: &str, extra: &[&str]) -> support::Run {
+    let finding_path = format!("tests/fixtures/candidates/findings/{finding_name}");
+    let mut args = vec![
+        "candidates",
+        finding_path.as_str(),
+        "--corpus",
+        corpus_dir,
+        "--repo",
+        "tests/fixtures/candidates-repo",
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--ranker",
+        "tests/fixtures/candidates/ranker/fixture-weights.json",
+    ];
+    args.extend_from_slice(extra);
+    run(&args)
+}
+
+#[test]
+fn the_alarm_fires_on_the_calibrated_value_and_not_on_the_raw_score() {
+    // fixture-weights score the top candidate of finding-shared-function at
+    // 0.9820137900379085; fixture-alarm maps [0.9, 0.985] to 0.5, below the
+    // 0.97 threshold. A raw comparison (0.982 >= 0.97) would fire: this is
+    // the skip-calibration break.
+    let r = alarm_run(
+        "finding-shared-function.md",
+        "tests/fixtures/candidates/corpus",
+        &[
+            "--alarm",
+            "tests/fixtures/candidates/ranker/fixture-alarm.json",
+            "--json",
+        ],
+    );
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let report: Value = serde_json::from_str(&r.stdout).expect("JSON");
+    let alarm = &report["alarm"];
+    assert_eq!(alarm["schema"], "priorart.alarm-calibration/v1");
+    assert_eq!(alarm["status"], "on");
+    assert_eq!(alarm["top_candidate"], "prior-leaf");
+    // serde_json's float parse may differ from the literal by one ULP.
+    let close = |v: &Value, want: f64| (v.as_f64().expect("number") - want).abs() < 1e-12;
+    assert!(close(&alarm["top_score"], 0.9820137900379085), "{alarm}");
+    assert!(close(&alarm["calibrated"], 0.5), "{alarm}");
+    assert_eq!(alarm["fires"], false);
+    assert_eq!(alarm["warning"], Value::Null);
+
+    // finding-mechanism's top candidate scores sigmoid(5) = 0.9933..., which
+    // calibrates to exactly the threshold 0.97 and fires.
+    let r = alarm_run(
+        "finding-mechanism.md",
+        "tests/fixtures/candidates/corpus",
+        &[
+            "--alarm",
+            "tests/fixtures/candidates/ranker/fixture-alarm.json",
+            "--json",
+        ],
+    );
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let report: Value = serde_json::from_str(&r.stdout).expect("JSON");
+    assert!(
+        close(&report["alarm"]["calibrated"], 0.97),
+        "{}",
+        report["alarm"]
+    );
+    assert_eq!(report["alarm"]["fires"], true);
+    assert_eq!(report["alarm"]["warning"], "shares a root cause");
+
+    let text = alarm_run(
+        "finding-mechanism.md",
+        "tests/fixtures/candidates/corpus",
+        &[
+            "--alarm",
+            "tests/fixtures/candidates/ranker/fixture-alarm.json",
+        ],
+    );
+    assert_eq!(text.code, 0, "{}", text.stderr);
+    assert!(
+        text.stdout
+            .contains("WARNING shares a root cause: prior-mechanism"),
+        "{}",
+        text.stdout
+    );
+}
+
+#[test]
+fn the_alarm_is_absent_without_the_flag_and_requires_a_ranker() {
+    let r = alarm_run(
+        "finding-shared-function.md",
+        "tests/fixtures/candidates/corpus",
+        &["--json"],
+    );
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    assert!(!r.stdout.contains("\"alarm\""), "{}", r.stdout);
+
+    let r = run(&[
+        "candidates",
+        "tests/fixtures/candidates/findings/finding-shared-function.md",
+        "--corpus",
+        "tests/fixtures/candidates/corpus",
+        "--repo",
+        "tests/fixtures/candidates-repo",
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--alarm",
+        "tests/fixtures/candidates/ranker/fixture-alarm.json",
+        "--json",
+    ]);
+    assert_eq!(r.code, 2, "{}", r.stdout);
+    assert!(r.stderr.contains("--ranker"), "{}", r.stderr);
+}
+
+#[test]
+fn a_non_monotone_alarm_table_is_a_usage_error() {
+    let tmp = TempDir::new("alarm-non-monotone");
+    let text = std::fs::read_to_string(
+        manifest_dir().join("tests/fixtures/candidates/ranker/fixture-alarm.json"),
+    )
+    .expect("fixture alarm");
+    let mut table: Value = serde_json::from_str(&text).expect("alarm JSON");
+    table["blocks"][2]["value"] = Value::from(0.2);
+    table["threshold"] = Value::Null;
+    let path = tmp.write("alarm.json", &table.to_string());
+    let r = alarm_run(
+        "finding-shared-function.md",
+        "tests/fixtures/candidates/corpus",
+        &["--alarm", path.to_str().unwrap(), "--json"],
+    );
+    assert_eq!(r.code, 2, "{}", r.stdout);
+    assert!(r.stderr.contains("not monotone"), "{}", r.stderr);
+}
+
+#[test]
+fn the_committed_alarm_table_loads_and_runs() {
+    let r = alarm_run(
+        "finding-shared-function.md",
+        "tests/fixtures/candidates/corpus",
+        &["--alarm", "eval/dupbench/weights/alarm-v1.json", "--json"],
+    );
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let report: Value = serde_json::from_str(&r.stdout).expect("JSON");
+    assert_eq!(report["alarm"]["status"], "on");
+    assert!(report["alarm"]["calibrated"].as_f64().is_some());
+}
+
+#[test]
+fn adding_unrelated_prior_items_never_adds_an_alarm() {
+    // Property over the fixture findings: copying the corpus and adding prior
+    // items that share no anchor, neighbour or mechanism leaves the alarm
+    // block identical, so an unrelated item can never create a warning.
+    let tmp = TempDir::new("alarm-unrelated");
+    tmp.copy_dir(
+        &manifest_dir().join("tests/fixtures/candidates/corpus"),
+        "corpus",
+    );
+    for i in 0..5 {
+        tmp.write(
+            &format!("corpus/zz-unrelated-{i}.md"),
+            &format!(
+                "# Unrelated note {i}\n\nThe governance forum thread {i} discusses a documentation typo in the website footer; no contract is involved.\n"
+            ),
+        );
+    }
+    let bigger = tmp.join("corpus");
+    let bigger = bigger.to_str().unwrap();
+    for name in [
+        "finding-shared-function.md",
+        "finding-mechanism.md",
+        "finding-distance.md",
+        "finding-shared-state.md",
+        "finding-no-code.md",
+    ] {
+        for table in [
+            "tests/fixtures/candidates/ranker/fixture-alarm.json",
+            "eval/dupbench/weights/alarm-v1.json",
+        ] {
+            let base = alarm_run(
+                name,
+                "tests/fixtures/candidates/corpus",
+                &["--alarm", table, "--json"],
+            );
+            let more = alarm_run(name, bigger, &["--alarm", table, "--json"]);
+            assert_eq!(base.code, 0, "{}", base.stderr);
+            assert_eq!(more.code, 0, "{}", more.stderr);
+            let base: Value = serde_json::from_str(&base.stdout).unwrap();
+            let more: Value = serde_json::from_str(&more.stdout).unwrap();
+            assert_eq!(base["alarm"], more["alarm"], "{name} with {table}");
+        }
+    }
+}
+
+#[test]
+fn the_alarm_run_is_byte_identical_twice() {
+    let args = [
+        "--alarm",
+        "tests/fixtures/candidates/ranker/fixture-alarm.json",
+        "--json",
+    ];
+    let a = alarm_run(
+        "finding-mechanism.md",
+        "tests/fixtures/candidates/corpus",
+        &args,
+    );
+    let b = alarm_run(
+        "finding-mechanism.md",
+        "tests/fixtures/candidates/corpus",
+        &args,
+    );
+    assert_eq!(a.code, 0, "{}", a.stderr);
+    assert_eq!(a.stdout, b.stdout);
+}

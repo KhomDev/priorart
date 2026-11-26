@@ -236,6 +236,17 @@ unknown one, or states no `missing_value` for a feature that can be null exits
 `max_candidate_distance + 1` and sets the `call_graph_distance_missing`
 feature, never a silent zero.
 
+`--alarm <FILE>` (requires `--ranker`) adds an `alarm` block from a committed
+`priorart.alarm-calibration/v1` table (PA-B5; written by
+`eval/dupbench/calibrate_alarm.py` from the Dup-Bench validation split only).
+The top candidate's ranker score is mapped through the table's isotonic
+calibration, and the "shares a root cause" warning fires only when the
+calibrated value is at or above the table's threshold: the lowest block whose
+validation precision has a Wilson lower bound ≥ 0.80. A table with no such
+block has `threshold: null` and the warning stays off. A table that is not
+monotone, or whose threshold is not one of its block values, exits 2. Without
+the flag the output is unchanged.
+
 ## init
 
 Writes `program.yaml`, `scope.md`, `known-issues.md` and `audits/README.md`

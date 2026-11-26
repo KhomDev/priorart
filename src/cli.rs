@@ -151,6 +151,10 @@ enum Command {
         /// order by score descending; the default order breaks ties
         #[arg(long, value_name = "FILE")]
         ranker: Option<PathBuf>,
+        /// Report the calibrated "shares a root cause" alarm from a committed
+        /// calibration table (JSON); requires --ranker
+        #[arg(long, value_name = "FILE")]
+        alarm: Option<PathBuf>,
         /// Print priorart.candidates/v1 JSON
         #[arg(long)]
         json: bool,
@@ -438,6 +442,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             top_k,
             exclude,
             ranker,
+            alarm,
             json,
         } => run_candidates(
             finding.as_deref(),
@@ -450,6 +455,7 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             top_k,
             &exclude,
             ranker.as_deref(),
+            alarm.as_deref(),
             json,
         ),
         Command::Rules => {
@@ -613,6 +619,7 @@ fn run_candidates(
     top_k: usize,
     exclude: &[String],
     ranker_path: Option<&Path>,
+    alarm_path: Option<&Path>,
     as_json: bool,
 ) -> Result<ExitCode, String> {
     if top_k == 0 || top_k > candidates::MAX_TOP_K {
@@ -626,6 +633,16 @@ fn run_candidates(
     })?;
     let ranker = match ranker_path {
         Some(path) => Some(candidates::Ranker::load(path)?),
+        None => None,
+    };
+    if alarm_path.is_some() && ranker.is_none() {
+        return Err(
+            "--alarm calibrates the ranker score of the top candidate; pass --ranker with it."
+                .to_string(),
+        );
+    }
+    let alarm = match alarm_path {
+        Some(path) => Some(candidates::Alarm::load(path)?),
         None => None,
     };
     let index_set = build_candidate_index(repos, indexes, repo_id, commit)?;
@@ -643,6 +660,9 @@ fn run_candidates(
         }
         if ranker.is_some() {
             return Err("--ranker applies to a finding run, not --prepare.".to_string());
+        }
+        if alarm.is_some() {
+            return Err("--alarm applies to a finding run, not --prepare.".to_string());
         }
         let prepared = candidates::prepare_corpus(&corpus, index_set.as_ref());
         let with_anchors = prepared
@@ -724,6 +744,7 @@ fn run_candidates(
     options.top_k = top_k;
     options.exclude = exclude.iter().cloned().collect();
     options.ranker = ranker.as_ref();
+    options.alarm = alarm.as_ref();
     let report = candidates::generate(&finding_text, finding, &corpus, &options);
     if as_json {
         print!("{}", json::pretty(&report)?);
