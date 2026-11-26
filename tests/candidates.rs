@@ -425,3 +425,215 @@ fn a_repository_index_file_is_equivalent_to_a_checkout() {
         "example/candidates-fixture@0000000000000000000000000000000000000000"
     );
 }
+
+#[test]
+fn default_output_is_unchanged_and_matches_the_pre_ranker_golden() {
+    // The golden was captured from the pre-change binary (sha256 1e465f61...)
+    // with the same relative arguments, so a default run must still be
+    // byte-identical: the ranker score field is omitted when no --ranker was
+    // supplied, and the ordering block is the original five-key order.
+    let r = run(&[
+        "candidates",
+        "tests/fixtures/candidates/findings/finding-shared-function.md",
+        "--corpus",
+        "tests/fixtures/candidates/corpus",
+        "--repo",
+        "tests/fixtures/candidates-repo",
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--json",
+    ]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let golden = std::fs::read_to_string(
+        manifest_dir().join("tests/fixtures/candidates/golden/candidates-default.json"),
+    )
+    .expect("committed golden is readable");
+    // The tool version is metadata, not candidate output; a later release bump
+    // must not fail this test. Every other byte must match the golden.
+    let without_version = |text: &str| {
+        text.lines()
+            .filter(|line| !line.contains("\"tool_version\""))
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+    assert_eq!(
+        without_version(&r.stdout),
+        without_version(&golden),
+        "default output differs from the pre-ranker golden"
+    );
+    assert!(!r.stdout.contains("ranker_score"), "{}", r.stdout);
+}
+
+#[test]
+fn the_committed_ranker_fixture_reproduces_exact_scores_and_order() {
+    let r = run(&[
+        "candidates",
+        "tests/fixtures/candidates/findings/finding-shared-function.md",
+        "--corpus",
+        "tests/fixtures/candidates/corpus",
+        "--repo",
+        "tests/fixtures/candidates-repo",
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--ranker",
+        "tests/fixtures/candidates/ranker/fixture-weights.json",
+        "--json",
+    ]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let report: Value = serde_json::from_str(&r.stdout).expect("candidates --json prints JSON");
+    let candidates = report["candidates"].as_array().expect("candidates");
+    let ids: Vec<&str> = candidates
+        .iter()
+        .map(|c| c["prior_id"].as_str().unwrap())
+        .collect();
+    // prior-leaf and prior-total-assets tie on every fixture-weighted
+    // feature; the tie-break is the previous deterministic order, which puts
+    // prior-leaf first. prior-deposit scores lowest because the fixture gives
+    // a negative coefficient to the shared-function count.
+    assert_eq!(
+        ids,
+        vec!["prior-leaf", "prior-total-assets", "prior-deposit"]
+    );
+    let expected = [0.3775406687981454, 0.3775406687981454, 0.2689414213699951];
+    for (candidate, want) in candidates.iter().zip(expected) {
+        let got = candidate["ranker_score"]
+            .as_f64()
+            .expect("a ranker run emits a score");
+        assert!(
+            (got - want).abs() < 1e-9,
+            "{} scored {got}, expected {want}",
+            candidate["prior_id"]
+        );
+    }
+    assert_eq!(
+        report["ordering"][0],
+        "ranker score descending (priorart.ranker-weights/v1)"
+    );
+    assert_eq!(
+        report["ordering"][1],
+        "previous candidate order as tie-break"
+    );
+}
+
+#[test]
+fn a_null_call_graph_distance_is_scored_with_the_missingness_indicator() {
+    // Prior-mechanism has no call-graph path from the finding, so its distance
+    // is null. The documented rule maps it to 3.0 and sets the indicator to
+    // 1.0; with the fixture coefficients the score is exactly sigmoid(0).
+    let r = run(&[
+        "candidates",
+        "tests/fixtures/candidates/findings/finding-mechanism.md",
+        "--corpus",
+        "tests/fixtures/candidates/corpus",
+        "--repo",
+        "tests/fixtures/candidates-repo",
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--ranker",
+        "tests/fixtures/candidates/ranker/fixture-weights.json",
+        "--json",
+    ]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let report: Value = serde_json::from_str(&r.stdout).expect("candidates --json prints JSON");
+    let candidate = &report["candidates"][0];
+    assert_eq!(candidate["prior_id"], "prior-mechanism");
+    assert_eq!(candidate["features"]["call_graph_distance"], Value::Null);
+    let got = candidate["ranker_score"].as_f64().expect("score");
+    assert!((got - 0.5).abs() < 1e-9, "scored {got}, expected 0.5");
+}
+
+#[test]
+fn a_weights_table_missing_a_feature_is_a_usage_error() {
+    let tmp = TempDir::new("ranker-missing-feature");
+    let text = std::fs::read_to_string(
+        manifest_dir().join("tests/fixtures/candidates/ranker/fixture-weights.json"),
+    )
+    .expect("fixture weights");
+    let mut weights: Value = serde_json::from_str(&text).expect("weights JSON");
+    weights["features"]
+        .as_array_mut()
+        .unwrap()
+        .retain(|f| f["name"] != "identifier_score.rarity");
+    let path = tmp.write("weights.json", &weights.to_string());
+    let r = run(&[
+        "candidates",
+        "tests/fixtures/candidates/findings/finding-shared-function.md",
+        "--corpus",
+        "tests/fixtures/candidates/corpus",
+        "--repo",
+        "tests/fixtures/candidates-repo",
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--ranker",
+        path.to_str().unwrap(),
+        "--json",
+    ]);
+    assert_eq!(r.code, 2, "{}", r.stdout);
+    assert!(
+        r.stderr.contains("identifier_score.rarity") && r.stderr.contains("missing"),
+        "{}",
+        r.stderr
+    );
+}
+
+#[test]
+fn a_nullable_feature_without_a_missing_value_is_a_usage_error() {
+    let tmp = TempDir::new("ranker-missing-value");
+    let text = std::fs::read_to_string(
+        manifest_dir().join("tests/fixtures/candidates/ranker/fixture-weights.json"),
+    )
+    .expect("fixture weights");
+    let mut weights: Value = serde_json::from_str(&text).expect("weights JSON");
+    for feature in weights["features"].as_array_mut().unwrap() {
+        if feature["name"] == "call_graph_distance" {
+            feature.as_object_mut().unwrap().remove("missing_value");
+        }
+    }
+    let path = tmp.write("weights.json", &weights.to_string());
+    let r = run(&[
+        "candidates",
+        "tests/fixtures/candidates/findings/finding-shared-function.md",
+        "--corpus",
+        "tests/fixtures/candidates/corpus",
+        "--repo",
+        "tests/fixtures/candidates-repo",
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--ranker",
+        path.to_str().unwrap(),
+        "--json",
+    ]);
+    assert_eq!(r.code, 2, "{}", r.stdout);
+    assert!(r.stderr.contains("missing_value"), "{}", r.stderr);
+}
+
+#[test]
+fn a_ranker_with_prepare_is_a_usage_error() {
+    let tmp = TempDir::new("ranker-prepare");
+    let out = tmp.join("prepared.json");
+    let r = run(&[
+        "candidates",
+        "--corpus",
+        "tests/fixtures/candidates/corpus",
+        "--repo",
+        "tests/fixtures/candidates-repo",
+        "--repo-id",
+        "example/candidates-fixture",
+        "--prepare",
+        out.to_str().unwrap(),
+        "--ranker",
+        "tests/fixtures/candidates/ranker/fixture-weights.json",
+    ]);
+    assert_eq!(r.code, 2, "{}", r.stdout);
+    assert!(r.stderr.contains("--ranker"), "{}", r.stderr);
+}

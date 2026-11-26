@@ -31,10 +31,12 @@
 //! from "no prior art exists", which this module never claims.
 
 mod corpus;
+mod ranker;
 
 pub use corpus::{
     load_corpus, prepare_corpus, Corpus, CorpusItem, CorpusKind, PrepareReport, PreparedCorpus,
 };
+pub use ranker::{Ranker, RANKER_ORDERING, RANKER_WEIGHTS_SCHEMA};
 
 use crate::anchors::{Anchor, AnchorKind, AnchorSet, IndexSet, RepoIndex};
 use crate::matching::{self, Profile};
@@ -253,6 +255,11 @@ pub struct Candidate {
     pub prior_title: Option<String>,
     pub reasons: Vec<Reason>,
     pub features: Features,
+    /// The PA-B4 ranker score, present only when `--ranker` supplied a
+    /// weights table. Omitted from the JSON when absent, so the default
+    /// output is unchanged byte for byte.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ranker_score: Option<f64>,
 }
 
 impl Candidate {
@@ -352,6 +359,10 @@ pub struct GenerateOptions<'a> {
     /// Prior item ids to leave out (for example the finding's own corpus
     /// entry).
     pub exclude: BTreeSet<String>,
+    /// The PA-B4 ranker weights, when `--ranker` supplied a table. Every
+    /// candidate is scored and the list is ordered by score descending, with
+    /// the documented default order as the tie-break, before `top_k` applies.
+    pub ranker: Option<&'a Ranker>,
 }
 
 impl<'a> GenerateOptions<'a> {
@@ -361,6 +372,7 @@ impl<'a> GenerateOptions<'a> {
             finding_sha256: finding_sha256.into(),
             top_k: DEFAULT_TOP_K,
             exclude: BTreeSet::new(),
+            ranker: None,
         }
     }
 }
@@ -518,9 +530,22 @@ pub fn generate(
             prior_title: prior.title.clone(),
             reasons,
             features,
+            ranker_score: None,
         });
     }
     sort_candidates(&mut candidates);
+    if let Some(ranker) = options.ranker {
+        for candidate in &mut candidates {
+            let score = ranker.score(candidate);
+            candidate.ranker_score = Some(score);
+        }
+        // Stable: equal scores keep the documented default order above.
+        candidates.sort_by(|a, b| {
+            b.ranker_score
+                .unwrap_or(f64::NEG_INFINITY)
+                .total_cmp(&a.ranker_score.unwrap_or(f64::NEG_INFINITY))
+        });
+    }
     let excluded = corpus
         .items
         .iter()
@@ -564,7 +589,11 @@ pub fn generate(
         mechanism: mechanism_summary,
         abstention,
         candidates,
-        ordering: ORDERING.iter().map(|s| (*s).to_string()).collect(),
+        ordering: if options.ranker.is_some() {
+            RANKER_ORDERING.iter().map(|s| (*s).to_string()).collect()
+        } else {
+            ORDERING.iter().map(|s| (*s).to_string()).collect()
+        },
         limits: Limits {
             top_k: options.top_k,
             max_candidate_distance: MAX_CANDIDATE_DISTANCE,
@@ -1117,6 +1146,9 @@ pub fn render_text(report: &CandidateReport) -> String {
             f.identifier_score.specific_symbols,
             if f.identifier_score.ranked { "yes" } else { "no" }
         ));
+        if let Some(score) = candidate.ranker_score {
+            out.push_str(&format!("     ranker score {score:.6}\n"));
+        }
     }
     sanitize(&out)
 }

@@ -223,6 +223,19 @@ index saved by `priorart anchors index`, and a prepared corpus whose
 `priorart.candidates/v1`, ordered by anchor overlap, distance, shared root
 causes, identifier specificity and prior id.
 
+`--ranker <FILE>` scores every candidate from a committed
+`priorart.ranker-weights/v1` table (PA-B4; trained by
+`eval/dupbench/train_ranker.py` on the Dup-Bench train split) and orders by
+score descending, with the five-key order above as the tie-break; each
+candidate then carries `ranker_score`. The score is one dot product over the
+table, so inference is deterministic and offline; there is no default table,
+no model runtime, no LLM and no network. Without the flag the output is
+unchanged. A table that is missing, malformed, omits a feature, names an
+unknown one, or states no `missing_value` for a feature that can be null exits
+2 naming the rule; a null `call_graph_distance` is scored as
+`max_candidate_distance + 1` and sets the `call_graph_distance_missing`
+feature, never a silent zero.
+
 ## init
 
 Writes `program.yaml`, `scope.md`, `known-issues.md` and `audits/README.md`
