@@ -696,29 +696,47 @@ fn ranker_candidate(distance: Option<u32>) -> Candidate {
 }
 
 fn fixture_weights() -> RankerWeights {
+    // The same hand-checkable arithmetic as the committed JSON fixture: a
+    // non-unit mean and scale (function overlap: mean 2.0, scale 0.5; distance:
+    // mean 1.0, scale 0.5), so a scorer that drops the mean or the scale
+    // cannot pass. This hand-built candidate's rarity is zero, so its log1p
+    // transform is a no-op here; the JSON fixture exercises it with a nonzero
+    // value.
     let coefficients: BTreeMap<&str, f64> = BTreeMap::from([
-        ("anchor_function_overlap.shared", -2.0),
-        ("anchor_state_overlap.shared", 0.5),
-        ("call_graph_distance", -1.0),
-        ("call_graph_distance_missing", 2.0),
+        ("anchor_function_overlap.shared", -0.5),
+        ("call_graph_distance", -0.25),
+        ("call_graph_distance_missing", 3.0),
         ("mechanism_match.shared_root_causes", 1.0),
+        ("identifier_score.rarity", 0.5),
     ]);
     let features = RANKER_FEATURE_NAMES
         .iter()
-        .map(|name| RankerFeature {
-            name: (*name).to_string(),
-            kind: None,
-            transform: "identity".to_string(),
-            missing_value: if name.ends_with(".ratio") {
-                Some(0.0)
-            } else if *name == "call_graph_distance" {
-                Some(3.0)
+        .map(|name| {
+            let (mean, scale) = match *name {
+                "anchor_function_overlap.shared" => (2.0, 0.5),
+                "call_graph_distance" => (1.0, 0.5),
+                _ => (0.0, 1.0),
+            };
+            let transform = if *name == "identifier_score.rarity" {
+                "log1p"
             } else {
-                None
-            },
-            mean: 0.0,
-            scale: 1.0,
-            coefficient: coefficients.get(name).copied().unwrap_or(0.0),
+                "identity"
+            };
+            RankerFeature {
+                name: (*name).to_string(),
+                kind: None,
+                transform: transform.to_string(),
+                missing_value: if name.ends_with(".ratio") {
+                    Some(0.0)
+                } else if *name == "call_graph_distance" {
+                    Some(3.0)
+                } else {
+                    None
+                },
+                mean,
+                scale,
+                coefficient: coefficients.get(name).copied().unwrap_or(0.0),
+            }
         })
         .collect();
     RankerWeights {
@@ -734,15 +752,19 @@ fn fixture_weights() -> RankerWeights {
 #[test]
 fn ranker_scores_a_hand_built_candidate_exactly() {
     let ranker = Ranker::from_weights(fixture_weights()).expect("fixture weights validate");
-    // z = -2*1 (function shared) + 0.5*2 (state shared) + -1*0 (distance 0)
-    //     + 2*0 (not missing) + 1*1 (shared root cause) = 0.0.
+    // z = -0.5*(1-2)/0.5 (function shared, mean 2 scale 0.5)
+    //     + -0.25*(0-1)/0.5 (distance 0, mean 1 scale 0.5)
+    //     + 3*0 (not missing) + 1*1 (shared root cause) = 2.5.
     let scored = ranker.score(&ranker_candidate(Some(0)));
-    assert!((scored - 0.5).abs() < 1e-12, "scored {scored}");
+    assert!(
+        (scored - 0.9241418199787566).abs() < 1e-12,
+        "scored {scored}"
+    );
     // A null distance uses missing_value 3.0 and sets the indicator:
-    // z = -2 + 1 - 3 + 2 + 1 = -1.0.
+    // z = 1 - 0.25*(3-1)/0.5 + 3 + 1 = 1 - 1 + 3 + 1 = 4.0.
     let null_distance = ranker.score(&ranker_candidate(None));
     assert!(
-        (null_distance - 0.2689414213699951).abs() < 1e-12,
+        (null_distance - 0.9820137900379085).abs() < 1e-12,
         "scored {null_distance}"
     );
 }

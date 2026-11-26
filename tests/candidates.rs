@@ -490,21 +490,27 @@ fn the_committed_ranker_fixture_reproduces_exact_scores_and_order() {
         .iter()
         .map(|c| c["prior_id"].as_str().unwrap())
         .collect();
-    // prior-leaf and prior-total-assets tie on every fixture-weighted
-    // feature; the tie-break is the previous deterministic order, which puts
-    // prior-leaf first. prior-deposit scores lowest because the fixture gives
-    // a negative coefficient to the shared-function count.
+    // The fixture is built so a broken mean, scale or log1p changes the
+    // score. Documented formula, with fn_shared mean 2.0 scale 0.5 coef -0.5,
+    // call_graph_distance mean 1.0 scale 0.5 coef -0.25, missingness coef 3.0,
+    // rarity log1p coef 0.5:
+    //   prior-deposit: -0.5*(1-2)/0.5 + -0.25*(0-1)/0.5 + 0.5*ln(1+6)
+    //                  = 1 + 0.5 + 0.5*ln7 = 2.4729550745276567
+    //   prior-leaf and prior-total-assets: -0.5*(0-2)/0.5
+    //                  + -0.25*(3-1)/0.5 + 3*1 = 2 - 1 + 3 = 4
+    // The two tie on every feature; the tie-break is the previous
+    // deterministic order, which puts prior-leaf first.
     assert_eq!(
         ids,
         vec!["prior-leaf", "prior-total-assets", "prior-deposit"]
     );
-    let expected = [0.3775406687981454, 0.3775406687981454, 0.2689414213699951];
+    let expected = [0.9820137900379085, 0.9820137900379085, 0.922223987854721];
     for (candidate, want) in candidates.iter().zip(expected) {
         let got = candidate["ranker_score"]
             .as_f64()
             .expect("a ranker run emits a score");
         assert!(
-            (got - want).abs() < 1e-9,
+            (got - want).abs() < 1e-12,
             "{} scored {got}, expected {want}",
             candidate["prior_id"]
         );
@@ -523,7 +529,9 @@ fn the_committed_ranker_fixture_reproduces_exact_scores_and_order() {
 fn a_null_call_graph_distance_is_scored_with_the_missingness_indicator() {
     // Prior-mechanism has no call-graph path from the finding, so its distance
     // is null. The documented rule maps it to 3.0 and sets the indicator to
-    // 1.0; with the fixture coefficients the score is exactly sigmoid(0).
+    // 1.0; with the fixture coefficients the logit is
+    //   -0.5*(0-2)/0.5 + -0.25*(3-1)/0.5 + 3*1 + 1*1 = 2 - 1 + 3 + 1 = 5,
+    // so the score is sigmoid(5).
     let r = run(&[
         "candidates",
         "tests/fixtures/candidates/findings/finding-mechanism.md",
@@ -545,7 +553,10 @@ fn a_null_call_graph_distance_is_scored_with_the_missingness_indicator() {
     assert_eq!(candidate["prior_id"], "prior-mechanism");
     assert_eq!(candidate["features"]["call_graph_distance"], Value::Null);
     let got = candidate["ranker_score"].as_f64().expect("score");
-    assert!((got - 0.5).abs() < 1e-9, "scored {got}, expected 0.5");
+    assert!(
+        (got - 0.9933071490757153).abs() < 1e-12,
+        "scored {got}, expected sigmoid(5) = 0.9933071490757153"
+    );
 }
 
 #[test]
@@ -668,4 +679,141 @@ fn the_committed_weights_table_loads_and_scores() {
             .unwrap_or_else(|| panic!("missing score for {candidate}"));
         assert!(score.is_finite() && (0.0..=1.0).contains(&score), "{score}");
     }
+}
+
+/// The raw feature values of one candidate, following the documented rule
+/// (the pairs in `priorart candidates --json` plus the derived
+/// `call_graph_distance_missing` indicator). Used only to recompute an
+/// expected score from the committed weights, independently of `Ranker`.
+fn raw_feature(name: &str, features: &Value) -> f64 {
+    match name {
+        "anchor_function_overlap.shared" => features["anchor_function_overlap"]["shared"]
+            .as_array()
+            .unwrap()
+            .len() as f64,
+        "anchor_function_overlap.ratio" => features["anchor_function_overlap"]["ratio"]
+            .as_f64()
+            .unwrap_or(0.0),
+        "anchor_state_overlap.shared" => features["anchor_state_overlap"]["shared"]
+            .as_array()
+            .unwrap()
+            .len() as f64,
+        "anchor_state_overlap.ratio" => features["anchor_state_overlap"]["ratio"]
+            .as_f64()
+            .unwrap_or(0.0),
+        // The documented missingness rule: MAX_CANDIDATE_DISTANCE (2) + 1.
+        "call_graph_distance" => features["call_graph_distance"].as_f64().unwrap_or(3.0),
+        "call_graph_distance_missing" => {
+            if features["call_graph_distance"].is_null() {
+                1.0
+            } else {
+                0.0
+            }
+        }
+        "mechanism_match.shared_root_causes" => features["mechanism_match"]["shared_root_causes"]
+            .as_array()
+            .unwrap()
+            .len() as f64,
+        "mechanism_match.same_contract" => {
+            if features["mechanism_match"]["same_contract"]
+                .as_bool()
+                .unwrap()
+            {
+                1.0
+            } else {
+                0.0
+            }
+        }
+        "impact_match.shared_impacts" => features["impact_match"]["shared_impacts"]
+            .as_array()
+            .unwrap()
+            .len() as f64,
+        "identifier_score.specific_symbols" => features["identifier_score"]["specific_symbols"]
+            .as_u64()
+            .unwrap() as f64,
+        "identifier_score.shared_symbols" => features["identifier_score"]["shared_symbols"]
+            .as_u64()
+            .unwrap() as f64,
+        "identifier_score.rarity" => {
+            features["identifier_score"]["rarity"].as_u64().unwrap() as f64
+        }
+        "identifier_score.ranked" => {
+            if features["identifier_score"]["ranked"].as_bool().unwrap() {
+                1.0
+            } else {
+                0.0
+            }
+        }
+        other => panic!("the test does not know the feature {other:?}"),
+    }
+}
+
+fn expected_score_from_weights(weights: &Value, features: &Value) -> f64 {
+    let mut z = weights["intercept"].as_f64().expect("intercept");
+    for spec in weights["features"].as_array().expect("features") {
+        let name = spec["name"].as_str().expect("feature name");
+        let mut value = raw_feature(name, features);
+        if spec["transform"].as_str().expect("transform") == "log1p" {
+            value = value.ln_1p();
+        }
+        z += spec["coefficient"].as_f64().expect("coefficient")
+            * (value - spec["mean"].as_f64().expect("mean"))
+            / spec["scale"].as_f64().expect("scale");
+    }
+    1.0 / (1.0 + (-z).exp())
+}
+
+#[test]
+fn the_committed_weights_table_reproduces_an_exact_score() {
+    // The shipped table has non-unit scales and log1p transforms; a scorer
+    // that dropped the scale, the mean, or the log1p would pass a
+    // finite-score check but not this one. The expected value is computed
+    // here from the recorded mean/scale/coefficient and the candidate's own
+    // raw features, not read back from the program.
+    let r = run(&[
+        "candidates",
+        "tests/fixtures/candidates/findings/finding-shared-function.md",
+        "--corpus",
+        "tests/fixtures/candidates/corpus",
+        "--repo",
+        "tests/fixtures/candidates-repo",
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--ranker",
+        "eval/dupbench/weights/v1.json",
+        "--json",
+    ]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let report: Value = serde_json::from_str(&r.stdout).expect("candidates --json prints JSON");
+    let candidate = report["candidates"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["prior_id"] == "prior-deposit")
+        .expect("prior-deposit is a candidate");
+    let weights: Value = serde_json::from_str(
+        &std::fs::read_to_string(manifest_dir().join("eval/dupbench/weights/v1.json"))
+            .expect("committed weights"),
+    )
+    .expect("committed weights are JSON");
+    // The test is only as strong as the table it reads: require a feature
+    // with a nonzero coefficient and a scale away from 1, and a log1p feature
+    // that is nonzero for this candidate.
+    let specs = weights["features"].as_array().expect("features");
+    assert!(specs.iter().any(|spec| {
+        spec["coefficient"].as_f64().unwrap() != 0.0
+            && (spec["scale"].as_f64().unwrap() - 1.0).abs() > 1e-6
+    }));
+    assert!(specs.iter().any(|spec| {
+        spec["transform"] == "log1p"
+            && raw_feature(spec["name"].as_str().unwrap(), &candidate["features"]) > 0.0
+    }));
+    let expected = expected_score_from_weights(&weights, &candidate["features"]);
+    let got = candidate["ranker_score"].as_f64().expect("score");
+    assert!(
+        (got - expected).abs() < 1e-12,
+        "prior-deposit scored {got}, independently computed {expected}"
+    );
 }
