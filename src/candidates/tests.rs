@@ -989,3 +989,112 @@ fn the_committed_calibration_names_no_final_contest() {
         );
     }
 }
+
+// --- PA-B5 calibration table validation, field by field ----------------------
+
+fn table_of(blocks: Vec<AlarmBlock>, threshold: Option<f64>) -> AlarmCalibration {
+    AlarmCalibration {
+        schema: ALARM_CALIBRATION_SCHEMA.to_string(),
+        version: 1,
+        blocks,
+        threshold,
+        validation_contests: Vec::new(),
+    }
+}
+
+fn raw_block(score_lo: f64, score_hi: f64, n: u64, k: u64, value: f64) -> AlarmBlock {
+    AlarmBlock {
+        score_lo,
+        score_hi,
+        n,
+        k,
+        value,
+    }
+}
+
+#[test]
+fn each_non_finite_block_field_is_rejected_on_its_own() {
+    for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+        for (what, block) in [
+            ("score_lo", raw_block(bad, 0.5, 10, 5, 0.5)),
+            ("score_hi", raw_block(0.1, bad, 10, 5, 0.5)),
+            ("value", raw_block(0.1, 0.5, 10, 5, bad)),
+        ] {
+            let error = table_of(vec![block], None).validate().expect_err(what);
+            assert!(
+                error.contains("non-finite or out-of-range"),
+                "{what}: {error}"
+            );
+        }
+    }
+}
+
+#[test]
+fn a_finite_value_outside_zero_one_is_rejected() {
+    for value in [1.5, -0.25] {
+        let error = table_of(vec![raw_block(0.1, 0.5, 10, 5, value)], None)
+            .validate()
+            .expect_err("out of range");
+        assert!(error.contains("out-of-range"), "{error}");
+    }
+    // The closed ends are allowed.
+    for value in [0.0, 1.0] {
+        table_of(vec![raw_block(0.1, 0.5, 10, 5, value)], None)
+            .validate()
+            .expect("0 and 1 are valid rates");
+    }
+}
+
+#[test]
+fn a_single_point_block_is_valid_and_an_inverted_one_is_not() {
+    table_of(vec![raw_block(0.4, 0.4, 3, 1, 1.0 / 3.0)], None)
+        .validate()
+        .expect("score_lo == score_hi is one observed score");
+    let error = table_of(vec![raw_block(0.5, 0.4, 3, 1, 1.0 / 3.0)], None)
+        .validate()
+        .expect_err("score_lo above score_hi");
+    assert!(error.contains("score_lo above score_hi"), "{error}");
+}
+
+#[test]
+fn block_counts_need_n_positive_and_k_at_most_n() {
+    let error = table_of(vec![raw_block(0.1, 0.5, 0, 0, 0.0)], None)
+        .validate()
+        .expect_err("n == 0");
+    assert!(error.contains("n 0 and k 0"), "{error}");
+    let error = table_of(vec![raw_block(0.1, 0.5, 4, 5, 1.0)], None)
+        .validate()
+        .expect_err("k > n");
+    assert!(error.contains("n 4 and k 5"), "{error}");
+    table_of(vec![raw_block(0.1, 0.5, 5, 5, 1.0)], None)
+        .validate()
+        .expect("k == n is valid");
+}
+
+#[test]
+fn equal_adjacent_block_values_are_accepted_as_monotone() {
+    // The contract is a non-decreasing map. calibrate_alarm.py pools ties, so
+    // its own output always has strictly increasing values, but a table with
+    // two equal adjacent values is still monotone and maps every score the
+    // same way a pooled table would; it is accepted.
+    let table = table_of(
+        vec![
+            raw_block(0.1, 0.2, 10, 5, 0.5),
+            raw_block(0.3, 0.4, 10, 5, 0.5),
+        ],
+        Some(0.5),
+    );
+    table
+        .validate()
+        .expect("equal adjacent values are monotone");
+    assert_eq!(table.calibrate(0.35), 0.5);
+}
+
+#[test]
+fn the_size_cap_accepts_exactly_the_limit_and_rejects_one_byte_more() {
+    let path = std::path::Path::new("alarm.json");
+    super::alarm::check_size(MAX_JSON_BYTES, path).expect("exactly the cap is read");
+    super::alarm::check_size(MAX_JSON_BYTES - 1, path).expect("under the cap is read");
+    let error = super::alarm::check_size(MAX_JSON_BYTES + 1, path).expect_err("one byte more");
+    assert!(error.contains("priorart reads up to"), "{error}");
+}

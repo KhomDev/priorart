@@ -148,6 +148,20 @@ pub struct Alarm {
     calibration: AlarmCalibration,
 }
 
+/// The size cap for a calibration table: up to and including
+/// [`MAX_JSON_BYTES`] is read; one byte more is a usage error.
+pub(crate) fn check_size(len: u64, path: &Path) -> Result<(), String> {
+    if len > MAX_JSON_BYTES {
+        return Err(format!(
+            "alarm calibration {} is {}; priorart reads up to {} MiB",
+            path.display(),
+            crate::dossier::import::mib(len),
+            MAX_JSON_BYTES / (1024 * 1024)
+        ));
+    }
+    Ok(())
+}
+
 impl Alarm {
     /// Validate and wrap an in-memory table.
     pub(crate) fn from_calibration(calibration: AlarmCalibration) -> Result<Self, String> {
@@ -159,14 +173,7 @@ impl Alarm {
     /// or an invalid table is a usage error naming the file.
     pub fn load(path: &Path) -> Result<Self, String> {
         let meta = crate::dossier::import::require_regular_file_from(path, "alarm calibration")?;
-        if meta.len() > MAX_JSON_BYTES {
-            return Err(format!(
-                "alarm calibration {} is {}; priorart reads up to {} MiB",
-                path.display(),
-                crate::dossier::import::mib(meta.len()),
-                MAX_JSON_BYTES / (1024 * 1024)
-            ));
-        }
+        check_size(meta.len(), path)?;
         let bytes = std::fs::read(path)
             .map_err(|e| format!("cannot read alarm calibration {}: {e}", path.display()))?;
         let calibration: AlarmCalibration = serde_json::from_slice(&bytes).map_err(|e| {

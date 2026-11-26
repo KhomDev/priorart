@@ -90,15 +90,25 @@ pub fn prose_citations(text: &str) -> Vec<Citation> {
 
     let known: BTreeSet<CitedKey> = base.iter().map(cited_key).collect();
     found.retain(|c| !known.contains(&cited_key(c)));
-    found.sort();
-    found.dedup_by(|a, b| {
-        a.kind == b.kind
-            && a.symbol == b.symbol
-            && a.file == b.file
-            && a.line_start == b.line_start
-            && a.line_end == b.line_end
+    // Sort by what the citation names (then the raw spelling), so two
+    // spellings of one citation are adjacent and collapse to the first.
+    found.sort_by(|a, b| {
+        (a.kind, cited_key(a))
+            .cmp(&(b.kind, cited_key(b)))
+            .then_with(|| a.raw.cmp(&b.raw))
     });
+    found.dedup_by(|a, b| same_citation(a, b));
     found
+}
+
+/// Two prose citations name the same thing: same kind, symbol, file and
+/// line range. The raw spelling and the repo hint do not count.
+fn same_citation(a: &Citation, b: &Citation) -> bool {
+    a.kind == b.kind
+        && a.symbol == b.symbol
+        && a.file == b.file
+        && a.line_start == b.line_start
+        && a.line_end == b.line_end
 }
 
 /// Resolve `text` with PA-B1, and only when that yields no anchor, again with
@@ -393,6 +403,76 @@ mod tests {
         let set = resolve_text_with_prose(text, &fixture());
         assert!(set.anchors.is_empty(), "{set:#?}");
         assert!(!set.abstentions.is_empty());
+    }
+
+    #[test]
+    fn a_repeated_prose_citation_collapses_to_one() {
+        let c = prose_citations("Call rageQuit() first; a second rageQuit(x) repeats it.");
+        assert_eq!(c.len(), 1, "{c:?}");
+        assert_eq!(c[0].symbol.as_deref(), Some("rageQuit"));
+        // Two different names are both kept.
+        let c = prose_citations("Call rageQuit() and then accept().");
+        assert_eq!(c.len(), 2, "{c:?}");
+    }
+
+    #[test]
+    fn same_citation_compares_every_named_field_and_nothing_else() {
+        let base = Citation {
+            raw: "x".to_string(),
+            kind: CitationKind::FilePath,
+            file: Some("A.sol".to_string()),
+            line_start: Some(10),
+            line_end: Some(12),
+            symbol: Some("f".to_string()),
+            qualifier: None,
+            repo_hint: None,
+        };
+        // Raw spelling, qualifier and repo hint do not distinguish.
+        let mut same = base.clone();
+        same.raw = "y".to_string();
+        same.repo_hint = Some("o/r".to_string());
+        same.qualifier = Some("Q".to_string());
+        assert!(same_citation(&base, &same));
+        assert!(same_citation(&base, &base));
+        // Each named field alone distinguishes.
+        let mut kind = base.clone();
+        kind.kind = CitationKind::Identifier;
+        let mut symbol = base.clone();
+        symbol.symbol = Some("g".to_string());
+        let mut file = base.clone();
+        file.file = Some("B.sol".to_string());
+        let mut start = base.clone();
+        start.line_start = Some(11);
+        let mut end = base.clone();
+        end.line_end = Some(13);
+        for (what, other) in [
+            ("kind", kind),
+            ("symbol", symbol),
+            ("file", file),
+            ("line_start", start),
+            ("line_end", end),
+        ] {
+            assert!(!same_citation(&base, &other), "{what} must distinguish");
+            // And dedup keeps both when they are adjacent.
+            let mut v = vec![base.clone(), other];
+            v.dedup_by(|a, b| same_citation(a, b));
+            assert_eq!(v.len(), 2, "{what}");
+        }
+    }
+
+    #[test]
+    fn line_zero_is_not_a_line_reference() {
+        for text in [
+            "Vault.sol line 0 is the pragma.",
+            "Vault.sol L00 is the pragma.",
+        ] {
+            let c = prose_citations(text);
+            assert!(c.iter().all(|c| c.line_start.is_none()), "{text}: {c:?}");
+        }
+        // A positive line in the same shape is read.
+        assert!(prose_citations("Vault.sol L10 here")
+            .iter()
+            .any(|c| c.line_start == Some(10)));
     }
 
     #[test]
