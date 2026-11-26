@@ -52,6 +52,19 @@ empty, issue files carry a severity line only, the final report lists the
 findings). The Sherlock source is therefore documented as unusable for
 Dup-Bench without its GitHub issue labels.
 
+## Codebase pins (input for PA-B3/PA-B4)
+
+`codebases.json` pins the audited codebase for every contest, pointer-only:
+
+| Split | Contests | repo+commit | repo only | missing |
+|---|---:|---:|---:|---:|
+| all | 111 | 106 | 0 | 5 |
+| train | 58 | 54 | 0 | 4 |
+| validation | 36 | 35 | 0 | 1 |
+| FINAL | 17 | 17 | 0 | 0 |
+
+The repo is the Code4rena sponsor snapshot (`https://github.com/code-423n4/<slug>`), which is the exact code under review; 108 of 111 report `# Scope` sections name it and the other 3 are inferred from the contest slug (recorded as `repo_source`). The commit is that repository's **HEAD at collection** — the findings README and the report front matter state no commit — and `source` says so. The 5 missing entries (`2022-12-Stealth-Project`, `2023-03-polynomial`, `2023-05-particle`, `2023-11-betafinance` in train; `2024-04-lavarage` in validation) record `commit: null` with the reason: the sponsor repo is not publicly reachable. Each entry also carries the findings-repo commit and the findings `README.md` sha256 (111/111); `fetch.py --check` verifies the README pins offline. The commit itself is re-verifiable with `git ls-remote` and is not claimed to be a commit stated by Code4rena.
+
 ## Sealed pairs
 
 `pairs.json`: 6 pairs, 6 sponsors, none used before (Basin, Revert Finance,
