@@ -30,11 +30,16 @@
 //! reason. An empty candidate list without a reason would be indistinguishable
 //! from "no prior art exists", which this module never claims.
 
+mod alarm;
 mod corpus;
 mod ranker;
 
+pub use alarm::{
+    Alarm, AlarmBlock, AlarmCalibration, AlarmReport, ALARM_CALIBRATION_SCHEMA, ALARM_WARNING,
+};
 pub use corpus::{
-    load_corpus, prepare_corpus, Corpus, CorpusItem, CorpusKind, PrepareReport, PreparedCorpus,
+    load_corpus, prepare_corpus, prepare_corpus_with, Corpus, CorpusItem, CorpusKind,
+    PrepareReport, PreparedCorpus,
 };
 pub use ranker::{Ranker, RANKER_ORDERING, RANKER_WEIGHTS_SCHEMA};
 
@@ -344,6 +349,11 @@ pub struct CandidateReport {
     pub candidates: Vec<Candidate>,
     pub ordering: Vec<String>,
     pub limits: Limits,
+    /// The PA-B5 calibrated alarm, present only when `--alarm` supplied a
+    /// calibration table. Omitted from the JSON when absent, so every other
+    /// output is unchanged byte for byte.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub alarm: Option<AlarmReport>,
 }
 
 /// Options for one generation run.
@@ -363,6 +373,15 @@ pub struct GenerateOptions<'a> {
     /// candidate is scored and the list is ordered by score descending, with
     /// the documented default order as the tie-break, before `top_k` applies.
     pub ranker: Option<&'a Ranker>,
+    /// The PA-B5 calibration table, when `--alarm` supplied one. It reads the
+    /// top candidate's ranker score, so it requires `ranker`; without a ranker
+    /// the alarm reports no top score and never fires.
+    pub alarm: Option<&'a Alarm>,
+    /// Before abstaining on "no anchor", resolve the finding (and every
+    /// unprepared prior item with no anchor) again with the prose pass
+    /// ([`crate::anchors::resolve_text_with_prose`]). Off by default: a text
+    /// that already resolves is unchanged either way.
+    pub prose_anchors: bool,
 }
 
 impl<'a> GenerateOptions<'a> {
@@ -373,6 +392,8 @@ impl<'a> GenerateOptions<'a> {
             top_k: DEFAULT_TOP_K,
             exclude: BTreeSet::new(),
             ranker: None,
+            alarm: None,
+            prose_anchors: false,
         }
     }
 }
@@ -438,6 +459,9 @@ pub fn generate(
 
     // The finding's own anchors and mechanism.
     let finding_anchors: AnchorSet = match index {
+        Some(index) if options.prose_anchors => {
+            crate::anchors::resolve_text_with_prose(finding_text, index)
+        }
         Some(index) => crate::anchors::resolve_text(finding_text, index),
         None => {
             let mut abstentions = Vec::new();
@@ -480,6 +504,9 @@ pub fn generate(
         let anchors = match &item.anchors {
             Some(anchors) => anchors.clone(),
             None => match index {
+                Some(index) if options.prose_anchors => {
+                    crate::anchors::resolve_text_with_prose(&item.text, index).anchors
+                }
                 Some(index) => crate::anchors::resolve_text(&item.text, index).anchors,
                 None => Vec::new(),
             },
@@ -552,6 +579,13 @@ pub fn generate(
         .filter(|i| options.exclude.contains(&i.id))
         .count();
     let total_candidates = candidates.len();
+    // The top candidate survives truncation (top_k >= 1), but evaluate first
+    // so the alarm never depends on --top-k.
+    let alarm = match (options.alarm, options.ranker) {
+        (Some(alarm), Some(_)) => Some(alarm.evaluate(&candidates)),
+        (Some(alarm), None) => Some(alarm.evaluate(&[])),
+        (None, _) => None,
+    };
     candidates.truncate(options.top_k.max(1));
 
     let abstention = if !candidates.is_empty() {
@@ -599,6 +633,7 @@ pub fn generate(
             max_candidate_distance: MAX_CANDIDATE_DISTANCE,
             excluded,
         },
+        alarm,
     }
 }
 
@@ -1105,6 +1140,9 @@ pub fn render_text(report: &CandidateReport) -> String {
             sanitize(&abstention.detail)
         ));
         out.push_str("candidates: 0\n");
+        if let Some(alarm) = &report.alarm {
+            out.push_str(&render_alarm(alarm));
+        }
         return sanitize(&out);
     }
     out.push_str(&format!(
@@ -1150,7 +1188,29 @@ pub fn render_text(report: &CandidateReport) -> String {
             out.push_str(&format!("     ranker score {score:.6}\n"));
         }
     }
+    if let Some(alarm) = &report.alarm {
+        out.push_str(&render_alarm(alarm));
+    }
     sanitize(&out)
+}
+
+fn render_alarm(alarm: &AlarmReport) -> String {
+    let threshold = alarm
+        .threshold
+        .map(|t| format!("{t:.6}"))
+        .unwrap_or_else(|| "none (warning off)".to_string());
+    match (&alarm.top_candidate, alarm.calibrated) {
+        (Some(top), Some(calibrated)) if alarm.fires => format!(
+            "WARNING {}: {}  calibrated {calibrated:.6} >= threshold {threshold}\n",
+            ALARM_WARNING,
+            sanitize(top)
+        ),
+        (Some(top), Some(calibrated)) => format!(
+            "alarm: no warning  top {}  calibrated {calibrated:.6}  threshold {threshold}\n",
+            sanitize(top)
+        ),
+        _ => format!("alarm: no warning  no ranked candidate  threshold {threshold}\n"),
+    }
 }
 
 fn joined(values: &[String], empty: &str) -> String {

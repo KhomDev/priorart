@@ -1,0 +1,12 @@
+{
+ "schema": "priorart.alarm-calibration/v1",
+ "version": 1,
+ "note": "Synthetic test fixture, not a measurement. Built so a raw score of 0.982 calibrates to 0.5 (below the 0.97 threshold) while 0.9933 calibrates to 0.97 (at the threshold): skipping calibration would fire on the first.",
+ "blocks": [
+  {"score_lo": 0.0, "score_hi": 0.5, "n": 10, "k": 1, "value": 0.1},
+  {"score_lo": 0.9, "score_hi": 0.985, "n": 10, "k": 5, "value": 0.5},
+  {"score_lo": 0.99, "score_hi": 1.0, "n": 100, "k": 97, "value": 0.97}
+ ],
+ "threshold": 0.97,
+ "validation_contests": []
+}

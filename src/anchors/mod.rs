@@ -21,6 +21,7 @@
 mod benchmark;
 mod cite;
 mod index;
+mod prose;
 mod resolve;
 
 pub use benchmark::{bench, BenchOptions, BenchReport, CorpusReport, CorpusStatus};
@@ -28,6 +29,7 @@ pub use cite::{citation_tokens, citations, cites_code, Citation, CitationKind};
 pub use index::{
     parse_repo, FileFact, IndexOptions, IndexSet, ParseFailure, RepoIndex, SymbolInfo,
 };
+pub use prose::{prose_citations, resolve_text_with_prose};
 pub use resolve::resolve_text;
 
 use serde::{Deserialize, Serialize};

@@ -1,0 +1,530 @@
+{
+ "schema": "priorart.alarm-calibration/v1",
+ "version": 1,
+ "created_by": "eval/dupbench/calibrate_alarm.py",
+ "ranker_weights": "eval/dupbench/weights/v1.json",
+ "ranker_weights_sha256": "32ea46ec2bdc110e1a4af415212dad9bb2f5c105c1437b7a431aacd8f40f5abe",
+ "dataset_sha256": "26359c35acda39e21ea6efaebcbfdf6cdd64f64d37db970855142d70cea38d2f",
+ "split": "validation",
+ "validation_contests": [
+  "2023-07-amphora",
+  "2024-01-salty",
+  "2024-02-spectra",
+  "2024-02-thruster",
+  "2024-02-wise-lending",
+  "2024-03-abracadabra-money",
+  "2024-03-coinbase",
+  "2024-03-dittoeth",
+  "2024-03-gitcoin",
+  "2024-03-neobase",
+  "2024-03-ondo-finance",
+  "2024-03-pooltogether",
+  "2024-03-taiko",
+  "2024-03-zksync",
+  "2024-04-gondi",
+  "2024-05-arbitrum-foundation",
+  "2024-05-bakerfi",
+  "2024-05-loop",
+  "2024-05-predy",
+  "2024-06-badger",
+  "2024-06-krystal-defi",
+  "2024-06-thorchain",
+  "2024-06-vultisig",
+  "2024-07-dittoeth",
+  "2024-07-munchables",
+  "2024-07-optimism"
+ ],
+ "final_contests_refused": 17,
+ "definition": {
+  "query": "one paid-unique primary or one judged duplicate of the Dup-Bench validation split that did not abstain; abstained queries produce no alarm and are excluded",
+  "top_candidate": "the candidate with the highest PA-B4 ranker score (weights v1); ties keep the default candidate order",
+  "alarm": "fires when the calibrated probability of the top score is >= the threshold",
+  "true_alarm": "the query is a judged duplicate and its top candidate is its judged primary (pair label 1); any alarm on a paid-unique primary is false (PA-B4 FAR definition); an alarm naming a different primary is false",
+  "precision": "k / n over validation queries whose calibrated top score is >= threshold; k = true alarms; Wilson 95% interval with z = 1.959964",
+  "threshold_rule": "the lowest isotonic block value whose precision Wilson lower bound is >= 0.80; none qualifies -> the alarm is off",
+  "calibration_map": "a step function over the raw top score: a score s maps to the value of the last block whose score_lo <= s; a score below the first block's score_lo maps to the first block's value"
+ },
+ "precision_floor": 0.8,
+ "queries": {
+  "total": 1294,
+  "primary": 211,
+  "duplicate": 1083,
+  "true_alarms": 742
+ },
+ "blocks": [
+  {
+   "score_lo": 0.007600052048237243,
+   "score_hi": 0.016505206401717994,
+   "n": 18,
+   "k": 1,
+   "value": 0.05555555555555555
+  },
+  {
+   "score_lo": 0.01911983647726361,
+   "score_hi": 0.0697786245702031,
+   "n": 76,
+   "k": 10,
+   "value": 0.13157894736842105
+  },
+  {
+   "score_lo": 0.0710471146787854,
+   "score_hi": 0.09739917625113678,
+   "n": 42,
+   "k": 7,
+   "value": 0.16666666666666666
+  },
+  {
+   "score_lo": 0.09879859048628192,
+   "score_hi": 0.11614587284934487,
+   "n": 9,
+   "k": 2,
+   "value": 0.2222222222222222
+  },
+  {
+   "score_lo": 0.11761553484022874,
+   "score_hi": 0.13926277463587042,
+   "n": 23,
+   "k": 8,
+   "value": 0.34782608695652173
+  },
+  {
+   "score_lo": 0.13942484491059343,
+   "score_hi": 0.14604160026730487,
+   "n": 11,
+   "k": 4,
+   "value": 0.36363636363636365
+  },
+  {
+   "score_lo": 0.1478713831969495,
+   "score_hi": 0.2814454180136557,
+   "n": 212,
+   "k": 81,
+   "value": 0.38207547169811323
+  },
+  {
+   "score_lo": 0.2823200704805918,
+   "score_hi": 0.2836038639392572,
+   "n": 9,
+   "k": 4,
+   "value": 0.4444444444444444
+  },
+  {
+   "score_lo": 0.28574280994356527,
+   "score_hi": 0.31139384464037,
+   "n": 53,
+   "k": 24,
+   "value": 0.4528301886792453
+  },
+  {
+   "score_lo": 0.3132960720069469,
+   "score_hi": 0.313401697499033,
+   "n": 2,
+   "k": 1,
+   "value": 0.5
+  },
+  {
+   "score_lo": 0.315935264309082,
+   "score_hi": 0.41758164691433775,
+   "n": 167,
+   "k": 102,
+   "value": 0.6107784431137725
+  },
+  {
+   "score_lo": 0.4197668244557171,
+   "score_hi": 0.45670011001155236,
+   "n": 51,
+   "k": 32,
+   "value": 0.6274509803921569
+  },
+  {
+   "score_lo": 0.45736715733375083,
+   "score_hi": 0.5398304956154554,
+   "n": 129,
+   "k": 85,
+   "value": 0.6589147286821705
+  },
+  {
+   "score_lo": 0.5415014629226903,
+   "score_hi": 0.6852123943868079,
+   "n": 174,
+   "k": 119,
+   "value": 0.6839080459770115
+  },
+  {
+   "score_lo": 0.6860222591410557,
+   "score_hi": 0.853456144069875,
+   "n": 156,
+   "k": 113,
+   "value": 0.7243589743589743
+  },
+  {
+   "score_lo": 0.8548965723626742,
+   "score_hi": 0.9602560534988259,
+   "n": 122,
+   "k": 110,
+   "value": 0.9016393442622951
+  },
+  {
+   "score_lo": 0.9616703569851042,
+   "score_hi": 0.9746800183648957,
+   "n": 15,
+   "k": 14,
+   "value": 0.9333333333333333
+  },
+  {
+   "score_lo": 0.9749781547430594,
+   "score_hi": 0.985298437700406,
+   "n": 25,
+   "k": 25,
+   "value": 1.0
+  }
+ ],
+ "table": [
+  {
+   "bin": 1,
+   "score_lo": 0.007600052048237243,
+   "score_hi": 0.016505206401717994,
+   "bin_n": 18,
+   "bin_k": 1,
+   "calibrated": 0.05555555555555555,
+   "tail_n": 1294,
+   "tail_k": 742,
+   "tail_precision": 0.5734157650695518,
+   "tail_wilson95": [
+    0.54629001498824,
+    0.6001069109997578
+   ],
+   "bin_wilson95": [
+    0.009875190868776959,
+    0.2575730099608091
+   ]
+  },
+  {
+   "bin": 2,
+   "score_lo": 0.01911983647726361,
+   "score_hi": 0.0697786245702031,
+   "bin_n": 76,
+   "bin_k": 10,
+   "calibrated": 0.13157894736842105,
+   "tail_n": 1276,
+   "tail_k": 741,
+   "tail_precision": 0.5807210031347962,
+   "tail_wilson95": [
+    0.5534439425119368,
+    0.6075134937161908
+   ],
+   "bin_wilson95": [
+    0.07306881534202192,
+    0.22554119523834837
+   ]
+  },
+  {
+   "bin": 3,
+   "score_lo": 0.0710471146787854,
+   "score_hi": 0.09739917625113678,
+   "bin_n": 42,
+   "bin_k": 7,
+   "calibrated": 0.16666666666666666,
+   "tail_n": 1200,
+   "tail_k": 731,
+   "tail_precision": 0.6091666666666666,
+   "tail_wilson95": [
+    0.5812530621899447,
+    0.636383569334169
+   ],
+   "bin_wilson95": [
+    0.08315916601175122,
+    0.30604002870618957
+   ]
+  },
+  {
+   "bin": 4,
+   "score_lo": 0.09879859048628192,
+   "score_hi": 0.11614587284934487,
+   "bin_n": 9,
+   "bin_k": 2,
+   "calibrated": 0.2222222222222222,
+   "tail_n": 1158,
+   "tail_k": 724,
+   "tail_precision": 0.6252158894645942,
+   "tail_wilson95": [
+    0.5969645061952255,
+    0.652639256678956
+   ],
+   "bin_wilson95": [
+    0.06322510654056959,
+    0.5474110333077882
+   ]
+  },
+  {
+   "bin": 5,
+   "score_lo": 0.11761553484022874,
+   "score_hi": 0.13926277463587042,
+   "bin_n": 23,
+   "bin_k": 8,
+   "calibrated": 0.34782608695652173,
+   "tail_n": 1149,
+   "tail_k": 722,
+   "tail_precision": 0.6283724978241949,
+   "tail_wilson95": [
+    0.600046495582659,
+    0.6558429831720907
+   ],
+   "bin_wilson95": [
+    0.18811275843801456,
+    0.5510966477661382
+   ]
+  },
+  {
+   "bin": 6,
+   "score_lo": 0.13942484491059343,
+   "score_hi": 0.14604160026730487,
+   "bin_n": 11,
+   "bin_k": 4,
+   "calibrated": 0.36363636363636365,
+   "tail_n": 1126,
+   "tail_k": 714,
+   "tail_precision": 0.6341030195381883,
+   "tail_wilson95": [
+    0.6055568015236223,
+    0.6617373375133917
+   ],
+   "bin_wilson95": [
+    0.15166470989133157,
+    0.6461988273798758
+   ]
+  },
+  {
+   "bin": 7,
+   "score_lo": 0.1478713831969495,
+   "score_hi": 0.2814454180136557,
+   "bin_n": 212,
+   "bin_k": 81,
+   "calibrated": 0.38207547169811323,
+   "tail_n": 1115,
+   "tail_k": 710,
+   "tail_precision": 0.6367713004484304,
+   "tail_wilson95": [
+    0.6081174923523693,
+    0.6644859203822306
+   ],
+   "bin_wilson95": [
+    0.319318197983604,
+    0.4490302914162108
+   ]
+  },
+  {
+   "bin": 8,
+   "score_lo": 0.2823200704805918,
+   "score_hi": 0.2836038639392572,
+   "bin_n": 9,
+   "bin_k": 4,
+   "calibrated": 0.4444444444444444,
+   "tail_n": 903,
+   "tail_k": 629,
+   "tail_precision": 0.6965669988925803,
+   "tail_wilson95": [
+    0.6658004204165409,
+    0.7256682277393756
+   ],
+   "bin_wilson95": [
+    0.18877851977054566,
+    0.7333487081991259
+   ]
+  },
+  {
+   "bin": 9,
+   "score_lo": 0.28574280994356527,
+   "score_hi": 0.31139384464037,
+   "bin_n": 53,
+   "bin_k": 24,
+   "calibrated": 0.4528301886792453,
+   "tail_n": 894,
+   "tail_k": 625,
+   "tail_precision": 0.6991051454138703,
+   "tail_wilson95": [
+    0.6682407820913785,
+    0.728265746403723
+   ],
+   "bin_wilson95": [
+    0.32657579062351566,
+    0.585460246128432
+   ]
+  },
+  {
+   "bin": 10,
+   "score_lo": 0.3132960720069469,
+   "score_hi": 0.313401697499033,
+   "bin_n": 2,
+   "bin_k": 1,
+   "calibrated": 0.5,
+   "tail_n": 841,
+   "tail_k": 601,
+   "tail_precision": 0.7146254458977408,
+   "tail_wilson95": [
+    0.6831825136838691,
+    0.744116592207574
+   ],
+   "bin_wilson95": [
+    0.09453120463920084,
+    0.9054687953607992
+   ]
+  },
+  {
+   "bin": 11,
+   "score_lo": 0.315935264309082,
+   "score_hi": 0.41758164691433775,
+   "bin_n": 167,
+   "bin_k": 102,
+   "calibrated": 0.6107784431137725,
+   "tail_n": 839,
+   "tail_k": 600,
+   "tail_precision": 0.7151370679380215,
+   "tail_wilson95": [
+    0.6836696807418899,
+    0.7446433740989998
+   ],
+   "bin_wilson95": [
+    0.5351325927466225,
+    0.6814424718909861
+   ]
+  },
+  {
+   "bin": 12,
+   "score_lo": 0.4197668244557171,
+   "score_hi": 0.45670011001155236,
+   "bin_n": 51,
+   "bin_k": 32,
+   "calibrated": 0.6274509803921569,
+   "tail_n": 672,
+   "tail_k": 498,
+   "tail_precision": 0.7410714285714286,
+   "tail_wilson95": [
+    0.7066475544803223,
+    0.7727548197633491
+   ],
+   "bin_wilson95": [
+    0.49025213361206255,
+    0.7467948061518562
+   ]
+  },
+  {
+   "bin": 13,
+   "score_lo": 0.45736715733375083,
+   "score_hi": 0.5398304956154554,
+   "bin_n": 129,
+   "bin_k": 85,
+   "calibrated": 0.6589147286821705,
+   "tail_n": 621,
+   "tail_k": 466,
+   "tail_precision": 0.750402576489533,
+   "tail_wilson95": [
+    0.7148945914593572,
+    0.7828316646645697
+   ],
+   "bin_wilson95": [
+    0.5735712854960489,
+    0.7350673002683292
+   ]
+  },
+  {
+   "bin": 14,
+   "score_lo": 0.5415014629226903,
+   "score_hi": 0.6852123943868079,
+   "bin_n": 174,
+   "bin_k": 119,
+   "calibrated": 0.6839080459770115,
+   "tail_n": 492,
+   "tail_k": 381,
+   "tail_precision": 0.774390243902439,
+   "tail_wilson95": [
+    0.7354125932152553,
+    0.8091162983565925
+   ],
+   "bin_wilson95": [
+    0.6114861249445771,
+    0.7483849669964653
+   ]
+  },
+  {
+   "bin": 15,
+   "score_lo": 0.6860222591410557,
+   "score_hi": 0.853456144069875,
+   "bin_n": 156,
+   "bin_k": 113,
+   "calibrated": 0.7243589743589743,
+   "tail_n": 318,
+   "tail_k": 262,
+   "tail_precision": 0.8238993710691824,
+   "tail_wilson95": [
+    0.7782396606292612,
+    0.8618270377881683
+   ],
+   "bin_wilson95": [
+    0.6494863099062027,
+    0.7884476309494328
+   ]
+  },
+  {
+   "bin": 16,
+   "score_lo": 0.8548965723626742,
+   "score_hi": 0.9602560534988259,
+   "bin_n": 122,
+   "bin_k": 110,
+   "calibrated": 0.9016393442622951,
+   "tail_n": 162,
+   "tail_k": 149,
+   "tail_precision": 0.9197530864197531,
+   "tail_wilson95": [
+    0.8675546685132511,
+    0.952505652454767
+   ],
+   "bin_wilson95": [
+    0.8359226800984052,
+    0.9428349795091622
+   ]
+  },
+  {
+   "bin": 17,
+   "score_lo": 0.9616703569851042,
+   "score_hi": 0.9746800183648957,
+   "bin_n": 15,
+   "bin_k": 14,
+   "calibrated": 0.9333333333333333,
+   "tail_n": 40,
+   "tail_k": 39,
+   "tail_precision": 0.975,
+   "tail_wilson95": [
+    0.8711863091181636,
+    0.9955731685462955
+   ],
+   "bin_wilson95": [
+    0.7018346989112435,
+    0.9881331046384677
+   ]
+  },
+  {
+   "bin": 18,
+   "score_lo": 0.9749781547430594,
+   "score_hi": 0.985298437700406,
+   "bin_n": 25,
+   "bin_k": 25,
+   "calibrated": 1.0,
+   "tail_n": 25,
+   "tail_k": 25,
+   "tail_precision": 1.0,
+   "tail_wilson95": [
+    0.866807747239609,
+    1.0
+   ],
+   "bin_wilson95": [
+    0.866807747239609,
+    1.0
+   ]
+  }
+ ],
+ "threshold": 0.9016393442622951,
+ "threshold_score_lo": 0.8548965723626742,
+ "threshold_bin": 16,
+ "status": "on"
+}

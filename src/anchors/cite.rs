@@ -305,6 +305,16 @@ fn ident_parts(token: &str) -> Option<IdentParts> {
     })
 }
 
+/// Whether `s` is a plain identifier (for the prose pass).
+pub(crate) fn is_ident_name(s: &str) -> bool {
+    is_ident(s)
+}
+
+/// Whether `name` is a Solidity keyword, builtin or type (for the prose pass).
+pub(crate) fn is_builtin_name(name: &str) -> bool {
+    is_builtin(name)
+}
+
 fn is_ident(s: &str) -> bool {
     let mut chars = s.chars();
     match chars.next() {
