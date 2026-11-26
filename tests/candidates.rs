@@ -637,3 +637,35 @@ fn a_ranker_with_prepare_is_a_usage_error() {
     assert_eq!(r.code, 2, "{}", r.stdout);
     assert!(r.stderr.contains("--ranker"), "{}", r.stderr);
 }
+
+#[test]
+fn the_committed_weights_table_loads_and_scores() {
+    // The shipped table must be accepted by inference, not just by the
+    // trainer: load it through the CLI on the fixture corpus and require a
+    // finite score on every candidate.
+    let r = run(&[
+        "candidates",
+        "tests/fixtures/candidates/findings/finding-shared-function.md",
+        "--corpus",
+        "tests/fixtures/candidates/corpus",
+        "--repo",
+        "tests/fixtures/candidates-repo",
+        "--repo-id",
+        "example/candidates-fixture",
+        "--commit",
+        "0000000000000000000000000000000000000000",
+        "--ranker",
+        "eval/dupbench/weights/v1.json",
+        "--json",
+    ]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let report: Value = serde_json::from_str(&r.stdout).expect("candidates --json prints JSON");
+    let candidates = report["candidates"].as_array().expect("candidates");
+    assert!(!candidates.is_empty(), "{report}");
+    for candidate in candidates {
+        let score = candidate["ranker_score"]
+            .as_f64()
+            .unwrap_or_else(|| panic!("missing score for {candidate}"));
+        assert!(score.is_finite() && (0.0..=1.0).contains(&score), "{score}");
+    }
+}

@@ -1,0 +1,603 @@
+{
+ "schema": "priorart.ranker-weights/v1",
+ "version": 1,
+ "created_by": "eval/dupbench/train_ranker.py",
+ "seed": 20261126,
+ "code_commit": "6910e555134a836a49f8976633500879d31a0081",
+ "dataset_sha256": "26359c35acda39e21ea6efaebcbfdf6cdd64f64d37db970855142d70cea38d2f",
+ "train_contests": [
+  "2022-11-ens",
+  "2023-01-canto-identity",
+  "2023-01-drips",
+  "2023-01-numoen",
+  "2023-01-ondo",
+  "2023-01-timeswap",
+  "2023-02-kuma",
+  "2023-02-malt",
+  "2023-03-aragon",
+  "2023-03-canto-identity",
+  "2023-03-mute",
+  "2023-03-neotokyo",
+  "2023-03-zksync",
+  "2023-04-eigenlayer",
+  "2023-04-ens",
+  "2023-04-frankencoin",
+  "2023-04-party",
+  "2023-05-juicebox",
+  "2023-05-party",
+  "2023-05-xeth",
+  "2023-06-llama",
+  "2023-06-lukso",
+  "2023-06-stader",
+  "2023-07-basin",
+  "2023-07-lens",
+  "2023-07-moonwell",
+  "2023-08-livepeer",
+  "2023-08-shell",
+  "2023-08-verwa",
+  "2023-09-asymmetry",
+  "2023-10-badger",
+  "2023-10-canto",
+  "2023-12-autonolas",
+  "2023-12-initcapital",
+  "2023-12-particle",
+  "2024-01-canto",
+  "2024-01-init-capital-invitational"
+ ],
+ "validation_contests": [
+  "2023-07-amphora",
+  "2024-01-salty",
+  "2024-02-spectra",
+  "2024-02-thruster",
+  "2024-02-wise-lending",
+  "2024-03-abracadabra-money",
+  "2024-03-coinbase",
+  "2024-03-dittoeth",
+  "2024-03-gitcoin",
+  "2024-03-neobase",
+  "2024-03-ondo-finance",
+  "2024-03-pooltogether",
+  "2024-03-taiko",
+  "2024-03-zksync",
+  "2024-04-gondi",
+  "2024-05-arbitrum-foundation",
+  "2024-05-bakerfi",
+  "2024-05-loop",
+  "2024-05-predy",
+  "2024-06-badger",
+  "2024-06-krystal-defi",
+  "2024-06-thorchain",
+  "2024-06-vultisig",
+  "2024-07-dittoeth",
+  "2024-07-munchables",
+  "2024-07-optimism"
+ ],
+ "selection": {
+  "criterion": "validation log-loss (ties: more regularisation)",
+  "grid": [
+   {
+    "transform": "identity",
+    "lambda": 0.01,
+    "train_log_loss": 0.226013,
+    "validation_log_loss": 0.227929,
+    "validation_auc": 0.911846
+   },
+   {
+    "transform": "identity",
+    "lambda": 0.1,
+    "train_log_loss": 0.226013,
+    "validation_log_loss": 0.227915,
+    "validation_auc": 0.911837
+   },
+   {
+    "transform": "identity",
+    "lambda": 1.0,
+    "train_log_loss": 0.226016,
+    "validation_log_loss": 0.22778,
+    "validation_auc": 0.911894
+   },
+   {
+    "transform": "identity",
+    "lambda": 10.0,
+    "train_log_loss": 0.226182,
+    "validation_log_loss": 0.22686,
+    "validation_auc": 0.91288
+   },
+   {
+    "transform": "log1p",
+    "lambda": 0.01,
+    "train_log_loss": 0.225476,
+    "validation_log_loss": 0.219398,
+    "validation_auc": 0.91785
+   },
+   {
+    "transform": "log1p",
+    "lambda": 0.1,
+    "train_log_loss": 0.225476,
+    "validation_log_loss": 0.219387,
+    "validation_auc": 0.917852
+   },
+   {
+    "transform": "log1p",
+    "lambda": 1.0,
+    "train_log_loss": 0.225486,
+    "validation_log_loss": 0.219303,
+    "validation_auc": 0.918087
+   },
+   {
+    "transform": "log1p",
+    "lambda": 10.0,
+    "train_log_loss": 0.225928,
+    "validation_log_loss": 0.219281,
+    "validation_auc": 0.918219
+   }
+  ],
+  "chosen": {
+   "transform": "log1p",
+   "lambda": 10.0
+  }
+ },
+ "features": [
+  {
+   "name": "anchor_function_overlap.shared",
+   "kind": "count",
+   "transform": "log1p",
+   "missing_value": null,
+   "mean": 0.32334942369624603,
+   "scale": 0.4240076711987727,
+   "coefficient": 0.13679250760465053
+  },
+  {
+   "name": "anchor_function_overlap.ratio",
+   "kind": "ratio",
+   "transform": "identity",
+   "missing_value": 0.0,
+   "mean": 0.1456934891475247,
+   "scale": 0.24035791613093935,
+   "coefficient": 0.895104881011379
+  },
+  {
+   "name": "anchor_state_overlap.shared",
+   "kind": "count",
+   "transform": "log1p",
+   "missing_value": null,
+   "mean": 0.04551066079193721,
+   "scale": 0.18166240350936838,
+   "coefficient": -0.1880005468057231
+  },
+  {
+   "name": "anchor_state_overlap.ratio",
+   "kind": "ratio",
+   "transform": "identity",
+   "missing_value": 0.0,
+   "mean": 0.03782798080472499,
+   "scale": 0.16679231056346303,
+   "coefficient": 0.24886991094382005
+  },
+  {
+   "name": "call_graph_distance",
+   "kind": "distance",
+   "transform": "identity",
+   "missing_value": 3.0,
+   "mean": 1.1071627906976744,
+   "scale": 1.029632965316588,
+   "coefficient": -0.1541489602677736
+  },
+  {
+   "name": "call_graph_distance_missing",
+   "kind": "derived",
+   "transform": "identity",
+   "missing_value": null,
+   "mean": 0.019162790697674417,
+   "scale": 0.1370969662332159,
+   "coefficient": 0.23645674616777437
+  },
+  {
+   "name": "mechanism_match.shared_root_causes",
+   "kind": "count",
+   "transform": "log1p",
+   "missing_value": null,
+   "mean": 0.10492806084406643,
+   "scale": 0.2568273773194687,
+   "coefficient": 0.22904672213057384
+  },
+  {
+   "name": "mechanism_match.same_contract",
+   "kind": "binary",
+   "transform": "identity",
+   "missing_value": null,
+   "mean": 0.808186046511628,
+   "scale": 0.3937275209272686,
+   "coefficient": 0.3088928750364005
+  },
+  {
+   "name": "impact_match.shared_impacts",
+   "kind": "count",
+   "transform": "log1p",
+   "missing_value": null,
+   "mean": 0.09434849417008091,
+   "scale": 0.24237653180457522,
+   "coefficient": 0.12139119346201031
+  },
+  {
+   "name": "identifier_score.specific_symbols",
+   "kind": "count",
+   "transform": "log1p",
+   "missing_value": null,
+   "mean": 0.3344947128183077,
+   "scale": 0.6608038399729066,
+   "coefficient": 0.9059176215663531
+  },
+  {
+   "name": "identifier_score.shared_symbols",
+   "kind": "count",
+   "transform": "log1p",
+   "missing_value": null,
+   "mean": 0.41284060991865495,
+   "scale": 0.8065698918581501,
+   "coefficient": -0.09346845731201898
+  },
+  {
+   "name": "identifier_score.rarity",
+   "kind": "count",
+   "transform": "log1p",
+   "missing_value": null,
+   "mean": 0.6876070197417613,
+   "scale": 1.3559929097779917,
+   "coefficient": -0.5475626131180629
+  },
+  {
+   "name": "identifier_score.ranked",
+   "kind": "binary",
+   "transform": "identity",
+   "missing_value": null,
+   "mean": 0.21990697674418605,
+   "scale": 0.4141834114536917,
+   "coefficient": 0.33925089163917005
+  }
+ ],
+ "intercept": -2.9609491639249645,
+ "missingness_rule": "A null call_graph_distance maps to missing_value 3.0 (MAX_CANDIDATE_DISTANCE 2 + 1) and sets call_graph_distance_missing to 1.0; a null overlap ratio maps to 0.0. The indicator is a model feature, never a silent zero.",
+ "in_sample": {
+  "train_log_loss": 0.225928,
+  "train_auc": 0.900673
+ },
+ "validation": {
+  "log_loss": 0.219281,
+  "auc": 0.918219,
+  "calibration_deciles": [
+   {
+    "bucket": 1,
+    "n": 825,
+    "positives": 4,
+    "rate": 0.0048,
+    "wilson95": [
+     0.0019,
+     0.0124
+    ],
+    "score_min": 0.0076,
+    "score_max": 0.0076
+   },
+   {
+    "bucket": 2,
+    "n": 825,
+    "positives": 0,
+    "rate": 0.0,
+    "wilson95": [
+     0.0,
+     0.0046
+    ],
+    "score_min": 0.0076,
+    "score_max": 0.0076
+   },
+   {
+    "bucket": 3,
+    "n": 825,
+    "positives": 3,
+    "rate": 0.0036,
+    "wilson95": [
+     0.0012,
+     0.0106
+    ],
+    "score_min": 0.0076,
+    "score_max": 0.016505
+   },
+   {
+    "bucket": 4,
+    "n": 825,
+    "positives": 4,
+    "rate": 0.0048,
+    "wilson95": [
+     0.0019,
+     0.0124
+    ],
+    "score_min": 0.016505,
+    "score_max": 0.01912
+   },
+   {
+    "bucket": 5,
+    "n": 825,
+    "positives": 20,
+    "rate": 0.0242,
+    "wilson95": [
+     0.0157,
+     0.0371
+    ],
+    "score_min": 0.01912,
+    "score_max": 0.030199
+   },
+   {
+    "bucket": 6,
+    "n": 825,
+    "positives": 23,
+    "rate": 0.0279,
+    "wilson95": [
+     0.0186,
+     0.0415
+    ],
+    "score_min": 0.030199,
+    "score_max": 0.056275
+   },
+   {
+    "bucket": 7,
+    "n": 825,
+    "positives": 58,
+    "rate": 0.0703,
+    "wilson95": [
+     0.0548,
+     0.0898
+    ],
+    "score_min": 0.056275,
+    "score_max": 0.099624
+   },
+   {
+    "bucket": 8,
+    "n": 825,
+    "positives": 92,
+    "rate": 0.1115,
+    "wilson95": [
+     0.0918,
+     0.1348
+    ],
+    "score_min": 0.099624,
+    "score_max": 0.185214
+   },
+   {
+    "bucket": 9,
+    "n": 825,
+    "positives": 265,
+    "rate": 0.3212,
+    "wilson95": [
+     0.2902,
+     0.3538
+    ],
+    "score_min": 0.185239,
+    "score_max": 0.401797
+   },
+   {
+    "bucket": 10,
+    "n": 825,
+    "positives": 537,
+    "rate": 0.6509,
+    "wilson95": [
+     0.6178,
+     0.6827
+    ],
+    "score_min": 0.402052,
+    "score_max": 0.985298
+   }
+  ],
+  "calibration_defect": false,
+  "calibration_near_inversions": [
+   {
+    "lower_bucket": 1,
+    "higher_bucket": 2,
+    "lower_rate": 0.0048,
+    "higher_rate": 0.0,
+    "within_sampling_error": true
+   }
+  ]
+ },
+ "measurement": {
+  "train": {
+   "queries_attempted": {
+    "duplicate": 1163,
+    "primary": 472
+   },
+   "abstention": {
+    "duplicate": {
+     "k": 476,
+     "n": 1163,
+     "rate": 0.4093,
+     "wilson95": [
+      0.3814,
+      0.4378
+     ]
+    },
+    "primary": {
+     "k": 203,
+     "n": 472,
+     "rate": 0.4301,
+     "wilson95": [
+      0.3862,
+      0.4751
+     ]
+    }
+   },
+   "recall_at_5_baseline": {
+    "k": 627,
+    "n": 1163,
+    "rate": 0.5391,
+    "wilson95": [
+     0.5104,
+     0.5676
+    ]
+   },
+   "recall_at_5_ranker": {
+    "k": 631,
+    "n": 1163,
+    "rate": 0.5426,
+    "wilson95": [
+     0.5138,
+     0.571
+    ]
+   },
+   "far_baseline_any_candidate": {
+    "k": 269,
+    "n": 472,
+    "rate": 0.5699,
+    "wilson95": [
+     0.5249,
+     0.6138
+    ]
+   },
+   "far_ranker": {
+    "0.5": {
+     "k": 34,
+     "n": 472,
+     "rate": 0.072,
+     "wilson95": [
+      0.052,
+      0.099
+     ]
+    },
+    "0.7": {
+     "k": 10,
+     "n": 472,
+     "rate": 0.0212,
+     "wilson95": [
+      0.0115,
+      0.0386
+     ]
+    },
+    "0.8": {
+     "k": 4,
+     "n": 472,
+     "rate": 0.0085,
+     "wilson95": [
+      0.0033,
+      0.0216
+     ]
+    },
+    "0.9": {
+     "k": 2,
+     "n": 472,
+     "rate": 0.0042,
+     "wilson95": [
+      0.0012,
+      0.0153
+     ]
+    },
+    "0.95": {
+     "k": 0,
+     "n": 472,
+     "rate": 0.0,
+     "wilson95": [
+      0.0,
+      0.0081
+     ]
+    }
+   }
+  },
+  "validation": {
+   "queries_attempted": {
+    "duplicate": 1392,
+    "primary": 353
+   },
+   "abstention": {
+    "duplicate": {
+     "k": 309,
+     "n": 1392,
+     "rate": 0.222,
+     "wilson95": [
+      0.2009,
+      0.2446
+     ]
+    },
+    "primary": {
+     "k": 142,
+     "n": 353,
+     "rate": 0.4023,
+     "wilson95": [
+      0.3524,
+      0.4542
+     ]
+    }
+   },
+   "recall_at_5_baseline": {
+    "k": 977,
+    "n": 1392,
+    "rate": 0.7019,
+    "wilson95": [
+     0.6773,
+     0.7253
+    ]
+   },
+   "recall_at_5_ranker": {
+    "k": 990,
+    "n": 1392,
+    "rate": 0.7112,
+    "wilson95": [
+     0.6868,
+     0.7344
+    ]
+   },
+   "far_baseline_any_candidate": {
+    "k": 211,
+    "n": 353,
+    "rate": 0.5977,
+    "wilson95": [
+     0.5458,
+     0.6476
+    ]
+   },
+   "far_ranker": {
+    "0.5": {
+     "k": 48,
+     "n": 353,
+     "rate": 0.136,
+     "wilson95": [
+      0.1041,
+      0.1757
+     ]
+    },
+    "0.7": {
+     "k": 17,
+     "n": 353,
+     "rate": 0.0482,
+     "wilson95": [
+      0.0303,
+      0.0758
+     ]
+    },
+    "0.8": {
+     "k": 11,
+     "n": 353,
+     "rate": 0.0312,
+     "wilson95": [
+      0.0175,
+      0.0549
+     ]
+    },
+    "0.9": {
+     "k": 2,
+     "n": 353,
+     "rate": 0.0057,
+     "wilson95": [
+      0.0016,
+      0.0204
+     ]
+    },
+    "0.95": {
+     "k": 0,
+     "n": 353,
+     "rate": 0.0,
+     "wilson95": [
+      0.0,
+      0.0108
+     ]
+    }
+   }
+  }
+ }
+}
