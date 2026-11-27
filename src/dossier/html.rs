@@ -369,15 +369,18 @@ impl Converter<'_> {
         self.out.len()
     }
 
+    /// Text written to the current sink since byte `start`. A link can open
+    /// in one sink and close in another (`<a href=x>` then `<table><th>`), so
+    /// `start` may be an offset into a different string: clamp it to the
+    /// length and down to a char boundary rather than panic. The result only
+    /// decides whether `close_link` appends the URL.
     fn text_since(&self, start: usize) -> String {
         if let Some(table) = self.tables.last() {
             if let Some(cell) = &table.cell {
-                let start = start.min(cell.text.len());
-                return cell.text[start..].to_string();
+                return cell.text[floor_char_boundary(&cell.text, start)..].to_string();
             }
         }
-        let start = start.min(self.out.len());
-        self.out[start..].to_string()
+        self.out[floor_char_boundary(&self.out, start)..].to_string()
     }
 
     fn close_link(&mut self) {
@@ -683,6 +686,15 @@ fn block_break(out: &mut String, pending_space: &mut bool) {
     }
 }
 
+/// The largest char boundary of `s` that is `<= i` (clamped to `s.len()`).
+fn floor_char_boundary(s: &str, i: usize) -> usize {
+    let mut i = i.min(s.len());
+    while !s.is_char_boundary(i) {
+        i -= 1;
+    }
+    i
+}
+
 fn trim_trailing_space(out: &mut String) {
     while out.ends_with(' ') {
         out.pop();
@@ -849,6 +861,26 @@ mod tests {
         );
         assert_eq!(attr_value("<a !!!>", "href"), None);
         assert_eq!(attr_value("<a =x href=y>", "href").as_deref(), Some("y"));
+    }
+
+    #[test]
+    fn a_link_opened_outside_a_table_and_closed_in_a_cell_does_not_panic() {
+        // The link start is a byte offset into the page text; the close reads
+        // the cell text, where that offset fell inside a multibyte char.
+        let _ = to_text(
+            "<p>x<a href=https://e.example/x><table><tr><th>\u{e9}\u{e9}</a></th></tr></table>",
+        );
+        assert_eq!(floor_char_boundary("a\u{e9}b", 2), 1);
+        assert_eq!(floor_char_boundary("a\u{e9}b", 99), 4);
+        assert_eq!(floor_char_boundary("", 3), 0);
+    }
+
+    #[test]
+    fn the_fuzz_crash_input_from_ci_run_45978548735_does_not_panic() {
+        let raw = include_bytes!(
+            "../../fuzz/corpus/html_normalize/regress-link-start-other-sink-ci45978548735"
+        );
+        let _ = to_text(&String::from_utf8_lossy(raw));
     }
 
     #[test]
