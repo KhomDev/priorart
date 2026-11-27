@@ -1,6 +1,7 @@
 # priorart
 
 **Has this finding been found before, is it excluded, and can it be paid?**
+![priorart demo](docs/assets/priorart-demo.gif)
 priorart answers those three questions with quoted evidence and page numbers,
 and never with a verdict. It is offline and deterministic: everything it reads
 is a file you already saved.
