@@ -61,7 +61,7 @@ runs:
       env:
         PA_VERSION: ${{ inputs.version }}
         PA_BINARY: ${{ inputs.binary }}
-        PA_DEFAULT_VERSION: v0.2.2
+        PA_DEFAULT_VERSION: v0.2.3
       run: |
         set -euo pipefail
         dir="$RUNNER_TEMP/priorart-action"

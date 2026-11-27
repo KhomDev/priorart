@@ -12,6 +12,16 @@ readme = "README.md"
 rust-version = "1.95"
 # Two binaries (priorart, priorart-mcp); `cargo run` means the CLI.
 default-run = "priorart"
+# Research records stay on GitHub, out of the permanent crates.io upload. The ranker
+# weights and eval/dupbench/manifest.json stay: the packaged tests read them.
+exclude = [
+    "eval/sealed-multilang/",
+    "eval/dupbench/SEARCH_LOG.md",
+    "eval/dupbench/pairs.json",
+    "eval/dupbench/pairs-swap/",
+    "eval/P2R*.md",
+    "docs/assets/",
+]
 
 # cargo-binstall: where the release workflow puts each archive and what is in it.
 # Archive names carry a "v" before the version (priorart-v0.1.1-<target>).
