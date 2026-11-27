@@ -1,0 +1,19 @@
+{
+  "name": "priorart",
+  "owner": {
+    "name": "KhomDev"
+  },
+  "metadata": {
+    "description": "Claude Code plugin for priorart, the offline prior-art, exclusion and payability check for audit findings."
+  },
+  "plugins": [
+    {
+      "name": "priorart",
+      "source": "./plugin",
+      "description": "Check an audit or bug-bounty finding against saved prior audits, known issues and scope before submitting. Installs the pinned priorart release from crates.io.",
+      "version": "0.2.3",
+      "category": "security",
+      "keywords": ["security", "audit", "bug-bounty", "smart-contract", "triage", "prior-art"]
+    }
+  ]
+}

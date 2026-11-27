@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# priorart-ensure: make the priorart CLI that matches this plugin available.
+#
+# The plugin version (.claude-plugin/plugin.json) IS the crates.io version of
+# priorart it drives: upgrading the plugin upgrades the CLI. Modes:
+#   priorart-ensure            print the binary path; install the pinned version if missing/different
+#   priorart-ensure --status   report only; never installs (used by the SessionStart hook)
+#   priorart-ensure --latest   install the newest crates.io release (explicit upgrade)
+# PRIORART_BIN, if set, is used as-is (no install, no version change).
+# Installs go through cargo (binstall when present, else `cargo install --locked`);
+# nothing else touches the network, and `priorart check` itself is offline.
+set -euo pipefail
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+manifest="$here/.claude-plugin/plugin.json"
+want="$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' "$manifest" | head -n1)"
+mode="${1:-ensure}"
+
+if [ -n "${PRIORART_BIN:-}" ]; then
+  echo "$PRIORART_BIN"
+  exit 0
+fi
+
+have_version() {
+  command -v priorart >/dev/null 2>&1 || return 1
+  priorart --version 2>/dev/null | awk '{print $2}'
+}
+
+current="$(have_version || true)"
+
+case "$mode" in
+  --status)
+    if [ -z "$current" ]; then
+      echo "priorart: not installed; run /priorart:install (pinned $want)."
+    elif [ "$current" != "$want" ]; then
+      echo "priorart: CLI $current differs from the plugin's $want; run /priorart:install."
+    fi
+    exit 0
+    ;;
+  --latest)
+    want="$(curl -fsSL -A "priorart-plugin" https://crates.io/api/v1/crates/priorart \
+      | sed -n 's/.*"max_stable_version":"\([^"]*\)".*/\1/p' | head -n1)"
+    [ -n "$want" ] || { echo "could not read the latest priorart version from crates.io" >&2; exit 1; }
+    ;;
+  ensure|"") ;;
+  *) echo "usage: priorart-ensure [--status|--latest]" >&2; exit 2 ;;
+esac
+
+if [ "$current" = "$want" ]; then
+  command -v priorart
+  exit 0
+fi
+
+command -v cargo >/dev/null 2>&1 || {
+  echo "priorart $want needs cargo (https://rustup.rs) or a release binary from" \
+       "https://github.com/KhomDev/priorart/releases/tag/v$want" >&2
+  exit 1
+}
+if cargo binstall -V >/dev/null 2>&1; then
+  cargo binstall -y --force "priorart@$want" >&2
+else
+  cargo install --locked --force priorart --version "$want" >&2
+fi
+command -v priorart

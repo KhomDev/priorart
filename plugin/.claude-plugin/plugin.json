@@ -1,0 +1,12 @@
+{
+  "name": "priorart",
+  "version": "0.2.3",
+  "description": "Check an audit or bug-bounty finding against a program's saved prior audits, known issues and scope before submitting: quoted evidence, never a verdict. Installs the priorart release from crates.io that matches this plugin's version.",
+  "author": {
+    "name": "KhomDev"
+  },
+  "homepage": "https://github.com/KhomDev/priorart",
+  "repository": "https://github.com/KhomDev/priorart",
+  "license": "MIT",
+  "keywords": ["security", "audit", "bug-bounty", "smart-contract", "triage", "prior-art"]
+}
