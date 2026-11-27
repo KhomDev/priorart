@@ -357,6 +357,9 @@ measure code-anchored duplicate detection on a temporally sealed split:
   codebase pins. The prior report's commit is not stated by the sponsors, so
   the same-codebase evidence is the sponsor's "Previous audits" statement and
   the drift is declared per pair.
+  After the swap decided on 2026-11-27 the V1 pairs are in `eval/dupbench/pairs-swap/pairs_v1_swapped.json`; their
+  one run (judge-labelled, six contests, recall@5 350/445 = 78.7% [74.6, 82.2], false alarms 2/104, warning precision
+  43/48) is in `eval/dupbench/README.md` and `eval/rounds/round-1-pairs.json`. It is not human-labelled.
 
 Two earlier P2 measurements exist, and neither is a duplicate-detector number:
 

@@ -1,0 +1,405 @@
+{
+  "alarm_sha256": "1e492e8b4a6c6f8a1da111d62bae8030ff7a2265febcea4e8789ec01cf7683fa",
+  "binary_sha256": "54d23059b3ffc2d7a6f9602f3e03cd1d58b71cc333e487304301dad14df06478",
+  "contests": [
+    {
+      "cells": {
+        "abstention": {
+          "k": 26,
+          "n": 183,
+          "rate": 0.1421,
+          "wilson95": [
+            0.0988,
+            0.2
+          ]
+        },
+        "far_at_alarm": {
+          "k": 0,
+          "n": 33,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.1043
+          ]
+        },
+        "recall_at_5": {
+          "k": 109,
+          "n": 150,
+          "rate": 0.7267,
+          "wilson95": [
+            0.6504,
+            0.7917
+          ]
+        },
+        "warning_precision": {
+          "k": 11,
+          "n": 11,
+          "rate": 1.0,
+          "wilson95": [
+            0.7412,
+            1.0
+          ]
+        }
+      },
+      "contest": "2024-03-revert-lend",
+      "counts": {
+        "alarm_status": "on",
+        "alarms": 11,
+        "dup_abstained": 21,
+        "dup_attempted": 150,
+        "dup_hit5": 109,
+        "dup_primary_not_in_corpus": 0,
+        "dup_text_missing": 0,
+        "primary_abstained": 5,
+        "primary_alarms": 0,
+        "primary_attempted": 33,
+        "primary_text_missing": 0,
+        "true_alarms": 11
+      },
+      "group": "v1-fresh",
+      "split_dupbench": null
+    },
+    {
+      "cells": {
+        "abstention": {
+          "k": 3,
+          "n": 13,
+          "rate": 0.2308,
+          "wilson95": [
+            0.0818,
+            0.5026
+          ]
+        },
+        "far_at_alarm": {
+          "k": 0,
+          "n": 7,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3543
+          ]
+        },
+        "recall_at_5": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333,
+          "wilson95": [
+            0.4365,
+            0.9699
+          ]
+        },
+        "warning_precision": {
+          "count_only": true,
+          "k": 1,
+          "n": 2
+        }
+      },
+      "contest": "2024-10-loopfi",
+      "counts": {
+        "alarm_status": "on",
+        "alarms": 2,
+        "dup_abstained": 1,
+        "dup_attempted": 6,
+        "dup_hit5": 5,
+        "dup_primary_not_in_corpus": 0,
+        "dup_text_missing": 0,
+        "primary_abstained": 2,
+        "primary_alarms": 0,
+        "primary_attempted": 7,
+        "primary_text_missing": 0,
+        "true_alarms": 1
+      },
+      "group": "v1-fresh",
+      "split_dupbench": null
+    },
+    {
+      "cells": {
+        "abstention": {
+          "k": 27,
+          "n": 179,
+          "rate": 0.1508,
+          "wilson95": [
+            0.1058,
+            0.2106
+          ]
+        },
+        "far_at_alarm": {
+          "k": 2,
+          "n": 34,
+          "rate": 0.0588,
+          "wilson95": [
+            0.0163,
+            0.1909
+          ]
+        },
+        "recall_at_5": {
+          "k": 108,
+          "n": 145,
+          "rate": 0.7448,
+          "wilson95": [
+            0.6682,
+            0.8088
+          ]
+        },
+        "warning_precision": {
+          "k": 7,
+          "n": 10,
+          "rate": 0.7,
+          "wilson95": [
+            0.3968,
+            0.8922
+          ]
+        }
+      },
+      "contest": "2022-11-paraspace",
+      "counts": {
+        "alarm_status": "on",
+        "alarms": 10,
+        "dup_abstained": 23,
+        "dup_attempted": 145,
+        "dup_hit5": 108,
+        "dup_primary_not_in_corpus": 0,
+        "dup_text_missing": 0,
+        "primary_abstained": 4,
+        "primary_alarms": 2,
+        "primary_attempted": 34,
+        "primary_text_missing": 0,
+        "true_alarms": 7
+      },
+      "group": "v1-fresh",
+      "split_dupbench": null
+    },
+    {
+      "cells": {
+        "abstention": {
+          "k": 11,
+          "n": 51,
+          "rate": 0.2157,
+          "wilson95": [
+            0.1249,
+            0.3463
+          ]
+        },
+        "far_at_alarm": {
+          "k": 0,
+          "n": 17,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.1843
+          ]
+        },
+        "recall_at_5": {
+          "k": 29,
+          "n": 34,
+          "rate": 0.8529,
+          "wilson95": [
+            0.6987,
+            0.9355
+          ]
+        },
+        "warning_precision": {
+          "count_only": true,
+          "k": 1,
+          "n": 1
+        }
+      },
+      "contest": "2023-02-ethos",
+      "counts": {
+        "alarm_status": "on",
+        "alarms": 1,
+        "dup_abstained": 5,
+        "dup_attempted": 34,
+        "dup_hit5": 29,
+        "dup_primary_not_in_corpus": 0,
+        "dup_text_missing": 0,
+        "primary_abstained": 6,
+        "primary_alarms": 0,
+        "primary_attempted": 17,
+        "primary_text_missing": 0,
+        "true_alarms": 1
+      },
+      "group": "v1-fresh",
+      "split_dupbench": null
+    },
+    {
+      "cells": {
+        "abstention": {
+          "k": 8,
+          "n": 80,
+          "rate": 0.1,
+          "wilson95": [
+            0.0515,
+            0.1851
+          ]
+        },
+        "far_at_alarm": {
+          "k": 0,
+          "n": 5,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.4345
+          ]
+        },
+        "recall_at_5": {
+          "k": 68,
+          "n": 75,
+          "rate": 0.9067,
+          "wilson95": [
+            0.8197,
+            0.9541
+          ]
+        },
+        "warning_precision": {
+          "k": 21,
+          "n": 22,
+          "rate": 0.9545,
+          "wilson95": [
+            0.782,
+            0.9919
+          ]
+        }
+      },
+      "contest": "2023-09-venus",
+      "counts": {
+        "alarm_status": "on",
+        "alarms": 22,
+        "dup_abstained": 7,
+        "dup_attempted": 75,
+        "dup_hit5": 68,
+        "dup_primary_not_in_corpus": 0,
+        "dup_text_missing": 0,
+        "primary_abstained": 1,
+        "primary_alarms": 0,
+        "primary_attempted": 5,
+        "primary_text_missing": 0,
+        "true_alarms": 21
+      },
+      "group": "v1-fresh",
+      "split_dupbench": null
+    },
+    {
+      "cells": {
+        "abstention": {
+          "k": 6,
+          "n": 43,
+          "rate": 0.1395,
+          "wilson95": [
+            0.0656,
+            0.2726
+          ]
+        },
+        "far_at_alarm": {
+          "k": 0,
+          "n": 8,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3244
+          ]
+        },
+        "recall_at_5": {
+          "k": 31,
+          "n": 35,
+          "rate": 0.8857,
+          "wilson95": [
+            0.7405,
+            0.9546
+          ]
+        },
+        "warning_precision": {
+          "count_only": true,
+          "k": 2,
+          "n": 2
+        }
+      },
+      "contest": "2023-07-arcade",
+      "counts": {
+        "alarm_status": "on",
+        "alarms": 2,
+        "dup_abstained": 4,
+        "dup_attempted": 35,
+        "dup_hit5": 31,
+        "dup_primary_not_in_corpus": 0,
+        "dup_text_missing": 0,
+        "primary_abstained": 2,
+        "primary_alarms": 0,
+        "primary_attempted": 8,
+        "primary_text_missing": 0,
+        "true_alarms": 2
+      },
+      "group": "v1-fresh",
+      "split_dupbench": null
+    }
+  ],
+  "mode": "pairs",
+  "pairs_sha256": "7e475fc07420fe299f4221e3ccf302e69bd3f74d1d0d9f61dd2cc190988bf132",
+  "pooled_by_group": {
+    "v1-fresh": {
+      "cells": {
+        "abstention": {
+          "k": 81,
+          "n": 549,
+          "rate": 0.1475,
+          "wilson95": [
+            0.1203,
+            0.1797
+          ]
+        },
+        "far_at_alarm": {
+          "k": 2,
+          "n": 104,
+          "rate": 0.0192,
+          "wilson95": [
+            0.0053,
+            0.0674
+          ]
+        },
+        "recall_at_5": {
+          "k": 350,
+          "n": 445,
+          "rate": 0.7865,
+          "wilson95": [
+            0.7461,
+            0.8221
+          ]
+        },
+        "warning_precision": {
+          "k": 43,
+          "n": 48,
+          "rate": 0.8958,
+          "wilson95": [
+            0.7783,
+            0.9547
+          ]
+        }
+      },
+      "contests": [
+        "2024-03-revert-lend",
+        "2024-10-loopfi",
+        "2022-11-paraspace",
+        "2023-02-ethos",
+        "2023-09-venus",
+        "2023-07-arcade"
+      ],
+      "counts": {
+        "alarms": 48,
+        "dup_abstained": 61,
+        "dup_attempted": 445,
+        "dup_hit5": 350,
+        "primary_abstained": 20,
+        "primary_alarms": 2,
+        "primary_attempted": 104,
+        "true_alarms": 43
+      }
+    }
+  },
+  "prose_anchors": false,
+  "ranker_sha256": "32ea46ec2bdc110e1a4af415212dad9bb2f5c105c1437b7a431aacd8f40f5abe",
+  "refused": [],
+  "round": "round-1",
+  "schema": "priorart.pairs-run/v1",
+  "top": 5,
+  "version": "0.2.2"
+}
