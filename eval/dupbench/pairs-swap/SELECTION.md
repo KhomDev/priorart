@@ -15,7 +15,7 @@ No issue body, `report.md` or `data/*.json` content is read.
 
 1. Pool: public `code-423n4` repositories named `YYYY-MM-<slug>-findings` that
    also have a `<slug>` code repository (`code-423n4-repos.tsv`; 881 repos, 376
-   findings repos; sha256 `edb183ad…c40a`).
+   findings repos; sha256 of the committed LF file `e7e7384d7a54125ce906a0a9e0054f1b7349f02d3792229031697ab28de359d0`).
 2. Exclude the 111 Dup-Bench contests and the 6 `pairs.json` contests.
 3. Exclude anything an earlier run may have opened. The Dup-Bench search log
    says 210 findings repos were cloned and their `report.md` parsed, but it
