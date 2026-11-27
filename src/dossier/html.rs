@@ -525,6 +525,16 @@ fn attr_value(tag: &str, want: &str) -> Option<String> {
         {
             i += 1;
         }
+        if i == start && bytes[i] != b'=' {
+            // Not an attribute name (`<a !x>`, `<a "x">`, `<a é>`): skip the
+            // whole char. Without this the loop never advanced (fuzz hang in
+            // html_normalize).
+            i += 1;
+            while i < bytes.len() && !tag.is_char_boundary(i) {
+                i += 1;
+            }
+            continue;
+        }
         let name = &tag[start..i];
         while i < bytes.len() && bytes[i].is_ascii_whitespace() {
             i += 1;
@@ -825,6 +835,32 @@ fn named_entity(name: &str) -> Option<char> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_stray_non_name_byte_in_a_tag_neither_hangs_nor_panics() {
+        assert_eq!(
+            attr_value("<a !x href=\"u\">", "href").as_deref(),
+            Some("u")
+        );
+        assert_eq!(attr_value("<a \"x\" href=v>", "href").as_deref(), Some("v"));
+        assert_eq!(
+            attr_value("<a \u{e9}\u{1f600} href='w'>", "href").as_deref(),
+            Some("w")
+        );
+        assert_eq!(attr_value("<a !!!>", "href"), None);
+        assert_eq!(attr_value("<a =x href=y>", "href").as_deref(), Some("y"));
+    }
+
+    #[test]
+    fn the_fuzz_timeout_input_from_ci_run_45977542883_terminates() {
+        // libFuzzer timeout artifact (html_normalize, run 45977542883): the
+        // `'` in `<support'href=...>` stalled attr_value forever.
+        let raw = include_bytes!(
+            "../../fuzz/corpus/html_normalize/regress-attr-no-progress-ci45977542883"
+        );
+        let out = to_text(&String::from_utf8_lossy(raw));
+        assert!(out.contains("Example Program"));
+    }
 
     #[test]
     fn headings_bullets_and_blocks_become_markdown() {
