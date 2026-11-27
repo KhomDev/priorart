@@ -393,20 +393,23 @@ fn http_urls(text: &str) -> Vec<String> {
     let mut out = Vec::new();
     let bytes = text.as_bytes();
     let mut i = 0;
+    // Byte-wise and case-insensitive: `i` may sit inside a multi-byte char,
+    // so the text is never sliced at `i` (a fuzzed U+FFFD panicked here), and
+    // no lowercase copy of the rest is made per byte.
+    let starts = |i: usize, scheme: &[u8]| {
+        bytes.len() >= i + scheme.len() && bytes[i..i + scheme.len()].eq_ignore_ascii_case(scheme)
+    };
     while i + 8 < bytes.len() {
-        let rest = &text[i..];
-        let hit = rest.to_ascii_lowercase().starts_with("https://")
-            || rest.to_ascii_lowercase().starts_with("http://");
-        if !hit {
+        let scheme_len = if starts(i, b"https://") {
+            8
+        } else if starts(i, b"http://") {
+            7
+        } else {
             i += 1;
             continue;
-        }
-        let start = i;
-        i += if rest.to_ascii_lowercase().starts_with("https://") {
-            8
-        } else {
-            7
         };
+        let start = i;
+        i += scheme_len;
         while i < bytes.len()
             && !bytes[i].is_ascii_whitespace()
             && !matches!(bytes[i], b'<' | b'>' | b'"' | b'\'' | b')' | b']')
@@ -425,6 +428,26 @@ fn http_urls(text: &str) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn urls_next_to_multibyte_text_neither_panic_nor_shift() {
+        // Fuzz crash e98545bc (markdown_import): U+FFFD replacement chars made
+        // `http_urls` slice inside a char.
+        let text = "acknowl\u{fffd}\u{fffd}ged, see HTTPS://github.com/o/r/blob/main/A.sol, and \u{1f600}x";
+        assert_eq!(
+            http_urls(text),
+            vec!["HTTPS://github.com/o/r/blob/main/A.sol".to_string()]
+        );
+        assert!(!contains_scope_target(
+            "\u{fffd}\u{fffd}\u{fffd}\u{fffd}\u{fffd}"
+        ));
+        for cut in 0..text.len() {
+            if text.is_char_boundary(cut) {
+                let _ = http_urls(&text[cut..]);
+            }
+        }
+    }
+
     use super::*;
 
     #[test]
