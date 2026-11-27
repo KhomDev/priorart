@@ -111,7 +111,8 @@ runs:
         PA_FAIL_EXCLUDED: ${{ inputs.fail-on-excluded }}
         PA_FAIL_UNPAYABLE: ${{ inputs.fail-on-unpayable }}
       run: |
-        set -uo pipefail
+        # GitHub runs bash with -e; a non-zero priorart exit is a result here.
+        set +e -uo pipefail
         dir="$RUNNER_TEMP/priorart-action"
         mkdir -p "$dir"
         args=(check "$PA_FINDING" --top-k "$PA_TOP_K")
