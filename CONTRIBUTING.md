@@ -100,8 +100,10 @@ A release is a claim, so the checklist is part of the change:
 
 1. **Version.** Bump `Cargo.toml` and `Cargo.lock` to the version being
    released, `PA_DEFAULT_VERSION` in `action.yml` to its tag, and the
-   `version` in `plugin/.claude-plugin/plugin.json` and
-   `.claude-plugin/marketplace.json` (`tests/plugin.rs` checks all three).
+   `version` in `plugin/.claude-plugin/plugin.json`,
+   `plugin-directory/.claude-plugin/plugin.json` and both marketplace entries
+   in `.claude-plugin/marketplace.json` (`tests/plugin.rs` and
+   `tests/plugin_directory.rs` check them).
    `priorart --version` must print it.
 2. **Changelog.** Write the `CHANGELOG.md` entry under a new `## [X.Y.Z]`
    heading. Every number in it must come from a command a reader can re-run.
