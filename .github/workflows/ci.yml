@@ -185,3 +185,56 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Relative links in markdown resolve
         run: python3 scripts/check_links.py
+
+  # ----------------------------------------------------------------- action
+  action:
+    name: action (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Run the action on the demo program
+        id: demo
+        uses: ./
+        with:
+          finding: examples/finding-demo.md
+          program: examples/dossier-demo
+          # A released version, so the job does not depend on the tag being cut.
+          version: v0.2.2
+
+      - name: Check the outputs
+        shell: bash
+        env:
+          CODE: ${{ steps.demo.outputs.exit-code }}
+          VERSION: ${{ steps.demo.outputs.version }}
+          REPORT: ${{ steps.demo.outputs.report }}
+          TEXT: ${{ steps.demo.outputs.text }}
+        run: |
+          set -eu
+          test "$CODE" = 0
+          test -n "$VERSION"
+          test -s "$TEXT"
+          grep -q '"schema": *"priorart.check/v1"' "$REPORT"
+
+      - name: A missing finding is an input error
+        id: missing
+        continue-on-error: true
+        uses: ./
+        with:
+          finding: examples/no-such-finding.md
+          version: v0.2.2
+          dossier: examples/dossier-demo/dossier-demo.dossier
+
+      - name: Check the error
+        shell: bash
+        env:
+          CODE: ${{ steps.missing.outputs.exit-code }}
+          OUTCOME: ${{ steps.missing.outcome }}
+        run: |
+          set -eu
+          test "$OUTCOME" = failure
+          test "$CODE" -ge 2

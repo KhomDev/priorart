@@ -99,7 +99,8 @@ change; a surviving mutant in a gate or the matcher is a missing test.
 A release is a claim, so the checklist is part of the change:
 
 1. **Version.** Bump `Cargo.toml` and `Cargo.lock` to the version being
-   released. `priorart --version` must print it.
+   released, and `PA_DEFAULT_VERSION` in `action.yml` to its tag.
+   `priorart --version` must print it.
 2. **Changelog.** Write the `CHANGELOG.md` entry under a new `## [X.Y.Z]`
    heading. Every number in it must come from a command a reader can re-run.
 3. **Benchmark.** Refresh the public benchmark, or state in the changelog why the

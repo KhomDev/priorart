@@ -314,6 +314,19 @@ are deleted: they did not separate paid from unpaid findings (a hard kill was
 right 12 times in 25). Gates G1-G4, the importer, the matcher and `init` moved
 here as evidence. The row-for-row mapping is in [MIGRATION.md](MIGRATION.md).
 
+## GitHub Action
+
+`action.yml` installs a release (checksum-verified) and runs `priorart check` on one
+finding, optionally building the dossier from a program folder first. The text
+report goes to the job summary; `fail-on-excluded` and `fail-on-unpayable` turn
+the gates into a failing job. Inputs, outputs and runners: [docs/action.md](docs/action.md).
+
+```yaml
+- uses: KhomDev/priorart@v0.2.3
+  with:
+    finding: findings/reentrancy.md
+    program: program/
+```n
 ## MCP server and skill
 
 `priorart-mcp` ships in the same crate: an MCP server over stdio whose eleven
@@ -338,6 +351,7 @@ the tool table and the limits: [docs/mcp.md](docs/mcp.md).
 | Doc | What it covers |
 |---|---|
 | [docs/cli.md](docs/cli.md) | every command, flag and exit code |
+| [docs/action.md](docs/action.md) | the GitHub Action: inputs, outputs, runners |
 | [docs/dossier.md](docs/dossier.md) | the program folder and `priorart.dossier/v1` |
 | [docs/matching.md](docs/matching.md) | the identifier rule, specificity, false alarms |
 | [docs/gates.md](docs/gates.md) | G1-G4 as quoted evidence |

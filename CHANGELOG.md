@@ -29,6 +29,10 @@ All P2 numbers are DEV-only; none is held-out.
 
 ### Added
 
+- **GitHub Action** (`action.yml`, [docs/action.md](docs/action.md)). A composite
+  action that installs a release archive, checks it against `SHA256SUMS`, and
+  runs `priorart check` on one finding (optionally `priorart build` on a program
+  folder first). CI job `action` runs it on Ubuntu, macOS and Windows.
 - **MCP server `priorart-mcp`** (MCP Registry `io.github.KhomDev/priorart`,
   [docs/mcp.md](docs/mcp.md)). A second binary in the same crate: newline
   JSON-RPC over stdio (Content-Length framing also read), protocol revisions
