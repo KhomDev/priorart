@@ -80,6 +80,9 @@ jobs:
           name="priorart-${ref}-${{ matrix.target }}"
           mkdir -p "dist/${name}"
           cp "target/${{ matrix.target }}/release/priorart" "dist/${name}/"
+          # The MCP server ships beside the CLI: cargo binstall installs every
+          # binary of the crate and fails when one is missing from the archive.
+          cp "target/${{ matrix.target }}/release/priorart-mcp" "dist/${name}/"
           cp README.md LICENSE "dist/${name}/"
           tar -C dist -czf "dist/${name}.tar.gz" "${name}"
       - name: Package (zip)
@@ -90,6 +93,7 @@ jobs:
           $name = "priorart-$ref-${{ matrix.target }}"
           New-Item -ItemType Directory -Force -Path "dist/$name" | Out-Null
           Copy-Item "target/${{ matrix.target }}/release/priorart.exe" "dist/$name/"
+          Copy-Item "target/${{ matrix.target }}/release/priorart-mcp.exe" "dist/$name/"
           Copy-Item README.md, LICENSE "dist/$name/"
           Compress-Archive -Path "dist/$name" -DestinationPath "dist/$name.zip"
       - name: Attest build provenance

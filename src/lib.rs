@@ -28,6 +28,7 @@ pub mod init;
 pub mod ledger;
 #[path = "match/mod.rs"]
 pub mod matching;
+pub mod mcp;
 pub mod model;
 pub mod rejections;
 pub mod render;

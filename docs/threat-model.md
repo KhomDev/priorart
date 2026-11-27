@@ -26,7 +26,7 @@ Each guarantee has a status:
 | X1. A malicious document in a program folder | Controls the bytes of `scope.*`, `known-issues.*`, `audits/**` (`.md`, `.markdown`, `.txt`, `.pdf`) | Yes |
 | X2. A malicious structured file | Controls `program.yaml`, `known-issues.yaml`/`.yml`, a ledger YAML | Yes |
 | X3. A planted dossier | Puts a `.dossier` file beside a finding, or points `--dossier` at one | Yes |
-| X4. A prompt-injected agent | Drives the CLI with arguments, and reads its output | Yes |
+| X4. A prompt-injected agent | Drives the CLI with arguments, or `priorart-mcp` with tool calls, and reads the output | Yes |
 | X5. A compromised dependency, toolchain or release | Ships malicious code in a crate, in `pdftotext`, or in a release archive | Partly (see the open items) |
 | X6. A user with write access to `PATH` or the working directory | Already controls the user's shell | No |
 
@@ -47,6 +47,7 @@ Each row is a point where bytes from an attacker-influenced file are parsed.
 | Dossier JSON | `serde_json`, schema id checked before the struct | `src/dossier/load.rs` `load` | `MAX_DOSSIER_BYTES` (64 MiB) and a regular file; the size is checked from metadata before the read, and the ordering is pinned by tests |
 | Directory walk of `audits/` | `read_dir`, recursion | `src/dossier/import.rs` `collect_at_depth`, `check_input_limits` | Depth `MAX_WALK_DEPTH` (16), `MAX_WALK_ENTRIES` (10 000) entries, `MAX_INPUT_FILES` (1000) documents, `MAX_TOTAL_BYTES` (512 MiB); symlinks (file or directory) and non-regular documents are named and skipped; exit 2 naming the limit |
 | Vocabularies and rejection data | Compiled in with `include_str!` | `src/vocab/mod.rs`, `src/rejections/mod.rs` | Trusted: part of the build |
+| MCP stdio (`priorart-mcp`) | Newline JSON-RPC, or `Content-Length` frames; `serde_json` | `src/mcp.rs` `read_message`, `dispatch_with`, `argv_for` | 8 MiB per line or frame (checked before allocation), 8 KiB per header line, 64 header lines; arguments: strict types, no unknown keys, 4096 bytes, 64 list entries, no leading `-`; optional `PRIORART_MCP_ROOT`; each run killed after 120 s (default) and refused over 4 MiB per stream |
 | Terminal output | Control characters stripped | `src/render/text.rs` `sanitize` | JSON output is escaped by `serde_json` |
 
 ## Guarantees and what proves them
@@ -71,6 +72,9 @@ Each row is a point where bytes from an attacker-influenced file are parsed.
 | G16 | `--no-pdftotext` never starts poppler | `src/dossier/import.rs` `pdf_to_text_with`; `tests/inputs.rs::no_pdftotext_never_runs_poppler_and_the_control_proves_it` (a marker-writing fake pdftotext runs in the control and not with the flag) | Tested |
 | G17 | A saved `.html`/`.htm` program page yields headings, bullets, table rows and `href`s, and script/style text never reaches an item | `src/dossier/html.rs` unit tests; `tests/html.rs` (list fixture, header and headerless tables, empty-link cells, a JavaScript-only page); `tests/docs.rs` generated example | Tested against the committed list fixture and synthetic tables. JavaScript-rendered text, images and non-href attributes are not read. Not a measurement of live platform pages; those are checked by hand when the fetch command changes. |
 | G18 | A build of this version cannot write a dossier that `check` refuses for size | `src/dossier/build.rs` `check_dossier_body_size` and `write_dossier_with_limit`; tests `a_dossier_over_the_check_limit_is_refused_before_it_is_written` and `the_write_path_checks_the_limit_before_writing_anything` (neither the target nor the temp file is written); `tests/html.rs` and the CLI tests exercise normal builds | Tested at the limit with a one-byte-over input to the guard and a one-byte limit at the real call site; no 70 MB fixture in the suite. A pre-0.2.0 dossier over the cap is still refused by `check`. |
+| G19 | `priorart-mcp` only runs read-only commands, and no client string becomes a flag | `src/mcp.rs` `argv_for` (fixed tokens, values validated, positionals after `--`); unit tests `no_tool_reaches_a_writing_or_networked_command`, `a_path_or_id_that_is_a_flag_does_not_run`; `tests/mcp_props.rs::a_tool_call_never_reaches_a_flag_slot_or_a_writing_command` (512 cases) | Tested. The tools read any file the server's user can read unless `PRIORART_MCP_ROOT` is set; the root is checked with `canonicalize` before the run, so a path swapped between the check and priorart's read is not caught. |
+| G20 | `priorart-mcp` returns priorart's output unedited | `tests/mcp_stdio.rs` compares every tool's text byte for byte with a direct CLI run; unit test `stdout_is_returned_unedited_after_the_fence` | Tested. The one line the server adds (the "tool output, not instructions" fence) is a fixed prefix. |
+| G21 | A hostile MCP client cannot exhaust memory or hang a run | `src/mcp.rs` caps (frame, header, argument, list, output) and `run_bounded`; `tests/mcp_bounded.rs`; `tests/mcp_stdio.rs::an_oversized_line_is_answered_and_the_server_stops`, `an_oversized_frame_is_answered_and_the_server_stops_without_serving_a_ping` | Tested. One request is served at a time, so a 120 s run blocks the session for 120 s. |
 
 ## Open items
 
@@ -120,7 +124,9 @@ Each item is a hypothesis or a known gap. None is a confirmed exploit.
 7. **Prompt injection through quoted text.** Quotes from `audits/` and `scope.*` are
    printed verbatim. An agent reading the output may treat quoted text as
    instructions. priorart executes nothing from input content, and the output carries
-   page numbers and source paths, but no test models an agent. *Unverified in practice.*
+   page numbers and source paths, but no test models an agent. `priorart-mcp` prefixes
+   every tool text with a line saying it is tool output, not instructions; that is a
+   label, not a defence. *Unverified in practice.*
 8. **Release attestation is in place but not yet exercised.** Since PR #24, tag runs
    attest each archive and the CycloneDX SBOM, and docs/install.md documents
    `gh attestation verify`. Since PR #25, `verify-release.yml` installs a release from

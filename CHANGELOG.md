@@ -13,8 +13,36 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-11-27
+
+The P2 work (opt-in `fetch`, code anchors, structural candidates, the ranker
+and alarm) plus the MCP server. The `check` matcher is unchanged since 0.1.3.
+
+**Benchmark.** Not re-run for this tag. The DEV numbers for the ranker, alarm
+and pairs are in [docs/measurement-2026-11-27.md](docs/measurement-2026-11-27.md),
+measured on `a7f5490`. Since then `src/` changed only by the MCP server
+(`src/mcp.rs`, `src/bin/priorart-mcp.rs`, one `mod` line in `src/lib.rs`),
+which runs the CLI and does not touch ranking, plus a three-crate
+`Cargo.lock` bump (dependabot #34). The published 0.2.2 benchmark in
+[docs/benchmark.md](docs/benchmark.md) still describes the `check` matcher.
+All P2 numbers are DEV-only; none is held-out.
+
 ### Added
 
+- **MCP server `priorart-mcp`** (MCP Registry `io.github.KhomDev/priorart`,
+  [docs/mcp.md](docs/mcp.md)). A second binary in the same crate: newline
+  JSON-RPC over stdio (Content-Length framing also read), protocol revisions
+  2025-06-18, 2025-03-26 and 2024-11-05. Eleven read-only tools, each one
+  fixed `priorart` command line whose stdout is returned unedited; no tool
+  runs `fetch`, `build`, `init`, `anchors bench` or `candidates --prepare`.
+  Strict arguments (unknown keys and wrong types refused, no value that starts
+  with `-`, positional paths after `--`), `PRIORART_MCP_ROOT` to confine
+  paths, a per-run timeout (`PRIORART_MCP_TIMEOUT_SECS`, default 120 s), a
+  4 MiB output cap (refused, not cropped) and an 8 MiB frame cap. No new
+  dependency. `server.json` is the registry entry; `skills/priorart/SKILL.md`
+  is a Claude skill. Release archives now carry `priorart-mcp` beside
+  `priorart`, and `verify-release.yml` checks it answers `initialize`.
+  `default-run = "priorart"` keeps `cargo run` meaning the CLI.
 - **`priorart fetch`.** The only networked command. It GETs the HTTPS URLs you
   name (one each, no crawling) into `pages/001.html`, … and writes
   `fetch.json`. `build`, `check`, `candidates`, `anchors` and `taxonomy` stay
@@ -1082,7 +1110,9 @@ The tree itself is unchanged except for the two fixes recorded here.
 - The rule catalog and gate definitions as data, embedded in the binary.
 - The fixture suite: one positive and one negative case per anti-pattern.
 
-[Unreleased]: https://github.com/KhomDev/priorart/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/KhomDev/priorart/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/KhomDev/priorart/compare/v0.2.2...v0.2.3
+[0.2.2]: https://github.com/KhomDev/priorart/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/KhomDev/priorart/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/KhomDev/priorart/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/KhomDev/priorart/compare/v0.1.2...v0.1.3

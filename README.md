@@ -23,7 +23,7 @@ the committed fixture by `scripts/regen-readme-examples.sh` and checked by
 
 > **Research:** [I measured my own audit tools against real exploit proofs, fixed what broke, and measured again](https://github.com/KhomDev/realism-gate/blob/main/docs/research/2026-11-measure-fix-remeasure.md) (November 2026): both tools on judged contest data, the failed 0.3.0 alarm redesign, and why the warning stays off.
 
-## Status: retrieval-only (0.2.2; matcher unchanged since 0.1.3)
+## Status: retrieval-only (0.2.3; `check` matcher unchanged since 0.1.3)
 
 **P1-C (2026-11-25): the 0.3.0 alarm redesign was measured and rejected.** A
 shared claim component plus an absolute document frequency does not lower the
@@ -116,7 +116,7 @@ priorart check finding.md --dossier my-program/my-program.dossier
 
 <!-- BEGIN GENERATED EXAMPLE (scripts/regen-readme-examples.sh) -->
 $ priorart build examples/dossier-demo
-priorart 0.2.2 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.2.3 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
   3 source(s), 13 item(s)
     audit-finding    1
     known-issue      2
@@ -130,7 +130,7 @@ priorart 0.2.2 - dossier dossier-demo (examples/dossier-demo/dossier-demo.dossie
 Next: priorart check <finding.md> --dossier examples/dossier-demo/dossier-demo.dossier
 
 $ priorart check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
-priorart 0.2.2 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
+priorart 0.2.3 - examples/finding-demo.md against dossier dossier-demo (examples/dossier-demo/dossier-demo.dossier)
 
 HAS THIS BEEN FOUND?  2 prior items to read (share >=2 symbol identifiers)
   [audit: internal-review.md p.1, section M-03 Fee index rounding]  "The consistency check in `FeeLedger.distributeFees` reverts with `FeeAccountingMismatch` when the fee index rounds up past the collected balance."
@@ -166,7 +166,7 @@ same script and checked by `tests/docs.rs`.
 
 <!-- BEGIN GENERATED HTML EXAMPLE (scripts/regen-readme-examples.sh) -->
 $ priorart build tests/fixtures/html-program
-priorart 0.2.2 - dossier html-program (tests/fixtures/html-program/html-program.dossier)
+priorart 0.2.3 - dossier html-program (tests/fixtures/html-program/html-program.dossier)
   1 source(s), 7 item(s)
     payout-tier      3
     scope-clause     2
@@ -176,7 +176,7 @@ priorart 0.2.2 - dossier html-program (tests/fixtures/html-program/html-program.
 Next: priorart check <finding.md> --dossier tests/fixtures/html-program/html-program.dossier
 
 $ priorart check tests/fixtures/html-finding.md --dossier tests/fixtures/html-program/html-program.dossier
-priorart 0.2.2 - tests/fixtures/html-finding.md against dossier html-program (tests/fixtures/html-program/html-program.dossier)
+priorart 0.2.3 - tests/fixtures/html-finding.md against dossier html-program (tests/fixtures/html-program/html-program.dossier)
 
 HAS THIS BEEN FOUND?  nothing ranked (no prior item shares >=2 symbol identifiers)
 
@@ -314,6 +314,25 @@ are deleted: they did not separate paid from unpaid findings (a hard kill was
 right 12 times in 25). Gates G1-G4, the importer, the matcher and `init` moved
 here as evidence. The row-for-row mapping is in [MIGRATION.md](MIGRATION.md).
 
+## MCP server and skill
+
+`priorart-mcp` ships in the same crate: an MCP server over stdio whose eleven
+read-only tools (`check`, `candidates`, `anchors_resolve`, `anchors_index`,
+`taxonomy_classify`, `ledger_validate`, `vocab_list`, `vocab_show`, `explain`,
+`rules`, `rejections_summary`) each run one fixed `priorart` command and return
+its output unedited. It computes no number of its own; ranker and alarm figures
+priorart prints stay DEV-ONLY. `fetch`, `build`, `init` and `anchors bench` are
+not offered. A Claude skill is in [`skills/priorart/`](skills/priorart/SKILL.md).
+
+```sh
+claude mcp add priorart -- priorart-mcp
+```
+
+Settings (`PRIORART_MCP_ROOT`, `PRIORART_MCP_TIMEOUT_SECS`, `PRIORART_BIN`),
+the tool table and the limits: [docs/mcp.md](docs/mcp.md).
+
+- MCP Registry name: `mcp-name: io.github.KhomDev/priorart`
+
 ## Docs
 
 | Doc | What it covers |
@@ -330,6 +349,7 @@ here as evidence. The row-for-row mapping is in [MIGRATION.md](MIGRATION.md).
 | [docs/validation.md](docs/validation.md) | every public claim, its evidence, its status |
 | [docs/limitations.md](docs/limitations.md) | what this cannot do |
 | [docs/install.md](docs/install.md) | install and release artifacts |
+| [docs/mcp.md](docs/mcp.md) | the MCP server, its tools and limits, the Claude skill |
 | [docs/licensing.md](docs/licensing.md) | MIT code, CC BY 4.0 data |
 
 ## Licence

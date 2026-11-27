@@ -1,6 +1,6 @@
 [package]
 name = "priorart"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 description = "Offline, deterministic prior-art dossiers for smart-contract audit findings: has this been found, is it excluded, and can it be paid?"
 license = "MIT"
@@ -10,6 +10,8 @@ keywords = ["bug-bounty", "smart-contract", "audit", "prior-art", "triage"]
 categories = ["command-line-utilities", "development-tools"]
 readme = "README.md"
 rust-version = "1.95"
+# Two binaries (priorart, priorart-mcp); `cargo run` means the CLI.
+default-run = "priorart"
 
 # cargo-binstall: where the release workflow puts each archive and what is in it.
 # Archive names carry a "v" before the version (priorart-v0.1.1-<target>).
