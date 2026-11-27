@@ -154,6 +154,12 @@ pub fn read_program_dir_with(
     )? {
         found.push((path, "program-page"));
     }
+    // Pages saved by `priorart fetch` (or by hand) live in pages/ and are read
+    // after the single classic scope file, in file-name order. A folder with
+    // only scope.md is unchanged.
+    for path in collect_saved_pages(dir, &mut notes)? {
+        found.push((path, "program-page"));
+    }
     if let Some(path) = find_one(
         dir,
         &[
@@ -226,6 +232,12 @@ pub fn read_program_dir_with(
         let Some(text) = input.text(&mut notes) else {
             continue;
         };
+        if input.empty_html {
+            notes.push(format!(
+                "{} has no readable text. JavaScript-rendered content is not read, and images and non-href attributes are not read.",
+                input.rel_path
+            ));
+        }
         sources.push(Source {
             id: source_id.clone(),
             kind: input.kind.clone(),
@@ -454,6 +466,57 @@ fn find_one(
     }
 }
 
+/// Regular documents in `pages/`, sorted by name. Symlinks are named and
+/// skipped. `fetch.json` is not a page.
+fn collect_saved_pages(dir: &Path, notes: &mut Vec<String>) -> Result<Vec<PathBuf>, String> {
+    let pages = dir.join("pages");
+    let meta = match fs::symlink_metadata(&pages) {
+        Ok(meta) => meta,
+        Err(_) => return Ok(Vec::new()),
+    };
+    if !meta.file_type().is_dir() {
+        notes.push(format!(
+            "pages is {}; priorart reads a regular directory and skipped it",
+            file_kind(&meta.file_type())
+        ));
+        return Ok(Vec::new());
+    }
+    let mut found = Vec::new();
+    let rd = fs::read_dir(&pages).map_err(|e| format!("cannot read {}: {e}", pages.display()))?;
+    for entry in rd.flatten() {
+        let path = entry.path();
+        let name = entry.file_name().to_string_lossy().to_string();
+        if name.starts_with('.') {
+            continue;
+        }
+        let Ok(meta) = fs::symlink_metadata(&path) else {
+            continue;
+        };
+        if meta.file_type().is_symlink() {
+            notes.push(format!(
+                "{} is a symlink; priorart reads regular files only and skipped it",
+                display_name(&path)
+            ));
+            continue;
+        }
+        if !meta.file_type().is_file() {
+            continue;
+        }
+        let ext = path
+            .extension()
+            .and_then(|e| e.to_str())
+            .map(|e| e.to_ascii_lowercase());
+        if matches!(
+            ext.as_deref(),
+            Some("html" | "htm" | "md" | "markdown" | "txt")
+        ) {
+            found.push(path);
+        }
+    }
+    found.sort();
+    Ok(found)
+}
+
 fn display_name(path: &Path) -> String {
     path.file_name()
         .map(|s| s.to_string_lossy().into_owned())
@@ -656,6 +719,9 @@ struct Input {
     is_yaml: bool,
     text: Option<String>,
     warning: Option<String>,
+    /// HTML that converted to no readable text. The source is still recorded;
+    /// the build says why there are no items from it.
+    empty_html: bool,
 }
 
 impl Input {
@@ -683,6 +749,7 @@ impl Input {
         let mut text = None;
         let mut pages = 1;
         let mut warning = None;
+        let mut empty_html = false;
         if is_pdf(path) {
             match pdf_to_text_with(path, options.use_pdftotext) {
                 Ok(t) => {
@@ -695,13 +762,17 @@ impl Input {
             let raw = String::from_utf8_lossy(&bytes).to_string();
             let raw = strip_bom(&raw);
             let t = if html::is_html_path(path) {
-                // A saved page is converted conservatively: headings, bullets
-                // and paragraphs survive, markup and scripts do not.
-                html::to_text(&raw)
+                // A saved page is converted conservatively: headings, bullets,
+                // tables and hrefs survive; markup and scripts do not. The
+                // base is the final URL recorded by `priorart fetch`, when
+                // this file is one of those pages.
+                let base = fetch_base(root, &rel);
+                html::to_text_with_base(&raw, base.as_deref())
             } else {
                 raw.replace("\r\n", "\n").replace('\r', "\n")
             };
             pages = 1 + t.matches('\u{0c}').count();
+            empty_html = html::is_html_path(path) && t.trim().is_empty();
             text = Some(t);
         }
         Ok(Self {
@@ -713,6 +784,7 @@ impl Input {
             is_yaml,
             text,
             warning,
+            empty_html,
         })
     }
 
@@ -1162,9 +1234,13 @@ fn heading_of(line: &str) -> Option<(usize, String)> {
 
 fn bullets(lines: &[String]) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
+    // A blank line closes the open bullet. An indented wrap has no blank line
+    // between it and the bullet, so it still joins.
+    let mut open = false;
     for line in lines {
         let t = line.trim();
         if t.is_empty() {
+            open = false;
             continue;
         }
         let item = t
@@ -1175,8 +1251,9 @@ fn bullets(lines: &[String]) -> Vec<String> {
             let item = item.trim();
             if !item.is_empty() {
                 out.push(item.to_string());
+                open = true;
             }
-        } else if !out.is_empty() && !t.starts_with('#') {
+        } else if open && !t.starts_with('#') {
             // A wrapped bullet's continuation line belongs to the bullet
             // above it; before this fix each line became an item of its own.
             let last = out.last_mut().expect("non-empty");
@@ -1294,9 +1371,212 @@ fn is_issue_heading(h: &str) -> bool {
         })
 }
 
+/// The final URL `priorart fetch` recorded for this relative path, if any.
+/// A missing or unreadable `fetch.json` leaves relative links relative.
+fn fetch_base(root: &Path, rel: &str) -> Option<String> {
+    let bytes = fs::read(root.join("fetch.json")).ok()?;
+    let value: serde_json::Value = serde_json::from_slice(&bytes).ok()?;
+    let pages = value.get("pages")?.as_array()?;
+    for page in pages {
+        if page.get("path").and_then(|p| p.as_str()) == Some(rel) {
+            return page
+                .get("final_url")
+                .and_then(|u| u.as_str())
+                .map(str::to_string);
+        }
+    }
+    None
+}
+
+/// A line whose only text is a severity word, optionally as a markdown heading.
+fn severity_only(line: &str) -> Option<&'static str> {
+    let t = line.trim().trim_start_matches('#').trim();
+    let t = t.trim_end_matches(':').trim();
+    match t.to_ascii_lowercase().as_str() {
+        "critical" => Some("Critical"),
+        "high" => Some("High"),
+        "medium" => Some("Medium"),
+        "low" => Some("Low"),
+        _ => None,
+    }
+}
+
+fn is_markdown_section(line: &str) -> bool {
+    let t = line.trim_start();
+    let n = t.chars().take_while(|c| *c == '#').count();
+    (1..=3).contains(&n) && t[n..].starts_with(|c: char| c.is_whitespace())
+}
+
+fn is_bullet_line(line: &str) -> bool {
+    let t = line.trim_start();
+    t.starts_with("- ") || t.starts_with("* ") || t.starts_with('\u{2022}')
+}
+
+fn strip_bullet_marker(line: &str) -> String {
+    let t = line.trim();
+    t.strip_prefix("- ")
+        .or_else(|| t.strip_prefix("* "))
+        .or_else(|| t.strip_prefix('\u{2022}'))
+        .unwrap_or(t)
+        .trim()
+        .to_string()
+}
+
+/// A reward amount, as opposed to a sentence that merely mentions a sum of
+/// assets at risk. "When a minimum of 2,000,000 USD of assets is at risk" is
+/// not a tier; "Reward: Minimum …, Maximum …" and "Max: $…" are.
+fn is_reward_amount_line(line: &str) -> bool {
+    let t = strip_bullet_marker(line).to_ascii_lowercase();
+    let money = t.contains('$')
+        || t.contains("usd")
+        || t.contains("usdc")
+        || t.contains("usdt")
+        || t.contains("dai");
+    if !money {
+        return false;
+    }
+    t.contains("reward")
+        || t.contains("max:")
+        || t.contains("min:")
+        || t.contains("flat:")
+        || (t.contains("minimum") && t.contains("maximum"))
+        || t.contains("up to")
+}
+
+/// Put a bare severity label on the reward lines that follow it. A block
+/// boundary already ended the previous line; this stops that label being read
+/// as the previous tier's severity.
+fn attach_forward_severity(text: &str) -> String {
+    let lines: Vec<&str> = text.split('\n').collect();
+    let mut out: Vec<String> = Vec::new();
+    let mut i = 0usize;
+    while i < lines.len() {
+        if let Some(sev) = severity_only(lines[i]) {
+            i += 1;
+            let mut rewards: Vec<String> = Vec::new();
+            while i < lines.len()
+                && severity_only(lines[i]).is_none()
+                && !is_markdown_section(lines[i])
+            {
+                let line = lines[i];
+                if is_reward_amount_line(line) {
+                    rewards.push(strip_bullet_marker(line));
+                } else {
+                    if !rewards.is_empty() {
+                        out.push(format!("- {sev}: {}", rewards.join("; ")));
+                        rewards.clear();
+                    }
+                    if line.trim().is_empty()
+                        || is_bullet_line(line)
+                        || line.trim_start().starts_with('#')
+                    {
+                        out.push(line.to_string());
+                    } else {
+                        out.push(format!("###### {}", line.trim()));
+                    }
+                }
+                i += 1;
+            }
+            if !rewards.is_empty() {
+                out.push(format!("- {sev}: {}", rewards.join("; ")));
+            }
+            continue;
+        }
+        out.push(lines[i].to_string());
+        i += 1;
+    }
+    out.join("\n")
+}
+
+fn has_severity_label(text: &str) -> bool {
+    let spaced: String = text
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() {
+                c.to_ascii_lowercase()
+            } else {
+                ' '
+            }
+        })
+        .collect();
+    let padded = format!(" {spaced} ");
+    [" critical ", " high ", " medium ", " low "]
+        .iter()
+        .any(|w| padded.contains(w))
+}
+
+fn has_currency_amount(text: &str) -> bool {
+    let lower = text.to_ascii_lowercase();
+    let digits = lower.chars().any(|c| c.is_ascii_digit());
+    if !digits {
+        return false;
+    }
+    if lower.contains("up to") {
+        return true;
+    }
+    lower.contains('$')
+        || lower.contains("usd")
+        || lower.contains("usdc")
+        || lower.contains("usdt")
+        || lower.contains("dai")
+        || lower.contains(" eth")
+}
+
+fn is_payout_tier_line(text: &str) -> bool {
+    has_severity_label(text) && has_currency_amount(text)
+}
+
+fn is_impact_line(text: &str) -> bool {
+    if !has_severity_label(text) || has_currency_amount(text) {
+        return false;
+    }
+    let spaced: String = text
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() {
+                c.to_ascii_lowercase()
+            } else {
+                ' '
+            }
+        })
+        .collect();
+    let rest = [
+        "critical", "high", "medium", "low", "severity", "title", "impact",
+    ]
+    .iter()
+    .fold(spaced, |acc, word| acc.replace(word, " "));
+    rest.chars().filter(|c| c.is_ascii_alphanumeric()).count() >= 3
+}
+
+/// What one program-page bullet is. A payout tier needs a severity and an
+/// amount on the same line. An impacts row (severity, no amount) is an
+/// `impact`. A GitHub code URL or an explorer address is a `scope-path`.
+fn program_bullet_kind(heading: &str, bullet: &str) -> Option<&'static str> {
+    if is_payout_tier_line(bullet) {
+        return Some("payout-tier");
+    }
+    if crate::fetch::url::contains_scope_target(bullet) {
+        return Some("scope-path");
+    }
+    if is_impact_line(bullet) {
+        return Some("impact");
+    }
+    if is_known_heading(heading) {
+        return Some("known-issue");
+    }
+    if is_scope_heading(heading) && !is_reward_heading(heading) {
+        return Some("scope-path");
+    }
+    None
+}
+
 fn extract_program_page(text: &str, source_id: &str, title: &str) -> Vec<Item> {
+    // A severity word in its own block labels the reward lines that follow it,
+    // not the line before it. Markdown that already puts the severity on the
+    // reward bullet is left as written.
+    let text = attach_forward_severity(text);
     let mut out = Vec::new();
-    for section in sections(&lines_with_pages(text), 3) {
+    for section in sections(&lines_with_pages(&text), 3) {
         let heading = section.heading.clone();
         let h = heading.as_deref().unwrap_or("");
         if is_exclusion_heading(h) {
@@ -1312,25 +1592,17 @@ fn extract_program_page(text: &str, source_id: &str, title: &str) -> Vec<Item> {
                     class,
                 ));
             }
-        } else if is_reward_heading(h) {
+        } else if is_reward_heading(h) || is_scope_heading(h) || is_known_heading(h) {
             for b in bullets(&section.lines) {
-                out.push(item(
-                    source_id,
-                    "payout-tier",
-                    Some(title.to_string()),
-                    heading.clone(),
-                    section.page,
-                    &b,
-                    None,
-                ));
-            }
-        } else if is_scope_heading(h) || is_known_heading(h) {
-            let kind = if is_known_heading(h) {
-                "known-issue"
-            } else {
-                "scope-path"
-            };
-            for b in bullets(&section.lines) {
+                let kind = program_bullet_kind(h, &b);
+                let Some(kind) = kind else {
+                    continue;
+                };
+                let class = if kind == "scope-clause" {
+                    vocab::classify_clause(&b).map(str::to_string)
+                } else {
+                    None
+                };
                 out.push(item(
                     source_id,
                     kind,
@@ -1338,7 +1610,7 @@ fn extract_program_page(text: &str, source_id: &str, title: &str) -> Vec<Item> {
                     heading.clone(),
                     section.page,
                     &b,
-                    None,
+                    class,
                 ));
             }
         }
@@ -1346,7 +1618,7 @@ fn extract_program_page(text: &str, source_id: &str, title: &str) -> Vec<Item> {
     if out.is_empty() {
         // A page with no bullets is still evidence: index its sections so a
         // finding can match its text.
-        for section in sections(&lines_with_pages(text), 2) {
+        for section in sections(&lines_with_pages(&text), 2) {
             let body = section.lines.join("\n");
             if body.trim().chars().count() < 40 {
                 continue;
@@ -1848,6 +2120,105 @@ mod tests {
             it.identifiers.iter().any(|i| i.contains("settle_rebate")),
             "{:?}",
             it.identifiers
+        );
+    }
+
+    #[test]
+    fn a_severity_label_in_its_own_block_labels_the_following_reward() {
+        // Synthetic replica of a nested-div reward grid plus a prose list
+        // whose severity is a paragraph between the lists. The label must not
+        // stick to the previous amount.
+        let html = "<h2>Rewards by Threat Level</h2>\
+<div><div>Critical</div><div><span>Max: <!-- -->$2,000,000</span><span>Min: <!-- -->$100,000</span></div><div>Primacy of Rules</div></div>\
+<div><div>High</div><div><span>Max: $1,000,000</span><span>Min: $50,000</span></div></div>\
+<h3>Rewards breakdown</h3>\
+<p><strong>Critical</strong></p><ul><li>Reward: Minimum 100,000 USD, Maximum 2,000,000 USD</li>\
+<li>Reward: Minimum 50,000 USD, Maximum 1,000,000 USD</li></ul>\
+<p><strong>High</strong></p><ul><li>Reward: Minimum 10,000 USD, Maximum 250,000 USD</li></ul>";
+        let items = extract_program_page(&html::to_text(html), "src-0001", "scope.html");
+        let tiers: Vec<&str> = items
+            .iter()
+            .filter(|i| i.kind == "payout-tier")
+            .map(|i| i.text.as_str())
+            .collect();
+        assert!(
+            tiers.iter().any(|t| t.contains("Critical")
+                && t.contains("2,000,000")
+                && t.contains("100,000")),
+            "{tiers:?}"
+        );
+        assert!(
+            tiers
+                .iter()
+                .any(|t| t.starts_with("High") && t.contains("1,000,000") && t.contains("50,000")),
+            "{tiers:?}"
+        );
+        assert!(
+            tiers
+                .iter()
+                .any(|t| t.contains("High") && t.contains("10,000") && t.contains("250,000")),
+            "{tiers:?}"
+        );
+        assert!(
+            tiers
+                .iter()
+                .all(|t| !t.contains("USD High") && !t.contains("USD Medium")),
+            "a severity was glued to the previous amount: {tiers:?}"
+        );
+    }
+
+    #[test]
+    fn an_impacts_table_is_not_a_payout_tier_and_an_empty_link_is_a_scope_path() {
+        let html = "<h2>Assets in scope</h2><table><thead><tr><th>Target</th><th>Name</th></tr></thead>\
+<tbody><tr><td><a href=\"https://github.com/acme/vault?utm_source=x\"></a></td><td></td></tr>\
+<tr><td><a href=\"https://etherscan.io/address/0x1234567890abcdef1234567890abcdef12345678\"></a></td><td>Vault</td></tr></tbody></table>\
+<h2>Impacts in scope</h2><table><tr><td>Critical</td><td><p>Direct theft</p><ul><li>Commenting</li><li>Voting</li></ul></td></tr>\
+<tr><td>High</td><td>Email</td></tr></table>";
+        let items = extract_program_page(&html::to_text(html), "src-0001", "scope.html");
+        let paths: Vec<&str> = items
+            .iter()
+            .filter(|i| i.kind == "scope-path")
+            .map(|i| i.text.as_str())
+            .collect();
+        assert!(
+            paths
+                .iter()
+                .any(|t| t.contains("https://github.com/acme/vault") && !t.contains("utm_")),
+            "{paths:?}"
+        );
+        assert!(
+            paths
+                .iter()
+                .any(|t| t
+                    .contains("etherscan.io/address/0x1234567890abcdef1234567890abcdef12345678")),
+            "{paths:?}"
+        );
+        assert!(
+            items.iter().all(|i| i.kind != "payout-tier"),
+            "an impacts row became a payout tier: {:?}",
+            items.iter().map(|i| (&i.kind, &i.text)).collect::<Vec<_>>()
+        );
+        let impacts: Vec<&str> = items
+            .iter()
+            .filter(|i| i.kind == "impact")
+            .map(|i| i.text.as_str())
+            .collect();
+        assert!(
+            impacts.iter().any(|t| t.contains("Critical")
+                && t.contains("Commenting")
+                && t.contains("Voting")),
+            "{impacts:?}"
+        );
+        assert!(
+            impacts
+                .iter()
+                .any(|t| t.contains("High") && t.contains("Email")),
+            "{impacts:?}"
+        );
+        assert_eq!(
+            impacts.len(),
+            2,
+            "inner list items must stay in the cell: {impacts:?}"
         );
     }
 

@@ -21,7 +21,8 @@ cargo install --git https://github.com/KhomDev/priorart --tag v0.2.1
 
 Rust 1.95 or newer (`rust-version` in `Cargo.toml`). No system dependencies: the
 vocabularies and the rejection dataset are compiled into the binary with
-`include_str!`, and the crate has no HTTP client. `pdftotext` is optional and
+`include_str!`. The only HTTP client is the optional `fetch` feature (`ureq`);
+`--no-default-features` omits it. `pdftotext` is optional and
 only needed for compressed PDFs ([dossier.md](dossier.md)); `priorart build
 --no-pdftotext` never runs it.
 

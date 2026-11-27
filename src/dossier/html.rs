@@ -5,17 +5,17 @@
 //!
 //! - `<h1>`-`<h6>` become `#`-`######` heading lines;
 //! - `<li>` becomes a `- ` bullet;
+//! - a `<table>` becomes one bullet per body row (see [`to_text_with_base`]);
+//! - an `<a href>` with no text, or text that is not the URL, appends the URL;
 //! - `<p>`, `<br>`, `<div>` and the other block elements become line breaks;
 //! - every other tag is dropped and its text kept;
 //! - `<script>` and `<style>` contents are dropped, never quoted;
 //! - common named entities and numeric character references are decoded;
 //! - whitespace is collapsed the way a browser collapses it, except in `<pre>`.
 //!
-//! What it does not do: CSS layout, JavaScript rendering, tables as tables,
-//! text carried in attributes (`alt`, `title`, `aria-label`), or recovery of
-//! content a page loads from elsewhere. A complex page should be saved as
-//! Markdown by hand; `docs/dossier.md` says so, and the `priorart init`
-//! scaffold repeats it.
+//! What it does not do: CSS layout, JavaScript rendering, text carried in
+//! attributes other than `href` (`alt`, `title`, `aria-label`), images, or
+//! content a page loads from elsewhere. `docs/dossier.md` says so.
 
 use std::path::Path;
 
@@ -30,159 +30,529 @@ pub fn is_html_path(path: &Path) -> bool {
 /// terminated tag loses only its attributes; an unterminated tag or quoted
 /// attribute drops the remainder of the document, because everything after it
 /// is attribute state a browser would not display either.
+///
+/// Relative links are left relative. Pass [`to_text_with_base`] when the page
+/// was fetched and its final URL is known.
 pub fn to_text(html: &str) -> String {
-    let bytes = html.as_bytes();
-    let mut out = String::with_capacity(html.len());
-    let mut pending_space = false;
-    let mut heading: Option<usize> = None;
-    let mut heading_started = false;
-    let mut pre_depth = 0usize;
-    let mut i = 0usize;
+    to_text_with_base(html, None)
+}
 
-    while i < bytes.len() {
-        if bytes[i] != b'<' {
-            let start = i;
-            while i < bytes.len() && bytes[i] != b'<' {
-                i += 1;
+/// [`to_text`], resolving relative `href`s against `base` when `base` is set.
+///
+/// `base` is the fetched page's final URL. Without it, a relative href is
+/// copied as written. `utm_*` query keys are removed from every emitted URL.
+pub fn to_text_with_base(html: &str, base: Option<&str>) -> String {
+    let mut conv = Converter {
+        base,
+        out: String::with_capacity(html.len()),
+        pending_space: false,
+        heading: None,
+        heading_started: false,
+        pre_depth: 0,
+        link: None,
+        tables: Vec::new(),
+    };
+    conv.convert(html);
+    conv.out.replace("\r\n", "\n").replace('\r', "\n")
+}
+
+struct LinkOpen {
+    href: String,
+    start: usize,
+}
+
+struct CellBuf {
+    text: String,
+    header: bool,
+    pending_space: bool,
+}
+
+struct RowBuf {
+    cells: Vec<(String, bool)>,
+    header: bool,
+}
+
+struct TableBuf {
+    rows: Vec<RowBuf>,
+    row: Vec<(String, bool)>,
+    cell: Option<CellBuf>,
+    in_head: bool,
+    row_header: bool,
+}
+
+struct Converter<'a> {
+    base: Option<&'a str>,
+    out: String,
+    pending_space: bool,
+    heading: Option<usize>,
+    heading_started: bool,
+    pre_depth: usize,
+    link: Option<LinkOpen>,
+    tables: Vec<TableBuf>,
+}
+
+impl Converter<'_> {
+    fn convert(&mut self, html: &str) {
+        let bytes = html.as_bytes();
+        let mut i = 0usize;
+        while i < bytes.len() {
+            if bytes[i] != b'<' {
+                let start = i;
+                while i < bytes.len() && bytes[i] != b'<' {
+                    i += 1;
+                }
+                self.push_text(&html[start..i]);
+                continue;
             }
-            push_text(
-                &mut out,
-                &html[start..i],
-                &mut pending_space,
-                heading,
-                &mut heading_started,
-                pre_depth > 0,
-            );
-            continue;
+            if matches_ci(bytes, i, b"<!--") {
+                i = find_from(bytes, i + 4, b"-->").map_or(bytes.len(), |p| p + 3);
+                continue;
+            }
+            if matches_ci(bytes, i, b"<![CDATA[") {
+                let start = i + 9;
+                let end = find_from(bytes, start, b"]]>").unwrap_or(bytes.len());
+                self.push_text(&html[start..end]);
+                i = end.saturating_add(3).min(bytes.len());
+                continue;
+            }
+            if bytes.get(i + 1).is_some_and(|c| *c == b'!' || *c == b'?') {
+                i = find_from(bytes, i + 2, b">").map_or(bytes.len(), |p| p + 1);
+                continue;
+            }
+            let mut j = i + 1;
+            let closing = bytes.get(j) == Some(&b'/');
+            if closing {
+                j += 1;
+            }
+            let name_start = j;
+            while j < bytes.len() && is_tag_name_byte(bytes[j]) {
+                j += 1;
+            }
+            let name: String = html[name_start..j].to_ascii_lowercase();
+            if name.is_empty() {
+                self.push_char('<');
+                i += 1;
+                continue;
+            }
+            let Some(end) = tag_end(bytes, j) else {
+                break;
+            };
+            let tag = &html[i..end];
+            i = end;
+            if !closing && (name == "script" || name == "style") {
+                i = skip_raw_text(bytes, i, &name);
+                self.block_boundary();
+                continue;
+            }
+            self.on_tag(&name, closing, tag);
         }
+        if self.heading.is_some() {
+            trim_trailing_space(&mut self.out);
+            block_break(&mut self.out, &mut self.pending_space);
+        }
+    }
 
-        // Comments, doctypes and processing instructions are not text.
-        if matches_ci(bytes, i, b"<!--") {
-            i = find_from(bytes, i + 4, b"-->").map_or(bytes.len(), |p| p + 3);
-            continue;
-        }
-        if matches_ci(bytes, i, b"<![CDATA[") {
-            // The payload is text, the markers are not.
-            let start = i + 9;
-            let end = find_from(bytes, start, b"]]>").unwrap_or(bytes.len());
-            push_text(
-                &mut out,
-                &html[start..end],
-                &mut pending_space,
-                heading,
-                &mut heading_started,
-                pre_depth > 0,
-            );
-            i = end.saturating_add(3).min(bytes.len());
-            continue;
-        }
-        if bytes.get(i + 1).is_some_and(|c| *c == b'!' || *c == b'?') {
-            i = find_from(bytes, i + 2, b">").map_or(bytes.len(), |p| p + 1);
-            continue;
-        }
-
-        let mut j = i + 1;
-        let closing = bytes.get(j) == Some(&b'/');
-        if closing {
-            j += 1;
-        }
-        let name_start = j;
-        while j < bytes.len() && is_tag_name_byte(bytes[j]) {
-            j += 1;
-        }
-        let name: String = html[name_start..j].to_ascii_lowercase();
-        if name.is_empty() {
-            // A lone '<' is text, not a tag.
-            push_char(
-                &mut out,
-                '<',
-                &mut pending_space,
-                heading,
-                &mut heading_started,
-                pre_depth > 0,
-            );
-            i += 1;
-            continue;
-        }
-        let Some(end) = tag_end(bytes, j) else {
-            // An unterminated tag: drop it rather than quote attributes.
-            break;
-        };
-        i = end;
-
-        if !closing && (name == "script" || name == "style") {
-            // Raw text: everything up to the matching close tag is not page
-            // text. An unterminated script drops the rest of the document,
-            // which is what a browser would not display either.
-            i = skip_raw_text(bytes, i, &name);
-            block_break(&mut out, &mut pending_space);
-            continue;
-        }
-
-        match name.as_str() {
-            "h1" | "h2" | "h3" | "h4" | "h5" | "h6" => {
+    fn on_tag(&mut self, name: &str, closing: bool, tag: &str) {
+        match name {
+            "table" => {
                 if closing {
-                    if heading.is_some() {
-                        trim_trailing_space(&mut out);
-                        block_break(&mut out, &mut pending_space);
-                        heading = None;
-                        heading_started = false;
+                    self.close_table();
+                } else {
+                    if self.heading.is_some() {
+                        trim_trailing_space(&mut self.out);
+                        block_break(&mut self.out, &mut self.pending_space);
+                        self.heading = None;
+                        self.heading_started = false;
                     }
-                } else if heading.is_none() {
-                    block_break(&mut out, &mut pending_space);
+                    self.tables.push(TableBuf {
+                        rows: Vec::new(),
+                        row: Vec::new(),
+                        cell: None,
+                        in_head: false,
+                        row_header: false,
+                    });
+                }
+            }
+            "thead" | "tbody" | "tfoot" if !self.tables.is_empty() => {
+                if let Some(table) = self.tables.last_mut() {
+                    table.in_head = !closing && name == "thead";
+                }
+            }
+            "tr" if !self.tables.is_empty() => {
+                // A new row closes the previous one. Real pages often omit
+                // </tr>, and an empty close is a no-op.
+                self.close_row();
+                if !closing {
+                    if let Some(table) = self.tables.last_mut() {
+                        table.row_header = table.in_head;
+                    }
+                }
+            }
+            "td" | "th" if !self.tables.is_empty() => {
+                if closing {
+                    self.close_cell();
+                } else if let Some(table) = self.tables.last_mut() {
+                    table.cell = Some(CellBuf {
+                        text: String::new(),
+                        header: name == "th" || table.in_head,
+                        pending_space: false,
+                    });
+                }
+            }
+            "a" => {
+                if closing {
+                    self.close_link();
+                } else if let Some(href) = attr_value(tag, "href") {
+                    self.link = Some(LinkOpen {
+                        href,
+                        start: self.sink_len(),
+                    });
+                }
+            }
+            "h1" | "h2" | "h3" | "h4" | "h5" | "h6" if self.tables.is_empty() => {
+                if closing {
+                    if self.heading.is_some() {
+                        trim_trailing_space(&mut self.out);
+                        block_break(&mut self.out, &mut self.pending_space);
+                        self.heading = None;
+                        self.heading_started = false;
+                    }
+                } else if self.heading.is_none() {
+                    block_break(&mut self.out, &mut self.pending_space);
                     let level = name.as_bytes()[1] - b'0';
                     for _ in 0..level {
-                        out.push('#');
+                        self.out.push('#');
                     }
-                    out.push(' ');
-                    heading = Some(level as usize);
-                    heading_started = false;
+                    self.out.push(' ');
+                    self.heading = Some(level as usize);
+                    self.heading_started = false;
                 }
             }
             "li" => {
-                if heading.is_none() {
+                if self.in_cell() {
+                    if !closing {
+                        self.separate_cell_item();
+                    }
+                } else if self.heading.is_none() {
                     if closing {
-                        block_break(&mut out, &mut pending_space);
+                        block_break(&mut self.out, &mut self.pending_space);
                     } else {
-                        block_break(&mut out, &mut pending_space);
-                        out.push_str("- ");
+                        block_break(&mut self.out, &mut self.pending_space);
+                        self.out.push_str("- ");
                     }
                 }
             }
-            "pre" => {
+            "pre" if self.tables.is_empty() => {
                 if closing {
-                    pre_depth = pre_depth.saturating_sub(1);
-                    block_break(&mut out, &mut pending_space);
+                    self.pre_depth = self.pre_depth.saturating_sub(1);
+                    block_break(&mut self.out, &mut self.pending_space);
                 } else {
-                    block_break(&mut out, &mut pending_space);
-                    pre_depth += 1;
+                    block_break(&mut self.out, &mut self.pending_space);
+                    self.pre_depth += 1;
                 }
             }
             "br" | "hr" => {
-                if heading.is_none() {
-                    block_break(&mut out, &mut pending_space);
+                if self.in_cell() {
+                    self.cell_space();
+                } else if self.heading.is_none() {
+                    block_break(&mut self.out, &mut self.pending_space);
                 }
             }
-            // Block containers. A break on both sides keeps one paragraph or
-            // cell from being glued to the next one.
             "p" | "div" | "ul" | "ol" | "dl" | "dt" | "dd" | "section" | "article" | "header"
             | "footer" | "nav" | "main" | "aside" | "blockquote" | "figure" | "figcaption"
-            | "table" | "thead" | "tbody" | "tfoot" | "tr" | "td" | "th" | "option" | "address"
-            | "fieldset" | "form" | "title"
-                if heading.is_none() =>
+            | "option" | "address" | "fieldset" | "form" | "title"
+                if self.heading.is_none() || self.in_cell() =>
             {
-                block_break(&mut out, &mut pending_space);
+                self.block_boundary();
             }
-            // Every other tag is markup: drop it, keep its text.
             _ => {}
         }
     }
 
-    if heading.is_some() {
-        trim_trailing_space(&mut out);
-        block_break(&mut out, &mut pending_space);
+    fn in_cell(&self) -> bool {
+        self.tables.last().is_some_and(|t| t.cell.is_some())
     }
-    out.replace("\r\n", "\n").replace('\r', "\n")
+
+    fn block_boundary(&mut self) {
+        if self.in_cell() {
+            self.cell_space();
+        } else if self.tables.is_empty() {
+            block_break(&mut self.out, &mut self.pending_space);
+        }
+    }
+
+    fn cell_space(&mut self) {
+        if let Some(table) = self.tables.last_mut() {
+            if let Some(cell) = table.cell.as_mut() {
+                cell.pending_space = true;
+            }
+        }
+    }
+
+    fn separate_cell_item(&mut self) {
+        if let Some(table) = self.tables.last_mut() {
+            if let Some(cell) = table.cell.as_mut() {
+                let trimmed = cell.text.trim_end();
+                if !trimmed.is_empty() && !trimmed.ends_with(';') {
+                    cell.text = format!("{trimmed}; ");
+                }
+                cell.pending_space = false;
+            }
+        }
+    }
+
+    fn close_cell(&mut self) {
+        let Some(table) = self.tables.last_mut() else {
+            return;
+        };
+        if let Some(cell) = table.cell.take() {
+            let text = cell.text.split_whitespace().collect::<Vec<_>>().join(" ");
+            if cell.header {
+                table.row_header = true;
+            }
+            table.row.push((text, cell.header));
+        }
+    }
+
+    fn close_row(&mut self) {
+        self.close_cell();
+        let Some(table) = self.tables.last_mut() else {
+            return;
+        };
+        let header = table.row_header && table.row.iter().all(|(_, h)| *h);
+        let cells = std::mem::take(&mut table.row);
+        if cells.iter().any(|(t, _)| !t.is_empty()) {
+            table.rows.push(RowBuf { cells, header });
+        }
+        table.row_header = table.in_head;
+    }
+
+    fn close_table(&mut self) {
+        self.close_row();
+        let Some(table) = self.tables.pop() else {
+            return;
+        };
+        let rendered = render_table(&table);
+        if rendered.is_empty() {
+            return;
+        }
+        if self.in_cell() {
+            self.push_text(&rendered.replace('\n', " "));
+        } else {
+            block_break(&mut self.out, &mut self.pending_space);
+            self.out.push_str(&rendered);
+            block_break(&mut self.out, &mut self.pending_space);
+            // A blank line so the row bullets do not absorb the next paragraph.
+            if !self.out.ends_with("\n\n") {
+                self.out.push('\n');
+            }
+        }
+    }
+
+    fn sink_len(&self) -> usize {
+        if let Some(table) = self.tables.last() {
+            if let Some(cell) = &table.cell {
+                return cell.text.len();
+            }
+        }
+        self.out.len()
+    }
+
+    fn text_since(&self, start: usize) -> String {
+        if let Some(table) = self.tables.last() {
+            if let Some(cell) = &table.cell {
+                let start = start.min(cell.text.len());
+                return cell.text[start..].to_string();
+            }
+        }
+        let start = start.min(self.out.len());
+        self.out[start..].to_string()
+    }
+
+    fn close_link(&mut self) {
+        let Some(link) = self.link.take() else {
+            return;
+        };
+        let Some(url) = crate::fetch::url::resolve_link(self.base, &link.href) else {
+            return;
+        };
+        let written = self.text_since(link.start);
+        let trimmed = written.trim();
+        if trimmed.is_empty() {
+            self.push_text(&url);
+        } else if trimmed != url && !trimmed.contains(&url) {
+            self.push_text(&format!(" {url}"));
+        }
+    }
+
+    fn push_char(&mut self, c: char) {
+        if let Some(table) = self.tables.last_mut() {
+            if let Some(cell) = table.cell.as_mut() {
+                push_cell_char(cell, c);
+                return;
+            }
+            // Whitespace between cells is not page text.
+            return;
+        }
+        push_char(
+            &mut self.out,
+            c,
+            &mut self.pending_space,
+            self.heading,
+            &mut self.heading_started,
+            self.pre_depth > 0,
+        );
+    }
+
+    fn push_text(&mut self, raw: &str) {
+        let mut rest = raw;
+        while let Some(pos) = rest.find('&') {
+            for c in rest[..pos].chars() {
+                self.push_char(c);
+            }
+            let tail = &rest[pos..];
+            if let Some((c, consumed)) = entity_at(tail) {
+                self.push_char(c);
+                rest = &tail[consumed..];
+            } else {
+                self.push_char('&');
+                rest = &tail[1..];
+            }
+        }
+        for c in rest.chars() {
+            self.push_char(c);
+        }
+    }
+}
+
+fn push_cell_char(cell: &mut CellBuf, c: char) {
+    if c.is_control() && c != '\n' && c != '\t' {
+        return;
+    }
+    if c.is_whitespace() {
+        cell.pending_space = true;
+        return;
+    }
+    if cell.pending_space && !cell.text.is_empty() && !cell.text.ends_with(' ') {
+        cell.text.push(' ');
+    }
+    cell.pending_space = false;
+    cell.text.push(c);
+}
+
+fn render_table(table: &TableBuf) -> String {
+    let mut header: Option<Vec<String>> = None;
+    let mut lines = Vec::new();
+    for row in &table.rows {
+        let cells: Vec<String> = row.cells.iter().map(|(t, _)| t.clone()).collect();
+        let is_header = row.header && header.is_none();
+        if is_header {
+            header = Some(cells);
+            continue;
+        }
+        if let Some(names) = &header {
+            let mut parts = Vec::new();
+            for (i, cell) in cells.iter().enumerate() {
+                if cell.is_empty() {
+                    continue;
+                }
+                match names.get(i).map(|s| s.as_str()).filter(|s| !s.is_empty()) {
+                    Some(name) => parts.push(format!("{name}: {cell}")),
+                    None => parts.push(cell.clone()),
+                }
+            }
+            if !parts.is_empty() {
+                lines.push(format!("- {}", parts.join("; ")));
+            }
+        } else {
+            let parts: Vec<&str> = cells
+                .iter()
+                .filter(|s| !s.is_empty())
+                .map(String::as_str)
+                .collect();
+            if !parts.is_empty() {
+                lines.push(format!("- {}", parts.join(" | ")));
+            }
+        }
+    }
+    lines.join("\n")
+}
+
+fn attr_value(tag: &str, want: &str) -> Option<String> {
+    let bytes = tag.as_bytes();
+    let mut i = 1usize;
+    if bytes.get(i) == Some(&b'/') {
+        return None;
+    }
+    while i < bytes.len() && is_tag_name_byte(bytes[i]) {
+        i += 1;
+    }
+    while i < bytes.len() && bytes[i] != b'>' {
+        while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+            i += 1;
+        }
+        if i >= bytes.len() || bytes[i] == b'>' || bytes[i] == b'/' {
+            break;
+        }
+        let start = i;
+        while i < bytes.len()
+            && (bytes[i].is_ascii_alphanumeric() || matches!(bytes[i], b'-' | b':' | b'_'))
+        {
+            i += 1;
+        }
+        let name = &tag[start..i];
+        while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+            i += 1;
+        }
+        if bytes.get(i) != Some(&b'=') {
+            continue;
+        }
+        i += 1;
+        while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+            i += 1;
+        }
+        let value = if bytes.get(i).is_some_and(|c| *c == b'"' || *c == b'\'') {
+            let quote = bytes[i];
+            i += 1;
+            let start = i;
+            while i < bytes.len() && bytes[i] != quote {
+                i += 1;
+            }
+            let v = tag[start..i].to_string();
+            if i < bytes.len() {
+                i += 1;
+            }
+            v
+        } else {
+            let start = i;
+            while i < bytes.len() && !bytes[i].is_ascii_whitespace() && bytes[i] != b'>' {
+                i += 1;
+            }
+            tag[start..i].to_string()
+        };
+        if name.eq_ignore_ascii_case(want) {
+            return Some(decode_attr(&value));
+        }
+    }
+    None
+}
+
+fn decode_attr(raw: &str) -> String {
+    let mut out = String::new();
+    let mut rest = raw;
+    while let Some(pos) = rest.find('&') {
+        out.push_str(&rest[..pos]);
+        let tail = &rest[pos..];
+        if let Some((c, consumed)) = entity_at(tail) {
+            out.push(c);
+            rest = &tail[consumed..];
+        } else {
+            out.push('&');
+            rest = &tail[1..];
+        }
+    }
+    out.push_str(rest);
+    out
 }
 
 /// Is this byte allowed in a tag name? ASCII is enough for HTML in practice.
@@ -344,35 +714,6 @@ fn push_heading_char(out: &mut String, c: char, heading_started: &mut bool) {
     *heading_started = true;
 }
 
-/// Append a text run, decoding character references.
-#[allow(clippy::too_many_arguments)]
-fn push_text(
-    out: &mut String,
-    raw: &str,
-    pending_space: &mut bool,
-    heading: Option<usize>,
-    heading_started: &mut bool,
-    pre: bool,
-) {
-    let mut rest = raw;
-    while let Some(pos) = rest.find('&') {
-        for c in rest[..pos].chars() {
-            push_char(out, c, pending_space, heading, heading_started, pre);
-        }
-        let tail = &rest[pos..];
-        if let Some((c, consumed)) = entity_at(tail) {
-            push_char(out, c, pending_space, heading, heading_started, pre);
-            rest = &tail[consumed..];
-        } else {
-            push_char(out, '&', pending_space, heading, heading_started, pre);
-            rest = &tail[1..];
-        }
-    }
-    for c in rest.chars() {
-        push_char(out, c, pending_space, heading, heading_started, pre);
-    }
-}
-
 /// Decode one character reference at the start of `tail` (which begins with
 /// `&`). Returns the character and how many bytes the reference spans.
 fn entity_at(tail: &str) -> Option<(char, usize)> {
@@ -517,16 +858,63 @@ var secret = 'not page text';</SCRIPT><style>.x{color:red}</style>\
 <p><a href=\"https://example.invalid/secret\" title=\"tooltip\">link</a></p>";
         let text = to_text(html);
         assert!(text.contains("link"), "{text}");
-        assert!(!text.contains("secret"), "{text}");
+        // The visible word is not the href, so the URL is appended. The title
+        // attribute and the comment are still not text.
+        assert!(text.contains("https://example.invalid/secret"), "{text}");
         assert!(!text.contains("tooltip"), "{text}");
         assert!(!text.contains("hidden"), "{text}");
     }
 
     #[test]
-    fn tables_become_one_line_per_cell() {
+    fn tables_become_one_bullet_per_row() {
         let text = to_text("<table><tr><td>src/A.sol</td><td>src/B.sol</td></tr></table>");
-        assert!(text.contains("src/A.sol\n"), "{text}");
-        assert!(text.contains("src/B.sol\n"), "{text}");
+        assert!(text.contains("- src/A.sol | src/B.sol"), "{text}");
+    }
+
+    #[test]
+    fn a_header_row_names_each_cell() {
+        let html = "<table><tr><th>Severity</th><th>Title</th></tr>\
+<tr><td>Critical</td><td>Direct theft</td></tr>\
+<tr><td></td><td>Skipped empty</td></tr></table>";
+        let text = to_text(html);
+        assert!(
+            text.contains("- Severity: Critical; Title: Direct theft"),
+            "{text}"
+        );
+        assert!(text.contains("- Title: Skipped empty"), "{text}");
+        assert!(!text.contains("Severity: ;"), "{text}");
+    }
+
+    #[test]
+    fn an_empty_anchor_appends_its_url_and_utm_is_stripped() {
+        let html = "<table><tr><td><a href=\"https://github.com/acme/vault?utm_source=x\"><span></span></a></td>\
+<td>Vault</td></tr></table>";
+        let text = to_text(html);
+        assert!(text.contains("https://github.com/acme/vault"), "{text}");
+        assert!(!text.contains("utm_source"), "{text}");
+    }
+
+    #[test]
+    fn a_relative_href_stays_relative_without_a_base_and_resolves_with_one() {
+        let html = "<a href=\"contracts/Vault.sol\"></a>";
+        assert!(
+            to_text(html).contains("contracts/Vault.sol"),
+            "{}",
+            to_text(html)
+        );
+        let with = to_text_with_base(html, Some("https://example.com/program/scope"));
+        assert!(
+            with.contains("https://example.com/program/contracts/Vault.sol"),
+            "{with}"
+        );
+    }
+
+    #[test]
+    fn link_text_that_differs_from_the_url_keeps_both() {
+        let text = to_text("<a href=\"https://example.com/vault\" title=\"hidden\">docs</a>");
+        assert!(text.contains("docs"), "{text}");
+        assert!(text.contains("https://example.com/vault"), "{text}");
+        assert!(!text.contains("hidden"), "{text}");
     }
 
     #[test]
@@ -570,7 +958,9 @@ var secret = 'not page text';</SCRIPT><style>.x{color:red}</style>\
         assert!(text.contains("link"), "{text}");
         assert!(text.contains("after"), "{text}");
         assert!(!text.contains("title"), "{text}");
-        assert!(!text.contains("x > y"), "{text}");
+        // The href is not the link text, so it is appended. "after" still
+        // following it is what shows the quoted `>` did not end the tag.
+        assert!(text.contains("x > y"), "{text}");
     }
 
     #[test]

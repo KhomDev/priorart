@@ -87,7 +87,7 @@
           "source_id": { "type": "string", "pattern": "^src-[0-9]{4}$" },
           "kind": {
             "type": "string",
-            "enum": ["audit-finding", "audit-section", "known-issue", "scope-clause", "scope-path", "payout-tier", "page-section"]
+            "enum": ["audit-finding", "audit-section", "known-issue", "scope-clause", "scope-path", "payout-tier", "page-section", "impact"]
           },
           "title": { "type": ["string", "null"] },
           "section": { "type": ["string", "null"] },

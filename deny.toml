@@ -47,6 +47,10 @@ allow = [
     "ISC",
     "Unicode-3.0",
     "Zlib",
+    # The Mozilla CA bundle shipped by webpki-roots, which ureq's rustls
+    # backend uses instead of the OS trust store. CDLA-Permissive-2.0 is the
+    # licence of that certificate list.
+    "CDLA-Permissive-2.0",
 ]
 confidence-threshold = 0.9
 
@@ -59,18 +63,20 @@ wildcards = "deny"
 deny = [
     { name = "reqwest" },
     { name = "hyper" },
-    { name = "ureq" },
     { name = "curl" },
     { name = "isahc" },
     { name = "surf" },
     { name = "attohttpc" },
+    { name = "minreq" },
     { name = "tokio" },
     { name = "async-std" },
     { name = "native-tls" },
-    { name = "rustls" },
     { name = "openssl" },
     { name = "tungstenite" },
 ]
+# `ureq` 2.12.1 (rustls, no tokio) is the HTTP client behind the optional
+# `fetch` feature, which is on by default. `--no-default-features` drops it.
+# It is not on this deny list. Every other HTTP stack still is.
 # Transitive duplicates introduced by solar-parse 0.2.0. Each pair cannot be
 # collapsed without an upstream release; the exact older versions are skipped,
 # so the exception names what it permits rather than disabling the check.
@@ -78,6 +84,11 @@ skip = [
     { name = "cpufeatures", version = "=0.2.17" },
     { name = "hashbrown", version = "=0.14.5" },
     { name = "syn", version = "=2.0.119" },
+    # ureq 2.12.1 pins base64 0.22. serde-saphyr, already in the graph, uses
+    # base64 0.23. There is no ureq 2 release on 0.23; ureq 3 would be a
+    # different client. The older crate is base64 decoding of the proxy and
+    # TLS internals, not a second parser of program pages.
+    { name = "base64", version = "=0.22.1" },
 ]
 skip-tree = []
 

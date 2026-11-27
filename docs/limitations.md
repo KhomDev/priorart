@@ -41,16 +41,13 @@ claim. Do not cite it as a finding.
 
 ## HTML is converted, not rendered
 
-A saved `scope.html` (or `scope.htm`) is converted to text by a small in-repo
-normalizer (headings, bullets, blocks, entities, script/style removal). It is
-designed for **list-based pages**; it is **not a browser and not an HTML
-parser**: CSS layout, JavaScript-rendered text, table structure and text
-carried only in attributes are not read. A **plain** table-based rewards or
-scope page yields no payout/scope items (a cell whose text is itself a Markdown
-bullet is still read as one), and a page that builds its scope list in
-JavaScript yields none either; save those pages as Markdown by hand. Table
-mapping is a later-release plan, not 0.2.0. The rules and the fixtures are in
-[dossier.md](dossier.md#html-program-pages) and `tests/html.rs`.
+A saved `scope.html` (or `scope.htm`, or a file under `pages/`) is converted to
+text by a small in-repo normalizer: headings, bullets, table rows, `href`s,
+blocks, entities, and script/style removal. It is **not a browser**. CSS
+layout, JavaScript-rendered text, images and text carried only in attributes
+other than `href` are not read. A page whose text exists only in a script
+yields no items, and the build says so. The rules are in
+[dossier.md](dossier.md#html-program-pages).
 
 ## PDFs are best-effort, and the fallback is native code
 

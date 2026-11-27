@@ -10,15 +10,23 @@ fetched at build time or check time.
 program-dir/
   program.yaml         # optional metadata and payout terms
   scope.md             # the saved program page (.html/.htm convert; .txt too)
+  pages/               # further pages, from `priorart fetch` or saved by hand
+  fetch.json           # record of what `priorart fetch` saved; not a source
   known-issues.md      # the program's own known issues (.yaml/.yml/.txt too)
   audits/              # prior audit reports, .md/.txt/.pdf, recursive
 ```
 
 What `build` reads, and the order it reads it in:
 
-- exactly one program page: `scope.md`, `scope.html`, `scope.htm`, `scope.txt`
-  (first found in that order; if several exist the build prints which one it
-  used);
+- the classic program page: `scope.md`, `scope.html`, `scope.htm`, `scope.txt`
+  (first found in that order; if several of those exist the build prints which
+  one it used);
+- then every regular file in `pages/` with extension `.html`, `.htm`, `.md`,
+  `.markdown` or `.txt`, sorted by file name. `priorart fetch` writes
+  `pages/001.html`, `pages/002.html`, … in the order of the URLs. A folder
+  that has only `scope.md` is read exactly as before. `fetch.json` is not a
+  source; `build` reads it only to learn a fetched page's final URL, which is
+  the base for relative links in that file;
 - exactly one known-issues file: `known-issues.md`, `.yaml`, `.yml`, `.txt`;
 - every document under `audits/`, recursively, with extension `.md`,
   `.markdown`, `.txt` or `.pdf`. `audits/README.md` is skipped: scaffolding is
@@ -55,37 +63,46 @@ writer who already controls the folder.
 
 ## HTML program pages
 
-A saved `scope.html` or `scope.htm` is converted to text before extraction, by
-`src/dossier/html.rs`, into the Markdown-shaped text a careful copy would have:
+A saved `scope.html`, `scope.htm`, or a page under `pages/`, is converted to
+text before extraction, by `src/dossier/html.rs`:
 
-- `<h1>`-`<h6>` become `#`-`######` heading lines, so the section logic sees
-  `## Rewards` where the page has `<h2>Rewards</h2>`;
-- `<li>` becomes a `- ` bullet, so reward tables, scope lists and exclusion
-  lists are read as bullets;
-- `<p>`, `<br>`, `<div>` and the other block elements become line breaks;
+- `<h1>`-`<h6>` become `#`-`######` heading lines;
+- `<li>` becomes a `- ` bullet;
+- a `<table>` becomes one bullet per body row. With a header row (`<th>` or
+  `<thead>`), each body row is `- <Header1>: <cell1>; <Header2>: <cell2>`, and
+  an empty cell is skipped. Without a header row the bullet is `- cell1 | cell2`;
+- an `<a href>` with no text, or whose text is not the URL, appends the URL.
+  `utm_*` query keys are removed. A relative href is resolved only against an
+  explicit base: the `final_url` in `fetch.json` for that file. With no base,
+  the relative href is left relative;
+- a GitHub repository, tree or blob URL, and an explorer `/address/0x`… or
+  `/token/0x`… URL, is a `scope-path` item;
+- a block boundary (`<div>`, `<p>`, a heading) ends the previous line. A
+  severity word that sits in its own block labels the reward lines that follow
+  it, so it is not glued onto the previous amount;
+- an impacts row (a severity and a title, and no amount) is an `impact` item.
+  A `payout-tier` item has a severity and an amount, or an "up to" / range, on
+  the same line;
+- `<p>`, `<br>` and the other block elements become line breaks outside a
+  table cell. Inside a cell they stay in that cell, and a nested `<li>` is
+  joined with `; `;
 - every other tag is dropped and its text kept, so `src/<code>Vault</code>.sol`
   stays `src/Vault.sol`;
 - `<script>` and `<style>` contents are dropped and never quoted;
-- common named entities (`&amp;`, `&nbsp;`, `&mdash;`) and numeric references
-  (`&#39;`, `&#x2F;`) are decoded; an entity this build does not know is left
-  as written rather than guessed;
+- common named entities and numeric references are decoded; an entity this
+  build does not know is left as written;
 - whitespace is collapsed the way a browser collapses it, except in `<pre>`.
 
-This is **not a browser**, and it is designed for **list-based pages**: a
-heading followed by a `<ul>`/`<li>` list. CSS layout, JavaScript-rendered
-content, table structure and text carried only in attributes (`alt`, `title`,
-`aria-label`) are not read.
+This is **not a browser**. Still not read:
 
-A page whose rewards or scope live in a **plain** `<table>` yields **no**
-`payout-tier`, `scope-path` or `scope-clause` items: table cells become lines,
-not bullets. The exception is a cell whose text is itself a Markdown bullet
-(`- Critical: ...`): the converter cannot tell it came from a table, so that
-cell is read as a bullet. Table structure is not mapped. Save a table-based
-page as Markdown by hand. Table mapping is planned for a later release, not
-0.2.0; `tests/html.rs` pins both the limitation and the bullet-cell edge. A
-page rendered by JavaScript, or whose content lives in attributes, needs the
-same manual save. The source is recorded as `scope.html` with one page, its
-`sha256` is of the HTML bytes, and every item quotes the converted text.
+- text that exists only because JavaScript wrote it (a script-only page yields
+  no items, and the build says so);
+- images, and text that lives only in attributes other than `href` (`alt`,
+  `title`, `aria-label`);
+- CSS layout.
+
+The source is recorded with one page, its `sha256` is of the HTML bytes, and
+every item quotes the converted text.
 
 ## program.yaml
 
@@ -174,7 +191,8 @@ never has to tell "absent" from "null".
   checked against the NIST vectors). `pages` is 1 + the number of form feeds,
   which is what `pdftotext -layout` writes between pages.
 - `items[].kind` is one of `audit-finding`, `audit-section`, `known-issue`,
-  `scope-clause`, `scope-path`, `payout-tier`, `page-section`.
+  `scope-clause`, `scope-path`, `payout-tier`, `impact`, `page-section`.
+  `impact` is a severity-tagged in-scope impact that is not a payout tier.
 - `items[].quote` is the sentence that names a strong identifier, whitespace
   collapsed and windowed at a word boundary if it is very long. It is not a
   caption: it is the text the reader will check.
@@ -280,15 +298,14 @@ pre-0.2.0 dossier over the cap (0.1.3 had no limit) is still refused.
 
 ## What `build` does not do
 
-- **It does not fetch anything.** A page is a file you saved. There is no URL
-  argument, no cache and no update check ([no-network.md](no-network.md)).
+- **`build` does not fetch anything.** A page is a file, saved by you or by
+  `priorart fetch`. There is no cache and no refresh
+  ([no-network.md](no-network.md)).
 - It does not check out a repository at a commit, and it does not parse source
   code. It reads documents.
-- It does not render HTML. `scope.html`/`scope.htm` is converted conservatively
-  ([above](#html-program-pages)); CSS, JavaScript-rendered text,
-  attribute-only text and table structure are not read. A table-based page
-  should be saved as Markdown (a cell that is itself a Markdown bullet is still
-  read as one).
+- It does not render HTML in a browser. `scope.html`/`scope.htm` and `pages/*`
+  are converted ([above](#html-program-pages)). JavaScript-rendered text,
+  images and attributes other than `href` are not read.
 - It does not infer a severity, a floor or a clause class from prose. A payout
   terms block comes from `program.yaml`; a clause class comes from the vocabulary
   ([vocab.md](vocab.md)).

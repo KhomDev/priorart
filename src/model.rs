@@ -96,7 +96,8 @@ pub struct Item {
     pub id: String,
     pub source_id: String,
     /// `audit-finding` | `audit-section` | `known-issue` | `scope-clause`
-    /// | `scope-path` | `payout-tier` | `page-section`.
+    /// | `scope-path` | `payout-tier` | `impact` | `page-section`.
+    /// `impact` is a severity-tagged in-scope impact that is not a payout tier.
     pub kind: String,
     pub title: Option<String>,
     pub section: Option<String>,

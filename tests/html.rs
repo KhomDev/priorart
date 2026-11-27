@@ -145,18 +145,23 @@ fn a_scope_htm_only_folder_builds() {
     assert!(kinds.contains(&"scope-path"), "{kinds:?}");
 }
 
-/// A plain table-based page is a known 0.2.0 limitation, not a promise: a cell
-/// without a Markdown bullet marker is just a line, so no payout/scope/
-/// exclusion items are extracted and the gates say what they could not read.
+/// A headerless table under a real heading becomes bullets, one row each.
+/// A cell that is only a section title ("Rewards") is not itself a tier.
 #[test]
-fn table_based_pages_are_a_known_limitation() {
+fn a_table_under_a_heading_is_read_as_bullets() {
     let tmp = TempDir::new("html-table");
     tmp.write(
         "program/scope.html",
         "<!doctype html><html><body><h1>Program</h1>\
-<table><tr><td>Rewards</td></tr><tr><td>Critical: 50,000 USD</td></tr></table>\
-<table><tr><td>Assets in scope</td></tr><tr><td>src/Vault.sol</td></tr></table>\
-<table><tr><td>Out of scope</td></tr><tr><td>Attacks requiring a privileged role</td></tr></table>\
+<h2>Rewards</h2>\
+<table><tr><td>Critical</td><td>50,000 USD</td></tr></table>\
+<h2>Assets in scope</h2>\
+<table><tr><th>Target</th><th>Name</th></tr>\
+<tr><td><a href=\"https://github.com/acme/vault\"></a></td><td></td></tr></table>\
+<h2>Impacts in scope</h2>\
+<table><tr><td>High</td><td>Email</td></tr></table>\
+<h2>Out of scope</h2>\
+<table><tr><td>Attacks requiring a privileged role</td></tr></table>\
 </body></html>\n",
     );
     let out = tmp.join("table.dossier");
@@ -169,47 +174,46 @@ fn table_based_pages_are_a_known_limitation() {
     ]);
     assert_eq!(build.code, 0, "{}", build.stderr);
     let dossier: Value = serde_json::from_str(&build.stdout).expect("build --json prints JSON");
-    let kinds: Vec<&str> = dossier["items"]
-        .as_array()
-        .unwrap()
+    let items = dossier["items"].as_array().unwrap();
+    let text_of = |kind: &str| -> Vec<String> {
+        items
+            .iter()
+            .filter(|i| i["kind"] == kind)
+            .map(|i| i["text"].as_str().unwrap().to_string())
+            .collect()
+    };
+    let tiers = text_of("payout-tier");
+    assert!(
+        tiers
+            .iter()
+            .any(|t| t.contains("Critical") && t.contains("50,000 USD")),
+        "{tiers:?}"
+    );
+    let paths = text_of("scope-path");
+    assert!(
+        paths
+            .iter()
+            .any(|t| t.contains("https://github.com/acme/vault")),
+        "{paths:?}"
+    );
+    assert!(
+        text_of("payout-tier").iter().all(|t| !t.contains("Email")),
+        "the impacts row must not be a payout tier"
+    );
+    let impacts = text_of("impact");
+    assert!(
+        impacts
+            .iter()
+            .any(|t| t.contains("High") && t.contains("Email")),
+        "{impacts:?}"
+    );
+    assert!(text_of("scope-clause")
         .iter()
-        .map(|i| i["kind"].as_str().unwrap())
-        .collect();
-    for unsupported in ["payout-tier", "scope-path", "scope-clause"] {
-        assert!(
-            !kinds.contains(&unsupported),
-            "table mapping is a P1 plan item, not 0.2.0; {unsupported} appeared: {kinds:?}"
-        );
-    }
-    assert!(kinds.contains(&"page-section"), "{kinds:?}");
-
-    let finding = tmp.write(
-        "finding.md",
-        "# Finding\n\n`Vault.close` needs an operator.\nSeverity: High\n",
-    );
-    let check = run(&[
-        "check",
-        finding.to_str().unwrap(),
-        "--dossier",
-        out.to_str().unwrap(),
-    ]);
-    assert_eq!(check.code, 0, "{}", check.stderr);
-    assert!(
-        check.stdout.contains("no in-scope file list was indexed"),
-        "G3 must report that the table scope was not read:\n{}",
-        check.stdout
-    );
-    assert!(
-        check.stdout.contains("no payout block"),
-        "G1 must report that no payout table was read:\n{}",
-        check.stdout
-    );
+        .any(|t| t.contains("privileged role")));
 }
 
-/// The limitation is "table structure is not mapped", not "tables yield
-/// nothing unconditionally". A cell whose text is itself a Markdown bullet is
-/// still a bullet, because the normalizer cannot tell it came from a table.
-/// This test pins the edge so the docs cannot claim more than the code does.
+/// A cell whose text is itself a Markdown bullet is still one payout tier:
+/// the row bullet wraps the cell text, and the inner "- " is part of that text.
 #[test]
 fn a_table_cell_that_is_itself_a_markdown_bullet_is_still_read() {
     let tmp = TempDir::new("html-table-bullet");
@@ -231,4 +235,21 @@ fn a_table_cell_that_is_itself_a_markdown_bullet_is_still_read() {
         kinds.contains(&"payout-tier"),
         "a cell that starts with '- ' is a bullet, so it is read: {kinds:?}"
     );
+}
+
+/// A page whose text exists only inside `<script>` yields no items and says so.
+#[test]
+fn a_javascript_only_page_yields_nothing_and_says_so() {
+    let tmp = TempDir::new("html-js");
+    tmp.write(
+        "program/scope.html",
+        "<html><body><script>document.write('<h2>Rewards</h2><li>Critical: 50,000 USD</li>')</script></body></html>\n",
+    );
+    let build = run(&["build", tmp.join("program").to_str().unwrap()]);
+    assert_eq!(build.code, 0, "{}", build.stderr);
+    let combined = format!("{}{}", build.stdout, build.stderr);
+    assert!(combined.contains("no readable text"), "{combined}");
+    assert!(combined.contains("JavaScript-rendered"), "{combined}");
+    assert!(!combined.contains("50,000"), "{combined}");
+    assert!(!combined.contains("payout-tier"), "{combined}");
 }
