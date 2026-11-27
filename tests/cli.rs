@@ -788,8 +788,13 @@ fn the_http_client_is_only_the_fetch_feature() {
                 entry.display()
             );
         }
-        for banned in ["TcpStream", "UdpSocket", "std::net::"] {
+        for banned in ["TcpStream", "UdpSocket"] {
             assert!(!text.contains(banned), "{} uses {banned}", entry.display());
+        }
+        // The fetch client resolves names itself to refuse private addresses;
+        // no other file names std::net.
+        if text.contains("std::net::") {
+            assert!(in_fetch_client, "{} uses std::net::", entry.display());
         }
         checked += 1;
     }

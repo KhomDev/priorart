@@ -106,7 +106,7 @@ fn html_program_page_builds_and_answers_all_three_gates() {
         "High is payable",          // G1 read the rewards table
         "privileged_role",          // G2 read the exclusion clause
         "Vault (in src/Vault.sol)", // G3 read the assets list
-        "Medium: 2,000 USD",        // the payout quote came from the page
+        "High: 10,000 USD",         // the claimed severity's row, quoted from the page
     ] {
         assert!(
             check.stdout.contains(expected),

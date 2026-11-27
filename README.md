@@ -185,7 +185,7 @@ IS IT EXCLUDED?       1 clause class match your preconditions (attacker: role: o
   -> a match is a prompt to read the clause, not a reject.
 
 CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable (cited: https://example.invalid/html/rewards, section Rewards)
-  "Medium: 2,000 USD"
+  "High: 10,000 USD"
   High is at or above the floor (Medium)
 
 NOTES
