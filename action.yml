@@ -1,0 +1,164 @@
+name: priorart prior-art check
+description: Quote prior art, exclusions and payability for an audit finding against a program dossier. Offline after install.
+author: KhomDev
+branding:
+  icon: search
+  color: gray-dark
+
+inputs:
+  finding:
+    description: Path of the finding to check, as Markdown.
+    required: true
+  dossier:
+    description: Path of a .dossier built by `priorart build`. Empty means the single .dossier beside the finding, or the one built from `program`.
+    required: false
+    default: ""
+  program:
+    description: A program folder (saved pages, see docs/cli.md). When set, the action runs `priorart build` on it first and checks against that dossier.
+    required: false
+    default: ""
+  top-k:
+    description: How many ranked prior items to show.
+    required: false
+    default: "5"
+  fail-on-excluded:
+    description: Fail the job when an exclusion clause class matches.
+    required: false
+    default: "false"
+  fail-on-unpayable:
+    description: Fail the job when the claimed severity is below the program's floor.
+    required: false
+    default: "false"
+  version:
+    description: priorart release to run, e.g. v0.2.2. Empty means the release this action belongs to.
+    required: false
+    default: ""
+  binary:
+    description: For testing this action. A priorart binary to run instead of downloading one.
+    required: false
+    default: ""
+
+outputs:
+  exit-code:
+    description: 0 clean, 1 a fail-on condition matched, 2 or more a usage or input error.
+    value: ${{ steps.run.outputs.exit-code }}
+  version:
+    description: The priorart version that ran.
+    value: ${{ steps.install.outputs.version }}
+  report:
+    description: Path of the priorart.check/v1 JSON report.
+    value: ${{ steps.run.outputs.report }}
+  text:
+    description: Path of the text report (also in the job summary).
+    value: ${{ steps.run.outputs.text }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install priorart
+      id: install
+      shell: bash
+      env:
+        PA_VERSION: ${{ inputs.version }}
+        PA_BINARY: ${{ inputs.binary }}
+        PA_DEFAULT_VERSION: v0.2.2
+      run: |
+        set -euo pipefail
+        dir="$RUNNER_TEMP/priorart-action"
+        mkdir -p "$dir"
+        if [ -n "$PA_BINARY" ]; then
+          bin="$PA_BINARY"
+        else
+          version="${PA_VERSION:-$PA_DEFAULT_VERSION}"
+          case "$version" in v*) ;; *) version="v$version" ;; esac
+          case "$RUNNER_OS-$RUNNER_ARCH" in
+            Linux-X64) target=x86_64-unknown-linux-gnu; ext=tar.gz ;;
+            Linux-ARM64) target=aarch64-unknown-linux-gnu; ext=tar.gz ;;
+            macOS-X64) target=x86_64-apple-darwin; ext=tar.gz ;;
+            macOS-ARM64) target=aarch64-apple-darwin; ext=tar.gz ;;
+            Windows-X64) target=x86_64-pc-windows-msvc; ext=zip ;;
+            *) echo "::error::priorart has no release archive for $RUNNER_OS $RUNNER_ARCH"; exit 2 ;;
+          esac
+          name="priorart-$version-$target"
+          base="https://github.com/KhomDev/priorart/releases/download/$version"
+          curl -fsSL --retry 3 -o "$dir/$name.$ext" "$base/$name.$ext"
+          curl -fsSL --retry 3 -o "$dir/SHA256SUMS" "$base/SHA256SUMS"
+          expected=$(awk -v f="$name.$ext" '$2 == f || $2 == "*"f { print $1 }' "$dir/SHA256SUMS")
+          if [ -z "$expected" ]; then echo "::error::$name.$ext is not in SHA256SUMS"; exit 2; fi
+          # Hash stdin: with a Windows path (backslashes) sha256sum escapes its output line.
+          if command -v sha256sum >/dev/null 2>&1; then
+            actual=$(sha256sum < "$dir/$name.$ext" | awk '{print $1}')
+          else
+            actual=$(shasum -a 256 < "$dir/$name.$ext" | awk '{print $1}')
+          fi
+          if [ "$expected" != "$actual" ]; then echo "::error::checksum mismatch for $name.$ext"; exit 2; fi
+          if [ "$ext" = zip ]; then unzip -q -o "$dir/$name.$ext" -d "$dir"; else tar -xzf "$dir/$name.$ext" -C "$dir"; fi
+          bin="$dir/$name/priorart"
+          [ -f "$bin" ] || bin="$bin.exe"
+        fi
+        "$bin" --version
+        echo "bin=$bin" >> "$GITHUB_OUTPUT"
+        echo "version=$("$bin" --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+    - name: Run priorart check
+      id: run
+      shell: bash
+      env:
+        PA_BIN: ${{ steps.install.outputs.bin }}
+        PA_FINDING: ${{ inputs.finding }}
+        PA_DOSSIER: ${{ inputs.dossier }}
+        PA_PROGRAM: ${{ inputs.program }}
+        PA_TOP_K: ${{ inputs.top-k }}
+        PA_FAIL_EXCLUDED: ${{ inputs.fail-on-excluded }}
+        PA_FAIL_UNPAYABLE: ${{ inputs.fail-on-unpayable }}
+      run: |
+        # GitHub runs bash with -e; a non-zero priorart exit is a result here.
+        set +e -uo pipefail
+        dir="$RUNNER_TEMP/priorart-action"
+        mkdir -p "$dir"
+        # No stale report from an earlier use of the action in the same job.
+        rm -f "$dir/report.txt" "$dir/report.json"
+        args=(check "$PA_FINDING" --top-k "$PA_TOP_K")
+        dossier="$PA_DOSSIER"
+        if [ -n "$PA_PROGRAM" ]; then
+          if ! "$PA_BIN" build "$PA_PROGRAM" > "$dir/build.txt" 2>&1; then
+            cat "$dir/build.txt"
+            cp "$dir/build.txt" "$dir/report.txt"
+            echo "exit-code=2" >> "$GITHUB_OUTPUT"
+            echo "text=$dir/report.txt" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          cat "$dir/build.txt"
+          if [ -z "$dossier" ]; then
+            dossier=$(find "$PA_PROGRAM" -maxdepth 1 -name '*.dossier' | head -n1)
+          fi
+        fi
+        [ -n "$dossier" ] && args+=(--dossier "$dossier")
+        [ "$PA_FAIL_EXCLUDED" = true ] && args+=(--fail-on-excluded)
+        [ "$PA_FAIL_UNPAYABLE" = true ] && args+=(--fail-on-unpayable)
+        "$PA_BIN" "${args[@]}" > "$dir/report.txt" 2>&1
+        status=$?
+        "$PA_BIN" "${args[@]}" --json > "$dir/report.json" 2>/dev/null || true
+        cat "$dir/report.txt"
+        {
+          echo '### priorart'
+          echo
+          echo '```text'
+          cat "$dir/report.txt"
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
+        echo "exit-code=$status" >> "$GITHUB_OUTPUT"
+        echo "report=$dir/report.json" >> "$GITHUB_OUTPUT"
+        echo "text=$dir/report.txt" >> "$GITHUB_OUTPUT"
+        exit 0
+
+    - name: Result
+      shell: bash
+      env:
+        PA_STATUS: ${{ steps.run.outputs.exit-code }}
+      run: |
+        case "$PA_STATUS" in
+          0) echo "priorart: done" ;;
+          1) echo "::error::priorart: a fail-on condition matched; see the job summary"; exit 1 ;;
+          *) echo "::error::priorart could not check the finding (exit ${PA_STATUS:-unknown})"; exit 2 ;;
+        esac
