@@ -4,13 +4,16 @@ Stated plainly, because a tool that hides its edges gets trusted past them.
 
 ## Retrieval, not duplication
 
-priorart ranks prior items to read. It never says two findings are the same. On
-the final public benchmark the false-alarm rate on judged-paid unique findings is
-**26/60 = 43.3%** (Wilson 95% CI 31.6-55.9) and duplicate recall@5 is
-**39/64 = 60.9%** (48.7-71.9); known-prior recall is n=1 and is not a rate.
-Because 43.3% is above the plan's 30% trigger, **0.1.0 ships retrieval-only**:
-the prior-item section is a reading list and no duplicate warning is printed
-until the matcher is fixed. All three runs are in [benchmark.md](benchmark.md).
+priorart ranks prior items to read. It never says two findings are the same. The
+current public benchmark file `eval/benchmark/results.json` (priorart 0.2.2)
+records a false-alarm rate on judged-paid unique findings of
+**15/60 = 25.0%** (Wilson 95% CI 15.8-37.2) and duplicate recall@5 of
+**35/64 = 54.7%** (42.6-66.3); known-prior recall is n=1 and is not a rate.
+The 0.1.0 measurement on the same corpus was 26/60 = 43.3% (31.6-55.9). The
+0.2.2 interval still reaches above the plan's 30% trigger, and later corpora
+sit above it, so the release stays retrieval-only: the prior-item section is a
+reading list and no duplicate warning is printed. The runs are in
+[benchmark.md](benchmark.md).
 
 ## Absence is not novelty
 
@@ -89,8 +92,9 @@ vocabulary, not a base rate. See [rejections.md](rejections.md).
 The deleted viability-gate rules did not separate paid from unpaid findings
 (12 of 25 hard kills were paid findings). priorart replaces the score with ranked
 quotes and publishes its own error rate, but it does not claim the separator is
-strong: on the final build 43.3% of judged-unique findings still get a prior
-item. That is the number the next fix must move.
+strong: on the current `results.json` measurement, 15/60 = 25.0% of
+judged-unique findings still get a prior item. That is the number the next
+fix must move. The 0.1.0 build on the same corpus was 26/60 = 43.3%.
 
 ## What this tool is not
 
