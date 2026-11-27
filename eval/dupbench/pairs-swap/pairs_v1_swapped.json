@@ -1,0 +1,169 @@
+{
+  "note": "V1 pairs after the swap decided by Yura 2026-11-27 (option A). pairs.json (v1, six pairs) is unchanged and still pinned by the pre-registration; this file replaces the four pairs that are Dup-Bench contests (basin, size, ethena, salty) with the four sealed contests.",
+  "pairs": [
+    {
+      "codebase": {
+        "commit": "62ad70e634082930aed861e153d2c1e0cc94e44e",
+        "repo": "https://github.com/code-423n4/2024-03-revert-lend",
+        "source": "c4-sponsor-snapshot"
+      },
+      "contest": {
+        "commit": "5fd5466a646d1870367733b8c2bf352af5f9298d",
+        "repo": "code-423n4/2024-03-revert-lend-findings",
+        "report_date": "2024-05-22",
+        "slug": "2024-03-revert-lend"
+      },
+      "drift": "prior audit predates the contest snapshot; commit drift not stated in the README",
+      "pair_id": "revert-lend-2024",
+      "prior_report": {
+        "date_note": "stored in the contest repo's audits/ directory",
+        "file": "2024-03-revert-lend-prior-HYDN_-_Revert_Finance_Vault_Audit_Report.docx.pdf",
+        "firm": "HYDN",
+        "project": "Revert Finance Vault",
+        "sha256": "37fe72b3229ba40644bfa472d1c26a30a0d90eb4d9b36e3877e3e3a4a796cfa5",
+        "url": "https://github.com/code-423n4/2024-03-revert-lend/blob/main/audits/HYDN_-_Revert_Finance_Vault_Audit_Report.docx.pdf"
+      },
+      "same_codebase_evidence": "the contest repo ships the HYDN report in audits/ and the README cites it under 'Previous audits'",
+      "sponsor": "Revert Finance"
+    },
+    {
+      "codebase": {
+        "commit": "d67538652ba9d5447d9c09aeb5d8d0362faeafb3",
+        "repo": "https://github.com/code-423n4/2024-10-loopfi",
+        "source": "c4-sponsor-snapshot"
+      },
+      "contest": {
+        "commit": "98ee66dd1d8928b43c0ff8335595319809e6fd88",
+        "repo": "code-423n4/2024-10-loopfi-findings",
+        "report_date": "2025-02-17",
+        "slug": "2024-10-loopfi"
+      },
+      "drift": "July report to the October 2024 snapshot; commit drift not stated",
+      "pair_id": "loopfi-2024",
+      "prior_report": {
+        "date_note": "July 2024",
+        "file": "loopfi-prior-july.pdf",
+        "firm": "provisional report (firm not stated in the filename)",
+        "project": "LoopFi",
+        "sha256": "93f17b2df405a2c7d5763f46951d4e217b848a2b9db3aedecf4016cea242ffa3",
+        "url": "https://github.com/code-423n4/2024-10-loopfi/blob/main/LoopFi%20July%20Provisional%20Report.pdf"
+      },
+      "same_codebase_evidence": "the contest README cites the July provisional report under 'Previous audits' and ships it in the repo",
+      "sponsor": "LoopFi"
+    },
+    {
+      "codebase": {
+        "commit": "34cb87ea4a5e698f49ae5f5a07228db99514b7c7",
+        "repo": "https://github.com/code-423n4/2022-11-paraspace",
+        "source": "c4-sponsor-snapshot HEAD at sealing"
+      },
+      "contest": {
+        "commit": "9650d134645b4114911bf3ea25d626f2fe0b2fe2",
+        "repo": "code-423n4/2022-11-paraspace-findings",
+        "slug": "2022-11-paraspace"
+      },
+      "drift": "not assessed: no audit text was read",
+      "pair_id": "paraspace-2022",
+      "prior_report": {
+        "bytes": 3808770,
+        "date_note": "not read",
+        "file": "paraspace-core/audits/CERTIK-V1.pdf",
+        "firm": "not read (the audit file was hashed, never parsed)",
+        "git_blob": "93020d3f168a4196962cd267bfc4280b4611fe25",
+        "project": "Paraspace",
+        "sha256": "99fb971b1ede5ae081d7454e87729db12ebaf7fb3dcefae72a62f28daf210254",
+        "url": "https://github.com/code-423n4/2022-11-paraspace/blob/34cb87ea4a5e698f49ae5f5a07228db99514b7c7/paraspace-core/audits/CERTIK-V1.pdf"
+      },
+      "same_codebase_evidence": "the audit file is shipped in the sponsor's code repo at the pinned commit (sealed_optA.json, rule 5/5a)",
+      "sponsor": "Paraspace"
+    },
+    {
+      "codebase": {
+        "commit": "f6ed106a105ed8299a9d38aaf490c391e200a8f3",
+        "repo": "https://github.com/code-423n4/2023-02-ethos",
+        "source": "c4-sponsor-snapshot HEAD at sealing"
+      },
+      "contest": {
+        "commit": "3bc3ce44263d6db57d8a9bdc3ee327dbfea3a5bc",
+        "repo": "code-423n4/2023-02-ethos-findings",
+        "slug": "2023-02-ethos"
+      },
+      "drift": "not assessed: no audit text was read",
+      "pair_id": "ethos-2023",
+      "prior_report": {
+        "bytes": 3008760,
+        "date_note": "not read",
+        "file": "discord-export/Code4rena - ARCHIVE-Q1-2023 - ethos-feb16 [1075513398688743524].html_Files/Ethos_Audit_Report-2B885.pdf",
+        "firm": "not read (the audit file was hashed, never parsed)",
+        "git_blob": "86bbc402f82043b1605daaf1fc770a742568a756",
+        "project": "Ethos",
+        "sha256": "08789273d53504e891cbf00d919e0c15cff3a9e2014b7453b7174b5af24e3cba",
+        "url": "https://github.com/code-423n4/2023-02-ethos/blob/f6ed106a105ed8299a9d38aaf490c391e200a8f3/discord-export/Code4rena%20-%20ARCHIVE-Q1-2023%20-%20ethos-feb16%20[1075513398688743524].html_Files/Ethos_Audit_Report-2B885.pdf"
+      },
+      "same_codebase_evidence": "WEAK: the only prior-audit copy is a Discord export attachment inside the sponsor's code repo (`discord-export/`), pinned by sha256 in sealed_optA.json; the sponsor README was not read, so the same-codebase link is by project identity only",
+      "sponsor": "Ethos"
+    },
+    {
+      "codebase": {
+        "commit": "9dcc9c72514da5fb99a4b66d93938372209e85de",
+        "repo": "https://github.com/code-423n4/2023-09-venus",
+        "source": "c4-sponsor-snapshot HEAD at sealing"
+      },
+      "contest": {
+        "commit": "090fc6fd021a2102062a56f0bfee1ffc16ac33e7",
+        "repo": "code-423n4/2023-09-venus-findings",
+        "slug": "2023-09-venus"
+      },
+      "drift": "not assessed: no audit text was read",
+      "pair_id": "venus-2023",
+      "prior_report": {
+        "bytes": 336350,
+        "date_note": "not read",
+        "file": "audits/055_prime_peckshield_20230826.pdf",
+        "firm": "not read (the audit file was hashed, never parsed)",
+        "git_blob": "a629960ac73f6180e342ddf1545e6029015b9cbe",
+        "project": "Venus",
+        "sha256": "d299a0c938ea317f1a30b18e8c6224d8358dde1cf2f02b49148fe224da2c622f",
+        "url": "https://github.com/code-423n4/2023-09-venus/blob/9dcc9c72514da5fb99a4b66d93938372209e85de/audits/055_prime_peckshield_20230826.pdf"
+      },
+      "same_codebase_evidence": "the audit file is shipped in the sponsor's code repo at the pinned commit (sealed_optA.json, rule 5/5a)",
+      "sponsor": "Venus"
+    },
+    {
+      "codebase": {
+        "commit": "2dbb73fbe7b82263ecb506740e69aa8e5c0abddd",
+        "repo": "https://github.com/code-423n4/2023-07-arcade",
+        "source": "c4-sponsor-snapshot HEAD at sealing"
+      },
+      "contest": {
+        "commit": "099d79e0dc3b6ab04e9c2230727e25520df3af31",
+        "repo": "code-423n4/2023-07-arcade-findings",
+        "slug": "2023-07-arcade"
+      },
+      "drift": "not assessed: no audit text was read",
+      "pair_id": "arcade-2023",
+      "prior_report": {
+        "bytes": 9757268,
+        "date_note": "not read",
+        "file": "audits/Omniscia2023.pdf",
+        "firm": "not read (the audit file was hashed, never parsed)",
+        "git_blob": "f81f2924b9472342a463f327745b0258d3ea6774",
+        "project": "Arcade",
+        "sha256": "6a0b94d58bf0486c8dda5db7812e4a13a19df05adfc4b208f4a3892097da271d",
+        "url": "https://github.com/code-423n4/2023-07-arcade/blob/2dbb73fbe7b82263ecb506740e69aa8e5c0abddd/audits/Omniscia2023.pdf"
+      },
+      "same_codebase_evidence": "the audit file is shipped in the sponsor's code repo at the pinned commit (sealed_optA.json, rule 5/5a)",
+      "sponsor": "Arcade"
+    }
+  ],
+  "schema": "priorart.dupbench.pairs/v1",
+  "sponsors_used_before": [
+    "Party",
+    "Wildcat",
+    "PoolTogether",
+    "Tapioca",
+    "Maia",
+    "Panoptic"
+  ],
+  "version": 2
+}
