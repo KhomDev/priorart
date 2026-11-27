@@ -57,3 +57,57 @@ To go on, one of these has to be relaxed. That is Yura's call:
   the Dup-Bench way, and report the pairs as n=2 contests (count only).
 
 No pairs measurement runs until labels exist.
+## Option A (Yura, 2026-11-27): rule 6 dropped; 4 contests sealed
+
+Yura chose **A**: drop rule 6 (the 500-issue budget). Everything else stays.
+`screen_optA.py` is `screen_relaxed.py` without rule 6 and without the early
+stop, so every one of the 91 relaxed-pool candidates has a record in
+`screen_optA.json`. Without the cap, 8 candidates pass rules 1-7. That changes the
+earlier count of 11 with no prior-audit file: the cap ran before that check, so
+most capped contests were never checked. 43 now fail rule 5. Of the five
+contests named in option A, `2023-07-axelar` and `2022-12-caviar` fail rule 5,
+`2023-05-ajna` and `2022-10-traderjoe` fail rule 5a below, and only
+`2022-11-paraspace` is sealed.
+
+**Rule 5a (correction added after the metadata screen, before any finding was
+read).** Four of the 8 passed rule 5 only through audit files of vendored
+libraries (`lib/openzeppelin-contracts/audit/*`, `lib/solmate/audits/*`). Those
+are audits of a dependency, not a prior audit of the same codebase, which is
+what rule 5 is for. Rule 5a drops paths under `lib/`, `node_modules/`,
+`dependencies/` or `vendor/`. This removes `2024-04-dyad`, `2022-10-traderjoe`,
+`2022-12-gogopool` and `2023-05-ajna`. It only removes candidates and never
+adds one. It is stated here because it was written after the screen output was
+seen. `seal_optA.py` applies it and re-ranks by rule 8.
+
+| Rank | Contest | Role | Issues | `duplicate-N` labels | Prior-audit file(s) in the code repo |
+|---:|---|---|---:|---:|---|
+| 1 | `2022-11-paraspace` | sealed | 516 | 59 | `paraspace-core/audits/CERTIK-V1.pdf` |
+| 2 | `2023-02-ethos` | sealed | 860 | 38 | `Ethos_Audit_Report-2B885.pdf` (two copies, inside the sponsor's `discord-export/`; weakest evidence of the four) |
+| 3 | `2023-09-venus` | sealed | 684 | 36 | `audits/055_prime_peckshield_20230826.pdf`, `audits/056_prime_fairyproof_20230910.pdf` |
+| 4 | `2023-07-arcade` | sealed | 573 | 64 | `audits/Omniscia2023.pdf` |
+
+No backups remain: exactly 4 contests pass, so all 4 are sealed.
+
+**Seal.** `sealed_optA.json` pins each contest's findings repo commit, the sha256 of
+the findings tree listing (path and blob only), the `report.md` git blob, the
+code-repo commit, and each prior-audit file's git blob, byte count and sha256.
+The bytes were hashed and never parsed or printed. No issue body, `report.md`,
+`data/*.json` or audit content was read. sha256 of the committed LF
+`sealed_optA.json`: `d2af4796618a1ba48411f72017e8713fec35067217268e256236878eb97940a7`.
+
+**Labelling these need before any pairs measurement:**
+1. Judge grouping, collected the Dup-Bench way (`fetch.py`, pinned to the sealed
+   findings commit): per issue, the `duplicate-N`, `selected for report`,
+   severity and invalid/withdrawn labels. These give `labels.json`
+   (`primaries` and `duplicates`) and the `<slug>/page-*.json` issue pages that
+   `pairs_run.py --pair-labels DIR` reads. That is 2,633 issues across the four.
+2. Prior-report pins in a `pairs.json` v2: for each pair, a public URL for the
+   prior audit, checked against the sealed sha256, and the same-codebase
+   evidence. For `ethos`, the only copy is a Discord attachment, so the
+   evidence has to be stated as weak or the pair dropped.
+3. The same for the kept `2024-03-revert-lend` and `2024-10-loopfi`, which have no
+   judge labels collected yet.
+
+No pairs measurement runs until (1) and (2) exist. The label collection itself
+reads only labels, but it is the step that opens these contests, so it happens
+after this seal and is logged.

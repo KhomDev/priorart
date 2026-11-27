@@ -82,14 +82,7 @@ collected judge labels. A pairs measurement on train/validation contests is
 in-sample for the ranker and alarm; FINAL contests are refused until the FINAL
 freeze. `pairs_run.py` enforces both.
 
-**Swap (Yura, 2026-11-27): not yet possible.** The four overlapping contests
-are to be replaced by judged contests outside Dup-Bench that no run has opened,
-picked from metadata only and sealed before any finding is read. The rule,
-both screens and their per-contest records are in
-[`pairs-swap/SELECTION.md`](pairs-swap/SELECTION.md). **No contest passes
-(0 of 140 strict, 0 of 91 relaxed), so nothing is sealed yet**, and relaxing a
-criterion is Yura's call (options A-C there). The pairs measurement does not
-run until labels exist.
+**Swap (Yura, 2026-11-27): option A, 4 contests sealed.** The four overlapping contests are replaced by judged contests outside Dup-Bench that no run has opened. They were picked from metadata only and sealed before any finding was read. Yura chose option A, which drops the 500-issue budget. A correction, rule 5a, drops audits of vendored libraries; it was added after the screen output was seen and only removes candidates. The sealed contests are `2022-11-paraspace`, `2023-02-ethos`, `2023-09-venus` and `2023-07-arcade`. Their commits and hashes are in [`pairs-swap/sealed_optA.json`](pairs-swap/sealed_optA.json) (sha256 `d2af4796618a1ba48411f72017e8713fec35067217268e256236878eb97940a7`). The rule, all three screens and the labelling still needed are in [`pairs-swap/SELECTION.md`](pairs-swap/SELECTION.md). **No judge labels have been collected for them yet, so the pairs measurement does not run.**
 
 `pairs_run.py` runs `priorart candidates --top-k 5 --ranker weights/v1.json
 --alarm weights/alarm-v1.json --json` (prose anchors off) per judged duplicate
