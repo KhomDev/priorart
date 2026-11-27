@@ -1,5 +1,9 @@
 # Sealed multilingual corpus
 
+**Status (2026-11-27): a documented case study outside every metric.** It has
+no duplicate or paid/unique ground truth, so no priorart metric is computed
+from it; see [limitations](../../docs/limitations.md).
+
 New held-out corpus. It does not modify Dup-Bench, the six benchmark corpora,
 their labels, salts, or splits.
 
