@@ -114,8 +114,13 @@ jobs:
       - name: No sockets in source
         run: |
           set -euo pipefail
-          if grep -rn --include='*.rs' -E 'TcpStream|UdpSocket|std::net::' src/; then
+          if grep -rn --include='*.rs' -E 'TcpStream|UdpSocket' src/; then
             echo "A source file opens a socket" >&2
+            exit 1
+          fi
+          # The fetch client resolves names itself to refuse private addresses.
+          if grep -rn --include='*.rs' -E 'std::net::' src/ | grep -v 'src/fetch/ureq_client.rs:'; then
+            echo "std::net is named outside src/fetch/ureq_client.rs" >&2
             exit 1
           fi
           if grep -rn --include='*.rs' -E 'ureq::' src/ | grep -v 'src/fetch/ureq_client.rs:'; then

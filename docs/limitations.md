@@ -106,3 +106,19 @@ other languages or real-world program pages saved as HTML is not measured. The
 HTML path is tested against one committed list-based fixture and an inline
 table-limitation test, not against live platform pages
 ([dossier.md](dossier.md#html-program-pages)).
+
+## `fetch` and HTML import do not run JavaScript
+
+`priorart fetch` saves the HTML the server returns, and `dossier import` reads
+only that markup. A page that builds its content in the browser (for example
+the Sherlock contest index, or any single-page app whose body is an empty root
+element plus scripts) yields little or no text, and the import notes say the
+source has no readable text. Nothing is rendered, no script runs, and no API
+the page calls is fetched. Save such a page from a browser (or transcribe it)
+and import the saved file instead.
+
+Adjacent sibling elements with no text between them are read as separate
+words (`<span>$2,000,000</span><span>Min</span>` becomes `$2,000,000 Min`).
+A word a page splits across two sibling elements (`<b>Lo</b><i>an</i>`) is
+therefore read as two words; text that follows a closing tag directly
+(`<b>Loan</b>Book`) is still joined.

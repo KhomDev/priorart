@@ -51,6 +51,7 @@ pub fn to_text_with_base(html: &str, base: Option<&str>) -> String {
         pre_depth: 0,
         link: None,
         tables: Vec::new(),
+        after_close: false,
     };
     conv.convert(html);
     conv.out.replace("\r\n", "\n").replace('\r', "\n")
@@ -89,6 +90,8 @@ struct Converter<'a> {
     pre_depth: usize,
     link: Option<LinkOpen>,
     tables: Vec<TableBuf>,
+    /// The last thing read was a closing tag, with no text after it.
+    after_close: bool,
 }
 
 impl Converter<'_> {
@@ -144,6 +147,14 @@ impl Converter<'_> {
                 self.block_boundary();
                 continue;
             }
+            if !closing && self.after_close {
+                // Two sibling elements with nothing between them, such as
+                // `<span>$2,000,000</span><span>Min</span>`, are separate
+                // words. Text right after a closing tag (`<b>Loan</b>Book`)
+                // still joins, so an identifier split by markup stays whole.
+                self.soft_space();
+            }
+            self.after_close = closing;
             self.on_tag(&name, closing, tag);
         }
         if self.heading.is_some() {
@@ -404,7 +415,21 @@ impl Converter<'_> {
         );
     }
 
+    /// A word break that adds no blank line: a space before the next text.
+    fn soft_space(&mut self) {
+        if let Some(table) = self.tables.last_mut() {
+            if let Some(cell) = table.cell.as_mut() {
+                cell.pending_space = true;
+            }
+            return;
+        }
+        self.pending_space = true;
+    }
+
     fn push_text(&mut self, raw: &str) {
+        if !raw.is_empty() {
+            self.after_close = false;
+        }
         let mut rest = raw;
         while let Some(pos) = rest.find('&') {
             for c in rest[..pos].chars() {
@@ -844,6 +869,19 @@ var secret = 'not page text';</SCRIPT><style>.x{color:red}</style>\
     fn inline_tags_do_not_split_an_identifier() {
         let text = to_text("<p>src/<code>Vault</code>.sol and <b>Loan</b>Book</p>");
         assert!(text.contains("src/Vault.sol and LoanBook"), "{text}");
+    }
+
+    #[test]
+    fn adjacent_sibling_elements_are_separate_words() {
+        let text = to_text("<p><span>$2,000,000</span><span>Minimum reward</span></p>");
+        assert!(text.contains("$2,000,000 Minimum reward"), "{text}");
+        let cell = to_text(
+            "<table><tr><td><span>Critical</span></td><td><span>$2,000,000</span><span>Min</span></td></tr></table>",
+        );
+        assert!(cell.contains("$2,000,000 Min"), "{cell}");
+        assert!(!cell.contains("$2,000,000Min"), "{cell}");
+        let heading = to_text("<h3><span>Rewards</span><span>by threat level</span></h3>");
+        assert!(heading.contains("### Rewards by threat level"), "{heading}");
     }
 
     #[test]
