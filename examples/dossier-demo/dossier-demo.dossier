@@ -2,7 +2,7 @@
   "schema": "priorart.dossier/v1",
   "tool": {
     "name": "priorart",
-    "version": "0.2.2"
+    "version": "0.2.3"
   },
   "program": {
     "id": "dossier-demo",

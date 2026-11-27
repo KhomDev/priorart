@@ -1,7 +1,7 @@
 # Install
 
-The CLI is `priorart` (`priorart.exe` on Windows). From the release after
-0.2.2 the crate also installs `priorart-mcp`, the MCP server
+The CLI is `priorart` (`priorart.exe` on Windows). From 0.2.3 the crate
+also installs `priorart-mcp`, the MCP server
 ([mcp.md](mcp.md)); release archives carry both. There is no alias: the old
 `vg` and `viability-gate` binaries are gone, and the crate that carried them is
 frozen at 0.9.0.

@@ -128,10 +128,10 @@ verdict, DEV-ONLY figures. It works with the MCP tools or with the CLI.
 
 ## Status
 
-- The server ships from the release after 0.2.2. Until that release is on
-  crates.io, `cargo install priorart` gives the CLI only, and the registry
-  listing is not live: the registry checks the `mcp-name:` line in the README
-  that crates.io shows, and 0.2.2's README has none.
+- The server ships from 0.2.3. `cargo install priorart` 0.2.2 and earlier give
+  the CLI only. The registry checks the `mcp-name:` line in the README that
+  crates.io shows; 0.2.2's README has none, 0.2.3's has
+  `io.github.KhomDev/priorart`.
 - `server.json` in the repository root is the registry entry. It is published
   by hand with `mcp-publisher` after the crates.io release.
 
