@@ -352,6 +352,7 @@ the tool table and the limits: [docs/mcp.md](docs/mcp.md).
 |---|---|
 | [docs/cli.md](docs/cli.md) | every command, flag and exit code |
 | [docs/action.md](docs/action.md) | the GitHub Action: inputs, outputs, runners |
+| [plugin/README.md](plugin/README.md) | the Claude Code plugin: install, what it runs and fetches |
 | [docs/dossier.md](docs/dossier.md) | the program folder and `priorart.dossier/v1` |
 | [docs/matching.md](docs/matching.md) | the identifier rule, specificity, false alarms |
 | [docs/gates.md](docs/gates.md) | G1-G4 as quoted evidence |

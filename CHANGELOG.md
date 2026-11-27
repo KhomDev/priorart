@@ -13,6 +13,15 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+### Added
+
+- Claude Code plugin (`plugin/`, marketplace in `.claude-plugin/`): the priorart
+  skill plus `/priorart:check`, `/priorart:install` and `/priorart:upgrade`. It
+  pins the crates.io release of its own version and installs it through cargo
+  only when a command asks; the SessionStart hook only reports. No MCP server is
+  declared (see `plugin/README.md`). `tests/plugin.rs` keeps the versions and the
+  skill copy in step and checks the directory's file rules.
+
 ## [0.2.3] - 2026-11-27
 
 The P2 work (opt-in `fetch`, code anchors, structural candidates, the ranker
