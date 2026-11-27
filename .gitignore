@@ -58,6 +58,10 @@ repro/
 # are committed; the bodies are not. See docs/benchmark.md.
 eval/cache/
 
+# Raw upstream bytes for eval/sealed-multilang. Pointers and sha256 only are
+# committed; the downloads are not. See eval/sealed-multilang/README.md.
+.corpus/
+
 # --- editors / OS -----------------------------------------------------------
 .vscode/
 .idea/

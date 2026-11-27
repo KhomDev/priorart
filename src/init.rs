@@ -48,10 +48,11 @@ const PROGRAM_YAML: &str = "# Saved by you; read by priorart build. Every field 
 
 const SCOPE_MD: &str = "# Example Program - scope and rewards\n\
 \n\
-Save the program's own page here, as markdown, html or text. priorart reads\n\
-this file; it never fetches a URL. An .html page is converted to text with a\n\
-conservative normalizer (headings, bullets, paragraphs, entities); it is not a\n\
-browser, so save a complex page as markdown by hand. Replace every line below\n\
+Save the program's own page here, as markdown, html or text. priorart build\n\
+reads this file and does not fetch it. `priorart fetch` is the explicit HTTPS\n\
+download, and it will not overwrite this file. An .html page is converted to\n\
+text (headings, bullets, tables, links, paragraphs, entities); it is not a\n\
+browser. JavaScript-only text is not read. Replace every line below\n\
 with the real page.\n\
 \n\
 ## Rewards\n\

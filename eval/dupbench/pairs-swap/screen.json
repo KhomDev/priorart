@@ -1,0 +1,1204 @@
+[
+ {
+  "slug": "2021-06-tracer",
+  "order_sha256": "007f2092623ed62ea4bfe24f2bd93ea11646c870f3a46608b9cd0ef7a0a92ebb",
+  "findings_has_report_md": true,
+  "label_count": 16,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-10-tracer",
+  "order_sha256": "009d9ee3c0508955614c63bee041cb17edde7b878279cde4e05affb23696495c",
+  "findings_has_report_md": true,
+  "label_count": 15,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-velodrome",
+  "order_sha256": "058172c9707341af51ec6c93403f4528692b52233d1f451b7e237c97a669b39d",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-06-canto",
+  "order_sha256": "0700d768710c34dd7e62ba8c6f1734f470da03a873c55c3292b7e008eeae8c17",
+  "reject": "slug suffix in Dup-Bench"
+ },
+ {
+  "slug": "2022-07-juicebox",
+  "order_sha256": "07b4d6bbf90e9c8f9a502b05a492e7facffbdf79670e2fa472c82d4bee09684d",
+  "reject": "slug suffix in Dup-Bench"
+ },
+ {
+  "slug": "2021-11-bootfinance",
+  "order_sha256": "0c8993cc193386e827b98d07e9eebe2f332db62cc4ef57832a55921f2b8ebe75",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-05-nftx",
+  "order_sha256": "0c9e18d2def17688aaed1a7317cf8f6dd93aa96ff6dcf01870a9b70930dcc368",
+  "findings_has_report_md": true,
+  "label_count": 15,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-05-visorfinance",
+  "order_sha256": "10878cb2f955ac50bf760f1ab91befbcc6d06ee008ac7be3713c9f40390ebec4",
+  "findings_has_report_md": true,
+  "label_count": 12,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-12-mellow",
+  "order_sha256": "113a2057f84a02c49f4e76de5830907ea9b4f1aa5c2887befa888ccb1a3f49d6",
+  "findings_has_report_md": true,
+  "label_count": 21,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-vetoken",
+  "order_sha256": "12b58451fef0bf1802697fb5d6e1a720270bf6fcd2f4ce4cf2f2e95aead6f418",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-12-yetifinance",
+  "order_sha256": "16fb70881eed183eef0d68149db8ff11f4b084b1bc5ef1f89f2cbfff535c4faa",
+  "findings_has_report_md": true,
+  "label_count": 21,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-04-phuture",
+  "order_sha256": "17659237c12fcf0073032e5108861b860d5a9dc6af9d8d6269c9f1e5d887c2f9",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-02-tribe-turbo",
+  "order_sha256": "1810f22077548cee2625a1a573746896d5a90fd1999384ff5fa3dac46f7afad7",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-04-maple",
+  "order_sha256": "19633dac5ed803e8d1b2be46a9086ba36e7d2f15fcdf53a1542af2cc8d39838f",
+  "findings_has_report_md": true,
+  "label_count": 15,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-03-joyn",
+  "order_sha256": "199f701b8d3c13850ba402720227a646b4c0b940dd651af93140540ad9593740",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-02-aave-lens",
+  "order_sha256": "1a51ca4e8dfebd6e83e084eabc65a6b297411c03c4e50fcbdb2b0d4f326490ee",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-alchemix",
+  "order_sha256": "1b36a6b509890803700d477d6de18ab0a0867c9efc28c8f4cc8b3ac762007f58",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-02-hubble",
+  "order_sha256": "1bd91f219200107b0a076863c3ae525dc5d25d6294891c1c12e936d6a3c7ddb8",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-09-sushimiso",
+  "order_sha256": "1c504ed08eb96b6d8cb1baa76c60566b149d5eaf304dfc6448a5d3e2dc4d3dbd",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-10-defiprotocol",
+  "order_sha256": "1e4426c3693ee399798cc1cedbcd0d34a4a9bce1c05f937d0fe34b2dc1fd7d39",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-11-streaming",
+  "order_sha256": "1e4686416bac55c77e0f0e7018b701c53b6028fd61bdefe9152e6f571df9b060",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-04-axelar",
+  "order_sha256": "1f6609cf450796c5ec59ced7c6ce857b55636abbdab8e5e2e40c2a6d0f223f97",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-timeswap",
+  "order_sha256": "1fc0cd62989c946d81b06228a43be15467686e64e1d712187a52dc4a93469b6f",
+  "reject": "slug suffix in Dup-Bench"
+ },
+ {
+  "slug": "2022-04-backed",
+  "order_sha256": "2395d5144823e65b40554b7bd615051d4537ab15173f4de97693d7ac2c467997",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-06-notional-coop",
+  "order_sha256": "23cb349e7dd91bc0144bd6ea745d1a01d94c54a33c228d5449146340c18d4610",
+  "findings_has_report_md": true,
+  "label_count": 21,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-10-covalent",
+  "order_sha256": "245eeab7e0e65ff348f713f56977c18d58d884106366df9434fc9ea6a6145391",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-10-ambire",
+  "order_sha256": "263f171d9f794aee7cd3a79e3040fc722c0cdd1dca5a0c67695c9dd62276a0e1",
+  "reject": "slug suffix in Dup-Bench"
+ },
+ {
+  "slug": "2022-05-runes",
+  "order_sha256": "274bca04ffa0a0d30ae5dca5ddb54bce90dc437a62c3258658a7ae6e607c8f47",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-08-yield",
+  "order_sha256": "2bb6937444a220c5831a6b899e8c13551342a53ee42b7f0498b45184d8e4dee9",
+  "findings_has_report_md": true,
+  "label_count": 24,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-09-wildcredit",
+  "order_sha256": "2bd80f363089b8230629a2ea498acb727609d152559929dfc6f47c652661bbc1",
+  "findings_has_report_md": true,
+  "label_count": 16,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-11-yaxis",
+  "order_sha256": "2e3c32cafcf81b29d8e14db0d81f23dad47fb387daff13b829a180307de212ea",
+  "findings_has_report_md": true,
+  "label_count": 20,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-07-pooltogether",
+  "order_sha256": "2f4c29725a84979ff826ef3ab77e579e4f3eac07eea2a672942226906fabe249",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2022-03-volt",
+  "order_sha256": "2f5add8afc55dda7342ae0191396960033e2d59f24fd43894e0564e069fec996",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-12-sublime",
+  "order_sha256": "2fe96dbaa6147e354aa43b7f6354f2b580ed871e36914c4214d945897b0ed906",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-behodler",
+  "order_sha256": "3499ff666c3383ed17933adee47ba78eda8957905ea0a6afa55a31599cffa2f4",
+  "findings_has_report_md": true,
+  "label_count": 20,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-06-connext",
+  "order_sha256": "3cfc6651a2327cdc3e964f91916095e82ed1a81a804cad7e8af551989586f641",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-09-sushitrident",
+  "order_sha256": "3d7a91ed6f57c0552a517f6b4512a1ae6acc103979e11de4df53f8423c42eaa1",
+  "findings_has_report_md": true,
+  "label_count": 15,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-openleverage",
+  "order_sha256": "3f9921bd093165b2c1a53033db65565423d578d79160be6c9fcd3700ccf139cd",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-07-ens",
+  "order_sha256": "40ac57d2022a7ccd6c7e9aac28608ffd51c2ede756e28732e562feea78a3c041",
+  "reject": "slug suffix in Dup-Bench"
+ },
+ {
+  "slug": "2022-06-infinity",
+  "order_sha256": "40b7d375927db2109a8d939d6e6e369b8278c4027be7a44e9173e0b95208c63a",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-02-pooltogether",
+  "order_sha256": "41f5407a611508324e1adfb5f397f4d9ca19c7c924dd86f0df1a974ffe92e4c5",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2022-06-badger",
+  "order_sha256": "478f6cb9fb09f2f9f4daf90592b18ff4b59c09d436f163069fe2e3f2d921873d",
+  "reject": "slug suffix in Dup-Bench"
+ },
+ {
+  "slug": "2021-07-spartan",
+  "order_sha256": "48c60b1dd94a941958e32b124c02f1f8f545231c4f0915320a7126d1a5ccbe9c",
+  "findings_has_report_md": true,
+  "label_count": 16,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-backd",
+  "order_sha256": "4cd0a73ac1d4443dddb91d06a289b3160356ef3cb66ce7e5f7966611e3e83873",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-06-nibbl",
+  "order_sha256": "4d6514547e6ad742ce276865ec7f1dfc893afdba9e251cb805cb063f8426e06b",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-opensea-seaport",
+  "order_sha256": "4de3b1dfee460846b134e95f22cf9353d6079d5b2986c0754b1d243c915ee125",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-11-fei",
+  "order_sha256": "504bb298fc334b45526c9813f7499d4b33866d887b094297cb6c9ad0e6940de1",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-xdefi",
+  "order_sha256": "5300fb4a9b6b10a6a7f7a7e1731172a7ac04a9c85611e696e13853baf59bbb8f",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-08-notional",
+  "order_sha256": "573cb0ce4bc0ac4026eaab7796bfaea9f04a6b2043016b180f271fb419dd83e8",
+  "findings_has_report_md": true,
+  "label_count": 16,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-02-skale",
+  "order_sha256": "58b9396bbb0060eb72144ae5522c735ebb37dd67ebec6beed861f2c0025161d0",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-03-timeswap",
+  "order_sha256": "59f2d023cbf806a22e5ddfc6cebc519b4a5affdb1cf40baf7e92b02c7742f32b",
+  "reject": "slug suffix in Dup-Bench"
+ },
+ {
+  "slug": "2021-10-mochi",
+  "order_sha256": "5bd4c17f1028d62964ab33d93343fb84c973e5b593f6a97d42aa86e0b19096b8",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-06-gro",
+  "order_sha256": "5c78482320a0847578054c05125dea21085d1cb8c83b35dd5a3aba836e02ec13",
+  "findings_has_report_md": true,
+  "label_count": 16,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-12-pooltogether",
+  "order_sha256": "603438545b1c70ef38bd53ecf9508edd7bf0f93518fb18d43f4c46dcd1b18411",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2021-11-unlock",
+  "order_sha256": "62405152ff3dcb33b6d04729e98982ceb623f10936b5a67dbd3fe4214c0995d2",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-06-putty",
+  "order_sha256": "63387f6cbea1b1a924f4c6634df717e796850098256a1457aa651810f823ffb3",
+  "findings_has_report_md": true,
+  "label_count": 20,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-04-vader",
+  "order_sha256": "6370528a84081e4c42eb5cec087c6d33d46d2eecc44b6c207b4cc52b03bcab36",
+  "findings_has_report_md": true,
+  "label_count": 16,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-09-swivel",
+  "order_sha256": "63aa8b6e8e3381f785fa572ab4f0b3bc6110d3d38166c4e27bdfc8232fd64cbc",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-04-meebits",
+  "order_sha256": "643209169b0701c34ed0a0ae7222328efcb04846bd61f78a3d94f49de4794f32",
+  "findings_has_report_md": true,
+  "label_count": 13,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-07-connext",
+  "order_sha256": "66e7fdf7ab7e4aebcda72712f9cfa64dd6a3a0d49b659039c760f0f075c91410",
+  "findings_has_report_md": true,
+  "label_count": 15,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-cally",
+  "order_sha256": "685a51e1fd9f4d7bd679f34223887c9ad11d8692db4680316a37019d8ee53695",
+  "findings_has_report_md": true,
+  "label_count": 20,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-02-nested",
+  "order_sha256": "6883366948dacfdc42527f021ec916d48c0fe19a3c5ad1ead1856b9bc1b5cded",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-03-maple",
+  "order_sha256": "688a6697373321af27235b841a15c95bd139f22e4a827dafa57bc0eb2527f3ff",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-09-sushitrident-2",
+  "order_sha256": "6c2467bf31021c444b7e2aa5263b977cbe8c0d0c999daa4e096a9c16e8d24d39",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-sturdy",
+  "order_sha256": "73b5707afd1b2829f04c9d67bbd01018c711b98a9eb8340f33f2a2af3cd6aa56",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-07-swivel",
+  "order_sha256": "754c6a582f7564adea4bcd4ffc52cfcd6d4882d822d2c03dca1970dee433f2a5",
+  "findings_has_report_md": true,
+  "label_count": 23,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-10-tempus",
+  "order_sha256": "7725309ad4cb64a4357bf82cc4731bdc748bd3e6a90c0004e08b2dfb892e77fb",
+  "findings_has_report_md": true,
+  "label_count": 15,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-06-illuminate",
+  "order_sha256": "78e7a67d2ef6fc05503af60e3aaf53bfc20f95e57d7c4717e9cf3e7e8cb88fcd",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-04-marginswap",
+  "order_sha256": "7a09373c8bba436913b1e0a0d412236402cfc2d5ffdcb0de77866ccd05f4cda1",
+  "findings_has_report_md": true,
+  "label_count": 14,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-11-vader",
+  "order_sha256": "7b59aa7e5e6da8bf383423502d5c19789dc2a9368f8bd8cfe60c2a1b40e0697c",
+  "findings_has_report_md": true,
+  "label_count": 48,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-yield",
+  "order_sha256": "7ebdf96212eedfe8874c9c49684d889244d4085d84d8646395c91e13dccb7799",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-factorydao",
+  "order_sha256": "7fae0ea6b49ef5730f49b41eebacfd3664302b93850556c0b68d8b76707a351c",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-09-yaxis",
+  "order_sha256": "7fdfa1448b053f39876293e754de55a45ca737616cd448e78860a9d54d58072a",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-07-sherlock",
+  "order_sha256": "802ae0f415d7cc306bea461e8f3a4e1f456b023ab0474301dc3cf01f22d8e418",
+  "findings_has_report_md": true,
+  "label_count": 16,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-11-badgerzaps",
+  "order_sha256": "85154cc3971e0112539caced510a89d98893e672e2dde984db85cc074ba2ad71",
+  "findings_has_report_md": true,
+  "label_count": 21,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-10-tally",
+  "order_sha256": "8abaf8876bbd87f34afc61066835e30d07ff836827985ed0e1de3c2dcaab0788",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-07-wildcredit",
+  "order_sha256": "8c295539de81f37b95a190fd9bfdb1dd9ece1713317b6475cdb5b9d8950c06b1",
+  "findings_has_report_md": true,
+  "label_count": 14,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-aura",
+  "order_sha256": "8eae2d7efadaec5af054cd20c508b551f54d51379dfcd80a255808f0ca1d9dfd",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-10-badgerdao",
+  "order_sha256": "90a775e46ba0e5252a84ee41e72ab733e10425ab4a7705ade46716500631993a",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-rubicon",
+  "order_sha256": "985b102697ed4751ca2bd53ec7f4a951ca4da85f40ca6575ad41bc45a0b67488",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-03-elasticdao",
+  "order_sha256": "99a3ff350dcf96f11c79fcf5a474af17f62184871b4642b73bd66bebb6996d92",
+  "findings_has_report_md": true,
+  "label_count": 9,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-06-realitycards",
+  "order_sha256": "9a82161bb473f057d86e709939dc8482a4f01a0cc3dd9622bf52426eaa533e6e",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-notional",
+  "order_sha256": "9b349a3c85d3961ece919ade304bba063d64a3a0c234362f7dd39af0ed89c502",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-trader-joe",
+  "order_sha256": "9c44252f86248ad3cf08b9dbd3f53fe40b3b041464be2ab112c27e320493ffb9",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-08-realitycards",
+  "order_sha256": "9ea1ed78e0a24417a1cd66360760d065a42233ad316adec046ce1dc90adc16fb",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-04-xtribe",
+  "order_sha256": "9ee7c912ca33ae408778596f3ac13a5a3603e3c7b28023df313d088ebd7070a8",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-04-dualityfocus",
+  "order_sha256": "9fcd1445834bb16e8b67c08cc4ef91500707a46cc70985f5d762792b7012605c",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-04-pooltogether",
+  "order_sha256": "a2f7c8b8fcf936f8869975492da85c436469f2de53ceac4b3af334e781d421f9",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2022-02-badger-citadel",
+  "order_sha256": "a30960de882c98d0d153d7c04e227259634fb4fb724ca5aa088d397f5b808999",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-03-prepo",
+  "order_sha256": "a8a846c8cb44eb1fc1ad8ac5dba2e90df2b7f56a4da6a523c736501a573ccf0c",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-10-slingshot",
+  "order_sha256": "aa62a1ac727f4d7a830fa6126d24a8bda64202a3f3414e6c351c2f7e75993473",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-02-jpyc",
+  "order_sha256": "ad2f79f2529e9f80245e6e0b65dca6ca3dd578318e2d1124a40044358179f85d",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-insure",
+  "order_sha256": "ad7782f8d77a80c7f9bfbdf62d152552b312264ce879c873ee6dfc21b9477333",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-10-pooltogether",
+  "order_sha256": "b07f6639097a2dede860b8b22bc2bf9a51836c27d976b4586da21f2ae119621a",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2022-04-mimo",
+  "order_sha256": "b09a66a0ccbdaec1501dc92141a07b13ae0d4a40b2898768f2516a89848672ef",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-11-overlay",
+  "order_sha256": "b12d5e02466208463ac0df09cca4aecc5d4042d3af4ccd77ba6bbc1f969c7372",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-12-perennial",
+  "order_sha256": "b259ad6bf17160887a3425b218a2c7831ae2cc0322fa12b9c13b04a380b3d9bb",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-dev-test-repo",
+  "order_sha256": "b2f9c121e6a02c83ad61379c53bccd47de16a0fd14ed3dea20629277a915c048",
+  "findings_has_report_md": true,
+  "label_count": 132,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 16,
+  "issues": 392,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2021-05-yield",
+  "order_sha256": "b64257052787c173cb03635cd9c097bd2eafd75e55b3e0bb095f299f9ddfae5c",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-09-bvecvx",
+  "order_sha256": "bba565fe81084f7cd0483fa18b037890ad3dc928ff450c9e1ba836bd0909621f",
+  "findings_has_report_md": true,
+  "label_count": 16,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-03-sublime",
+  "order_sha256": "bba5cd74390d3b86f21950eed2becafc872cfc12b4a69c483c4cd841d277311f",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-02-anchor",
+  "order_sha256": "bc0a82974a4e96650e5a63304d445a0943272fc13a1257d811b4bd951ad4f5cc",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-05-88mph",
+  "order_sha256": "bcc2690a3395aa690b4201e3292a40d5e2f6c96bef27c8339e1ea67937036f83",
+  "findings_has_report_md": true,
+  "label_count": 16,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-08-floatcapital",
+  "order_sha256": "bf4b9402c5d870be568ed90dee34c325206f611b1bddb0bcdc79c04ab25c1cdc",
+  "findings_has_report_md": true,
+  "label_count": 20,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-10-union",
+  "order_sha256": "bf654defcc853c7262ba0e208aa0003b6d097edb3eab5e62ab40af819b15efba",
+  "findings_has_report_md": true,
+  "label_count": 15,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-06-pooltogether",
+  "order_sha256": "c089eea270947567293425368754d8ce562735cf847ccd942f3bacdf23fc00e2",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2021-12-maple",
+  "order_sha256": "c09a12bb2e47092aa7b0eb1caddf515c6f6f97cb41a1d4d0eb883202f76f4fc0",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-02-redacted-cartel",
+  "order_sha256": "c0d4c5a1d949dc5c8317d2e37206809ed6dd1ab323a9527b51f1ff008a20ea01",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-04-jpegd",
+  "order_sha256": "c11a4084ae56888d946dc75bbd06ca8c343ae3efff4caa82e25edb71c152c219",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-03-lifinance",
+  "order_sha256": "c3b8df5b5b94ba10eeaae0e499702ce7c7ce1a22b15f4b13233e0a5eb5529875",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-sherlock",
+  "order_sha256": "c4afde217fa88ddd1682d5729261724e09996edcf2595bcf48fe85871af3e999",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-04-abranft",
+  "order_sha256": "c4c027ae9a66a65f6f60fee0a09cbb1c04bf3c8eef9da9678aa9401afa1120c3",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-02-foundation",
+  "order_sha256": "c5a111aba475827e9f11e48dd7d2eeae25b65bd7b0e5c29c4163ba1005e655df",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-12-vader",
+  "order_sha256": "c76733c11e991401864015d0de3a6ae5000536d64f9de3d8233466cd36b08ae9",
+  "findings_has_report_md": true,
+  "label_count": 39,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-04-badger-citadel",
+  "order_sha256": "c8515372cd2f13cc6440be803f0c0199a744b2a24de491d78a865c04af859b2b",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-03-rolla",
+  "order_sha256": "ccd9339e818af829c07a76cdcceae4da69cf86fd5b6c0db0bc6412e6c6fdc73c",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-07-axelar",
+  "order_sha256": "ce02c2c7cd6b57247be93080ced54f593ecb1be12e09a840a277caa9fad217a2",
+  "findings_has_report_md": true,
+  "label_count": 20,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-04-basedloans",
+  "order_sha256": "d00c2e72ab0d78749d586e68a5f931868513d6bbebf86a118874c47acaa02f48",
+  "findings_has_report_md": true,
+  "label_count": 14,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-12-defiprotocol",
+  "order_sha256": "d05bb476ccb69882a3a02521b523c98789bef50bea873684fb6e8cfa806bdafe",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-11-malt",
+  "order_sha256": "d41e1709ce32e83be24337f6a7b96f2eb49490c4426a5f06db2c4aeb3be96c3f",
+  "reject": "slug suffix in Dup-Bench"
+ },
+ {
+  "slug": "2022-06-yieldy",
+  "order_sha256": "d638f2ce77e1b088a388c205a426251bb06bbd7c49ea777701366c3f64c83e2a",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-12-amun",
+  "order_sha256": "d8858ced025d387888252feef3b8a347961d6211cd3643bc87be2139a7717fef",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-03-paladin",
+  "order_sha256": "d91e61b94c7f1d8ee2a624bd69c105ade1b69fd4810a075504740ffbfda389ab",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-04-backd",
+  "order_sha256": "d9cd2fb049c6e8cdaceb5c9841df2098d5cbc4a08623b2b9735011d9f3c95d22",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-11-nested",
+  "order_sha256": "da6f0c31b3b9b63b7308f699e86ea8d85c4025918c2c98457c1e6c26dbca2689",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-elasticswap",
+  "order_sha256": "db06fdc9417a88e97e239ac430e5a68d3877435aa53d7f95583e7fffb8329c57",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-sandclock",
+  "order_sha256": "e593568d68643255ce8cd6e3a0e1fac83d483a548c5ea833cf9a9b8238fefc7c",
+  "findings_has_report_md": true,
+  "label_count": 20,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-cudos",
+  "order_sha256": "e5d8dbb7cca5dd53ba4ee5ba51b4de347e9ee085d17f218b5f6a15fbbe2bebd8",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-07-fractional",
+  "order_sha256": "e7d0392d1117ce885b73f326161e0d5d9a89163040944da0eb3143e857aae249",
+  "findings_has_report_md": true,
+  "label_count": 16,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-12-nftx",
+  "order_sha256": "ea562b5a9dcaf1d36b77f595859ffeaf8e0c8d29e8edba21761f50511de0c759",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-02-concur",
+  "order_sha256": "ea7a694fe64a878f9cc5d381f598850124f53298a767d72c7a660ea1df40a0a1",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-08-gravitybridge",
+  "order_sha256": "eb1fd76743e49d035c99961bb93d36bcb81a747a6bd6f85be9ed38e7490d760d",
+  "findings_has_report_md": true,
+  "label_count": 15,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-05-bunker",
+  "order_sha256": "ecd9ddc90814ef57ec5972c526b21bf3a0dcfe287d1484f020859c6d7963e665",
+  "findings_has_report_md": true,
+  "label_count": 17,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-06-canto-v2",
+  "order_sha256": "f0aa3cef3acb60fb589979c5e9511ffb9e84ad0d63503146edccd6f0e0f0ddd1",
+  "findings_has_report_md": true,
+  "label_count": 19,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-07-yield",
+  "order_sha256": "f18e145a3651881521a48878396263726c2340b150300b3f11f4de272965f565",
+  "findings_has_report_md": true,
+  "label_count": 19,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2021-02-slingshot",
+  "order_sha256": "f1a7245b748f24ce8d8ab2193c93af382c6eaf927872235273f2b237d387e76f",
+  "findings_has_report_md": true,
+  "label_count": 9,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-03-biconomy",
+  "order_sha256": "f355011e3c10f8d42ef973a65146f982e923678fbb63623feaf0226548cc061d",
+  "findings_has_report_md": true,
+  "label_count": 18,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-06-nested",
+  "order_sha256": "f4be0ca07ac0b05a4329450deae9dabeec520a15d6a1a95280e1141cb0f35f97",
+  "findings_has_report_md": true,
+  "label_count": 19,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-07-golom",
+  "order_sha256": "f4ef68b757a03efd54de61d5c6b0eec566954531cdfe11608977ec6832b18702",
+  "findings_has_report_md": true,
+  "label_count": 25,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-01-livepeer",
+  "order_sha256": "f7193d90bee5647d131240e22783a8d8fe3bd8b688b5d8fe6e5a136c07dad75e",
+  "reject": "slug suffix in Dup-Bench"
+ }
+]

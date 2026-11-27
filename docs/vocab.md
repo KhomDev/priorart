@@ -1,9 +1,10 @@
 # The compiled vocabularies
 
-Three YAML files in `vocab/`, moved from bounty-economics v0.6.1 (MIT) and
-compiled into the binary with `include_str!`. There is no data directory at
-runtime and no way for the vocabulary to drift from the code: a test asserts the
-counts and that every suggested pattern compiles.
+Four YAML files in `vocab/`, compiled into the binary with `include_str!`.
+Three were moved from bounty-economics v0.6.1 (MIT); `taxonomy.yaml` is new for
+the P2 duplicate detector. There is no data directory at runtime and no way for
+a vocabulary to drift from the code: a test asserts the counts and that every
+suggested pattern compiles.
 
 - `vocab/tier-shapes.yaml` - byte-identical to the v0.6.1 tag (sha256
   `B6041C07825EA0234042E56896D526C7B2A9D2DD5E75C343D5F16448F4DA78A9`).
@@ -12,6 +13,14 @@ counts and that every suggested pattern compiles.
 - `vocab/gate-crossref.yaml` - edited on the move: its rows named
   viability-gate's P1-P22 engine, which priorart deletes, so those rows are gone.
   The structure and ids are priorart's G1-G4.
+- `vocab/taxonomy.yaml` - new: 20 root-cause classes (reentrancy, rounding,
+  oracle, access control, accounting, signature replay, unchecked return,
+  unbounded loop, MEV, initialisation, upgrade, fee-on-transfer, rebasing,
+  liquidation, arithmetic, delegatecall, price impact, donation inflation,
+  pause/freeze), 5 impact classes and 5 asset classes, each with cue terms,
+  anti-cues and a one-line definition. The deterministic extractor and its
+  clause-level negation rules are in `src/taxonomy/`; `priorart taxonomy
+  classify` prints the classes a text asserts.
 
 ## 5 payout tier shapes - `vocab/tier-shapes.yaml`
 

@@ -72,3 +72,17 @@ path = "fuzz_targets/finding_profile.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "taxonomy"
+path = "fuzz_targets/taxonomy.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "candidates_json"
+path = "fuzz_targets/candidates_json.rs"
+test = false
+doc = false
+bench = false

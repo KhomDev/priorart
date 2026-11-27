@@ -1,0 +1,312 @@
+{
+  "version": 1,
+  "schema": "priorart.dev-codebases/v1",
+  "note": "Audited codebase repo URL and contest commit for the six DEV priorart corpora, so PA-B1's anchor resolution is reproducible from committed files. Pins are the contest code repositories; README-named audited upstream repos and their commits are recorded where the README states them. Pointer-plus-hash only; the README text stays in the gitignored cache.",
+  "corpora": {
+    "tapioca": {
+      "contest_repo": "sherlock-audit/2024-02-tapioca",
+      "contest_commit": "dc2464f420927409a67763de6ec60fe5c028ab0e",
+      "primary_codebase": {
+        "repo": "https://github.com/sherlock-audit/2024-02-tapioca",
+        "commit": "dc2464f420927409a67763de6ec60fe5c028ab0e",
+        "role": "contest-code-snapshot",
+        "source": "PA-B1 pin"
+      },
+      "readme": {
+        "path": "README.md",
+        "sha256": "53cb88188638ea07b8814b4f24222ee8ad1c58bf457794044a831eb00dfb57ee",
+        "raw_url": "https://raw.githubusercontent.com/sherlock-audit/2024-02-tapioca/dc2464f420927409a67763de6ec60fe5c028ab0e/README.md"
+      },
+      "named_repos": [
+        {
+          "repo": "https://github.com/Tapioca-DAO/Tapioca-bar",
+          "commit": "62287ff0be08374a3ac15ec9f98597d26e41d772",
+          "role": "audited-upstream",
+          "readme_line": 127,
+          "evidence": "README names repo @ commit"
+        },
+        {
+          "repo": "https://github.com/Tapioca-DAO/TapiocaZ",
+          "commit": "c9440cb5ff9e898fe01b8c8b1759a282d8aaaffb",
+          "role": "audited-upstream",
+          "readme_line": 105,
+          "evidence": "README names repo @ commit"
+        }
+      ]
+    },
+    "pooltogether": {
+      "contest_repo": "sherlock-audit/2024-05-pooltogether",
+      "contest_commit": "1aa1b8c028b659585e4c7a6b9b652fb075f86db3",
+      "primary_codebase": {
+        "repo": "https://github.com/sherlock-audit/2024-05-pooltogether",
+        "commit": "1aa1b8c028b659585e4c7a6b9b652fb075f86db3",
+        "role": "contest-code-snapshot",
+        "source": "PA-B1 pin"
+      },
+      "readme": {
+        "path": "README.md",
+        "sha256": "c628ff32d10894ca7a48794c6b2a0bb805697fd561f01c09c56aa399ee11efbf",
+        "raw_url": "https://raw.githubusercontent.com/sherlock-audit/2024-05-pooltogether/1aa1b8c028b659585e4c7a6b9b652fb075f86db3/README.md"
+      },
+      "named_repos": [
+        {
+          "repo": "https://github.com/GenerationSoftware/pt-v5-claimer",
+          "commit": "a3619aa13c19beb25210ddb6474cd51aac794706",
+          "role": "audited-upstream",
+          "readme_line": 109,
+          "evidence": "README names repo @ commit"
+        },
+        {
+          "repo": "https://github.com/GenerationSoftware/pt-v5-draw-manager",
+          "commit": "f04edd938f0ce3d6bbaf5db2748319d6ebf6b078",
+          "role": "audited-upstream",
+          "readme_line": 105,
+          "evidence": "README names repo @ commit"
+        },
+        {
+          "repo": "https://github.com/GenerationSoftware/pt-v5-prize-pool",
+          "commit": "768fa642eb31cfff0fe929da0929a9bb4dea0b2d",
+          "role": "audited-upstream",
+          "readme_line": 99,
+          "evidence": "README names repo @ commit"
+        },
+        {
+          "repo": "https://github.com/GenerationSoftware/pt-v5-rng-witnet",
+          "commit": "ac310b9deb1e53a547e53d69861495888d322ac3",
+          "role": "audited-upstream",
+          "readme_line": 119,
+          "evidence": "README names repo @ commit"
+        },
+        {
+          "repo": "https://github.com/GenerationSoftware/pt-v5-tpda-liquidator",
+          "commit": "2f7aeb0ebc88a650791e7e56dee33e9981f3ed14",
+          "role": "audited-upstream",
+          "readme_line": 114,
+          "evidence": "README names repo @ commit"
+        },
+        {
+          "repo": "https://github.com/GenerationSoftware/pt-v5-twab-controller",
+          "commit": "827255118b0de751bc797de6bf6ed042496aea4d",
+          "role": "audited-upstream",
+          "readme_line": 123,
+          "evidence": "README names repo @ commit"
+        },
+        {
+          "repo": "https://github.com/GenerationSoftware/pt-v5-vault",
+          "commit": "436b06fbe33d7c4616dea4dbdb262237c1436cb6",
+          "role": "audited-upstream",
+          "readme_line": 128,
+          "evidence": "README names repo @ commit"
+        },
+        {
+          "repo": "https://github.com/d-xo/weird-erc20",
+          "commit": null,
+          "role": "dependency",
+          "readme_line": 29,
+          "evidence": "README names repo (no commit)"
+        }
+      ]
+    },
+    "maia-c4": {
+      "contest_repo": "code-423n4/2023-09-maia",
+      "contest_commit": "1aa8a7b5b7159dd77da94229c017b0aea520386b",
+      "primary_codebase": {
+        "repo": "https://github.com/code-423n4/2023-09-maia",
+        "commit": "1aa8a7b5b7159dd77da94229c017b0aea520386b",
+        "role": "contest-code-snapshot",
+        "source": "PA-B1 pin"
+      },
+      "readme": {
+        "path": "README.md",
+        "sha256": "7d7c7c6d0326fabb6bebbe43489f9b6de36a59c729f6b49ac4ab60715fed3153",
+        "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-09-maia/1aa8a7b5b7159dd77da94229c017b0aea520386b/README.md"
+      },
+      "named_repos": [
+        {
+          "repo": "https://github.com/LayerZero-Labs/LayerZero",
+          "commit": null,
+          "role": "dependency",
+          "readme_line": 179,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/OpenZeppelin/openzeppelin-contracts",
+          "commit": null,
+          "role": "dependency",
+          "readme_line": 87,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/crytic/slither",
+          "commit": null,
+          "role": "dependency",
+          "readme_line": 230,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/transmissions11/solmate",
+          "commit": null,
+          "role": "dependency",
+          "readme_line": 81,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/vectorized/solady",
+          "commit": null,
+          "role": "dependency",
+          "readme_line": 80,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/code-423n4/2023-05-maia",
+          "commit": null,
+          "role": "prior-contest",
+          "readme_line": 60,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/code-423n4/2023-09-maia",
+          "commit": null,
+          "role": "snapshot-codebase",
+          "readme_line": 19,
+          "evidence": "README names repo (no commit)"
+        }
+      ]
+    },
+    "panoptic-c4": {
+      "contest_repo": "code-423n4/2024-04-panoptic",
+      "contest_commit": "a65595a1de8ba388f15fadd8594738eab50d0331",
+      "primary_codebase": {
+        "repo": "https://github.com/code-423n4/2024-04-panoptic",
+        "commit": "a65595a1de8ba388f15fadd8594738eab50d0331",
+        "role": "contest-code-snapshot",
+        "source": "PA-B1 pin"
+      },
+      "readme": {
+        "path": "README.md",
+        "sha256": "b6aaaa978bd1bdeb51546b900b3754f457afe0b973134157609fbbb490281f84",
+        "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-04-panoptic/a65595a1de8ba388f15fadd8594738eab50d0331/README.md"
+      },
+      "named_repos": [
+        {
+          "repo": "https://github.com/d-xo/weird-erc20",
+          "commit": null,
+          "role": "dependency",
+          "readme_line": 248,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/code-423n4/2024-04-panoptic",
+          "commit": null,
+          "role": "snapshot-codebase",
+          "readme_line": 17,
+          "evidence": "README names repo (no commit)"
+        }
+      ]
+    },
+    "party-c4": {
+      "contest_repo": "code-423n4/2023-10-party",
+      "contest_commit": "d2202cf30fa5d4733e2948827c4586981132c28a",
+      "primary_codebase": {
+        "repo": "https://github.com/code-423n4/2023-10-party",
+        "commit": "d2202cf30fa5d4733e2948827c4586981132c28a",
+        "role": "contest-code-snapshot",
+        "source": "PA-B1 pin"
+      },
+      "readme": {
+        "path": "README.md",
+        "sha256": "ac9a9a30f54dca5ffb8a390239e609bc839c2a4620a2385e593646ad5af5634c",
+        "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-10-party/d2202cf30fa5d4733e2948827c4586981132c28a/README.md"
+      },
+      "named_repos": [
+        {
+          "repo": "https://github.com/PartyDAO/party-protocol",
+          "commit": null,
+          "role": "audited-upstream",
+          "readme_line": 66,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/code-423n4/2022-09-party",
+          "commit": null,
+          "role": "prior-contest",
+          "readme_line": 53,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/code-423n4/2022-09-party-findings",
+          "commit": null,
+          "role": "prior-contest",
+          "readme_line": 104,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/code-423n4/2023-04-party",
+          "commit": null,
+          "role": "prior-contest",
+          "readme_line": 53,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/code-423n4/2023-04-party-findings",
+          "commit": null,
+          "role": "prior-contest",
+          "readme_line": 103,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/code-423n4/2023-05-party",
+          "commit": null,
+          "role": "prior-contest",
+          "readme_line": 53,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/code-423n4/2023-05-party-findings",
+          "commit": null,
+          "role": "prior-contest",
+          "readme_line": 102,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/code-423n4/2023-10-party",
+          "commit": null,
+          "role": "snapshot-codebase",
+          "readme_line": 63,
+          "evidence": "README names repo (no commit)"
+        }
+      ]
+    },
+    "wildcat-c4": {
+      "contest_repo": "code-423n4/2024-08-wildcat",
+      "contest_commit": "7c5d8389b2a368ce6c4fc79e50c39eac3516ea5e",
+      "primary_codebase": {
+        "repo": "https://github.com/code-423n4/2024-08-wildcat",
+        "commit": "7c5d8389b2a368ce6c4fc79e50c39eac3516ea5e",
+        "role": "contest-code-snapshot",
+        "source": "PA-B1 pin"
+      },
+      "readme": {
+        "path": "README.md",
+        "sha256": "82f437ec41c32dd418b73cbb26294ff94040ac0cd126bb3def92bdf5a077e479",
+        "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-08-wildcat/7c5d8389b2a368ce6c4fc79e50c39eac3516ea5e/README.md"
+      },
+      "named_repos": [
+        {
+          "repo": "https://github.com/d-xo/weird-erc20",
+          "commit": null,
+          "role": "dependency",
+          "readme_line": 260,
+          "evidence": "README names repo (no commit)"
+        },
+        {
+          "repo": "https://github.com/code-423n4/2024-08-wildcat",
+          "commit": null,
+          "role": "snapshot-codebase",
+          "readme_line": 5,
+          "evidence": "README names repo (no commit)"
+        }
+      ]
+    }
+  }
+}

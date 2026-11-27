@@ -1,8 +1,9 @@
 # Weekly fuzzing of every parser target, and a manual run on demand.
 #
-# This is not a pull-request gate. The committed seeds replay through every
-# target on each CI run (tests/fuzz_replay.rs); this workflow explores new
-# inputs for five minutes per target. A crash fails its job and is uploaded.
+# The committed seeds replay through every target on each CI run
+# (tests/fuzz_replay.rs). This workflow explores new inputs: five minutes per
+# target weekly, and a 30-second smoke per target on every pull request and
+# integration push. A crash fails its job and is uploaded.
 
 name: Fuzz
 
@@ -10,6 +11,11 @@ on:
   schedule:
     - cron: "23 4 * * 1"
   workflow_dispatch:
+  # Short smoke (30 s per target) on every pull request and integration push;
+  # the weekly schedule keeps the five-minute run.
+  pull_request:
+  push:
+    branches: ["p2/integration"]
 
 permissions:
   contents: read
@@ -35,6 +41,8 @@ jobs:
           - ledger_yaml
           - dossier_json
           - finding_profile
+          - taxonomy
+          - candidates_json
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install Rust nightly
@@ -46,8 +54,8 @@ jobs:
           workspaces: fuzz
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz --version 0.13.2 --locked
-      - name: Fuzz ${{ matrix.target }} for five minutes
-        run: cargo +nightly fuzz run ${{ matrix.target }} -- -max_total_time=300
+      - name: Fuzz ${{ matrix.target }} (5 min weekly, 30 s smoke otherwise)
+        run: cargo +nightly fuzz run ${{ matrix.target }} -- -timeout=10 -max_total_time=${{ github.event_name == 'schedule' && 300 || 30 }}
       - name: Upload crashes
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

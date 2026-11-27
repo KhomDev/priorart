@@ -51,6 +51,7 @@ fn version_and_help_are_final() {
         "explain",
         "rejections",
         "rules",
+        "fetch",
     ] {
         assert!(h.stdout.contains(command), "help is missing {command}");
     }
@@ -733,11 +734,18 @@ fn rejections_summary_reports_the_shipped_dataset() {
 // ---------------------------------------------------------------- offline guarantee
 
 #[test]
-fn the_crate_has_no_http_client() {
+fn the_http_client_is_only_the_fetch_feature() {
     let manifest = std::fs::read_to_string(manifest_dir().join("Cargo.toml")).unwrap();
+    assert!(
+        manifest.contains("optional = true") && manifest.contains("ureq"),
+        "ureq must be an optional dependency behind the fetch feature"
+    );
+    assert!(
+        manifest.contains("default = [\"fetch\"]") || manifest.contains("default = [\"fetch\"]\n"),
+        "fetch is on by default so a normal build can download a page"
+    );
     for banned in [
         "reqwest",
-        "ureq",
         "hyper",
         "isahc",
         "curl",
@@ -748,30 +756,45 @@ fn the_crate_has_no_http_client() {
     ] {
         assert!(
             !manifest.contains(banned),
-            "Cargo.toml gained an HTTP client: {banned}"
+            "Cargo.toml gained an HTTP client other than ureq: {banned}"
         );
     }
     let lock = std::fs::read_to_string(manifest_dir().join("Cargo.lock")).unwrap();
-    for banned in [
-        "reqwest",
-        "ureq",
-        "hyper",
-        "isahc",
-        "attohttpc",
-        "minreq",
-        "tokio",
-    ] {
+    assert!(
+        lock.contains("name = \"ureq\""),
+        "the lockfile should record ureq for the fetch feature"
+    );
+    for banned in ["reqwest", "hyper", "isahc", "attohttpc", "minreq", "tokio"] {
         assert!(
             !lock.contains(&format!("name = \"{banned}\"")),
             "Cargo.lock gained a network crate: {banned}"
         );
     }
-    // And no source file opens a socket.
+    // ureq is named only in the fetch module. No source file opens a socket
+    // itself; the client does, and only when the feature is on.
     let mut checked = 0;
     for entry in walk(&manifest_dir().join("src")) {
         let text = std::fs::read_to_string(&entry).unwrap();
-        for banned in ["TcpStream", "UdpSocket", "std::net::"] {
+        let rel = entry
+            .strip_prefix(manifest_dir())
+            .unwrap_or(&entry)
+            .to_string_lossy()
+            .replace('\\', "/");
+        let in_fetch_client = rel.contains("src/fetch/ureq_client.rs");
+        if text.contains("ureq::") || text.contains("ureq ") {
+            assert!(
+                in_fetch_client,
+                "{} names the HTTP client outside the fetch module",
+                entry.display()
+            );
+        }
+        for banned in ["TcpStream", "UdpSocket"] {
             assert!(!text.contains(banned), "{} uses {banned}", entry.display());
+        }
+        // The fetch client resolves names itself to refuse private addresses;
+        // no other file names std::net.
+        if text.contains("std::net::") {
+            assert!(in_fetch_client, "{} uses std::net::", entry.display());
         }
         checked += 1;
     }

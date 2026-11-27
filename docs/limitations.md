@@ -4,13 +4,33 @@ Stated plainly, because a tool that hides its edges gets trusted past them.
 
 ## Retrieval, not duplication
 
-priorart ranks prior items to read. It never says two findings are the same. On
-the final public benchmark the false-alarm rate on judged-paid unique findings is
-**26/60 = 43.3%** (Wilson 95% CI 31.6-55.9) and duplicate recall@5 is
-**39/64 = 60.9%** (48.7-71.9); known-prior recall is n=1 and is not a rate.
-Because 43.3% is above the plan's 30% trigger, **0.1.0 ships retrieval-only**:
-the prior-item section is a reading list and no duplicate warning is printed
-until the matcher is fixed. All three runs are in [benchmark.md](benchmark.md).
+priorart ranks prior items to read. It never says two findings are the same.
+All the numbers below are priorart 0.2.2 and **all are in-sample**: each corpus
+was read while the matcher was built or has since been opened. Source:
+[`eval/benchmark/BENCHMARK.md`](../eval/benchmark/BENCHMARK.md), table "after
+the harness fixes".
+
+| Corpus | False alarms on judged paid-unique | Duplicate recall@5 |
+|---|---|---|
+| Tapioca (`eval/benchmark/results.json`) | 15/60 = 25.0% [15.8-37.2] | 35/64 = 54.7% [42.6-66.3] |
+| Party + Wildcat (formerly sealed pairs, now opened) | 7/18 = 38.9% [20.3-61.4] | 63/178 = 35.4% [28.7-42.7] |
+
+The Tapioca row is the best corpus, not the typical one; the formerly sealed
+pairs are the closer guide. Known-prior recall is n=1 and is not a rate. The
+0.1.0 measurement on Tapioca was 26/60 = 43.3% (31.6-55.9). The pairs' false
+alarm rate is above the plan's 30% trigger, so the release stays
+retrieval-only: the prior-item section is a reading list and no duplicate
+warning is printed. No held-out number exists yet; the held-out plan is in the
+P2R-2 pre-registration. The runs are in [benchmark.md](benchmark.md).
+
+## The sealed multilingual corpus is a case study, not a metric
+
+`eval/sealed-multilang` (PR #39) is kept as a documented case study **outside
+every metric** (decision 2026-11-27). Its 629 units are almost all one cluster
+(real-incident reproductions, 614 tier X), and it has no duplicate or
+paid/unique ground truth, so none of priorart's measured quantities (false
+alarms on paid-unique, duplicate recall@5, warning precision) can be computed
+on it. No number in this repository is computed from it.
 
 ## Absence is not novelty
 
@@ -41,16 +61,13 @@ claim. Do not cite it as a finding.
 
 ## HTML is converted, not rendered
 
-A saved `scope.html` (or `scope.htm`) is converted to text by a small in-repo
-normalizer (headings, bullets, blocks, entities, script/style removal). It is
-designed for **list-based pages**; it is **not a browser and not an HTML
-parser**: CSS layout, JavaScript-rendered text, table structure and text
-carried only in attributes are not read. A **plain** table-based rewards or
-scope page yields no payout/scope items (a cell whose text is itself a Markdown
-bullet is still read as one), and a page that builds its scope list in
-JavaScript yields none either; save those pages as Markdown by hand. Table
-mapping is a later-release plan, not 0.2.0. The rules and the fixtures are in
-[dossier.md](dossier.md#html-program-pages) and `tests/html.rs`.
+A saved `scope.html` (or `scope.htm`, or a file under `pages/`) is converted to
+text by a small in-repo normalizer: headings, bullets, table rows, `href`s,
+blocks, entities, and script/style removal. It is **not a browser**. CSS
+layout, JavaScript-rendered text, images and text carried only in attributes
+other than `href` are not read. A page whose text exists only in a script
+yields no items, and the build says so. The rules are in
+[dossier.md](dossier.md#html-program-pages).
 
 ## PDFs are best-effort, and the fallback is native code
 
@@ -89,8 +106,9 @@ vocabulary, not a base rate. See [rejections.md](rejections.md).
 The deleted viability-gate rules did not separate paid from unpaid findings
 (12 of 25 hard kills were paid findings). priorart replaces the score with ranked
 quotes and publishes its own error rate, but it does not claim the separator is
-strong: on the final build 43.3% of judged-unique findings still get a prior
-item. That is the number the next fix must move.
+strong: on the current `results.json` measurement, 15/60 = 25.0% of
+judged-unique findings still get a prior item. That is the number the next
+fix must move. The 0.1.0 build on the same corpus was 26/60 = 43.3%.
 
 ## What this tool is not
 
@@ -109,3 +127,32 @@ other languages or real-world program pages saved as HTML is not measured. The
 HTML path is tested against one committed list-based fixture and an inline
 table-limitation test, not against live platform pages
 ([dossier.md](dossier.md#html-program-pages)).
+
+## `fetch` and HTML import do not run JavaScript
+
+`priorart fetch` saves the HTML the server returns, and `dossier import` reads
+only that markup. A page that builds its content in the browser (for example
+the Sherlock contest index, or any single-page app whose body is an empty root
+element plus scripts) yields little or no text, and the import notes say the
+source has no readable text. Nothing is rendered, no script runs, and no API
+the page calls is fetched. Save such a page from a browser (or transcribe it)
+and import the saved file instead.
+
+Adjacent sibling elements with no text between them are read as separate
+words (`<span>$2,000,000</span><span>Min</span>` becomes `$2,000,000 Min`).
+A word a page splits across two sibling elements (`<b>Lo</b><i>an</i>`) is
+therefore read as two words; text that follows a closing tag directly
+(`<b>Loan</b>Book`) is still joined.
+
+## P2R-2 release: what is not measured yet (2026-11-27)
+
+- **No held-out number.** The release on `main` states train and validation figures only, labelled
+  DEV-ONLY (`docs/benchmark.md`). The six V1 pairs and Dup-Bench FINAL come after main
+  (`eval/P2R2_PREREGISTRATION_POST_MAIN.md`).
+- **The alarm's precision is measured only on the data it was calibrated on** (validation, 149/162).
+  Whether it holds is the FINAL question.
+- **Pairs are not measured.** The four swapped-in pairs (paraspace, ethos, venus, arcade) and
+  revert-lend and loopfi have no collected judge labels yet. Ethos's prior audit exists only as a Discord
+  attachment, which is weak same-codebase evidence.
+- **Rule 5a was written after the swap screen's output was seen.** It only removed candidates and no
+  finding was read, but it is a post-hoc rule, and `pairs-swap/SELECTION.md` says so.

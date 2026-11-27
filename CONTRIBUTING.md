@@ -27,16 +27,17 @@ docs and the binary disagree. Both are more useful than a new feature.
    through the two-stage export from their upstream repositories. Never vendor a
    report corpus, a program list or a reward table; the benchmark fetches by
    pointer into a gitignored cache.
-6. **The crate stays offline.** No HTTP client crate, no socket, no update check.
-   `tests/cli.rs::the_crate_has_no_http_client` enforces it. Network is allowed
-   only in `eval/` fetch scripts, with pointers committed.
+6. **Only `priorart fetch` opens a socket.** It is explicit, HTTPS-only and
+   not a crawler. `tests/cli.rs::the_http_client_is_only_the_fetch_feature`
+   enforces the boundary. `--no-default-features` removes the client. Network
+   is also used by `eval/` fetch scripts, with pointers committed.
 
 ## Setup
 
 ```sh
 git clone https://github.com/KhomDev/priorart
 cd priorart
-cargo build            # Rust 1.89 or newer
+cargo build            # Rust 1.95 or newer
 cargo test --locked    # unit + integration tests, offline
 python scripts/check_links.py   # every relative doc link resolves
 ```
@@ -106,9 +107,9 @@ A release is a claim, so the checklist is part of the change:
    matching rows in `docs/validation.md` with n and the Wilson interval.
 4. **Validation ledger.** Update [docs/validation.md](docs/validation.md): add
    rows for the claims this release makes, and mark anything it retracts.
-5. **Offline check.** `cargo tree` must show no HTTP client;
-   `tests/cli.rs::the_crate_has_no_http_client` must pass. Read
-   [docs/no-network.md](docs/no-network.md) if you are adding a dependency.
+5. **Offline check.** `cargo tree --no-default-features` must show no HTTP
+   client. `tests/cli.rs::the_http_client_is_only_the_fetch_feature` must pass.
+   Read [docs/no-network.md](docs/no-network.md) if you are adding a dependency.
 6. **Private-data scans, over the full history.** These tools live in the
    private/upstream rejection-taxonomy tooling, not in this repository. Run both
    against priorart before any push and every release:

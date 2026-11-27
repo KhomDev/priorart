@@ -1,0 +1,195 @@
+{
+ "version": 1,
+ "schema": "pairs-swap-sealed-v1",
+ "sealed_at": "2026-11-27 (Europe/Budapest)",
+ "rule": "SELECTION.md rules 1-5, 5a, 7, 8 (rule 6 dropped: option A)",
+ "findings_read": false,
+ "contests": [
+  {
+   "slug": "2024-04-dyad",
+   "order_sha256": "07b2f028bd62bde9035c157d58371c083a078c97e7ad7d6aee34d44b22dae2df",
+   "screen_pass_rank": 1,
+   "issues_at_screen": 1324,
+   "labels_at_screen": 240,
+   "duplicate_N_labels_at_screen": 69,
+   "vendored_audit_paths_dropped": [
+    "lib/openzeppelin-contracts/audit/2017-03.md",
+    "lib/openzeppelin-contracts/audit/2018-10.pdf",
+    "lib/solmate/audits/v6-Fixed-Point-Solutions.pdf"
+   ],
+   "reject": "rule 5a: only vendored dependency audits"
+  },
+  {
+   "slug": "2022-10-traderjoe",
+   "order_sha256": "1e81cf5cb767275897c5abd37fb330e18f1a8953eb995c87d8ff31fda9a85195",
+   "screen_pass_rank": 2,
+   "issues_at_screen": 519,
+   "labels_at_screen": 121,
+   "duplicate_N_labels_at_screen": 46,
+   "vendored_audit_paths_dropped": [
+    "lib/openzeppelin-contracts/audit/2017-03.md",
+    "lib/openzeppelin-contracts/audit/2018-10.pdf"
+   ],
+   "reject": "rule 5a: only vendored dependency audits"
+  },
+  {
+   "slug": "2022-12-gogopool",
+   "order_sha256": "3d0963b905029dc12cd3e769ea2cc51a43654c8b9b52ec665b40dd8e059929d5",
+   "screen_pass_rank": 3,
+   "issues_at_screen": 905,
+   "labels_at_screen": 210,
+   "duplicate_N_labels_at_screen": 112,
+   "vendored_audit_paths_dropped": [
+    "lib/solmate/audits/v6-Fixed-Point-Solutions.pdf"
+   ],
+   "reject": "rule 5a: only vendored dependency audits"
+  },
+  {
+   "slug": "2022-11-paraspace",
+   "order_sha256": "53bcbb35ab91ac75168529336d96ddfde4c81342adf0e3ca6b795f32bde1a4fb",
+   "screen_pass_rank": 4,
+   "issues_at_screen": 516,
+   "labels_at_screen": 215,
+   "duplicate_N_labels_at_screen": 59,
+   "vendored_audit_paths_dropped": [],
+   "rank": 1,
+   "role": "selected",
+   "findings": {
+    "repo": "code-423n4/2022-11-paraspace-findings",
+    "commit": "9650d134645b4114911bf3ea25d626f2fe0b2fe2",
+    "tree_listing_sha256": "04795cf93c4d213faa56cdc8f9090161bced72e3281c32754c3cc8028f3cf43a",
+    "report_md_blob": "9e20ccf04f8016a9958401a5f1c4321aafb66d79"
+   },
+   "codebase": {
+    "repo": "https://github.com/code-423n4/2022-11-paraspace",
+    "commit": "34cb87ea4a5e698f49ae5f5a07228db99514b7c7",
+    "source": "c4-sponsor-snapshot HEAD at sealing"
+   },
+   "prior_audit_files": [
+    {
+     "path": "paraspace-core/audits/CERTIK-V1.pdf",
+     "git_blob": "93020d3f168a4196962cd267bfc4280b4611fe25",
+     "bytes": 3808770,
+     "sha256": "99fb971b1ede5ae081d7454e87729db12ebaf7fb3dcefae72a62f28daf210254"
+    }
+   ]
+  },
+  {
+   "slug": "2023-02-ethos",
+   "order_sha256": "7caf71c54f9fea4ad93f44818e8a83c240c104336b8a312504aed41b4b01e15e",
+   "screen_pass_rank": 5,
+   "issues_at_screen": 860,
+   "labels_at_screen": 260,
+   "duplicate_N_labels_at_screen": 38,
+   "vendored_audit_paths_dropped": [],
+   "rank": 2,
+   "role": "selected",
+   "findings": {
+    "repo": "code-423n4/2023-02-ethos-findings",
+    "commit": "3bc3ce44263d6db57d8a9bdc3ee327dbfea3a5bc",
+    "tree_listing_sha256": "5c6f3995decdf85709f979624f0d901957bfd7d7904495861ac305a32ae64c81",
+    "report_md_blob": "8f8fdf51f9dd17c951b08fe78f28e7b9bd5d4976"
+   },
+   "codebase": {
+    "repo": "https://github.com/code-423n4/2023-02-ethos",
+    "commit": "f6ed106a105ed8299a9d38aaf490c391e200a8f3",
+    "source": "c4-sponsor-snapshot HEAD at sealing"
+   },
+   "prior_audit_files": [
+    {
+     "path": "discord-export/Code4rena - ARCHIVE-Q1-2023 - ethos-feb16 [1075513398688743524].html_Files/Ethos_Audit_Report-2B885.pdf",
+     "git_blob": "86bbc402f82043b1605daaf1fc770a742568a756",
+     "bytes": 3008760,
+     "sha256": "08789273d53504e891cbf00d919e0c15cff3a9e2014b7453b7174b5af24e3cba"
+    },
+    {
+     "path": "discord-export/Code4rena - ARCHIVE-Q1-2023 - ethos-feb16 [1075513398688743524].txt_Files/Ethos_Audit_Report-2B885.pdf",
+     "git_blob": "86bbc402f82043b1605daaf1fc770a742568a756",
+     "bytes": 3008760,
+     "sha256": "08789273d53504e891cbf00d919e0c15cff3a9e2014b7453b7174b5af24e3cba"
+    }
+   ]
+  },
+  {
+   "slug": "2023-05-ajna",
+   "order_sha256": "b26aa8f467269559a6376dfcbb7e80546a278a4a087fb5715117763fb890e7da",
+   "screen_pass_rank": 6,
+   "issues_at_screen": 508,
+   "labels_at_screen": 194,
+   "duplicate_N_labels_at_screen": 46,
+   "vendored_audit_paths_dropped": [
+    "ajna-core/lib/openzeppelin-contracts/audit/2017-03.md",
+    "ajna-core/lib/openzeppelin-contracts/audit/2018-10.pdf",
+    "ajna-grants/lib/openzeppelin-contracts/audit/2017-03.md",
+    "ajna-grants/lib/openzeppelin-contracts/audit/2018-10.pdf"
+   ],
+   "reject": "rule 5a: only vendored dependency audits"
+  },
+  {
+   "slug": "2023-09-venus",
+   "order_sha256": "d07f47929e255a7dff2b66cae0c533fb0326ad8c402cac4b2b1085e8601d8f6b",
+   "screen_pass_rank": 7,
+   "issues_at_screen": 684,
+   "labels_at_screen": 199,
+   "duplicate_N_labels_at_screen": 36,
+   "vendored_audit_paths_dropped": [],
+   "rank": 3,
+   "role": "selected",
+   "findings": {
+    "repo": "code-423n4/2023-09-venus-findings",
+    "commit": "090fc6fd021a2102062a56f0bfee1ffc16ac33e7",
+    "tree_listing_sha256": "92ae539bfa40b50b945db3c8cabe192e37eb9c58468017a0556b27e301a36528",
+    "report_md_blob": "95b9f9e836b986f5cf27a440fda497d43321d6ad"
+   },
+   "codebase": {
+    "repo": "https://github.com/code-423n4/2023-09-venus",
+    "commit": "9dcc9c72514da5fb99a4b66d93938372209e85de",
+    "source": "c4-sponsor-snapshot HEAD at sealing"
+   },
+   "prior_audit_files": [
+    {
+     "path": "audits/055_prime_peckshield_20230826.pdf",
+     "git_blob": "a629960ac73f6180e342ddf1545e6029015b9cbe",
+     "bytes": 336350,
+     "sha256": "d299a0c938ea317f1a30b18e8c6224d8358dde1cf2f02b49148fe224da2c622f"
+    },
+    {
+     "path": "audits/056_prime_fairyproof_20230910.pdf",
+     "git_blob": "fbac2f471e811d1749b46c32ef6b6093318a93f8",
+     "bytes": 734369,
+     "sha256": "464aaae8361c8198b64ea9d0080d78010e41fd3a13ab7a8f9c1241f09d484ee0"
+    }
+   ]
+  },
+  {
+   "slug": "2023-07-arcade",
+   "order_sha256": "f7abce2edba83d694c396d497b5702c6f4f3b29f88485e018ad197298fe3ef27",
+   "screen_pass_rank": 8,
+   "issues_at_screen": 573,
+   "labels_at_screen": 158,
+   "duplicate_N_labels_at_screen": 64,
+   "vendored_audit_paths_dropped": [],
+   "rank": 4,
+   "role": "selected",
+   "findings": {
+    "repo": "code-423n4/2023-07-arcade-findings",
+    "commit": "099d79e0dc3b6ab04e9c2230727e25520df3af31",
+    "tree_listing_sha256": "16fa1250e7938b78e59137c89a0662db402e660f540d8481b5471fc23a92e243",
+    "report_md_blob": "5040f10d57f32a1b9bccc372a20b3f06d75a79bd"
+   },
+   "codebase": {
+    "repo": "https://github.com/code-423n4/2023-07-arcade",
+    "commit": "2dbb73fbe7b82263ecb506740e69aa8e5c0abddd",
+    "source": "c4-sponsor-snapshot HEAD at sealing"
+   },
+   "prior_audit_files": [
+    {
+     "path": "audits/Omniscia2023.pdf",
+     "git_blob": "f81f2924b9472342a463f327745b0258d3ea6774",
+     "bytes": 9757268,
+     "sha256": "6a0b94d58bf0486c8dda5db7812e4a13a19df05adfc4b208f4a3892097da271d"
+    }
+   ]
+  }
+ ]
+}

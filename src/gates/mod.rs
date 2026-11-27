@@ -338,14 +338,22 @@ pub fn payout(dossier: &Dossier, claimed: Option<Severity>) -> PayoutEvidence {
         };
     };
     let floor = floor_of(p);
+    // Quote the reward row for the severity the finding claims, when the page
+    // has one. The payout block's own quote is the floor row; it is the
+    // fallback when no tier row names the claimed severity.
+    let claimed_row = claimed.and_then(|sev| claimed_tier_row(dossier, sev));
+    let (section, quote) = match claimed_row {
+        Some(item) => (item.section.clone(), Some(item.quote.clone())),
+        None => (p.section.clone(), p.quote.clone()),
+    };
     let base = PayoutEvidence {
         tier_shape: Some(p.tier_shape.clone()),
         floor: floor.clone(),
         claimed_severity: claimed_label.clone(),
         payable: None,
         citation: p.source_url.clone(),
-        section: p.section.clone(),
-        quote: p.quote.clone(),
+        section,
+        quote,
         detail: None,
     };
     if p.tier_shape == "unknown" {
@@ -403,6 +411,21 @@ pub fn payout(dossier: &Dossier, claimed: Option<Severity>) -> PayoutEvidence {
         detail,
         ..base
     }
+}
+
+/// The first `payout-tier` item whose text names `sev` as a whole word.
+fn claimed_tier_row(dossier: &Dossier, sev: Severity) -> Option<&crate::model::Item> {
+    let want = sev.label().to_lowercase();
+    dossier
+        .items
+        .iter()
+        .filter(|i| i.kind == "payout-tier")
+        .find(|i| {
+            i.text
+                .to_lowercase()
+                .split(|c: char| !c.is_alphanumeric())
+                .any(|w| w == want)
+        })
 }
 
 fn floor_of(p: &crate::model::Payout) -> Option<String> {
@@ -622,6 +645,47 @@ mod tests {
         assert_eq!(payout(&d, None).payable, None);
     }
 
+    fn tier_item(text: &str) -> Item {
+        Item {
+            kind: "payout-tier".into(),
+            section: Some("Rewards by threat level".into()),
+            ..clause_item(text, None)
+        }
+    }
+
+    #[test]
+    fn payout_quotes_the_claimed_severity_row_not_the_floor_row() {
+        let mut p = terms("high_and_above", Some("high"));
+        p.quote = Some("High: up to $10,000".into());
+        let d = dossier_with(
+            vec![
+                tier_item("Critical: up to $2,000,000 Minimum reward $150,000"),
+                tier_item("High: up to $10,000"),
+                tier_item("Highest-impact bonus applies"),
+            ],
+            Some(p),
+        );
+        let crit = payout(&d, Some(Severity::Critical));
+        assert_eq!(crit.payable, Some(true));
+        assert_eq!(
+            crit.quote.as_deref(),
+            Some("Critical: up to $2,000,000 Minimum reward $150,000")
+        );
+        assert_eq!(crit.section.as_deref(), Some("Rewards by threat level"));
+        let high = payout(&d, Some(Severity::High));
+        assert_eq!(high.quote.as_deref(), Some("High: up to $10,000"));
+        // No row names Medium: the floor row is quoted, and it is not payable.
+        let medium = payout(&d, Some(Severity::Medium));
+        assert_eq!(medium.payable, Some(false));
+        assert_eq!(medium.quote.as_deref(), Some("High: up to $10,000"));
+        assert_eq!(medium.section.as_deref(), Some("Rewards"));
+        // No claim: the floor row.
+        assert_eq!(
+            payout(&d, None).quote.as_deref(),
+            Some("High: up to $10,000")
+        );
+    }
+
     #[test]
     fn an_unknown_tier_shape_is_not_permissive() {
         let d = dossier_with(vec![], Some(terms("unknown", None)));
@@ -660,5 +724,175 @@ mod tests {
         assert_eq!(ev.inside, vec!["src/Vault.sol".to_string()]);
         assert_eq!(ev.outside.len(), 1);
         assert!(ev.lines().join(" ").contains("scoped code"));
+    }
+
+    // ---- mutation follow-up (cargo-mutants run 45988429884 on 6cb50d3) ----
+
+    fn only(field: &str) -> Preconditions {
+        let s = || Some("x".to_string());
+        let mut p = Preconditions::default();
+        match field {
+            "role" => p.role = s(),
+            "front_run" => p.front_run = s(),
+            "best_practice" => p.best_practice = s(),
+            "design" => p.design = s(),
+            "off_chain" => p.off_chain = s(),
+            "third_party" => p.third_party = s(),
+            "user_input" => p.user_input = s(),
+            "known_issue" => p.known_issue = s(),
+            "testing" => p.testing = s(),
+            "non_standard_token" => p.non_standard_token = s(),
+            other => panic!("unknown field {other}"),
+        }
+        p
+    }
+
+    #[test]
+    fn each_clause_class_is_tripped_only_by_its_own_precondition() {
+        let cases = [
+            ("privileged_role", "role", "privileged role"),
+            ("human_error", "role", "admin error or a code defect"),
+            ("admin_input", "role", "value supplied by"),
+            ("front_run_only", "front_run", "needs ordering"),
+            ("best_practice", "best_practice", "convention critique"),
+            ("design_issue", "design", "intended behaviour"),
+            ("off_chain", "off_chain", "off-chain"),
+            ("third_party", "third_party", "external dependency"),
+            ("user_input", "user_input", "victim's own input"),
+            ("known_issue", "known_issue", "says it is known"),
+            ("testing_limits", "testing", "live-network"),
+            (
+                "non_standard_token",
+                "non_standard_token",
+                "non-standard token",
+            ),
+        ];
+        for (class, field, phrase) in cases {
+            let hit = only(field).trigger(class);
+            assert!(
+                hit.as_deref().is_some_and(|s| s.contains(phrase)),
+                "{class}: {hit:?}"
+            );
+            assert_eq!(Preconditions::default().trigger(class), None, "{class}");
+        }
+        assert_eq!(only("role").trigger("scope_boundary"), None);
+    }
+
+    #[test]
+    fn a_freeze_claim_trips_dos_only_without_a_loss_path() {
+        let dos = |dos, fund_loss| Preconditions {
+            dos,
+            fund_loss,
+            ..Default::default()
+        };
+        assert!(dos(true, false).trigger("dos_no_extraction").is_some());
+        assert_eq!(dos(true, true).trigger("dos_no_extraction"), None);
+        assert_eq!(dos(false, false).trigger("dos_no_extraction"), None);
+        assert_eq!(dos(false, true).trigger("dos_no_extraction"), None);
+    }
+
+    #[test]
+    fn ordering_trips_front_run_only_when_the_finding_is_not_atomic() {
+        let mut p = only("front_run");
+        assert!(p.trigger("front_run_only").is_some());
+        p.atomic = true;
+        assert_eq!(p.trigger("front_run_only"), None);
+        let none = Preconditions::default();
+        assert_eq!(none.trigger("front_run_only"), None);
+    }
+
+    #[test]
+    fn payout_details_name_their_own_cause() {
+        let d = dossier_with(vec![], Some(terms("not_a_shape", None)));
+        let ev = payout(&d, Some(Severity::High));
+        assert_eq!(ev.payable, None);
+        assert!(ev.detail.as_deref().unwrap().contains("declares no floor"));
+        let d = dossier_with(vec![], Some(terms("high_and_above", Some("high"))));
+        let ev = payout(&d, None);
+        assert_eq!(ev.payable, None);
+        let detail = ev.detail.unwrap();
+        assert!(detail.contains("claims no severity"), "{detail}");
+        assert!(detail.contains("High"), "{detail}");
+    }
+
+    #[test]
+    fn the_floor_is_the_higher_of_the_shape_and_the_declared_severity() {
+        let floor = |tier: &str, declared: Option<&str>| floor_of(&terms(tier, declared));
+        // shape implies medium
+        assert_eq!(
+            floor("medium_and_above", Some("high")).as_deref(),
+            Some("high")
+        );
+        assert_eq!(
+            floor("medium_and_above", Some("low")).as_deref(),
+            Some("medium")
+        );
+        assert_eq!(
+            floor("medium_and_above", Some("medium")).as_deref(),
+            Some("medium")
+        );
+        assert_eq!(
+            floor("high_and_above", Some("medium")).as_deref(),
+            Some("high")
+        );
+        // an unreadable declared severity falls back to the shape
+        assert_eq!(
+            floor("medium_and_above", Some("weird")).as_deref(),
+            Some("medium")
+        );
+        // a blank declared severity is not a declaration
+        assert_eq!(
+            floor("medium_and_above", Some("   ")).as_deref(),
+            Some("medium")
+        );
+        assert_eq!(floor("not_a_shape", Some("  ")), None);
+        assert_eq!(floor("not_a_shape", Some("low")).as_deref(), Some("low"));
+        assert_eq!(floor("not_a_shape", None), None);
+        assert_eq!(floor("medium_and_above", None).as_deref(), Some("medium"));
+    }
+
+    #[test]
+    fn audit_sections_are_counted_whatever_their_kind() {
+        let item = |id: &str, kind: &str| Item {
+            id: id.into(),
+            kind: kind.into(),
+            ..clause_item("audit text", None)
+        };
+        let d = dossier_with(
+            vec![item("i1", "audit-finding"), item("i2", "audit-section")],
+            None,
+        );
+        let out = prior_audit_coverage(&d, "no cited path");
+        assert_eq!(out.len(), 1);
+        assert!(
+            out[0].starts_with("2 audit section(s) are indexed"),
+            "{out:?}"
+        );
+        let one = dossier_with(vec![item("i1", "audit-section")], None);
+        assert!(prior_audit_coverage(&one, "x")[0].starts_with("1 audit section(s)"));
+        let other = dossier_with(vec![item("i1", "scope-clause")], None);
+        assert_eq!(
+            prior_audit_coverage(&other, "x"),
+            vec!["no prior-audit surface in this dossier".to_string()]
+        );
+    }
+
+    #[test]
+    fn prior_art_resolves_each_item_to_its_own_source() {
+        let d = dossier_with(vec![clause_item("Vault.withdraw drains", None)], None);
+        let ranked = [matching::Ranked {
+            index: 0,
+            shared_identifiers: vec!["withdraw".into()],
+            shared_symbols: 1,
+            specific_symbols: 1,
+            shared_paths: 0,
+            rarity: 1,
+        }];
+        let out = prior_art(&d, &ranked);
+        assert_eq!(out.len(), 1);
+        assert_eq!(out[0].source_kind, "program-page");
+        assert_eq!(out[0].source_title.as_deref(), Some("scope.md"));
+        assert_eq!(out[0].path, "scope.md");
+        assert_eq!(out[0].shared_identifiers, vec!["withdraw".to_string()]);
     }
 }

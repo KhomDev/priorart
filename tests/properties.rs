@@ -327,8 +327,10 @@ proptest! {
     #![proptest_config(config(96))]
 
     /// `**/` matches zero or more whole directories, while `*` stays inside
-    /// one. The two patterns differ exactly when the path has a directory
-    /// between `src/` and the file.
+    /// one. Scope entries are unanchored (`src/*.sol` also matches
+    /// `lib/x/src/Vault.sol`), so `src/*.sol` matches exactly when the file's
+    /// parent directory is a `src`: no directory after the leading `src/`, or
+    /// the last one is itself `src` (proptest found `src/src/Vault.sol`).
     #[test]
     fn double_star_crosses_directories_and_star_does_not(
         dirs in proptest::collection::vec("[a-z]{1,8}", 0..4),
@@ -340,13 +342,23 @@ proptest! {
         }
         path.push_str("Vault.sol");
         prop_assert!(matching::in_scope(&path, "src/**/*.sol"), "{}", path);
+        let parent_is_src = dirs.last().is_none_or(|d| d == "src");
         prop_assert_eq!(
             matching::in_scope(&path, "src/*.sol"),
-            dirs.is_empty(),
+            parent_is_src,
             "{}",
             path
         );
     }
+}
+
+/// The case proptest found: a nested `src/src/` is in `src/*.sol` because
+/// scope entries are unanchored, while one more directory takes it out.
+#[test]
+fn a_nested_src_directory_is_in_an_unanchored_star_entry() {
+    assert!(matching::in_scope("src/src/Vault.sol", "src/*.sol"));
+    assert!(!matching::in_scope("src/src/x/Vault.sol", "src/*.sol"));
+    assert!(matching::in_scope("src/src/x/Vault.sol", "src/**/*.sol"));
 }
 
 // ------------------------------------------------------- property 5: top-k bound

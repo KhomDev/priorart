@@ -1,0 +1,17 @@
+# cargo-audit configuration (read by `cargo audit` and rustsec/audit-check).
+#
+# Every ignore names the advisory and the reason. The no-network and licence
+# policy stays in deny.toml; this file only records advisories that cannot be
+# fixed from this repository.
+[advisories]
+ignore = [
+    # RUSTSEC-2026-0387: timing variability in crypto-bigint 0.5.5 operations
+    # on secret integers. It is transitive through solar-parse 0.2.0 ->
+    # alloy -> k256 0.13 -> elliptic-curve 0.13 -> crypto-bigint 0.5, whose
+    # parent requires ^0.5; the patched 0.7 is not selectable without an
+    # upstream major bump. priorart performs no secret-key operation (it parses
+    # Solidity and matches text), so the affected constant-time paths are not
+    # reachable with secret material. Remove this entry when solar moves to a
+    # patched k256/elliptic-curve.
+    "RUSTSEC-2026-0387",
+]

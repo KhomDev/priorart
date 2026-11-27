@@ -13,6 +13,55 @@ appears here only if it came from a command that can be re-run.
 
 ## [Unreleased]
 
+### Added
+
+- **`priorart fetch`.** The only networked command. It GETs the HTTPS URLs you
+  name (one each, no crawling) into `pages/001.html`, … and writes
+  `fetch.json`. `build`, `check`, `candidates`, `anchors` and `taxonomy` stay
+  offline. `--no-default-features` builds a binary with no HTTP client. The
+  client is `ureq` 2.12.1 with rustls: 43 packages added to `Cargo.lock`
+  (`comm` of `name = ` lines against the previous lock). `cargo deny check`
+  and `cargo audit` pass; the new licence is `CDLA-Permissive-2.0` for the
+  Mozilla CA list in `webpki-roots`, and `base64` 0.22.1 is kept beside 0.23.1
+  because ureq 2.12.1 pins it.
+- **HTML tables and links.** A `<table>` becomes one bullet per row. An empty
+  `<a href>`, or one whose text is not the URL, appends the URL (`utm_*`
+  removed; relative links resolve only against a fetched final URL). A
+  severity label in its own block labels the reward that follows it. An
+  impacts row is an `impact` item, not a `payout-tier`. A payout tier needs a
+  severity and an amount on the same line. GitHub code URLs and explorer
+  address URLs are `scope-path` items.
+
+### Added (P2)
+
+- **Code anchors.** `priorart anchors index|resolve|bench` resolves a finding's
+  cited contracts, functions, files and state variables to spans in the audited
+  repository at its pinned commit, using a `solar-parse` call graph and
+  state-variable read/write sets. Resolution is deterministic and offline;
+  unresolved citations abstain with a reason (`no-citation`, `file-missing`,
+  `not-found`, `ambiguous`, `parse-failure`, `commit-mismatch`, …). Existing
+  commands, schemas and output are unchanged.
+  On the six DEV corpora, **1296 of 1299 findings that cite code resolve to at
+  least one span (99.77%, Wilson 95% [99.32%, 99.92%])**; the command is
+  `priorart anchors bench`, reproducible offline once the pinned codebases are
+  present.
+
+- **Structural candidates.** `priorart candidates` admits a prior item when it
+  shares a function or state-variable anchor with the finding, is a call-graph
+  neighbour within distance 2, or asserts the same root cause in the same
+  contract. Each pair carries the five features the ranker consumes (function
+  and state anchor overlap, call-graph distance, mechanism match, impact match,
+  today's identifier score). Shared identifiers alone never admit a candidate;
+  abstentions carry a reason. On the six DEV corpora, **504 of 696 judge-grouped
+  duplicates (72.41%, Wilson 95% [68.98%, 75.60%]) have their representative in
+  the candidate set**, with an 11.64% abstention rate; this is candidate recall
+  on DEV, not recall@5 or FAR (PA-B4/B5).
+
+### Changed (P2)
+
+- **The MSRV is now Rust 1.95** (was 1.89): `solar-parse 0.2.0` is edition 2024
+  and declares `rust-version = "1.95"`. Release binaries are unaffected.
+
 ## [0.2.2] - 2026-11-25
 
 A harness release. The matcher is byte-identical to 0.2.1: the P1-C

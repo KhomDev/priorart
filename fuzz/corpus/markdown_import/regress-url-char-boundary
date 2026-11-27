@@ -1,0 +1,4 @@
+# Known issues
+
+- `SwapDesk.swapIn` can reach its cap during high volume; acknowledged, by desiwn.
+- Rounding in `distributeFees` is acknowl˜›ged and wd will nbe paid.

@@ -130,3 +130,7 @@ the same gap.
 - **No timing budget per mutant.** Each mutant had a 300 s timeout; six hit it.
   They are listed in `mutants.out/timeout.txt` of the run and are not counted as
   survivors.
+
+## Follow-up run on the P2R-2 head
+
+Four shards on `6cb50d3` (the fetch, HTML and gates files) left 147 survivors (17.3%). Which tests were added, which survivors remain open, and the per-function counts are in [`mutants-2026-11-27.md`](mutants-2026-11-27.md).

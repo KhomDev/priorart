@@ -333,3 +333,92 @@ formerly sealed pairs are 3/9 = 33.3% and 4/9 = 44.4%, 7/18 = 38.9% pooled.
 The trigger remains met; the warning stays off. Full tables:
 `eval/benchmark/BENCHMARK.md`, "P1-C re-measurement results" and "0.2.2
 measurement".
+
+## Dup-Bench v1 and the P2 measurement plan (2026-11-26)
+
+The P2 rebuild adds a second benchmark, **Dup-Bench v1** (`eval/dupbench/`), to
+measure code-anchored duplicate detection on a temporally sealed split:
+
+- **111 Code4rena contests** with public judge grouping, pinned by findings-repo
+  commit, `report.md` hash, `data/` listing and label pages. Span
+  2022-11-03..2024-12-10.
+- **All 111 labelled**: 1,102 paid-unique findings, 3,454 judged duplicates,
+  780 invalid, 101 contests with at least one duplicate group. The judge's
+  `duplicate-N` label pointing at the `selected for report` issue is the
+  grouping; report↔data joins 1,102/1,102.
+- **Temporal split, Amendment 1** (`eval/P2R_PREREGISTRATION_AMENDMENT_1.md`):
+  the originally preregistered 2025-09-01/2026-05-01 cut is empty because no
+  public judged repository exists after 2024-12 (C4) or 2025-07 (Sherlock).
+  Amendment 1 fixes T=2024-03-01, T2=2024-09-01: train 58 contests / 564
+  paid-unique / 1,237 duplicates, validation 36 / 380 / 1,441, FINAL 17 / 158 /
+  776. FINAL is sealed and has not been read.
+- **Six sealed pairs** (`pairs.json`): a prior audit report plus a later judged
+  contest for six sponsors not used in P1, with prior-report hashes and contest
+  codebase pins. The prior report's commit is not stated by the sponsors, so
+  the same-codebase evidence is the sponsor's "Previous audits" statement and
+  the drift is declared per pair.
+
+Two earlier P2 measurements exist, and neither is a duplicate-detector number:
+
+- **Code anchors** (`priorart anchors bench`): on the six DEV corpora,
+  **1,296 of 1,299 findings that cite code resolve to at least one span
+  (99.77%, Wilson 95% [99.32, 99.92])**. It counts a file-level span; symbol
+  precision is what the ranker must learn.
+- **Mechanism taxonomy**: on 1,997 DEV finding files, 961 (48.1%) assert at
+  least one root-cause class and 24.9% abstain. This is cue coverage, not
+  judged accuracy; per-class precision is unmeasured.
+
+**Dup-Bench ranker (PA-B4), measured 2026-11-26; reported, not a verdict.** The
+fixed-weight ranker (`eval/dupbench/weights/v1.json`; logistic regression
+fitted by `eval/dupbench/train_ranker.py`, seed 20261126) was measured with
+`eval/dupbench/build_ranker_data.py` over 83 contests whose checkout is at the
+pinned commit: 3,380 queries (train 1,163 judged duplicates + 472 paid-unique
+primaries against the other primaries; validation 1,392 + 353). The selection
+grid chose `log1p` count transforms and lambda 10.0 on validation log-loss
+(0.2193; validation AUC 0.9182). Train, in-sample: duplicate recall@5
+631/1,163 = 54.3% [51.4, 57.1] with the ranker versus 627/1,163 = 53.9%
+[51.0, 56.8] in the default order; FAR on paid-unique findings 34/472 = 7.2%
+[5.2, 9.9] at score 0.5 (baseline, any candidate: 269/472 = 57.0%
+[52.5, 61.4]); duplicate abstention 476/1,163 = 40.9% [38.1, 43.8].
+Validation, model-selection data and never a fresh result: recall@5
+990/1,392 = 71.1% [68.7, 73.4] versus 977/1,392 = 70.2% [67.7, 72.5]; FAR
+48/353 = 13.6% [10.4, 17.6] at 0.5, 11/353 = 3.1% [1.8, 5.5] at 0.8
+(baseline 211/353 = 59.8% [54.6, 64.8]); duplicate abstention 309/1,392 =
+22.2% [20.1, 24.5]. The validation decile curve is non-decreasing within
+sampling error (one near-inversion inside a large score tie). **No threshold is
+shipped**: the calibrated alarm is PA-B5's item. FINAL is sealed and no FINAL
+contest has been read; none of these numbers is a FINAL number.
+
+## DEV-ONLY release table (P2R-2, the release on `main`, 2026-11-27)
+
+> **DEV-ONLY. None of these is a held-out number.** Train is the ranker's fitting data. Validation is
+> model-selection data: the ranker's grid was chosen on it, and the alarm was calibrated on it. The held-out
+> rounds (the six V1 pairs, then Dup-Bench FINAL) come after main, under
+> `eval/P2R2_PREREGISTRATION_POST_MAIN.md`.
+
+Sources: `eval/dupbench/weights/v1.json` (`measurement`) and `eval/dupbench/weights/alarm-v1.json`.
+The intervals are Wilson 95% with z = 1.959964.
+
+| Cell | Train (in-sample, fitting) | Validation (model selection) |
+|---|---|---|
+| Duplicate recall@5, ranker | 631/1,163 = 54.3% [51.4, 57.1] | 990/1,392 = 71.1% [68.7, 73.4] |
+| Duplicate recall@5, default order | 627/1,163 = 53.9% [51.0, 56.8] | 977/1,392 = 70.2% [67.7, 72.5] |
+| Duplicate abstention | 476/1,163 = 40.9% [38.1, 43.8] | 309/1,392 = 22.2% [20.1, 24.5] |
+| FAR on paid-unique, ranker score ≥ 0.5 | 34/472 = 7.2% [5.2, 9.9] | 48/353 = 13.6% [10.4, 17.6] |
+| FAR on paid-unique, ranker score ≥ 0.8 | - | 11/353 = 3.1% [1.7, 5.5] |
+| FAR on paid-unique, ranker score ≥ 0.9 | 2/472 = 0.4% [0.1, 1.5] | 2/353 = 0.6% [0.2, 2.0] |
+| FAR on paid-unique, ranker score ≥ 0.95 | - | 0/353 = 0.0% [0.0, 1.1] |
+| Alarm warning precision at the shipped threshold (calibrated ≥ 0.9016) | - | 149/162 = 92.0% [86.8, 95.3] (the data it was calibrated on) |
+
+The 0.8 row's lower bound reads 1.8 in the PA-B4 paragraph above. Recomputed, it is 1.749, which is
+1.7 to one decimal. The interval is otherwise unchanged.
+
+**Pairs: not measured.** The pairs swap (option A) sealed `2022-11-paraspace`, `2023-02-ethos`,
+`2023-09-venus` and `2023-07-arcade`, and kept `2024-03-revert-lend` and `2024-10-loopfi`. None of them
+has judge labels collected yet, so there is no pairs number (`eval/dupbench/pairs-swap/SELECTION.md`).
+The earlier PoolTogether / Ondo / Numoen pairs-DEV output only proved that the runner works and is not a
+measurement.
+
+**History (in-sample, 0.2.2):** Tapioca FAR 15/60 = 25.0% [15.8, 37.2], recall 35/64 = 54.7%
+[42.6, 66.3]; Party + Wildcat (the former sealed pairs) FAR 7/18 = 38.9% [20.3, 61.4], recall 63/178 =
+35.4% [28.7, 42.7]. See `docs/limitations.md`.

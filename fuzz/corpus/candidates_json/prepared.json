@@ -1,0 +1,257 @@
+{
+  "schema": "priorart.candidates-corpus/v1",
+  "tool_version": "0.2.2",
+  "repositories": [
+    "example/candidates-fixture@0000000000000000000000000000000000000000"
+  ],
+  "items": [
+    {
+      "id": "prior-deposit",
+      "title": null,
+      "text": "# Prior deposit\n\n`Ledger.deposit` increments `balances` before it writes `totalAssets`; `DepositLedger` is stale.\n",
+      "text_sha256": "65c074921a2b7e73b2e4d456d982958312cfe4156af1c1eb76e2c835ccdc1750",
+      "identifiers": [
+        "DepositLedger",
+        "Ledger.deposit",
+        "totalAssets"
+      ],
+      "anchors": [
+        {
+          "repo": "example/candidates-fixture",
+          "commit": "0000000000000000000000000000000000000000",
+          "file": "contracts/Ledger.sol",
+          "span": {
+            "start_byte": 80,
+            "end_byte": 107,
+            "start_line": 5,
+            "end_line": 5
+          },
+          "kind": "state-var",
+          "symbol": "Ledger.totalAssets",
+          "confidence": 85
+        },
+        {
+          "repo": "example/candidates-fixture",
+          "commit": "0000000000000000000000000000000000000000",
+          "file": "contracts/Ledger.sol",
+          "span": {
+            "start_byte": 112,
+            "end_byte": 158,
+            "start_line": 6,
+            "end_line": 6
+          },
+          "kind": "state-var",
+          "symbol": "Ledger.balances",
+          "confidence": 85
+        },
+        {
+          "repo": "example/candidates-fixture",
+          "commit": "0000000000000000000000000000000000000000",
+          "file": "contracts/Ledger.sol",
+          "span": {
+            "start_byte": 427,
+            "end_byte": 547,
+            "start_line": 21,
+            "end_line": 24
+          },
+          "kind": "function",
+          "symbol": "Ledger.deposit",
+          "confidence": 95
+        }
+      ],
+      "mechanism": {
+        "schema": "priorart.taxonomy/v1",
+        "root_causes": [],
+        "impacts": [],
+        "assets": [],
+        "abstain_reason": "no-mechanism"
+      }
+    },
+    {
+      "id": "prior-leaf",
+      "title": null,
+      "text": "# Prior leaf\n\n`Ledger.leaf` adds to `totalAssets` from an internal call.\n",
+      "text_sha256": "fb5cafc5d15afe0e545730f4aa9fca10c11e8fb6c0a09944bfe5e96412abad3f",
+      "identifiers": [
+        "Ledger.leaf",
+        "totalAssets"
+      ],
+      "anchors": [
+        {
+          "repo": "example/candidates-fixture",
+          "commit": "0000000000000000000000000000000000000000",
+          "file": "contracts/Ledger.sol",
+          "span": {
+            "start_byte": 80,
+            "end_byte": 107,
+            "start_line": 5,
+            "end_line": 5
+          },
+          "kind": "state-var",
+          "symbol": "Ledger.totalAssets",
+          "confidence": 85
+        },
+        {
+          "repo": "example/candidates-fixture",
+          "commit": "0000000000000000000000000000000000000000",
+          "file": "contracts/Ledger.sol",
+          "span": {
+            "start_byte": 344,
+            "end_byte": 421,
+            "start_line": 17,
+            "end_line": 19
+          },
+          "kind": "function",
+          "symbol": "Ledger.leaf",
+          "confidence": 95
+        }
+      ],
+      "mechanism": {
+        "schema": "priorart.taxonomy/v1",
+        "root_causes": [],
+        "impacts": [],
+        "assets": [],
+        "abstain_reason": "no-mechanism"
+      }
+    },
+    {
+      "id": "prior-mechanism",
+      "title": null,
+      "text": "# Prior rounding\n\n`Ledger.beta` truncates the result when it divides by five.\n",
+      "text_sha256": "ef171ccb4a3890385cd9fd9b87f99f20052a48a61d27b50da18084c585054554",
+      "identifiers": [
+        "Ledger.beta"
+      ],
+      "anchors": [
+        {
+          "repo": "example/candidates-fixture",
+          "commit": "0000000000000000000000000000000000000000",
+          "file": "contracts/Ledger.sol",
+          "span": {
+            "start_byte": 656,
+            "end_byte": 752,
+            "start_line": 30,
+            "end_line": 32
+          },
+          "kind": "function",
+          "symbol": "Ledger.beta",
+          "confidence": 95
+        }
+      ],
+      "mechanism": {
+        "schema": "priorart.taxonomy/v1",
+        "root_causes": [
+          {
+            "class": "rounding-precision",
+            "span": {
+              "start_byte": 8,
+              "end_byte": 16
+            },
+            "term": "rounding"
+          }
+        ],
+        "impacts": [],
+        "assets": [],
+        "abstain_reason": null
+      }
+    },
+    {
+      "id": "prior-total-assets",
+      "title": null,
+      "text": "# Prior totalAssets\n\n`totalAssets` is written before the transfer completes.\n",
+      "text_sha256": "eb75964b45e3f168d29fd45dfc391c1b17377dce97992801cd432518c39ef41c",
+      "identifiers": [
+        "totalAssets"
+      ],
+      "anchors": [
+        {
+          "repo": "example/candidates-fixture",
+          "commit": "0000000000000000000000000000000000000000",
+          "file": "contracts/Ledger.sol",
+          "span": {
+            "start_byte": 80,
+            "end_byte": 107,
+            "start_line": 5,
+            "end_line": 5
+          },
+          "kind": "state-var",
+          "symbol": "Ledger.totalAssets",
+          "confidence": 85
+        }
+      ],
+      "mechanism": {
+        "schema": "priorart.taxonomy/v1",
+        "root_causes": [],
+        "impacts": [],
+        "assets": [],
+        "abstain_reason": "no-mechanism"
+      }
+    },
+    {
+      "id": "prior-unrelated",
+      "title": null,
+      "text": "# Prior middle\n\n`Ledger.middle` returns the value it was given.\n",
+      "text_sha256": "72774c959e467c4d61bd046267bef080a5d4f2c158076d700f37e0b3a22dd3b5",
+      "identifiers": [
+        "Ledger.middle"
+      ],
+      "anchors": [
+        {
+          "repo": "example/candidates-fixture",
+          "commit": "0000000000000000000000000000000000000000",
+          "file": "contracts/Ledger.sol",
+          "span": {
+            "start_byte": 268,
+            "end_byte": 338,
+            "start_line": 13,
+            "end_line": 15
+          },
+          "kind": "function",
+          "symbol": "Ledger.middle",
+          "confidence": 95
+        }
+      ],
+      "mechanism": {
+        "schema": "priorart.taxonomy/v1",
+        "root_causes": [],
+        "impacts": [],
+        "assets": [],
+        "abstain_reason": "no-mechanism"
+      }
+    },
+    {
+      "id": "prior-vocabulary",
+      "title": null,
+      "text": "# Prior vocabulary\n\n`Ledger.beta` mentions `LedgerBook` and `GhostAccount` without naming a declaration.\n",
+      "text_sha256": "31e380b5f4a01f00e9c38ea426de5a237e47a7ad39dc174deb1507e74ef217dc",
+      "identifiers": [
+        "GhostAccount",
+        "Ledger.beta",
+        "LedgerBook"
+      ],
+      "anchors": [
+        {
+          "repo": "example/candidates-fixture",
+          "commit": "0000000000000000000000000000000000000000",
+          "file": "contracts/Ledger.sol",
+          "span": {
+            "start_byte": 656,
+            "end_byte": 752,
+            "start_line": 30,
+            "end_line": 32
+          },
+          "kind": "function",
+          "symbol": "Ledger.beta",
+          "confidence": 95
+        }
+      ],
+      "mechanism": {
+        "schema": "priorart.taxonomy/v1",
+        "root_causes": [],
+        "impacts": [],
+        "assets": [],
+        "abstain_reason": "no-mechanism"
+      }
+    }
+  ]
+}

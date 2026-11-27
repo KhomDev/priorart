@@ -1,0 +1,2458 @@
+{
+ "version": 1,
+ "schema": "priorart.dupbench.codebases/v1",
+ "note": "Audited codebase pin per Dup-Bench contest, pointer-only. repo is the Code4rena sponsor snapshot (code-423n4/<slug>); commit is that repository's HEAD at collection because the findings README and report front matter state no commit. Status: repo+commit, repo-only (repo reachable, no commit), missing (sponsor repo not publicly reachable). The findings README sha256 is recorded for the pin; its text stays in the gitignored cache.",
+ "codebases": {
+  "2022-09-nouns-builder": {
+   "repo": "https://github.com/code-423n4/2022-09-nouns-builder",
+   "commit": "815cde4e8ff7c9a5a3e8f533c11464c82307388d",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2022-09-nouns-builder"
+   ],
+   "report_sha256": "59ed48b50c308a61bb00a3ea9fda6af867c993b88ab75cb85a9d5060741275a0",
+   "findings_repo": "code-423n4/2022-09-nouns-builder-findings",
+   "findings_commit": "a8afbb818552f13bc8a0738cbd767bc140bef286",
+   "findings_report_date": "2022-11-03",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2022-09-nouns-builder.md",
+    "sha256": "a86bebe0d4263ce462df13219e81c000d2834f9bfced4120b4563e5fe9e7749a",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2022-09-nouns-builder-findings/a8afbb818552f13bc8a0738cbd767bc140bef286/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2022-12-pooltogether": {
+   "repo": "https://github.com/code-423n4/2022-12-pooltogether",
+   "commit": "3083f8e759c54719ee1f99c4a978f5b4b0649883",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2022-12-pooltogether"
+   ],
+   "report_sha256": "e6ee885b83ef0b1d36e787d9bd43c2e2653b3284a79545d8984e74e4c4169396",
+   "findings_repo": "code-423n4/2022-12-pooltogether-findings",
+   "findings_commit": "7b5759b0ab6b2e24d64539f8d692e9f8831e6b6a",
+   "findings_report_date": "2023-01-20",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2022-12-pooltogether.md",
+    "sha256": "255103c68f8e73ffebd2b932549a70c51c3e1fa0ee44ee539338c520dce1abc0",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2022-12-pooltogether-findings/7b5759b0ab6b2e24d64539f8d692e9f8831e6b6a/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-01-ondo": {
+   "repo": "https://github.com/code-423n4/2023-01-ondo",
+   "commit": "b4e1afc2816e35df66e1f53aef57637350b7ff5e",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-01-ondo"
+   ],
+   "report_sha256": "0bf168c4f555402132b6f5546eacfc0c763a35e18dde694d82e42cf99d0985c7",
+   "findings_repo": "code-423n4/2023-01-ondo-findings",
+   "findings_commit": "c20cf640328b76a787828b15c5021b53d004beca",
+   "findings_report_date": "2023-02-28",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-01-ondo.md",
+    "sha256": "904a6eb3533e45bda2310e9a047c26a63625fcd11a79e3f3581a42a81cc24dbe",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-01-ondo-findings/c20cf640328b76a787828b15c5021b53d004beca/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-01-numoen": {
+   "repo": "https://github.com/code-423n4/2023-01-numoen",
+   "commit": "002df14f9a90cdfd3f730b1c5686b0b381225068",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-01-numoen"
+   ],
+   "report_sha256": "9724d311f8ecb7a49cd55d6363bed499ca58c22517983e07a37ed74f576e073e",
+   "findings_repo": "code-423n4/2023-01-numoen-findings",
+   "findings_commit": "d586deacef1716bfb5f42ddbdc264938db3b68cb",
+   "findings_report_date": "2023-03-03",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-01-numoen.md",
+    "sha256": "efc033df17f55cdae588f05a5e486ddd2d66465a7edb60bc4d82f0ee1c0ac6a0",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-01-numoen-findings/d586deacef1716bfb5f42ddbdc264938db3b68cb/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-01-drips": {
+   "repo": "https://github.com/code-423n4/2023-01-drips",
+   "commit": "ef339a7025eadaae77c6497d7c6d23bba3b36891",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-01-drips"
+   ],
+   "report_sha256": "85da5533d8053ad5a17fe4043c9ace0d237a294a02282028ce1d2a0313cb0f90",
+   "findings_repo": "code-423n4/2023-01-drips-findings",
+   "findings_commit": "9f23763ddfd3c00689b6f4243619167e1abce616",
+   "findings_report_date": "2023-03-10",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-01-drips.md",
+    "sha256": "44938517c7ecf96412929c70298db11d568069d7ec5a60aa8453744159df6c66",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-01-drips-findings/9f23763ddfd3c00689b6f4243619167e1abce616/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-01-timeswap": {
+   "repo": "https://github.com/code-423n4/2023-01-timeswap",
+   "commit": "b2bf1d08cdf28b67d8fbb7d7e44c0372061c8820",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-01-timeswap"
+   ],
+   "report_sha256": "6a0893f3ac1dc563a3f687d1f953bea73e2bbd176f16d6165ab5ca46ef6b9243",
+   "findings_repo": "code-423n4/2023-01-timeswap-findings",
+   "findings_commit": "82935b579481c98560c6c0308a84683f9c14105f",
+   "findings_report_date": "2023-03-10",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-01-timeswap.md",
+    "sha256": "04eb2beed59127f2a2cb49e5323c1eed8de8d7c9cb65bf491371977cfbe7ae47",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-01-timeswap-findings/82935b579481c98560c6c0308a84683f9c14105f/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-01-opensea": {
+   "repo": "https://github.com/code-423n4/2023-01-opensea",
+   "commit": "89cac588aefd5b9cdc77cf0c275101e3a492451c",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-01-opensea"
+   ],
+   "report_sha256": "0151422bf65d516cd849fdbc4b8f94f413d13c7b1a99e26c0ca5930fd67d35bb",
+   "findings_repo": "code-423n4/2023-01-opensea-findings",
+   "findings_commit": "982332aa29adb0c3be21507059e6f87c8cd4f3e4",
+   "findings_report_date": "2023-03-21",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-01-opensea.md",
+    "sha256": "f4188d706a9df991d9941bc191a220d45aee9d97061ac3beb4d69b4d7cdae653",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-01-opensea-findings/982332aa29adb0c3be21507059e6f87c8cd4f3e4/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-01-canto-identity": {
+   "repo": "https://github.com/code-423n4/2023-01-canto-identity",
+   "commit": "22ef48f16c96b11d58471b5271add2c58b8fd21e",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-01-canto-identity"
+   ],
+   "report_sha256": "c2d583d5abb01fa5d68f20208c3f8da6f8ff3029bbe56c9470c7b80e5a6e75c9",
+   "findings_repo": "code-423n4/2023-01-canto-identity-findings",
+   "findings_commit": "80cfaa5b6558be1338f9cc53cb47fe3d7fe3e35a",
+   "findings_report_date": "2023-04-06",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-01-canto-identity.md",
+    "sha256": "553246562ee5b46afba5b96c396fd0dfcc2512e2cfdadf8e44837ea7946bd5f4",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-01-canto-identity-findings/80cfaa5b6558be1338f9cc53cb47fe3d7fe3e35a/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-03-neotokyo": {
+   "repo": "https://github.com/code-423n4/2023-03-neotokyo",
+   "commit": "8349427f4346ade378dcacd4c131b9cfa7eadaf7",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-03-neotokyo"
+   ],
+   "report_sha256": "96c4c73208eb1acf29d36cb51ec1b5042f308bd9b45843f046ee6ff8dcc558e7",
+   "findings_repo": "code-423n4/2023-03-neotokyo-findings",
+   "findings_commit": "95032586df4eeef06a231d2f3b35638f96a6e043",
+   "findings_report_date": "2023-04-11",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-03-neotokyo.md",
+    "sha256": "3e59a55b79f4da67c1c365a030e34fd20b4a644d450bc97002aa8431544e2edd",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-03-neotokyo-findings/95032586df4eeef06a231d2f3b35638f96a6e043/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-03-mute": {
+   "repo": "https://github.com/code-423n4/2023-03-mute",
+   "commit": "4d8b13add2907b17ac14627cfa04e0c3cc9a2bed",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-03-mute"
+   ],
+   "report_sha256": "1896a89bbfc24dc4695bf66a0746efe2d7edc32d8fb0c88240b8633f121c70b7",
+   "findings_repo": "code-423n4/2023-03-mute-findings",
+   "findings_commit": "89a54edea5ac688a72949da354a1c0238bc7a6e5",
+   "findings_report_date": "2023-04-27",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-03-mute.md",
+    "sha256": "614987f3379618835ae7a13278a676dc2d7c9013f2950ed875afed3d77b93b8c",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-03-mute-findings/89a54edea5ac688a72949da354a1c0238bc7a6e5/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-02-malt": {
+   "repo": "https://github.com/code-423n4/2023-02-malt",
+   "commit": "63d0e77070886d1c8b4ca6241a747656a0441175",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-02-malt"
+   ],
+   "report_sha256": "f7e49b7a758e1a89b3f93149ab2755e3d2e92cda85146c274bfe02649a3877a6",
+   "findings_repo": "code-423n4/2023-02-malt-findings",
+   "findings_commit": "066cc7335987bf3b629dc6786b0fb46851974022",
+   "findings_report_date": "2023-05-01",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-02-malt.md",
+    "sha256": "678eddd4be5a82b9fa2759148f195d0844d5191ad74e14d6fa217ae6b308c7c7",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-02-malt-findings/066cc7335987bf3b629dc6786b0fb46851974022/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2022-12-Stealth-Project": {
+   "repo": "https://github.com/code-423n4/2022-12-Stealth-Project",
+   "commit": null,
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "inferred from the code-423n4 contest slug (Scope does not name it)",
+   "scope_repos": [],
+   "report_sha256": "2b64767d6b9163b70813452b0a41fefa4bf3a1c78fe57506db7b1fcbdc033b44",
+   "findings_repo": "code-423n4/2022-12-Stealth-Project-findings",
+   "findings_commit": "96537d823c0a2cf26112d7de9d3ed1d006af5225",
+   "findings_report_date": "2023-05-03",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2022-12-Stealth-Project.md",
+    "sha256": "3854882a3b0ed78ab3423bf72a6662a34bc7fef53201758608486ff2be4bbc49",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2022-12-Stealth-Project-findings/96537d823c0a2cf26112d7de9d3ed1d006af5225/README.md"
+   },
+   "status": "missing",
+   "reason": "git ls-remote returns no HEAD: the code-423n4 sponsor repo is not publicly reachable (removed or private)"
+  },
+  "2023-03-canto-identity": {
+   "repo": "https://github.com/code-423n4/2023-03-canto-identity",
+   "commit": "ac1a49e462c53f3ff325dcd2335a8cec7e786502",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-03-canto-identity"
+   ],
+   "report_sha256": "c0fe9dd2c5ab1d5ce34e6bd35319bd20c23e99773bb6771c30e69d45c48b72cb",
+   "findings_repo": "code-423n4/2023-03-canto-identity-findings",
+   "findings_commit": "d60cabde25e54a6924b8f23e024d754ee2342fc8",
+   "findings_report_date": "2023-05-09",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-03-canto-identity.md",
+    "sha256": "26293d7e9efc6fc7043336d6da7b3877854a99decd4e0e8aa33d65ddcfa4e967",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-03-canto-identity-findings/d60cabde25e54a6924b8f23e024d754ee2342fc8/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2022-11-ens": {
+   "repo": "https://github.com/code-423n4/2022-11-ens",
+   "commit": "7d6ade301b7c721398aecf8f2c413917599e4b50",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2022-11-ens"
+   ],
+   "report_sha256": "fd590a43cfa86291e2ff3d4a36af519b5b481316c611e7b1c2ef865087de0011",
+   "findings_repo": "code-423n4/2022-11-ens-findings",
+   "findings_commit": "744f97a1a954f8a6c2a13d273f38c3ddb688454c",
+   "findings_report_date": "2023-05-26",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2022-11-ens.md",
+    "sha256": "cc47bb421892bb396c2587b0dfa666457b73bdf4cda05bd574cfb78ea50802f4",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2022-11-ens-findings/744f97a1a954f8a6c2a13d273f38c3ddb688454c/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-04-frankencoin": {
+   "repo": "https://github.com/code-423n4/2023-04-frankencoin",
+   "commit": "0761a287999fa3efac5c9fa9b70fcef5eeecc213",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-04-frankencoin"
+   ],
+   "report_sha256": "261e3465598046530087f9acf556946282cd04c109b5f722fc61cd5ccb3734f5",
+   "findings_repo": "code-423n4/2023-04-frankencoin-findings",
+   "findings_commit": "df70ee616c774ecd7a381e1555df4dcf47589690",
+   "findings_report_date": "2023-06-09",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-04-frankencoin.md",
+    "sha256": "6888eaff75057aa2eeab84e9950ccceee81cdad4dde345384c7d12441e573385",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-04-frankencoin-findings/df70ee616c774ecd7a381e1555df4dcf47589690/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-03-zksync": {
+   "repo": "https://github.com/code-423n4/2023-03-zksync",
+   "commit": "0aae1fb4065d39d955e727dd5c617ff6ab0a7eff",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-03-zksync"
+   ],
+   "report_sha256": "c47ae2523d2aec3f41d044605976cfccc051313f3cade0313fc2fc238bdcc0b4",
+   "findings_repo": "code-423n4/2023-03-zksync-findings",
+   "findings_commit": "35e96810f9d62abd76096170c885ff0b5aa4be0e",
+   "findings_report_date": "2023-06-14",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-03-zksync.md",
+    "sha256": "9c60062c665de4dde4c72af47578974f3e5b2a3aad22843fca2bd23bee78e169",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-03-zksync-findings/35e96810f9d62abd76096170c885ff0b5aa4be0e/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-02-kuma": {
+   "repo": "https://github.com/code-423n4/2023-02-kuma",
+   "commit": "22fd56b3f0df71714cb71f1ce2585f1c4dd21d64",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-02-kuma"
+   ],
+   "report_sha256": "217434dbebbd264857ce5b9c6bd42f483e051955f3db8af5aa927198af4d4e04",
+   "findings_repo": "code-423n4/2023-02-kuma-findings",
+   "findings_commit": "71b3cf462012012416dd6ee4f2aa1efb09a724c6",
+   "findings_report_date": "2023-06-23",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-02-kuma.md",
+    "sha256": "c6af1fc531b2ded88e6c6d897d2d97c9a7a9c234a23402e801a3f47f340cfaa8",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-02-kuma-findings/71b3cf462012012416dd6ee4f2aa1efb09a724c6/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-04-party": {
+   "repo": "https://github.com/code-423n4/2023-04-party",
+   "commit": "440aafacb0f15d037594cebc85fd471729bcb6d9",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-04-party"
+   ],
+   "report_sha256": "523483ab646ad4deffe2e1966a4af0f1b238e0d70e0dc0798063c6bc27ed779e",
+   "findings_repo": "code-423n4/2023-04-party-findings",
+   "findings_commit": "04f7ff6417d62b25d258eebf0261fef9f9df95a0",
+   "findings_report_date": "2023-06-23",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-04-party.md",
+    "sha256": "3c19d86a96717863c901ee2d30aed1bf4f96df2431a08884340218e5ef3bc628",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-04-party-findings/04f7ff6417d62b25d258eebf0261fef9f9df95a0/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-05-party": {
+   "repo": "https://github.com/code-423n4/2023-05-party",
+   "commit": "f6f80dde81d86e397ba4f3dedb561e23d58ec884",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-05-party"
+   ],
+   "report_sha256": "599343b264e956b9a2f75eb527f4fe5aaef60ca66bea9b51e1d5b4d096e31bff",
+   "findings_repo": "code-423n4/2023-05-party-findings",
+   "findings_commit": "5c8fffd1c1987f219a5e0bdd80dc20a435f1983b",
+   "findings_report_date": "2023-06-23",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-05-party.md",
+    "sha256": "5cc6a7d9a223827135cffb0cdaa99099f560a57bac93f809ea2e1117167d803d",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-05-party-findings/5c8fffd1c1987f219a5e0bdd80dc20a435f1983b/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-04-eigenlayer": {
+   "repo": "https://github.com/code-423n4/2023-04-eigenlayer",
+   "commit": "b9bb7f42a1f77ba2dcf9115935fa002e96547bd9",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-04-eigenlayer"
+   ],
+   "report_sha256": "fbc58b5dc2716a9ace62b958c8431906efba4156431f9f05aa679502f0e7abb9",
+   "findings_repo": "code-423n4/2023-04-eigenlayer-findings",
+   "findings_commit": "cb13576fd42c380873eae040ccec0e050ad5c0c9",
+   "findings_report_date": "2023-07-06",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-04-eigenlayer.md",
+    "sha256": "ec51a3efa47a8b6f3d9bf42ef340bb3a68cb21b5a242edecacc61e7fc3345ebb",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-04-eigenlayer-findings/cb13576fd42c380873eae040ccec0e050ad5c0c9/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-06-stader": {
+   "repo": "https://github.com/code-423n4/2023-06-stader",
+   "commit": "86c27eb6b1fb6e0928aaa906614a2d1c6e7543e3",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-06-stader"
+   ],
+   "report_sha256": "4c7ed432b4afec6bd37d53a870dda44f6e0897408a8cc9431ff38c5d580a6e41",
+   "findings_repo": "code-423n4/2023-06-stader-findings",
+   "findings_commit": "a46e9e439cd8664e06f942050857bfe4a776c04a",
+   "findings_report_date": "2023-07-19",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-06-stader.md",
+    "sha256": "965c45d93328efc753a224324e9a1cf299ca70156006f8d5ee93db330487f8f8",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-06-stader-findings/a46e9e439cd8664e06f942050857bfe4a776c04a/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-05-juicebox": {
+   "repo": "https://github.com/code-423n4/2023-05-juicebox",
+   "commit": "d4db5c245008deb10f3c74fbeab0a184e35a08f3",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-05-juicebox"
+   ],
+   "report_sha256": "1287f19b8b7d35813494719c3b696efa19b1ceb0caf720e6f3e95c060f04a167",
+   "findings_repo": "code-423n4/2023-05-juicebox-findings",
+   "findings_commit": "669539a23493238b8a9cea3553c63ee0c86e0c42",
+   "findings_report_date": "2023-07-26",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-05-juicebox.md",
+    "sha256": "0150d80a8a0aaea0b4c58156aca8979db58388de3593bea218909f83e572ef69",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-05-juicebox-findings/669539a23493238b8a9cea3553c63ee0c86e0c42/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-06-llama": {
+   "repo": "https://github.com/code-423n4/2023-06-llama",
+   "commit": "9e9d95d11b263e4d2c77da7e8b9f2b7e7d558542",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-06-llama"
+   ],
+   "report_sha256": "2927f94ad2989852b523a41c51e248455231225c2dc86988d5d07e4367eaf2c7",
+   "findings_repo": "code-423n4/2023-06-llama-findings",
+   "findings_commit": "19f12df3ef0812c6d9fe0bb1b4a32a69ae9018b0",
+   "findings_report_date": "2023-07-26",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-06-llama.md",
+    "sha256": "33da392d0f6e2cb930940d8832c18606d65ddc3b99ad8274757fedadbf374e3d",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-06-llama-findings/19f12df3ef0812c6d9fe0bb1b4a32a69ae9018b0/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-07-nounsdao": {
+   "repo": "https://github.com/code-423n4/2023-07-nounsdao",
+   "commit": "30adc9683dd57c9f8aee358c0d8b48fb9cbc3347",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-07-nounsdao"
+   ],
+   "report_sha256": "3d184196326db4b2ec649614669c2626340ac1dc471b8165c5cf02497bb161fd",
+   "findings_repo": "code-423n4/2023-07-nounsdao-findings",
+   "findings_commit": "6eddc3a6247d9a10fc4aa8f8a883c1ea76153fc5",
+   "findings_report_date": "2023-07-31",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-07-nounsdao.md",
+    "sha256": "f004d73b3e7746383900bb9f84f4b764745f6022258715f2a7a98cb55bcb83fe",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-07-nounsdao-findings/6eddc3a6247d9a10fc4aa8f8a883c1ea76153fc5/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-03-polynomial": {
+   "repo": "https://github.com/code-423n4/2023-03-polynomial",
+   "commit": null,
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "inferred from the code-423n4 contest slug (Scope does not name it)",
+   "scope_repos": [],
+   "report_sha256": "2a70e6d5fce298f0f80f6d1d443af3cc4ad9e2d5a7835a4b70428ee15fbd3122",
+   "findings_repo": "code-423n4/2023-03-polynomial-findings",
+   "findings_commit": "c255b5ffed6d45afa70f30afdd950d0139e13928",
+   "findings_report_date": "2023-08-01",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-03-polynomial.md",
+    "sha256": "0abdeeb5c636d3060795eb4597175d4343747cffb7463ea86118858d3ebd0277",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-03-polynomial-findings/c255b5ffed6d45afa70f30afdd950d0139e13928/README.md"
+   },
+   "status": "missing",
+   "reason": "git ls-remote returns no HEAD: the code-423n4 sponsor repo is not publicly reachable (removed or private)"
+  },
+  "2023-05-ambire": {
+   "repo": "https://github.com/code-423n4/2023-05-ambire",
+   "commit": "418f89a8c097f58eb361b7a534037141b7899404",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-05-ambire"
+   ],
+   "report_sha256": "da3d7e8c828be00a7eac73de17794f28c40bf15703daf06cdd8ec864b070d7d6",
+   "findings_repo": "code-423n4/2023-05-ambire-findings",
+   "findings_commit": "78a405d29cd8460fbfb37fabb657242078acaf6b",
+   "findings_report_date": "2023-08-04",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-05-ambire.md",
+    "sha256": "c570b7bed35eba44557f67449b796cf92287adf62ef4c3b1c8844e0ab8165f5e",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-05-ambire-findings/78a405d29cd8460fbfb37fabb657242078acaf6b/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-05-particle": {
+   "repo": "https://github.com/code-423n4/2023-05-particle",
+   "commit": null,
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-05-particle"
+   ],
+   "report_sha256": "33ccf293d1d454a322e27f1f0075ab96f80da455f8fb6a5352a69febf77684fc",
+   "findings_repo": "code-423n4/2023-05-particle-findings",
+   "findings_commit": "a7193463c1de11c4927536532a4e6f037b4d35ec",
+   "findings_report_date": "2023-08-07",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-05-particle.md",
+    "sha256": "d6d35366dea3ede965b573e1552d2f9ef0ffc0b64f960ac7c5206108285c2f75",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-05-particle-findings/a7193463c1de11c4927536532a4e6f037b4d35ec/README.md"
+   },
+   "status": "missing",
+   "reason": "git ls-remote returns no HEAD: the code-423n4 sponsor repo is not publicly reachable (removed or private)"
+  },
+  "2023-06-angle": {
+   "repo": "https://github.com/code-423n4/2023-06-angle",
+   "commit": "42cb36da553835ae2d4be8211e9a651f1973fc3b",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-06-angle"
+   ],
+   "report_sha256": "b9aea3e18a87dce02ec177b77a90eae1dfa7adba3931fbf0055143fdbe8dd3c9",
+   "findings_repo": "code-423n4/2023-06-angle-findings",
+   "findings_commit": "ecb393d7187f0412875527c7fed753f697b91c4e",
+   "findings_report_date": "2023-08-09",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-06-angle.md",
+    "sha256": "cff58695c230f01978ec6cada9aa7306c6bfb11c4d531f74e4b612370eb72d8d",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-06-angle-findings/ecb393d7187f0412875527c7fed753f697b91c4e/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-05-base": {
+   "repo": "https://github.com/code-423n4/2023-05-base",
+   "commit": "1b9c660a9efa204f199c8ba27c2dca013d49d6b6",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-05-base"
+   ],
+   "report_sha256": "f6ac0f58c486fd42c6af61a660dcf9ace9434dbf0511d5659c170efb01ebfae6",
+   "findings_repo": "code-423n4/2023-05-base-findings",
+   "findings_commit": "b6571ac888d49a21d31b46c3d8815adf86a4b04a",
+   "findings_report_date": "2023-08-10",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-05-base.md",
+    "sha256": "c12b32d2a6fd15a9e57ab77b766e12d2a119c9c8dff8fc5da4a074e0ada6261a",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-05-base-findings/b6571ac888d49a21d31b46c3d8815adf86a4b04a/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-05-xeth": {
+   "repo": "https://github.com/code-423n4/2023-05-xeth",
+   "commit": "d86fe0a9959c2b43c62716240d981ae95224e49e",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-05-xeth"
+   ],
+   "report_sha256": "92ca9e899fd993a875578bae0cc194dd9914425e96786c17aee5a01f4c589af0",
+   "findings_repo": "code-423n4/2023-05-xeth-findings",
+   "findings_commit": "368c8265ff7944bf9aac33586ad5248d38aee4f1",
+   "findings_report_date": "2023-08-15",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-05-xeth.md",
+    "sha256": "4b63cd395ebd35140df3b6a9d6cd2576f592ed698450c4ad0f0d3a1123946e13",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-05-xeth-findings/368c8265ff7944bf9aac33586ad5248d38aee4f1/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-04-ens": {
+   "repo": "https://github.com/code-423n4/2023-04-ens",
+   "commit": "5ee5390e36d51413b2c8c70727f3cec5df900e26",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-04-ens"
+   ],
+   "report_sha256": "b1551b8dc96bd248efbd53cc5ffef997ad7f5d58ddded819c5075bfb81fbb114",
+   "findings_repo": "code-423n4/2023-04-ens-findings",
+   "findings_commit": "676f575d274470151fe24992b51c8051f5a0afe6",
+   "findings_report_date": "2023-08-31",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-04-ens.md",
+    "sha256": "e14bec3db3908057b01f9b06c2d5c412e183ab439a96d90b54947e41aa0cf425",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-04-ens-findings/676f575d274470151fe24992b51c8051f5a0afe6/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-08-pooltogether": {
+   "repo": "https://github.com/code-423n4/2023-08-pooltogether",
+   "commit": "219c0a5875439b9039a30e7acbdd9adfd08d9b17",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-08-pooltogether"
+   ],
+   "report_sha256": "2d053c7befb4cb8ce6709ef75851e4a05fa9aa6994c10ff7002542812df72c3f",
+   "findings_repo": "code-423n4/2023-08-pooltogether-findings",
+   "findings_commit": "ce185045aa6966a3054b169369aade39c8148ed5",
+   "findings_report_date": "2023-09-07",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-08-pooltogether.md",
+    "sha256": "8d3713c1a442b2cc22ecbd058fbafee423288ba941a3e680e0379e1d2a2aaf34",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-08-pooltogether-findings/ce185045aa6966a3054b169369aade39c8148ed5/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-06-lukso": {
+   "repo": "https://github.com/code-423n4/2023-06-lukso",
+   "commit": "951477200cae662d548326448dcc5f809ecb4875",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-06-lukso"
+   ],
+   "report_sha256": "be781177aca6d67c0bd9c3c3999ffe58f678d484f04b352a6db6959b7f9231fa",
+   "findings_repo": "code-423n4/2023-06-lukso-findings",
+   "findings_commit": "89075bbc5698af41b3b9aeb30c28ae09ba7fc147",
+   "findings_report_date": "2023-09-18",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-06-lukso.md",
+    "sha256": "bac884fb45bd21cf2f602c20ba49bacbe23ed9f67b42fca7d62949309ba9dd69",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-06-lukso-findings/89075bbc5698af41b3b9aeb30c28ae09ba7fc147/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-08-arbitrum": {
+   "repo": "https://github.com/code-423n4/2023-08-arbitrum",
+   "commit": "51c63118192d818ea8a192ba44cd2c5cfb286831",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-08-arbitrum"
+   ],
+   "report_sha256": "725aa75c41a1eb5bc3177e00d2dff6aab104b6e2cb4a5e92411070d9cfbd4b77",
+   "findings_repo": "code-423n4/2023-08-arbitrum-findings",
+   "findings_commit": "1242399740566462afcfb391e04fcf3aaf2101d1",
+   "findings_report_date": "2023-09-20",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-08-arbitrum.md",
+    "sha256": "ec3f3590cce0d6ffe9fa48777076260852d8a7fee415e4be870b1770cd9f192a",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-08-arbitrum-findings/1242399740566462afcfb391e04fcf3aaf2101d1/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-07-pooltogether": {
+   "repo": "https://github.com/code-423n4/2023-07-pooltogether",
+   "commit": "e5aac05184d05c97f6cb9a18a46f612107e94622",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-07-pooltogether"
+   ],
+   "report_sha256": "02f7c040f0a242b527d1b75a6b7f0f6918f6e1f7d0255c08d854974fe81d8e36",
+   "findings_repo": "code-423n4/2023-07-pooltogether-findings",
+   "findings_commit": "ec193297735caa64d472a6d89ef7d77a7cb6196c",
+   "findings_report_date": "2023-09-27",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-07-pooltogether.md",
+    "sha256": "2034635bc023122c9259bd6d61acf9e852bc1d7c56ba6ee0d3884309da23d6f3",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-07-pooltogether-findings/ec193297735caa64d472a6d89ef7d77a7cb6196c/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-06-canto": {
+   "repo": "https://github.com/code-423n4/2023-06-canto",
+   "commit": "e662db320d4328a6bb81d963524bc7d33e9221e4",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-06-canto"
+   ],
+   "report_sha256": "c64eb48c3ab86d64d7f686c668ec646481e1f8e2dbced549e47f5bb32fe204b2",
+   "findings_repo": "code-423n4/2023-06-canto-findings",
+   "findings_commit": "a85a277322ef870ba33cdea95c1cdb6397d06577",
+   "findings_report_date": "2023-09-29",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-06-canto.md",
+    "sha256": "75c5d06fe2d61403934315ae9d80b28a8e03ccd5348efe6f659c80e15824d202",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-06-canto-findings/a85a277322ef870ba33cdea95c1cdb6397d06577/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-07-moonwell": {
+   "repo": "https://github.com/code-423n4/2023-07-moonwell",
+   "commit": "5de0010edea8cc2ae33e81c23e4e681214ca7e80",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-07-moonwell"
+   ],
+   "report_sha256": "419308f90acddf2386402893ce55b59e82f4c31484fb79676151be2c732cb15e",
+   "findings_repo": "code-423n4/2023-07-moonwell-findings",
+   "findings_commit": "664c57a54571a8af0c765c39009515f8321bc695",
+   "findings_report_date": "2023-10-04",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-07-moonwell.md",
+    "sha256": "68d926fc2c6bfc94d06594633d89c55e7a0d9cee9e31bcd23827ed3115f1e225",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-07-moonwell-findings/664c57a54571a8af0c765c39009515f8321bc695/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-08-shell": {
+   "repo": "https://github.com/code-423n4/2023-08-shell",
+   "commit": "5a996367cc9e9a3920577ecab6183e7c9991ee7c",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-08-shell"
+   ],
+   "report_sha256": "c50cf0db2c693f9c975284492d193383c33c73fa2168b202207c0ae1f8fc19ec",
+   "findings_repo": "code-423n4/2023-08-shell-findings",
+   "findings_commit": "bb4327c4f4fcf1998c9aab5fab1a53a3d4753616",
+   "findings_report_date": "2023-10-04",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-08-shell.md",
+    "sha256": "1a63738ea0c3d9df41357d4520ddcc22ca9267ec9137c04c46d5bc547f71c184",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-08-shell-findings/bb4327c4f4fcf1998c9aab5fab1a53a3d4753616/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-07-basin": {
+   "repo": "https://github.com/code-423n4/2023-07-basin",
+   "commit": "73f7133b380ea027048f0b9aaa284b14f3ce43b4",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-07-basin"
+   ],
+   "report_sha256": "f574b07389d2afb654fbbf3d1613bfc594c680ed830bac3a62bfb6381e4c3c6b",
+   "findings_repo": "code-423n4/2023-07-basin-findings",
+   "findings_commit": "55abdd66057ecb372b7efb669c8c2522095bc725",
+   "findings_report_date": "2023-10-05",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-07-basin.md",
+    "sha256": "9306fd4543c088ef4cd7f9b43047e184ebe50cb439733519901499eacc6cd87a",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-07-basin-findings/55abdd66057ecb372b7efb669c8c2522095bc725/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-08-verwa": {
+   "repo": "https://github.com/code-423n4/2023-08-verwa",
+   "commit": "59add54eab86f23b321e1d31eb2c7fb907eeb052",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-08-verwa"
+   ],
+   "report_sha256": "86a41f91d58c34d8a4483a796d0ed18234b3b5682288134dfbd7477f7ddd1979",
+   "findings_repo": "code-423n4/2023-08-verwa-findings",
+   "findings_commit": "68d2753abfe77017a4da583a0cf15f8a2180f494",
+   "findings_report_date": "2023-10-11",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-08-verwa.md",
+    "sha256": "86977ac7d7130a27ebc55542d5c302224c13155b46a7689990f67c5dc138a486",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-08-verwa-findings/68d2753abfe77017a4da583a0cf15f8a2180f494/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-08-livepeer": {
+   "repo": "https://github.com/code-423n4/2023-08-livepeer",
+   "commit": "7e099534acf50504fb279b3987c10224f3115954",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-08-livepeer"
+   ],
+   "report_sha256": "0b51a29bfda6b3948a1a7607fafc65a7baf5e47e287618d422eed972b261d9d6",
+   "findings_repo": "code-423n4/2023-08-livepeer-findings",
+   "findings_commit": "f1317e38a91b77b7567fd713c375400f02bb4650",
+   "findings_report_date": "2023-10-17",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-08-livepeer.md",
+    "sha256": "d7fcd4b313740540f2ee4ec04cf466f6ed10f8f7720d921b39eca622d2e27dfe",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-08-livepeer-findings/f1317e38a91b77b7567fd713c375400f02bb4650/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-06-reserve": {
+   "repo": "https://github.com/code-423n4/2023-06-reserve",
+   "commit": "6c609fe60acd5196b836f83cd734626df76a685c",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-06-reserve"
+   ],
+   "report_sha256": "32cf714877dd013c07c9414bab112c62b264810172f8280328b6741e169143a4",
+   "findings_repo": "code-423n4/2023-06-reserve-findings",
+   "findings_commit": "ea9fa52cabe8d7df596c8c472f51ebc6ce819f76",
+   "findings_report_date": "2023-11-13",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-06-reserve.md",
+    "sha256": "fee2eac877c2ff21b34f00dd38441499395666ffd0308453ed397a419d0ff4d8",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-06-reserve-findings/ea9fa52cabe8d7df596c8c472f51ebc6ce819f76/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-07-reserve": {
+   "repo": "https://github.com/code-423n4/2023-07-reserve",
+   "commit": "14a4c8f0dc812f9dc071f35b80d628e59f9ad909",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-07-reserve"
+   ],
+   "report_sha256": "c2c6d8c9c3b235c3edc820a3fa6c36121c3cd5f1f5cc4465b9c98a7541c59c65",
+   "findings_repo": "code-423n4/2023-07-reserve-findings",
+   "findings_commit": "7bb18b95f1645ae92f2a17d7c6a5c775e498af7b",
+   "findings_report_date": "2023-11-13",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-07-reserve.md",
+    "sha256": "a442374669bcc545be93e84d66b6d9407d1de41ff5f2dfab878ef801fcbef38d",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-07-reserve-findings/7bb18b95f1645ae92f2a17d7c6a5c775e498af7b/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-09-delegate": {
+   "repo": "https://github.com/code-423n4/2023-09-delegate",
+   "commit": "ec7af9ef9fb725f6b43832b06200dd7d007a879e",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-09-delegate"
+   ],
+   "report_sha256": "35ea25dfcd5b8d4cb87fe6cb68f8f4e9143ac83a8420ad18bebf9f474e4d9b82",
+   "findings_repo": "code-423n4/2023-09-delegate-findings",
+   "findings_commit": "d221dfc8f274e277dc141c7e7b393f1916504e9a",
+   "findings_report_date": "2023-11-15",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-09-delegate.md",
+    "sha256": "82da7dc35f15caad81d3f04d35c97168b4f4029c23f38fafef5bfc6196701da5",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-09-delegate-findings/d221dfc8f274e277dc141c7e7b393f1916504e9a/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-10-canto": {
+   "repo": "https://github.com/code-423n4/2023-10-canto",
+   "commit": "590f3239e0306a4162b15b6ff133931fd0e1fd6a",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-10-canto"
+   ],
+   "report_sha256": "84f3beefec2708dbb3908ef3ac3403aba41826131e1262add48062fd3a204079",
+   "findings_repo": "code-423n4/2023-10-canto-findings",
+   "findings_commit": "004f6223da0733ebdd07d3f72af42a6d1c46facf",
+   "findings_report_date": "2023-11-20",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-10-canto.md",
+    "sha256": "7368fcacab606925c73457448285d1c07005e5b127d3f489f881553a68aefb25",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-10-canto-findings/004f6223da0733ebdd07d3f72af42a6d1c46facf/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-10-brahma": {
+   "repo": "https://github.com/code-423n4/2023-10-brahma",
+   "commit": "4cfcbb0e7f71ec9f23485663c63302a785b5f5f0",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-10-brahma"
+   ],
+   "report_sha256": "456b5336417615d92355db6b4459268e77af7514442e9dc0e55edb283d2dfed2",
+   "findings_repo": "code-423n4/2023-10-brahma-findings",
+   "findings_commit": "de5a3ec88b2456b101673fb7deb85d623edee3fd",
+   "findings_report_date": "2023-11-21",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-10-brahma.md",
+    "sha256": "9904897bbe14c3d086497e66379dda4c3e6852a26900fb9e1f03d7f392f4a467",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-10-brahma-findings/de5a3ec88b2456b101673fb7deb85d623edee3fd/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-11-betafinance": {
+   "repo": "https://github.com/code-423n4/2023-11-betafinance",
+   "commit": null,
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/Picodes/4naly3er",
+    "https://github.com/code-423n4/2023-11-betafinance"
+   ],
+   "report_sha256": "ce6cc8cc7096bfec6623d99676a99f4c11e55e9f2bbc1412d1223f3ec6788a6b",
+   "findings_repo": "code-423n4/2023-11-betafinance-findings",
+   "findings_commit": "84fefe2366e6b801840f7f37b1a29e39fa58b77e",
+   "findings_report_date": "2023-12-06",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-11-betafinance.md",
+    "sha256": "425c12c94b0090a5c4e3626ed9b4bd318749dbf8caab47ee53b4623cb2fad58b",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-11-betafinance-findings/84fefe2366e6b801840f7f37b1a29e39fa58b77e/README.md"
+   },
+   "status": "missing",
+   "reason": "git ls-remote returns no HEAD: the code-423n4 sponsor repo is not publicly reachable (removed or private)"
+  },
+  "2023-07-lens": {
+   "repo": "https://github.com/code-423n4/2023-07-lens",
+   "commit": "ca1c693f56cf6ac1f67bbccd524b80f3341835af",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-07-lens"
+   ],
+   "report_sha256": "9c1e9e7a1565248faa45e9b9f840bab88e8620f023d50201c8eed5c3c4800c6f",
+   "findings_repo": "code-423n4/2023-07-lens-findings",
+   "findings_commit": "8c6502f00391825a311f301f3877e9a8ef773bd3",
+   "findings_report_date": "2023-12-11",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-07-lens.md",
+    "sha256": "9bf2e3751711b4f264c1d1889de44353223baab49fb3400f3918552002c2e867",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-07-lens-findings/8c6502f00391825a311f301f3877e9a8ef773bd3/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-03-aragon": {
+   "repo": "https://github.com/code-423n4/2023-03-aragon",
+   "commit": "c44637bf30998db3610faca0d8771237bed67c2b",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-03-aragon"
+   ],
+   "report_sha256": "eab4e46533c41d35de6bafaa6bedb79764431b921a21f60ec2d434aec04b2b2d",
+   "findings_repo": "code-423n4/2023-03-aragon-findings",
+   "findings_commit": "3ecf076b9afa134da25f97a1d684d127bda2c372",
+   "findings_report_date": "2023-12-12",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-03-aragon.md",
+    "sha256": "231324d4a0df4df4142966f95440198494ac29b2f8929990c9c96055b7165945",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-03-aragon-findings/3ecf076b9afa134da25f97a1d684d127bda2c372/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-10-opendollar": {
+   "repo": "https://github.com/code-423n4/2023-10-opendollar",
+   "commit": "46335eba9be325cba291b44a6567e3f3d000891d",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-10-opendollar"
+   ],
+   "report_sha256": "7071b9330e83f1cd9fbead50ec5ee799fceda79286100ba899da47a372c40352",
+   "findings_repo": "code-423n4/2023-10-opendollar-findings",
+   "findings_commit": "988685b819dfa9440f84f7712eda46005a02ea11",
+   "findings_report_date": "2023-12-20",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-10-opendollar.md",
+    "sha256": "e42436610e6ede873c35606564a4babcf32c654eff8091b860ae4df81f32be93",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-10-opendollar-findings/988685b819dfa9440f84f7712eda46005a02ea11/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-11-shellprotocol": {
+   "repo": "https://github.com/code-423n4/2023-11-shellprotocol",
+   "commit": "8c6c6a33c817b588567a5b6a65bdda72d905941f",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-11-shellprotocol"
+   ],
+   "report_sha256": "f8be3dc076ce4682ec4f62a998649531d3b6bfca23531d87fdd2f6786befb475",
+   "findings_repo": "code-423n4/2023-11-shellprotocol-findings",
+   "findings_commit": "c29d59d9a6cf70f2630eb1117e78f9ff274d7667",
+   "findings_report_date": "2024-01-05",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-11-shellprotocol.md",
+    "sha256": "bd8845179b698ed932b200944aeb43466cfba5e8767c3cf031f49b2e26480272",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-11-shellprotocol-findings/c29d59d9a6cf70f2630eb1117e78f9ff274d7667/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-12-initcapital": {
+   "repo": "https://github.com/code-423n4/2023-12-initcapital",
+   "commit": "a53e401529451b208095b3af11862984d0b32177",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/Picodes/4naly3er",
+    "https://github.com/code-423n4/2023-12-initcapital"
+   ],
+   "report_sha256": "620df9d0283771b02844da6f3602d1e71f4b925146640e3873b633783c6e8180",
+   "findings_repo": "code-423n4/2023-12-initcapital-findings",
+   "findings_commit": "7d0603210e01285686bcefc13c99d1db38bc8cd2",
+   "findings_report_date": "2024-01-16",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-12-initcapital.md",
+    "sha256": "c09266afeff875aa53f01692f4c4c93c1024e695a2f1cdd9e5e5ab6d4b186ad6",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-12-initcapital-findings/7d0603210e01285686bcefc13c99d1db38bc8cd2/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-12-particle": {
+   "repo": "https://github.com/code-423n4/2023-12-particle",
+   "commit": "a3af40839b24aa13f5764d4f84933dbfa8bc8134",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/Picodes/4naly3er",
+    "https://github.com/code-423n4/2023-12-particle"
+   ],
+   "report_sha256": "b545ccf721791088cc28295c1bc2154b892ff257b7c878f0bec67f2c71eb070a",
+   "findings_repo": "code-423n4/2023-12-particle-findings",
+   "findings_commit": "acf0c9166916dfd55784a7fd7c3f6d7627f56a8e",
+   "findings_report_date": "2024-01-26",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-12-particle.md",
+    "sha256": "6d53137c1f23eb92ed0fe447a42401434bfcfb3e1ef33d664ef0412c48672016",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-12-particle-findings/acf0c9166916dfd55784a7fd7c3f6d7627f56a8e/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-09-asymmetry": {
+   "repo": "https://github.com/code-423n4/2023-09-asymmetry",
+   "commit": "6b4867491350f8327d0ac4f496f263642cf3c1be",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/Picodes/4naly3er",
+    "https://github.com/code-423n4/2023-09-asymmetry"
+   ],
+   "report_sha256": "676b20764a9898359e967348fd79728077fa43c3ddb222d998cb2cc1b4c0b72c",
+   "findings_repo": "code-423n4/2023-09-asymmetry-findings",
+   "findings_commit": "9ecac9cca9082f3245554e7f4f9d81f7b59a7037",
+   "findings_report_date": "2024-02-06",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-09-asymmetry.md",
+    "sha256": "8c6b1f0181f7fb7e16e5c0cc181c44da3752f12caee7397ead26def9ee9099bb",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-09-asymmetry-findings/9ecac9cca9082f3245554e7f4f9d81f7b59a7037/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-12-autonolas": {
+   "repo": "https://github.com/code-423n4/2023-12-autonolas",
+   "commit": "ba06372668f1f4f516b58bf8c559ebe7b04375a2",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-12-autonolas"
+   ],
+   "report_sha256": "825636308d073bb0763e5564de304f1d622c997a46242254f9e0c3c9df7f88ab",
+   "findings_repo": "code-423n4/2023-12-autonolas-findings",
+   "findings_commit": "0466370ec3f6626affdf6d1043e398fad8053368",
+   "findings_report_date": "2024-02-06",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-12-autonolas.md",
+    "sha256": "73a5e7e924dc054885d4f0b64b6986047991dd2e3086a62f8e6dd91d6119d123",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-12-autonolas-findings/0466370ec3f6626affdf6d1043e398fad8053368/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-01-canto": {
+   "repo": "https://github.com/code-423n4/2024-01-canto",
+   "commit": "5e0d6f1f981993f83d0db862bcf1b2a49bb6ff50",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/Picodes/4naly3er",
+    "https://github.com/code-423n4/2024-01-canto"
+   ],
+   "report_sha256": "4b04a6ad477ae42bcf1b64b27f187ab459f4e698426b6dc3635b23988e27491e",
+   "findings_repo": "code-423n4/2024-01-canto-findings",
+   "findings_commit": "3994274db27810e994c36cb60e00ec1e5a31b43c",
+   "findings_report_date": "2024-02-07",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-01-canto.md",
+    "sha256": "3dce3a7e0d92830fe59e74e2a695ec957aeb23ac8c78d2f3fc9d006941664a82",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-01-canto-findings/3994274db27810e994c36cb60e00ec1e5a31b43c/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-10-badger": {
+   "repo": "https://github.com/code-423n4/2023-10-badger",
+   "commit": "4d8a24a7085ebbf0d9be2afac31dfc21d8e814bc",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/Picodes/4naly3er",
+    "https://github.com/code-423n4/2023-10-badger"
+   ],
+   "report_sha256": "5ac68c03d9b0e6531e71eb02e468f880b538f886054628f7af30166ed17cd723",
+   "findings_repo": "code-423n4/2023-10-badger-findings",
+   "findings_commit": "b972a75d388f909ee88d9a31be72d29ac24706fe",
+   "findings_report_date": "2024-02-13",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-10-badger.md",
+    "sha256": "b0a43f1778020449b4a946a5ee40dedd22863ea99de14db184d47d791e3679e4",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-10-badger-findings/b972a75d388f909ee88d9a31be72d29ac24706fe/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-01-init-capital-invitational": {
+   "repo": "https://github.com/code-423n4/2024-01-init-capital-invitational",
+   "commit": "a01c4de620be98f9e57a60cf6a82d4feaec54f58",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/Picodes/4naly3er",
+    "https://github.com/code-423n4/2024-01-init-capital-invitational"
+   ],
+   "report_sha256": "94403ca3dcbe9dc2d8a09a1dff61d69415b97b1c708d2bbc563e5d1a8756462d",
+   "findings_repo": "code-423n4/2024-01-init-capital-invitational-findings",
+   "findings_commit": "6a73baf93c2ee22188873d7884c759d86f9c7ae3",
+   "findings_report_date": "2024-02-22",
+   "split": "train",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-01-init-capital-invitational.md",
+    "sha256": "50563c865b08717f520a71012820e1f6ae48a83e7618cd5bd9610a124706ee6d",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-01-init-capital-invitational-findings/6a73baf93c2ee22188873d7884c759d86f9c7ae3/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-01-opus": {
+   "repo": "https://github.com/code-423n4/2024-01-opus",
+   "commit": "0c69a86324f9a574f5db3cc4900798f0e9d1ced4",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-01-opus"
+   ],
+   "report_sha256": "af006769f7a256fee112edeb2e7b3d36e7f6ac2c61d0eead4ce0d2c3e081ced4",
+   "findings_repo": "code-423n4/2024-01-opus-findings",
+   "findings_commit": "1447b4c01eebc89c420d4f97bcd7624615b1114d",
+   "findings_report_date": "2024-03-08",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-01-opus.md",
+    "sha256": "7ba25fbc4b5da0197b85aecacd16e28e86e1eb7fe8c7926d666c8e5eadc6e51b",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-01-opus-findings/1447b4c01eebc89c420d4f97bcd7624615b1114d/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-02-thruster": {
+   "repo": "https://github.com/code-423n4/2024-02-thruster",
+   "commit": "3896779349f90a44b46f2646094cb34fffd7f66e",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/Picodes/4naly3er",
+    "https://github.com/code-423n4/2024-02-thruster"
+   ],
+   "report_sha256": "33b39cc640ffb644d0f9cb1ef9dccffbd1ff9e9a44b3ec8d04bf31ae9c09aa69",
+   "findings_repo": "code-423n4/2024-02-thruster-findings",
+   "findings_commit": "7b051afebbfe25bc239a3240e903081d0fe34097",
+   "findings_report_date": "2024-03-28",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-02-thruster.md",
+    "sha256": "2bd95273f0403d877210b116ead0cb2ecfec7adcd0b0d8c82cb8cfae2035ea50",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-02-thruster-findings/7b051afebbfe25bc239a3240e903081d0fe34097/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-03-pooltogether": {
+   "repo": "https://github.com/code-423n4/2024-03-pooltogether",
+   "commit": "2204d9d4187cd366425f22a78b6b6d758b9411f5",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-03-pooltogether"
+   ],
+   "report_sha256": "306ec8306d0f948eeb4219a1efa9d28ba02433ad770a89f59db942824dc9dead",
+   "findings_repo": "code-423n4/2024-03-pooltogether-findings",
+   "findings_commit": "87f1b837fc3af84b32433b3d82538694b490b9f9",
+   "findings_report_date": "2024-04-04",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-03-pooltogether.md",
+    "sha256": "e40c9532de446ddb4d015eec7d9301576d22cc1ee79fef2aff0fa87be2d3a15f",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-03-pooltogether-findings/87f1b837fc3af84b32433b3d82538694b490b9f9/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-02-spectra": {
+   "repo": "https://github.com/code-423n4/2024-02-spectra",
+   "commit": "8bc1c1a03994d8a2322739a210f4ffa95f6a91b4",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-02-spectra"
+   ],
+   "report_sha256": "417f7c02c5fa196f6196d55ce2fdc30fd2d3c87c4a8e7b91eadf8305e9230381",
+   "findings_repo": "code-423n4/2024-02-spectra-findings",
+   "findings_commit": "9b0f4a58cb8da1372ff68cce6e36d7c532d50bd2",
+   "findings_report_date": "2024-04-05",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-02-spectra.md",
+    "sha256": "2fa7dd3d1dbf12420b1a3301749811dfd216075625a44a9d49510287056d4974",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-02-spectra-findings/9b0f4a58cb8da1372ff68cce6e36d7c532d50bd2/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-02-hydradx": {
+   "repo": "https://github.com/code-423n4/2024-02-hydradx",
+   "commit": "eca2c2e5e42d8630d556a5a49d7315a624f14efd",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-02-hydradx"
+   ],
+   "report_sha256": "47468a14f69901cbd6a622cbddca83f57dee5444654aab4fd1ab81432b1f7681",
+   "findings_repo": "code-423n4/2024-02-hydradx-findings",
+   "findings_commit": "a0aabd250c84dce96b3362ffa41467e3515469b3",
+   "findings_report_date": "2024-04-10",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-02-hydradx.md",
+    "sha256": "fa4adc284444c3966ae8406bd1438b35c896b3f6d6a5726f3cc30597f9d1edde",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-02-hydradx-findings/a0aabd250c84dce96b3362ffa41467e3515469b3/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-02-uniswap-foundation": {
+   "repo": "https://github.com/code-423n4/2024-02-uniswap-foundation",
+   "commit": "95a31342c30c6f97e8e036b1f523141420b574b7",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-02-uniswap-foundation"
+   ],
+   "report_sha256": "a93ec50bbb2d91def1e8faf33998c0157d0b2f4fa9b8af864ceb5ae8e7175c44",
+   "findings_repo": "code-423n4/2024-02-uniswap-foundation-findings",
+   "findings_commit": "20b7d4b66862d0df3507b0e32890a55a97de6383",
+   "findings_report_date": "2024-04-11",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-02-uniswap-foundation.md",
+    "sha256": "7bfd783a1c408be9d7cf37917670221f5c503a15eab2d174a666fe04c74a258b",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-02-uniswap-foundation-findings/20b7d4b66862d0df3507b0e32890a55a97de6383/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-03-phala-network": {
+   "repo": "https://github.com/code-423n4/2024-03-phala-network",
+   "commit": "22137c76cc418e0d23bcbe820817fecd36c8dda5",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-03-phala-network"
+   ],
+   "report_sha256": "f37d1728376647b082fd7395f071e10de62b5fd6b1d6b1d1a43e1801bd08dec0",
+   "findings_repo": "code-423n4/2024-03-phala-network-findings",
+   "findings_commit": "c952d6be9d444c6b02261c571e6b2eecae38706b",
+   "findings_report_date": "2024-04-11",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-03-phala-network.md",
+    "sha256": "53b2c41c7c584ff44ad55c2ac29efe66efb67614ca06576d72c5cf196dcbfb24",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-03-phala-network-findings/c952d6be9d444c6b02261c571e6b2eecae38706b/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-01-salty": {
+   "repo": "https://github.com/code-423n4/2024-01-salty",
+   "commit": "01eb9e21f1d0aa7a058897914bbca9c994d314e0",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-01-salty"
+   ],
+   "report_sha256": "1a679b0384df9eca9c9028ebfae8a682082f79e52d54835a02f374dab1443885",
+   "findings_repo": "code-423n4/2024-01-salty-findings",
+   "findings_commit": "124cf3d332c1d74705c294ee1827ed4afb4971ef",
+   "findings_report_date": "2024-04-19",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-01-salty.md",
+    "sha256": "ed58cad5ec5fb83df9c2b005ff64181cf79bbaf991a4de2d6192dff47d784ada",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-01-salty-findings/124cf3d332c1d74705c294ee1827ed4afb4971ef/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-03-gitcoin": {
+   "repo": "https://github.com/code-423n4/2024-03-gitcoin",
+   "commit": "6529b351cd72a858541f60c52f0e5ad0fb6f1b16",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/Picodes/4naly3er",
+    "https://github.com/code-423n4/2024-03-gitcoin"
+   ],
+   "report_sha256": "046cae6320590573c85092f9b5626e6f43180fcf24eb44bafb07b451aa555618",
+   "findings_repo": "code-423n4/2024-03-gitcoin-findings",
+   "findings_commit": "4104c8959ca5962f6a7059e481839d62a6f03270",
+   "findings_report_date": "2024-04-19",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-03-gitcoin.md",
+    "sha256": "854660d49ace13a227b0a7d308b9e5de57d70d0f82890709231b177c11af171f",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-03-gitcoin-findings/4104c8959ca5962f6a7059e481839d62a6f03270/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2023-07-amphora": {
+   "repo": "https://github.com/code-423n4/2023-07-amphora",
+   "commit": "4e87b9886f2fd06dfc182a04ce3bf7b16480571c",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2023-07-amphora"
+   ],
+   "report_sha256": "1f459de818df4b07eb957cbc16e5b5039ce2bb59d9b4f2925235d62b2316fae0",
+   "findings_repo": "code-423n4/2023-07-amphora-findings",
+   "findings_commit": "fe47bdf8f431d82f3a587474d83932541808020e",
+   "findings_report_date": "2024-04-22",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2023-07-amphora.md",
+    "sha256": "1b1a43457ce6255a5c6e93a6d3f69ff6bb3e7b02be0a9d0ea96d1f219a66acae",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2023-07-amphora-findings/fe47bdf8f431d82f3a587474d83932541808020e/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-03-ondo-finance": {
+   "repo": "https://github.com/code-423n4/2024-03-ondo-finance",
+   "commit": "4134cbe7a7a733b702312cce64dad9ec93026529",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-03-ondo-finance"
+   ],
+   "report_sha256": "41119cf447b6eb896ca12bce730bee3804e2945bc861ec7abb37ebc31bc40ee5",
+   "findings_repo": "code-423n4/2024-03-ondo-finance-findings",
+   "findings_commit": "4cad6b92dc55972bacba3668f31f14f43ef40972",
+   "findings_report_date": "2024-04-24",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-03-ondo-finance.md",
+    "sha256": "e55fce6b9cb7a15e8c365c346eb8f97a42324df19ae00ff5c742c79541f1e950",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-03-ondo-finance-findings/4cad6b92dc55972bacba3668f31f14f43ef40972/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-03-neobase": {
+   "repo": "https://github.com/code-423n4/2024-03-neobase",
+   "commit": "d6e6127e6763b93c23ee95cdf7622fe950d9ed30",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-03-neobase"
+   ],
+   "report_sha256": "1afa2639cd0813b4406df8d6c11491bdb0933471ca6fc8e9a35e3eabc48e5bdd",
+   "findings_repo": "code-423n4/2024-03-neobase-findings",
+   "findings_commit": "978da184ef3ebf60f7fe8f7144510465070549da",
+   "findings_report_date": "2024-04-26",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-03-neobase.md",
+    "sha256": "ec18d073e23443408a4f1776f1d60e5f8fd4f0d70bf199435098bfeec267213d",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-03-neobase-findings/978da184ef3ebf60f7fe8f7144510465070549da/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-03-taiko": {
+   "repo": "https://github.com/code-423n4/2024-03-taiko",
+   "commit": "2c0fd6427d7a8e0b976d2667e2cb81d89b4656a2",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-03-taiko"
+   ],
+   "report_sha256": "5cede10f763ad2dfd1b721cd6c87783540d8cc4a50689c5b048191696dc83c91",
+   "findings_repo": "code-423n4/2024-03-taiko-findings",
+   "findings_commit": "315d303af1791401f23b84181e35afc8e713eed7",
+   "findings_report_date": "2024-04-26",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-03-taiko.md",
+    "sha256": "b2fb91050e05175991a8f63f7786bfeabfb8604dbd851f0c251083b2d67912ef",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-03-taiko-findings/315d303af1791401f23b84181e35afc8e713eed7/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-03-coinbase": {
+   "repo": "https://github.com/code-423n4/2024-03-coinbase",
+   "commit": "7f1247206b40c8012589c0d2639471a84cc6c2dd",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-03-coinbase"
+   ],
+   "report_sha256": "189ba62656eaef46b26e91f7425d767862faf45c4b048f1a2bee786da7593253",
+   "findings_repo": "code-423n4/2024-03-coinbase-findings",
+   "findings_commit": "55584d9aeec3c59beef988b2a6771aea495b6e5f",
+   "findings_report_date": "2024-05-01",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-03-coinbase.md",
+    "sha256": "c68d69fb49b9a4edc7c54336c0b5886c61005d0720f64c19f850e63d4a8dadb9",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-03-coinbase-findings/55584d9aeec3c59beef988b2a6771aea495b6e5f/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-03-acala": {
+   "repo": "https://github.com/code-423n4/2024-03-acala",
+   "commit": "c4ec51b2ef48df098d693c36a58fe8936f2fbf48",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-03-acala"
+   ],
+   "report_sha256": "1358beebe049a01c14e7f2936c58fc6ca45d69ad7bb92cec1c080fd00a5e457c",
+   "findings_repo": "code-423n4/2024-03-acala-findings",
+   "findings_commit": "c5dce53dae6f2a2adef6a73bb4d4f47e90aa882c",
+   "findings_report_date": "2024-05-02",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-03-acala.md",
+    "sha256": "ee75b41135c93ef788efc60c5c907cfa0fc82f786756078372848bcd9f381ca6",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-03-acala-findings/c5dce53dae6f2a2adef6a73bb4d4f47e90aa882c/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-02-wise-lending": {
+   "repo": "https://github.com/code-423n4/2024-02-wise-lending",
+   "commit": "958f754da50a401edce1b79d5c8cd81f76ed9712",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-02-wise-lending"
+   ],
+   "report_sha256": "fb943819d7bb919a37ff0a156c7833a5981961156f180d97bb056c1eaaa7b554",
+   "findings_repo": "code-423n4/2024-02-wise-lending-findings",
+   "findings_commit": "eb30b162e6bee0a878f7e3a14c5d062144215ac1",
+   "findings_report_date": "2024-05-03",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-02-wise-lending.md",
+    "sha256": "0b6b93809674aeb5e77ec66d88f20854eee3b1eda1794d6c63ea6a93746d8994",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-02-wise-lending-findings/eb30b162e6bee0a878f7e3a14c5d062144215ac1/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-03-abracadabra-money": {
+   "repo": "https://github.com/code-423n4/2024-03-abracadabra-money",
+   "commit": "b2cfb84d2ae8914e557ede95c028d4dd74c2fb3e",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-03-abracadabra-money"
+   ],
+   "report_sha256": "87453d5245d510accfe7b5a7d83d01dc61de3a4d6e78dcf43b4805243f5ff684",
+   "findings_repo": "code-423n4/2024-03-abracadabra-money-findings",
+   "findings_commit": "061ab30b503cdf79300725fd822fbafe2a147d4f",
+   "findings_report_date": "2024-05-03",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-03-abracadabra-money.md",
+    "sha256": "c143b30c8a437b1f47c43e289dfacc2c6911365428e17a692b75ca12376a8854",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-03-abracadabra-money-findings/061ab30b503cdf79300725fd822fbafe2a147d4f/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-02-tapioca": {
+   "repo": "https://github.com/code-423n4/2024-02-tapioca",
+   "commit": "3c305f8f513d46d901fb705578affe3bd477e787",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-02-tapioca"
+   ],
+   "report_sha256": "88e0b00a95065d1dcca0f043a53696bac984bb995206e73204a69f91079e9ff7",
+   "findings_repo": "code-423n4/2024-02-tapioca-findings",
+   "findings_commit": "51a5c3c9e596f000e3ec2dec6376440e22d3c893",
+   "findings_report_date": "2024-05-23",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-02-tapioca.md",
+    "sha256": "a1465e3b90f79c6441d7d13f333b6d6c68ef31c66a324cd1b662ec9ca0d4bd56",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-02-tapioca-findings/51a5c3c9e596f000e3ec2dec6376440e22d3c893/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-03-zksync": {
+   "repo": "https://github.com/code-423n4/2024-03-zksync",
+   "commit": "6daf458465bd2173bf733dca9f1849184dab75f5",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-03-zksync"
+   ],
+   "report_sha256": "e54cde4325afdbeecdd76626a915ef83afe8e7cb3b5927154dcba78f39080682",
+   "findings_repo": "code-423n4/2024-03-zksync-findings",
+   "findings_commit": "2ecd49087c9789e9dd2b3cdc41c3e444956c6416",
+   "findings_report_date": "2024-05-29",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-03-zksync.md",
+    "sha256": "9d456cff0f6ec2eb3140a08edef2a3910958125b36c9eed7cae929e56998ba27",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-03-zksync-findings/2ecd49087c9789e9dd2b3cdc41c3e444956c6416/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-04-lavarage": {
+   "repo": "https://github.com/code-423n4/2024-04-lavarage",
+   "commit": null,
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "inferred from the code-423n4 contest slug (Scope does not name it)",
+   "scope_repos": [],
+   "report_sha256": "ed051d63847d2048172ba57121220bec09652f3b8876c391f6083c1c7583e4aa",
+   "findings_repo": "code-423n4/2024-04-lavarage-findings",
+   "findings_commit": "108abd5f603cd995f908fec36868fe5812e30046",
+   "findings_report_date": "2024-05-29",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-04-lavarage.md",
+    "sha256": "9a817f6d942aadc3a418ef6e686521c702134119895a4c3e5966416840add053",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-04-lavarage-findings/108abd5f603cd995f908fec36868fe5812e30046/README.md"
+   },
+   "status": "missing",
+   "reason": "git ls-remote returns no HEAD: the code-423n4 sponsor repo is not publicly reachable (removed or private)"
+  },
+  "2024-05-loop": {
+   "repo": "https://github.com/code-423n4/2024-05-loop",
+   "commit": "20d9013a93a1ba98154198d6cf3c63f73ab95658",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-05-loop"
+   ],
+   "report_sha256": "ec9fa03ba8a790e5683ca7b100341831e057093e47223dba69500bd69f95d083",
+   "findings_repo": "code-423n4/2024-05-loop-findings",
+   "findings_commit": "acc38a227494e35d8bced43d3599bec2a0d65c50",
+   "findings_report_date": "2024-06-12",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-05-loop.md",
+    "sha256": "53e273686dd0f8e880be8343ae94c98864452e7fdc0c78646463b7248151a8e7",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-05-loop-findings/acc38a227494e35d8bced43d3599bec2a0d65c50/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-05-arbitrum-foundation": {
+   "repo": "https://github.com/code-423n4/2024-05-arbitrum-foundation",
+   "commit": "f6d314dc19116c3bb7c744c4dda6db3fe8a37faf",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-05-arbitrum-foundation"
+   ],
+   "report_sha256": "933ff008b9549331c2ef8e77424e9b6717441adb2e5884c75e6b9cee6310f648",
+   "findings_repo": "code-423n4/2024-05-arbitrum-foundation-findings",
+   "findings_commit": "2a853fab49b01dd131a5034614451adb133c8233",
+   "findings_report_date": "2024-06-17",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-05-arbitrum-foundation.md",
+    "sha256": "dde6af426c74ad6a5c3ab701a6958bd25bba214f290d1ed6f70ad12f8afb3239",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-05-arbitrum-foundation-findings/2a853fab49b01dd131a5034614451adb133c8233/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-05-bakerfi": {
+   "repo": "https://github.com/code-423n4/2024-05-bakerfi",
+   "commit": "59b1f70cbf170871f9604e73e7fe70b70981ab43",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-05-bakerfi"
+   ],
+   "report_sha256": "63ec4825700be707d9516e6ceaa334bffd67094a7b01798b50a9d61e903ad857",
+   "findings_repo": "code-423n4/2024-05-bakerfi-findings",
+   "findings_commit": "30e7003f6fc084da282f699e9fd3599199435339",
+   "findings_report_date": "2024-06-24",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-05-bakerfi.md",
+    "sha256": "625735cfbac3b890da8aa7e285eac468924a88bfc0f239b89f7352428edfd478",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-05-bakerfi-findings/30e7003f6fc084da282f699e9fd3599199435339/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-06-panoptic": {
+   "repo": "https://github.com/code-423n4/2024-06-panoptic",
+   "commit": "b12fa6dfebffe03b98463eb6dce302829e3882cd",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-06-panoptic"
+   ],
+   "report_sha256": "5e56b3fcea685cdd29789a0e5fafe1269c3578f9be4415b1bf5d24767391d962",
+   "findings_repo": "code-423n4/2024-06-panoptic-findings",
+   "findings_commit": "57edc7ba6b6fa729b422819817f4cbabf3977487",
+   "findings_report_date": "2024-06-24",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-06-panoptic.md",
+    "sha256": "600261b6007ed0e8bedab77b22f59afed91cc9f775c919fef712593752874fbf",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-06-panoptic-findings/57edc7ba6b6fa729b422819817f4cbabf3977487/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-03-dittoeth": {
+   "repo": "https://github.com/code-423n4/2024-03-dittoeth",
+   "commit": "abd69453029ea830d08868972fd9493ea56d4b3b",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-03-dittoeth"
+   ],
+   "report_sha256": "10e43d6ddf6af7717ee56b47a254f10c7b41c5ff8e5cb46382b0c3b7c557b9fc",
+   "findings_repo": "code-423n4/2024-03-dittoeth-findings",
+   "findings_commit": "fb91efbbcd00fc16f39ed9b01e277c3944944acb",
+   "findings_report_date": "2024-06-25",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-03-dittoeth.md",
+    "sha256": "3c58b279377e8ccaf733811d6fd61f1970360c338f8a2cc53fe432bf271b7114",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-03-dittoeth-findings/fb91efbbcd00fc16f39ed9b01e277c3944944acb/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-06-krystal-defi": {
+   "repo": "https://github.com/code-423n4/2024-06-krystal-defi",
+   "commit": "f65b381b258290653fa638019a5a134c4ef90ba8",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-06-krystal-defi"
+   ],
+   "report_sha256": "d0b8095101e1a0680167cbfd4b16bfddbd81e83cab0b0c5701fb8a88ff774a84",
+   "findings_repo": "code-423n4/2024-06-krystal-defi-findings",
+   "findings_commit": "2381dc9358d7249b48a1375887cd2c6e54d2b162",
+   "findings_report_date": "2024-07-12",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-06-krystal-defi.md",
+    "sha256": "e004e64088c30fe3d43f7546762c9c7de9fa0044ccd24e53dbb7e0df9936e6d3",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-06-krystal-defi-findings/2381dc9358d7249b48a1375887cd2c6e54d2b162/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-05-predy": {
+   "repo": "https://github.com/code-423n4/2024-05-predy",
+   "commit": "8af835b9dbc5ee2e136ebf5315b91d9d7e7eef22",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-05-predy"
+   ],
+   "report_sha256": "46460346198ef74c78a5381552554705991a5aa9f3407da48f775d621806f455",
+   "findings_repo": "code-423n4/2024-05-predy-findings",
+   "findings_commit": "766659221c5d4b5f5477106adc79cabc78d999b4",
+   "findings_report_date": "2024-07-16",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-05-predy.md",
+    "sha256": "736e9650296db6c746988dc8c0c5882092a0e85fa69340f345a56c855eb8964f",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-05-predy-findings/766659221c5d4b5f5477106adc79cabc78d999b4/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-04-gondi": {
+   "repo": "https://github.com/code-423n4/2024-04-gondi",
+   "commit": "5037caceb7acf77925e1548c4b15fae744f3f5b2",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-04-gondi"
+   ],
+   "report_sha256": "d9a49f6c0316b7816d5bc4a6633707dc7e6d7585b358e9fdec7ddd9d90e5c2ee",
+   "findings_repo": "code-423n4/2024-04-gondi-findings",
+   "findings_commit": "25665cc3b6e095e2a547caf253cd3e0585a78b41",
+   "findings_report_date": "2024-07-25",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-04-gondi.md",
+    "sha256": "f5fcd4f28b06a2a49c9f351d6beba80ab2820df26291c18e42b6c73d0e04e73d",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-04-gondi-findings/25665cc3b6e095e2a547caf253cd3e0585a78b41/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-07-dittoeth": {
+   "repo": "https://github.com/code-423n4/2024-07-dittoeth",
+   "commit": "ca3c5bf8e13d0df6a2c1f8a9c66ad95bbad35bce",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-07-dittoeth"
+   ],
+   "report_sha256": "f62affa20ab12853fa1c7c86db95e0a9770ba072b1ffa7113e119ff006692ba3",
+   "findings_repo": "code-423n4/2024-07-dittoeth-findings",
+   "findings_commit": "424e49f12c01bd52e69ca12a6850d075d0367563",
+   "findings_report_date": "2024-07-29",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-07-dittoeth.md",
+    "sha256": "d45f0c38a1140fc984b2ae9ed84db039c99913890fb804512dbc279abd8d737d",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-07-dittoeth-findings/424e49f12c01bd52e69ca12a6850d075d0367563/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-06-badger": {
+   "repo": "https://github.com/code-423n4/2024-06-badger",
+   "commit": "2f213a45bd09ac62d12ba0f61b7892728828183b",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-06-badger"
+   ],
+   "report_sha256": "d72900e6f891e63087ad390cb3c4a553bf44b6634ad69819488026abb606ef6b",
+   "findings_repo": "code-423n4/2024-06-badger-findings",
+   "findings_commit": "9eed74b338cfea574b29b0abd768ca6712664fcc",
+   "findings_report_date": "2024-08-05",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-06-badger.md",
+    "sha256": "49feca56c739d4816fa0520ae3cc623dfb824b06a87219802e98f5cfbc3e2770",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-06-badger-findings/9eed74b338cfea574b29b0abd768ca6712664fcc/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-06-thorchain": {
+   "repo": "https://github.com/code-423n4/2024-06-thorchain",
+   "commit": "dc7c9db428483f283bb0c0f44794d46d0ef750de",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-06-thorchain"
+   ],
+   "report_sha256": "00e0bf126903a645655b6c5d7f0d2bda2e9b4d17b483ef87f72aa91535d6668f",
+   "findings_repo": "code-423n4/2024-06-thorchain-findings",
+   "findings_commit": "cba6b1516281504c1a294bee7ac862f5f46a3578",
+   "findings_report_date": "2024-08-05",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-06-thorchain.md",
+    "sha256": "950764e0f564ed0d27363c72477e02d98b68821a5a3b2eaa7c290f7b34e06346",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-06-thorchain-findings/cba6b1516281504c1a294bee7ac862f5f46a3578/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-06-vultisig": {
+   "repo": "https://github.com/code-423n4/2024-06-vultisig",
+   "commit": "befb1b11702a26ad0018308ef6e82b73683fe1d6",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-06-vultisig"
+   ],
+   "report_sha256": "c9a24cc8f3715c6b9dbafc896b57d68589813e17f5451ae3a368d56c9064a30a",
+   "findings_repo": "code-423n4/2024-06-vultisig-findings",
+   "findings_commit": "4111be31b0927c32a1558767db6c3de75487fa3b",
+   "findings_report_date": "2024-08-05",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-06-vultisig.md",
+    "sha256": "31ac635b5d1f74db934eb8a076ca4333b3c7671416421a6a7f207039198a648d",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-06-vultisig-findings/4111be31b0927c32a1558767db6c3de75487fa3b/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-05-olas": {
+   "repo": "https://github.com/code-423n4/2024-05-olas",
+   "commit": "c217c378f48438fb505fb04db4107c839b928e7e",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-05-olas"
+   ],
+   "report_sha256": "30562edd45e62208f8ebd222587a867703e846b832c3df04672c08d65844eb13",
+   "findings_repo": "code-423n4/2024-05-olas-findings",
+   "findings_commit": "3391d168f8a6489a177b50511ece6420b17e279c",
+   "findings_report_date": "2024-08-06",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-05-olas.md",
+    "sha256": "c1349437ff347eef0d7cf92deedc868879fc53ab24261b4e716ce00610ace646",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-05-olas-findings/3391d168f8a6489a177b50511ece6420b17e279c/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-07-munchables": {
+   "repo": "https://github.com/code-423n4/2024-07-munchables",
+   "commit": "e9056afd7dbdc3b2c6a25602231af87da6da4bc7",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-07-munchables"
+   ],
+   "report_sha256": "7ec18415256fce8710b409a90f371d5dcdfa829f049e36715c66532df90fa91e",
+   "findings_repo": "code-423n4/2024-07-munchables-findings",
+   "findings_commit": "2efccd9f1b65f77da50a2861b77f9f5b0bf267f4",
+   "findings_report_date": "2024-08-16",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-07-munchables.md",
+    "sha256": "d1cf222ce63a82f4cdf699d72fab8d84e09e1e8b025dbf36264d9fbfd3ed1f97",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-07-munchables-findings/2efccd9f1b65f77da50a2861b77f9f5b0bf267f4/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-07-optimism": {
+   "repo": "https://github.com/code-423n4/2024-07-optimism",
+   "commit": "93ec0c167a569678a66c9595d56ba21b89909107",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-07-optimism"
+   ],
+   "report_sha256": "d0f6b64002facb506c92632b1f95d0397438d18182fed4fa0e7dc9630fc72cac",
+   "findings_repo": "code-423n4/2024-07-optimism-findings",
+   "findings_commit": "9a8fea61bc01a27752f2c1b0ccb88cb7151ca642",
+   "findings_report_date": "2024-08-16",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-07-optimism.md",
+    "sha256": "afd094d9448f9ff2c76d8792a5c3eaed45f986a9f731f4f83c426a774cb800aa",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-07-optimism-findings/9a8fea61bc01a27752f2c1b0ccb88cb7151ca642/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-05-canto": {
+   "repo": "https://github.com/code-423n4/2024-05-canto",
+   "commit": "a11312a87ab8723ece2c9ea6f64ebcaca430c67b",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-05-canto"
+   ],
+   "report_sha256": "5a39de8c62b00bcc08eceb14311c67151f2f12ab129b90034e18a94f1cd31624",
+   "findings_repo": "code-423n4/2024-05-canto-findings",
+   "findings_commit": "a6787569edaedc1b99a174ae6f4476fd53fa4833",
+   "findings_report_date": "2024-08-19",
+   "split": "validation",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-05-canto.md",
+    "sha256": "c35eabd184c254262b3d9e2ad262744a6e0a31f630614765b588b39e8188eef2",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-05-canto-findings/a6787569edaedc1b99a174ae6f4476fd53fa4833/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-07-basin": {
+   "repo": "https://github.com/code-423n4/2024-07-basin",
+   "commit": "bbe3cafed46822b0d0b1e0b80f9dee623012bd92",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-07-basin"
+   ],
+   "report_sha256": "ea5fd637885aebe7b45a8983c8414a2679677fc088a3e11401c86392cd54a853",
+   "findings_repo": "code-423n4/2024-07-basin-findings",
+   "findings_commit": "12468792fc3c89de5ea1353ddb83b7ce5f7d5b21",
+   "findings_report_date": "2024-09-03",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-07-basin.md",
+    "sha256": "c8cfb95eba213c205764b72d6072b9c0d8b2ce981c6911a4fb0df561e142e0ac",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-07-basin-findings/12468792fc3c89de5ea1353ddb83b7ce5f7d5b21/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-07-benddao": {
+   "repo": "https://github.com/code-423n4/2024-07-benddao",
+   "commit": "117ef61967d4b318fc65170061c9577e674fffa1",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-07-benddao"
+   ],
+   "report_sha256": "0453f92603ada9205ed0a31cc0eb00d471b30b47383b631e93b2f8628358645c",
+   "findings_repo": "code-423n4/2024-07-benddao-findings",
+   "findings_commit": "892e7d324d338e9ff1a5485b50e0dd259440f6b0",
+   "findings_report_date": "2024-09-03",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-07-benddao.md",
+    "sha256": "d0101cf4fc9025fcb07b3ae742d270b09ec5e9f4a1ee33c79faa4664c42db980",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-07-benddao-findings/892e7d324d338e9ff1a5485b50e0dd259440f6b0/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-08-basin": {
+   "repo": "https://github.com/code-423n4/2024-08-basin",
+   "commit": "7e08ff591df0a2ade7d5618113dda2621cd899bc",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-08-basin"
+   ],
+   "report_sha256": "0807c85a67e89c0bfed3941dc2c1566b0c111382fe427578d03a4ceac2dfd342",
+   "findings_repo": "code-423n4/2024-08-basin-findings",
+   "findings_commit": "e492f98f24f26b514578b45610fcbb6e195649d2",
+   "findings_report_date": "2024-09-11",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-08-basin.md",
+    "sha256": "c8cfb95eba213c205764b72d6072b9c0d8b2ce981c6911a4fb0df561e142e0ac",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-08-basin-findings/e492f98f24f26b514578b45610fcbb6e195649d2/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-06-size": {
+   "repo": "https://github.com/code-423n4/2024-06-size",
+   "commit": "4c61f1a5d07e3a201c1990546dd8905b2d2ddf92",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-06-size"
+   ],
+   "report_sha256": "9a3dbb699f11717e8d14c0d3ee2d843f25575b51a926e9d1b386d43216eeaceb",
+   "findings_repo": "code-423n4/2024-06-size-findings",
+   "findings_commit": "d5ff2c6088cde2c98820128ef7a412375f721989",
+   "findings_report_date": "2024-09-16",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-06-size.md",
+    "sha256": "356a76fbd28d3b2139ead0fd4a7f7c9f05a899900bf2d7626ddcc2e292de1cf9",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-06-size-findings/d5ff2c6088cde2c98820128ef7a412375f721989/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-07-reserve": {
+   "repo": "https://github.com/code-423n4/2024-07-reserve",
+   "commit": "4d17f61c578367de9b94b17b9539ecbd132732aa",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-07-reserve"
+   ],
+   "report_sha256": "8dcbc754a8adc035f72131b3400f92b17694782f095c8cba63fbc38587b70fad",
+   "findings_repo": "code-423n4/2024-07-reserve-findings",
+   "findings_commit": "59b95d602bd74c79ee49c820d154ca87d4885ac5",
+   "findings_report_date": "2024-10-03",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-07-reserve.md",
+    "sha256": "3fb555b35e076f40b720befa7bc0699ecc4691515b3a64c36fb357d8aee6b78e",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-07-reserve-findings/59b95d602bd74c79ee49c820d154ca87d4885ac5/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-07-karak": {
+   "repo": "https://github.com/code-423n4/2024-07-karak",
+   "commit": "d803024a494e3cc0566c7676900b965ac879a21e",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-07-karak"
+   ],
+   "report_sha256": "bcf86da04d7e91cf8b4062ecb8b06ace0aeeac8fb979de5945457de8c62c4aeb",
+   "findings_repo": "code-423n4/2024-07-karak-findings",
+   "findings_commit": "bc1098e79301a0edcdab949405e12924d53c12c5",
+   "findings_report_date": "2024-10-07",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-07-karak.md",
+    "sha256": "d2d06a279352a69c789cea4ff86fc1eccbb2b2f608a0519bd1931a805249bdd4",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-07-karak-findings/bc1098e79301a0edcdab949405e12924d53c12c5/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-08-phi": {
+   "repo": "https://github.com/code-423n4/2024-08-phi",
+   "commit": "2465e04364b759c721f1a0aebace69920411f8aa",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-08-phi"
+   ],
+   "report_sha256": "77978258b81a585afad171552981ee0c103a62334320811faa8bce78804722db",
+   "findings_repo": "code-423n4/2024-08-phi-findings",
+   "findings_commit": "0c473d9115cd5a1e90ed5beb49d363c9e2fee9f0",
+   "findings_report_date": "2024-10-07",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-08-phi.md",
+    "sha256": "47655162651745ec98e3960adb057e7d1607946685411923213083488ef5a73a",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-08-phi-findings/0c473d9115cd5a1e90ed5beb49d363c9e2fee9f0/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-09-panoptic": {
+   "repo": "https://github.com/code-423n4/2024-09-panoptic",
+   "commit": "881a306eeb3764a2553eeb74c69bf85f4b6ce438",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-09-panoptic"
+   ],
+   "report_sha256": "1bd683bfc7b7d00ecbf0709d470e5b518d4ed91e271098ded0116195ed7d924f",
+   "findings_repo": "code-423n4/2024-09-panoptic-findings",
+   "findings_commit": "5d5fbbb990373e3aab47afedf7e79c5475caa317",
+   "findings_report_date": "2024-10-10",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-09-panoptic.md",
+    "sha256": "bb7b7c00f280bf62fbbf80084f50a7128d7a14fdac826973dd4feda915c36d4b",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-09-panoptic-findings/5d5fbbb990373e3aab47afedf7e79c5475caa317/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-09-fenix-finance": {
+   "repo": "https://github.com/code-423n4/2024-09-fenix-finance",
+   "commit": "33d2b53c972bf8a030e6a33581227844fff8db7b",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-09-fenix-finance"
+   ],
+   "report_sha256": "3efe22783490c47a8ce1af51ea8c95d376a5ef5cf38b409ec4f772333739335c",
+   "findings_repo": "code-423n4/2024-09-fenix-finance-findings",
+   "findings_commit": "563f7d73f9aa6efc90c9a8c8573567acf9ccf454",
+   "findings_report_date": "2024-10-11",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-09-fenix-finance.md",
+    "sha256": "f719180bc6e785bc3c790284b1eb284c5e2045662a30a45f2d1e78e1317e312c",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-09-fenix-finance-findings/563f7d73f9aa6efc90c9a8c8573567acf9ccf454/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-08-superposition": {
+   "repo": "https://github.com/code-423n4/2024-08-superposition",
+   "commit": "d913ae0225584b4b42e38518788a7e38cd2f4d53",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-08-superposition"
+   ],
+   "report_sha256": "c0a4aa4909270792982da72626b6bd00be084c4e6a1b9f6400cad0e28cc6a35d",
+   "findings_repo": "code-423n4/2024-08-superposition-findings",
+   "findings_commit": "c8910007457e74b7255ba5df29c8f63755816fb2",
+   "findings_report_date": "2024-10-18",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-08-superposition.md",
+    "sha256": "bd6c7e00250dcfdd21c668256ce91a96761be61780b398b4ca8f4ddfe2df0f35",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-08-superposition-findings/c8910007457e74b7255ba5df29c8f63755816fb2/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-08-wildcat": {
+   "repo": "https://github.com/code-423n4/2024-08-wildcat",
+   "commit": "7c5d8389b2a368ce6c4fc79e50c39eac3516ea5e",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-08-wildcat"
+   ],
+   "report_sha256": "cb358d429982589a3bb216b24c850acd809fcc429fbf568ca85258d8cb53899c",
+   "findings_repo": "code-423n4/2024-08-wildcat-findings",
+   "findings_commit": "dc0352696795b2cb37e1712199b4a809e1b92646",
+   "findings_report_date": "2024-10-24",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-08-wildcat.md",
+    "sha256": "963ba63746aeb6c06a0e9e5d00e3a5cf7816f87f8b33c21ae92bbc893627bf2e",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-08-wildcat-findings/dc0352696795b2cb37e1712199b4a809e1b92646/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-10-kleidi": {
+   "repo": "https://github.com/code-423n4/2024-10-kleidi",
+   "commit": "89266a7d5287720d925337c82d4ca94248b00b8e",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-10-kleidi"
+   ],
+   "report_sha256": "c5db40d655ac8cbb6620bbe9d5246b45b189ba522d8430d6ead700ce98f48e31",
+   "findings_repo": "code-423n4/2024-10-kleidi-findings",
+   "findings_commit": "bbb702a3e1c601e8ffb3b16170353f4130ed4cf0",
+   "findings_report_date": "2024-11-20",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-10-kleidi.md",
+    "sha256": "c5dd5fb395ed3b363380c02385c28ad6580121ae82f155394c5b7139fc2b4998",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-10-kleidi-findings/bbb702a3e1c601e8ffb3b16170353f4130ed4cf0/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-10-ronin": {
+   "repo": "https://github.com/code-423n4/2024-10-ronin",
+   "commit": "1bee1a56a141454fd9a1f6fd3a73e61c152f35ef",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-10-ronin"
+   ],
+   "report_sha256": "510bddc47616e57e0953893019c90cc3145f938c3e87c3ea62aed780f072e709",
+   "findings_repo": "code-423n4/2024-10-ronin-findings",
+   "findings_commit": "d8857b492b788cf224098ea1870128b06cd286c2",
+   "findings_report_date": "2024-11-25",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-10-ronin.md",
+    "sha256": "9f6bcfe4ffae0078c5cafac46fc82a636e967208bf6ba75e04dd3f8a3b68f071",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-10-ronin-findings/d8857b492b788cf224098ea1870128b06cd286c2/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-11-ethena-labs": {
+   "repo": "https://github.com/code-423n4/2024-11-ethena-labs",
+   "commit": "e93ee09b10f900bd3be385f392c80920898bf53e",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-11-ethena-labs",
+    "https://github.com/ethena-labs/ethena-usdtb-contest"
+   ],
+   "report_sha256": "22d482fada23bfe3ff81006f13adca14482cbe0c8046853e1f169dda839f9752",
+   "findings_repo": "code-423n4/2024-11-ethena-labs-findings",
+   "findings_commit": "94c52393ab0c2d5c901f3f5c8d02aa072a7589f9",
+   "findings_report_date": "2024-12-02",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-11-ethena-labs.md",
+    "sha256": "1ad358c4dc07b77426a43c7380994df9144f1a8538943cc376519c2c5fd1143c",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-11-ethena-labs-findings/94c52393ab0c2d5c901f3f5c8d02aa072a7589f9/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-10-ramses-exchange": {
+   "repo": "https://github.com/code-423n4/2024-10-ramses-exchange",
+   "commit": "1ba89267cc7c010f13c4d405476090641d18b146",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-10-ramses-exchange"
+   ],
+   "report_sha256": "97038e659afcc24f0035b0d47a986bc234b8bcce5ffd01dcca8c8d43c4b8f4e2",
+   "findings_repo": "code-423n4/2024-10-ramses-exchange-findings",
+   "findings_commit": "e73eb49ed81b070c66da84e47cb62b75c9ad1350",
+   "findings_report_date": "2024-12-03",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-10-ramses-exchange.md",
+    "sha256": "10dd9c915fd584ef022853aee5b84ffc6718a09a9ba64287de1c3bf88813f93f",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-10-ramses-exchange-findings/e73eb49ed81b070c66da84e47cb62b75c9ad1350/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-10-coded-estate": {
+   "repo": "https://github.com/code-423n4/2024-10-coded-estate",
+   "commit": "97efb35fd3734676f33598e6dff70119e41c7032",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-10-coded-estate"
+   ],
+   "report_sha256": "24572266c55c0019cb9253719382076b35d68f3c2673afec8f4d0f213085926d",
+   "findings_repo": "code-423n4/2024-10-coded-estate-findings",
+   "findings_commit": "0e6c1e01dcf1f591a23838e7c176861ce2eaa4c5",
+   "findings_report_date": "2024-12-04",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-10-coded-estate.md",
+    "sha256": "3b33ff4ee9630ef2adfe8edf9efa38be51848e74347e2352953b307026548e94",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-10-coded-estate-findings/0e6c1e01dcf1f591a23838e7c176861ce2eaa4c5/README.md"
+   },
+   "status": "repo+commit"
+  },
+  "2024-09-kakarot": {
+   "repo": "https://github.com/code-423n4/2024-09-kakarot",
+   "commit": "ac4a6a0dc8bb3405453639e157b03b382b4fd4ba",
+   "role": "audited-codebase-snapshot",
+   "source": "c4-sponsor-snapshot HEAD at collection",
+   "repo_source": "report Scope names the snapshot repo",
+   "scope_repos": [
+    "https://github.com/code-423n4/2024-09-kakarot"
+   ],
+   "report_sha256": "65f4071eb95584634a70c560507b2fbae47ec506ae5a08489a21fb497cf6bcc6",
+   "findings_repo": "code-423n4/2024-09-kakarot-findings",
+   "findings_commit": "1f8dd297be7627dfdc5a2ed5f82a91ec800b9ca9",
+   "findings_report_date": "2024-12-10",
+   "split": "FINAL",
+   "readme": {
+    "path": "README.md",
+    "file": "readmes/2024-09-kakarot.md",
+    "sha256": "4a4b39b897d549d51f8af6477ff932cfaf2de31e8566afca939d288a8920a9ec",
+    "raw_url": "https://raw.githubusercontent.com/code-423n4/2024-09-kakarot-findings/1f8dd297be7627dfdc5a2ed5f82a91ec800b9ca9/README.md"
+   },
+   "status": "repo+commit"
+  }
+ }
+}

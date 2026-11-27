@@ -54,13 +54,13 @@ jobs:
           "$bin" explain privileged_role
 
   msrv:
-    name: msrv (1.89.0)
+    name: msrv (1.95.0)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master (no version tags)
         with:
-          toolchain: "1.89.0"
+          toolchain: "1.95.0"
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - run: cargo build --locked
       - run: cargo test --locked --release
@@ -77,6 +77,11 @@ jobs:
   cargo-audit:
     name: cargo-audit
     runs-on: ubuntu-latest
+    # audit-check creates a check run for its result, which needs checks:write.
+    # Job-level permissions replace the workflow-level `contents: read`.
+    permissions:
+      contents: read
+      checks: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: rustsec/audit-check@69366f33c96575abad1ee0dba8212993eecbe998 # v2.0.0
@@ -88,23 +93,71 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # The crate must stay offline: no HTTP client, no socket in src/.
-      - name: No HTTP client in manifest or lockfile
+      - uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master (no version tags)
+        with:
+          toolchain: 1.98.0
+      # ureq is allowed only as the optional fetch client. Every other HTTP
+      # stack is still banned, and no source file opens a socket itself.
+      - name: No HTTP client except the fetch feature
         run: |
           set -euo pipefail
-          for banned in reqwest ureq hyper isahc curl surf attohttpc minreq awc; do
-            if grep -q "\b${banned}\b" Cargo.toml || grep -q "name = \"${banned}\"" Cargo.lock; then
-              echo "HTTP client dependency found: ${banned}" >&2
+          for banned in reqwest hyper isahc curl surf attohttpc minreq awc tokio; do
+            if grep -q "name = \"${banned}\"" Cargo.lock; then
+              echo "HTTP stack in the lockfile: ${banned}" >&2
               exit 1
             fi
           done
+          if ! grep -q 'name = "ureq"' Cargo.lock; then
+            echo "ureq missing from Cargo.lock" >&2
+            exit 1
+          fi
       - name: No sockets in source
         run: |
           set -euo pipefail
-          if grep -rn --include='*.rs' -E 'TcpStream|UdpSocket|std::net::' src/; then
+          if grep -rn --include='*.rs' -E 'TcpStream|UdpSocket' src/; then
             echo "A source file opens a socket" >&2
             exit 1
           fi
+          # The fetch client resolves names itself to refuse private addresses.
+          if grep -rn --include='*.rs' -E 'std::net::' src/ | grep -v 'src/fetch/ureq_client.rs:'; then
+            echo "std::net is named outside src/fetch/ureq_client.rs" >&2
+            exit 1
+          fi
+          if grep -rn --include='*.rs' -E 'ureq::' src/ | grep -v 'src/fetch/ureq_client.rs:'; then
+            echo "ureq is named outside src/fetch/ureq_client.rs" >&2
+            exit 1
+          fi
+      - name: Default-off build has no HTTP crate
+        run: |
+          set -euo pipefail
+          cargo tree --locked --no-default-features > /tmp/tree-offline.txt
+          if grep -E 'ureq|reqwest|hyper|rustls|tokio|native-tls' /tmp/tree-offline.txt; then
+            echo "HTTP crate in the --no-default-features tree" >&2
+            exit 1
+          fi
+          cargo test --locked --no-default-features -j 2
+          cargo build --locked --no-default-features -j 2
+      - name: build, check, candidates, anchors and taxonomy do not use the network
+        run: |
+          set -euo pipefail
+          cargo build --locked -j 2
+          bin=./target/debug/priorart
+          # A client that honoured the proxy environment would fail closed.
+          export http_proxy=http://127.0.0.1:9
+          export https_proxy=http://127.0.0.1:9
+          export HTTP_PROXY=http://127.0.0.1:9
+          export HTTPS_PROXY=http://127.0.0.1:9
+          export ALL_PROXY=http://127.0.0.1:9
+          export all_proxy=http://127.0.0.1:9
+          "$bin" build examples/dossier-demo
+          "$bin" check examples/finding-demo.md --dossier examples/dossier-demo/dossier-demo.dossier
+          "$bin" candidates tests/fixtures/candidates/findings/finding-shared-function.md \
+            --corpus tests/fixtures/candidates/corpus \
+            --repo tests/fixtures/candidates-repo \
+            --repo-id example/candidates-fixture \
+            --commit 0000000000000000000000000000000000000000
+          "$bin" anchors index tests/fixtures/anchors-repo
+          "$bin" taxonomy classify tests/fixtures/taxonomy/finding-clean.md
 
   examples:
     name: examples

@@ -5,6 +5,7 @@ Every command, flag and exit code in `priorart 0.2.1`. `priorart --help` and
 truth for wording.
 
 ```text
+priorart fetch <URL>... [--dir DIR] [--force]
 priorart build <program-dir> [--out FILE] [--program ID] [--json]
 priorart check <finding.md> [--dossier FILE] [--top-k N] [--json]
                             [--fail-on-excluded] [--fail-on-unpayable]
@@ -12,6 +13,11 @@ priorart ledger validate <ledger.yaml...> [--json] [--strict] [--example-mode]
                             [--taxonomy]
 priorart vocab list [--json]
 priorart vocab show <tier-shapes|clause-classes|gate-crossref> [--json]
+priorart taxonomy classify <file>... [--json]
+priorart candidates [FINDING] --corpus <dossier|dir|prepared.json>
+                            [--repo DIR | --index FILE]... [--repo-id ID]
+                            [--commit SHA] [--top-k N] [--exclude ID]...
+                            [--prepare FILE] [--json]
 priorart init [dir] [--force]
 priorart explain <clause-class-id|gate-id|tier-shape-id>
 priorart rejections summary [--json]
@@ -47,6 +53,37 @@ CI job must pass one of the two flags to fail on a finding.
   so a pipe gets clean JSON.
 - `ledger validate` accepts several YAML files; with more than one, each message
   is prefixed with its file and the top-level `ledger` key is omitted.
+
+## fetch
+
+The only command that opens a socket. One HTTPS GET per URL, no crawling.
+Pages are written to `<dir>/pages/001.html`, `002.html`, … in the order given,
+plus `<dir>/fetch.json` (url, final URL, HTTP status, UTC time, byte count,
+sha256). `build` reads `pages/` after the classic `scope.*` file.
+[no-network.md](no-network.md) is the policy.
+
+| Flag | Meaning |
+|---|---|
+| `--dir DIR` | Program folder. Default: the current directory. |
+| `--force` | Overwrite a page this command already saved. `scope.md` is never overwritten. |
+
+Refused before a request: `http:`, `file:`, any scheme other than `https`, a
+URL with userinfo, an IP-literal host, `localhost`. At most 5 redirects, each
+of which must itself be HTTPS. 30 second timeout. 16 MiB body. No cookies, no
+`Authorization` header. `http_proxy`, `https_proxy`, `all_proxy` and the
+uppercase forms are ignored. `User-Agent` is `priorart/<version>`.
+
+Exit 2 on a rejected URL, a non-2xx response, too many redirects, or a body
+over the cap, and nothing is written. A binary built with
+`--no-default-features` has no HTTP client and exits 2 on `fetch`.
+
+```text
+$ priorart fetch https://example.invalid/program/information --dir my-program
+priorart 0.2.2 - fetched 1 page(s) into my-program
+  pages/001.html  200  12345 bytes  sha256 abcdef012345  https://example.invalid/program/information
+  wrote fetch.json
+Next: priorart build my-program
+```
 
 ## build
 
@@ -191,6 +228,65 @@ tier shapes (5) - vocab/tier-shapes.yaml
   unknown            pays: nothing
 ...
 ```
+
+## taxonomy classify
+
+Prints the root-cause classes, impacts and assets a finding (or any text)
+asserts, using the deterministic lexicon in `vocab/taxonomy.yaml` and the
+clause-level negation rules in `src/taxonomy/`. It is a reading aid, not a
+verdict: the classes are cue matches, and per-class precision is measured only
+by the benchmark. `--json` prints `priorart.taxonomy-classify/v1`. A file that
+is missing, not regular, not UTF-8 or over 16 MiB exits 2 before any output;
+an abstention (no class, impact or asset) exits 0 with `abstain_reason:
+"no-mechanism"`.
+
+## candidates
+
+Generates structural candidates for a finding (or, with `--prepare`, for a
+corpus) and prints them with the five pair features: function and state anchor
+overlap, call-graph distance (≤ 2), mechanism match (a shared root cause in a
+shared contract), impact match, and today's identifier score as one feature
+only. Shared identifiers alone never admit a candidate. An abstention carries a
+reason (`no-anchor`, `no-mechanism`, `no-candidates`, `corpus-missing`,
+`repo-missing`). The corpus is a dossier, a directory of `.md`/`.txt` items, or
+a prepared `priorart.candidates-corpus/v1` file; `--index` accepts a repository
+index saved by `priorart anchors index`, and a prepared corpus whose
+`repo@commit` pins do not match the supplied index exits 2. `--json` prints
+`priorart.candidates/v1`, ordered by anchor overlap, distance, shared root
+causes, identifier specificity and prior id.
+
+`--ranker <FILE>` scores every candidate from a committed
+`priorart.ranker-weights/v1` table (PA-B4; trained by
+`eval/dupbench/train_ranker.py` on the Dup-Bench train split) and orders by
+score descending, with the five-key order above as the tie-break; each
+candidate then carries `ranker_score`. The score is one dot product over the
+table, so inference is deterministic and offline; there is no default table,
+no model runtime, no LLM and no network. Without the flag the output is
+unchanged. A table that is missing, malformed, omits a feature, names an
+unknown one, or states no `missing_value` for a feature that can be null exits
+2 naming the rule; a null `call_graph_distance` is scored as
+`max_candidate_distance + 1` and sets the `call_graph_distance_missing`
+feature, never a silent zero.
+
+`--alarm <FILE>` (requires `--ranker`) adds an `alarm` block from a committed
+`priorart.alarm-calibration/v1` table (PA-B5; written by
+`eval/dupbench/calibrate_alarm.py` from the Dup-Bench validation split only).
+The top candidate's ranker score is mapped through the table's isotonic
+calibration, and the "shares a root cause" warning fires only when the
+calibrated value is at or above the table's threshold: the lowest block whose
+validation precision has a Wilson lower bound ≥ 0.80. A table with no such
+block has `threshold: null` and the warning stays off. A table that is not
+monotone, or whose threshold is not one of its block values, exits 2. Without
+the flag the output is unchanged.
+
+`--prose-anchors` runs a second extraction pass before a text would abstain on
+`no-anchor`: bare calls outside backticks (`rageQuit()`), a code-like name
+before `function` or `modifier` (`the batchMigrateFollows function`), and line
+references (`line 117`, `lines 12-34`, `L117-L120`) bound to the one `.sol`
+file the same text cites. The new citations go through the same resolver, so
+an unknown or ambiguous name still abstains. It applies to the finding and to
+every prior item with no anchor, including at `--prepare`. A text that already
+resolves an anchor is unchanged, and without the flag the output is unchanged.
 
 ## init
 

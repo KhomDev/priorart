@@ -1,8 +1,10 @@
 # cargo-deny configuration.
 #
-# The dependency graph is deliberately small: five direct crates, 49 packages
-# total. Every addition is a supply-chain decision, so the checks here are strict
-# rather than advisory.
+# The dependency graph was small until PA-B1 added `solar-parse 0.2.0` (the
+# Solidity parser): six direct crates, 322 packages total. Every addition is a
+# supply-chain decision, so the checks below stay strict; the exceptions the
+# parser forced are listed individually with a reason rather than by relaxing a
+# whole class of check.
 
 [graph]
 targets = [
@@ -15,7 +17,19 @@ targets = [
 
 [advisories]
 version = 2
-ignore = []
+ignore = [
+    # RUSTSEC-2024-0436: `paste` is unmaintained (archived, no known
+    # vulnerability). It is transitive through solar-parse 0.2.0; solar has no
+    # release without it. Listed with its reason so the exception is visible;
+    # remove it when solar drops the dependency.
+    { id = "RUSTSEC-2024-0436", reason = "transitive through solar-parse 0.2.0; unmaintained, no known vulnerability, no upstream fix" },
+    # RUSTSEC-2026-0387: timing variability in crypto-bigint 0.5.5 on secret
+    # integers, transitive through solar -> alloy -> k256 -> elliptic-curve;
+    # the parent requires ^0.5, so the patched 0.7 is not selectable. priorart
+    # performs no secret-key operation, so the affected paths are unreachable
+    # with secret material. Also recorded in .cargo/audit.toml.
+    { id = "RUSTSEC-2026-0387", reason = "transitive k256/elliptic-curve requires crypto-bigint ^0.5; priorart performs no secret-key operation" },
+]
 # Deny on any advisory with a known fix. An advisory with no fix is reported but
 # does not block, because blocking on it would mean blocking on upstream.
 yanked = "deny"
@@ -33,6 +47,10 @@ allow = [
     "ISC",
     "Unicode-3.0",
     "Zlib",
+    # The Mozilla CA bundle shipped by webpki-roots, which ureq's rustls
+    # backend uses instead of the OS trust store. CDLA-Permissive-2.0 is the
+    # licence of that certificate list.
+    "CDLA-Permissive-2.0",
 ]
 confidence-threshold = 0.9
 
@@ -45,19 +63,33 @@ wildcards = "deny"
 deny = [
     { name = "reqwest" },
     { name = "hyper" },
-    { name = "ureq" },
     { name = "curl" },
     { name = "isahc" },
     { name = "surf" },
     { name = "attohttpc" },
+    { name = "minreq" },
     { name = "tokio" },
     { name = "async-std" },
     { name = "native-tls" },
-    { name = "rustls" },
     { name = "openssl" },
     { name = "tungstenite" },
 ]
-skip = []
+# `ureq` 2.12.1 (rustls, no tokio) is the HTTP client behind the optional
+# `fetch` feature, which is on by default. `--no-default-features` drops it.
+# It is not on this deny list. Every other HTTP stack still is.
+# Transitive duplicates introduced by solar-parse 0.2.0. Each pair cannot be
+# collapsed without an upstream release; the exact older versions are skipped,
+# so the exception names what it permits rather than disabling the check.
+skip = [
+    { name = "cpufeatures", version = "=0.2.17" },
+    { name = "hashbrown", version = "=0.14.5" },
+    { name = "syn", version = "=2.0.119" },
+    # ureq 2.12.1 pins base64 0.22. serde-saphyr, already in the graph, uses
+    # base64 0.23. There is no ureq 2 release on 0.23; ureq 3 would be a
+    # different client. The older crate is base64 decoding of the proxy and
+    # TLS internals, not a second parser of program pages.
+    { name = "base64", version = "=0.22.1" },
+]
 skip-tree = []
 
 [sources]

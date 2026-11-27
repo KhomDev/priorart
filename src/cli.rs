@@ -1,6 +1,8 @@
 //! The command line. Every flag here is documented in docs/cli.md, and every
 //! command and exit code is exercised by tests/cli.rs.
 
+use crate::anchors::{bench, parse_repo, resolve_text, BenchOptions, IndexOptions, IndexSet};
+use crate::candidates;
 use crate::check;
 use crate::dossier::{build, import, load};
 use crate::error::EVIDENCE_EXIT;
@@ -8,7 +10,7 @@ use crate::ledger;
 use crate::matching::{DEFAULT_TOP_K, MAX_TOP_K};
 use crate::model::Dossier;
 use crate::render::{json, text};
-use crate::{init, rejections, vocab};
+use crate::{init, rejections, taxonomy, vocab};
 use clap::{CommandFactory, FromArgMatches, Parser, Subcommand};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -28,7 +30,9 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
                      the 14 clause classes, against your preconditions.\n\
                   3. Can it be paid?      your claimed severity against the program's payout\n\
                      tier shape and floor.\n\n\
-                  Everything is read from files you saved. The tool never touches the network.\n\
+                  build, check and the other commands read files you saved and do not open a\n\
+                  socket. priorart fetch is the one networked command: the HTTPS URLs you name,\n\
+                  one GET each, nothing else.\n\
                   Build a dossier once per program (priorart build), then run every finding\n\
                   against it (priorart check)."
 )]
@@ -39,6 +43,18 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Fetch HTTPS program pages into a program folder. The only networked command.
+    Fetch {
+        /// Page URL. Repeat for several pages; one GET each, no crawling.
+        #[arg(required = true, value_name = "URL")]
+        urls: Vec<String>,
+        /// Program folder to write into (default: the current directory)
+        #[arg(long, value_name = "DIR")]
+        dir: Option<PathBuf>,
+        /// Overwrite a page this command already saved. Never overwrites scope.md.
+        #[arg(long)]
+        force: bool,
+    },
     /// Build one deterministic dossier from a folder of saved, offline inputs
     Build {
         /// Folder holding scope.md, known-issues.*, audits/* and optional program.yaml
@@ -105,8 +121,136 @@ enum Command {
         #[command(subcommand)]
         action: RejectionsAction,
     },
+    /// Resolve the code a finding cites to spans in an audited repository
+    Anchors {
+        #[command(subcommand)]
+        action: AnchorsAction,
+    },
+    /// Classify finding or prior-item text into the mechanism taxonomy
+    Taxonomy {
+        #[command(subcommand)]
+        action: TaxonomyAction,
+    },
+    /// List prior items that share an anchor, a call-graph neighbour or a
+    /// mechanism in the same contract with a finding
+    Candidates {
+        /// The finding to generate candidates for, as markdown
+        #[arg(value_name = "FINDING")]
+        finding: Option<PathBuf>,
+        /// A .dossier, a directory of .md/.txt prior items, or a prepared corpus JSON
+        #[arg(long, value_name = "PATH")]
+        corpus: Option<PathBuf>,
+        /// Write a prepared corpus to FILE and stop; omit the finding
+        #[arg(long, value_name = "FILE")]
+        prepare: Option<PathBuf>,
+        /// Repository root to index; repeat for several checkouts
+        #[arg(long = "repo", value_name = "DIR")]
+        repos: Vec<PathBuf>,
+        /// Repository index JSON written by `priorart anchors index --json`; repeatable
+        #[arg(long = "index", value_name = "FILE")]
+        indexes: Vec<PathBuf>,
+        /// Repository id, `owner/name` (single --repo runs only)
+        #[arg(long, value_name = "ID")]
+        repo_id: Option<String>,
+        /// Pinned commit the checkout is at (single --repo runs only)
+        #[arg(long, value_name = "SHA", default_value = "")]
+        commit: String,
+        /// How many candidates to show
+        #[arg(long, value_name = "N", default_value_t = candidates::DEFAULT_TOP_K)]
+        top_k: usize,
+        /// Prior item id to leave out; repeatable
+        #[arg(long = "exclude", value_name = "ID")]
+        exclude: Vec<String>,
+        /// Score candidates with a committed ranker weights table (JSON) and
+        /// order by score descending; the default order breaks ties
+        #[arg(long, value_name = "FILE")]
+        ranker: Option<PathBuf>,
+        /// Report the calibrated "shares a root cause" alarm from a committed
+        /// calibration table (JSON); requires --ranker
+        #[arg(long, value_name = "FILE")]
+        alarm: Option<PathBuf>,
+        /// Before abstaining on "no anchor", also read bare calls (`name()`),
+        /// `name function` phrases and line references from the prose; applies
+        /// to the finding and to prior items (including --prepare)
+        #[arg(long)]
+        prose_anchors: bool,
+        /// Print priorart.candidates/v1 JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// What the gates check, on one page
     Rules,
+}
+
+#[derive(Subcommand)]
+enum TaxonomyAction {
+    /// Extract root-cause, impact and asset classes from one or more text files
+    Classify {
+        /// UTF-8 text files to classify
+        #[arg(value_name = "FILE", required = true)]
+        files: Vec<PathBuf>,
+        /// Print priorart.taxonomy-classify/v1 JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum AnchorsAction {
+    /// Parse a Solidity repository and print its contracts, functions, state
+    /// variables, call graph and read/write sets
+    Index {
+        /// Repository root
+        repo: PathBuf,
+        /// Repository id, `owner/name` (default: the directory name)
+        #[arg(long, value_name = "ID")]
+        repo_id: Option<String>,
+        /// Pinned commit the checkout is at
+        #[arg(long, value_name = "SHA", default_value = "")]
+        commit: String,
+        /// Print the index JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Resolve every code citation in one finding or prior-item text
+    Resolve {
+        /// Repository root; repeat for several checkouts
+        #[arg(long = "repo", value_name = "DIR", required = true)]
+        repos: Vec<PathBuf>,
+        /// Repository id, `owner/name` (single-repository runs only)
+        #[arg(long, value_name = "ID")]
+        repo_id: Option<String>,
+        /// Pinned commit the checkout is at
+        #[arg(long, value_name = "SHA", default_value = "")]
+        commit: String,
+        /// Text file to resolve
+        #[arg(long, value_name = "FILE")]
+        text_file: PathBuf,
+        /// Print priorart.anchors/v1 JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Measure code-citation resolution over the DEV corpora under eval/benchmark
+    Bench {
+        /// Benchmark root (the directory holding tapioca's and the five corpus directories)
+        #[arg(long, value_name = "DIR", default_value = "eval/benchmark")]
+        benchmark_root: PathBuf,
+        /// Fetch cache root written by eval/benchmark/fetch.py
+        #[arg(long, value_name = "DIR")]
+        cache_root: PathBuf,
+        /// Directory holding one checkout per corpus: <sources-root>/<corpus>/
+        #[arg(long, value_name = "DIR")]
+        sources_root: PathBuf,
+        /// Corpus to measure; repeat to override the default six
+        #[arg(long = "corpus", value_name = "NAME")]
+        corpora: Vec<String>,
+        /// Accept a checkout whose git HEAD is not the pinned commit
+        #[arg(long)]
+        allow_unverified_commit: bool,
+        /// Print priorart.anchors-bench/v1 JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -172,6 +316,7 @@ pub fn main_entry() -> ExitCode {
 
 fn run(cli: Cli) -> Result<ExitCode, String> {
     match cli.command {
+        Command::Fetch { urls, dir, force } => run_fetch(&urls, dir.as_deref(), force),
         Command::Build {
             program_dir,
             out,
@@ -302,10 +447,394 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
                 Ok(ExitCode::SUCCESS)
             }
         },
+        Command::Anchors { action } => run_anchors(action),
+        Command::Taxonomy { action } => match action {
+            TaxonomyAction::Classify { files, json } => run_taxonomy_classify(&files, json),
+        },
+        Command::Candidates {
+            finding,
+            corpus,
+            prepare,
+            repos,
+            indexes,
+            repo_id,
+            commit,
+            top_k,
+            exclude,
+            ranker,
+            alarm,
+            prose_anchors,
+            json,
+        } => run_candidates(
+            finding.as_deref(),
+            corpus.as_deref(),
+            prepare.as_deref(),
+            &repos,
+            &indexes,
+            repo_id.as_deref(),
+            &commit,
+            top_k,
+            &exclude,
+            ranker.as_deref(),
+            alarm.as_deref(),
+            prose_anchors,
+            json,
+        ),
         Command::Rules => {
             print!("{}", text::rules());
             Ok(ExitCode::SUCCESS)
         }
+    }
+}
+
+fn run_fetch(urls: &[String], dir: Option<&Path>, force: bool) -> Result<ExitCode, String> {
+    let dir = dir.unwrap_or_else(|| Path::new("."));
+    #[cfg(feature = "fetch")]
+    {
+        let transport = crate::fetch::ureq_transport()?;
+        let report = crate::fetch::run(dir, urls, force, &transport)?;
+        print!("{}", report.render());
+        Ok(ExitCode::SUCCESS)
+    }
+    #[cfg(not(feature = "fetch"))]
+    {
+        let _ = (dir, urls, force);
+        Err(
+            "this binary was built without the fetch feature (--no-default-features) and has no HTTP client. Rebuild without --no-default-features to use priorart fetch."
+                .into(),
+        )
+    }
+}
+
+fn run_anchors(action: AnchorsAction) -> Result<ExitCode, String> {
+    match action {
+        AnchorsAction::Index {
+            repo,
+            repo_id,
+            commit,
+            json,
+        } => {
+            let id = repo_id.unwrap_or_else(|| repo_id_from_dir(&repo));
+            let index = parse_repo(&repo, &id, &commit, &IndexOptions::default())?;
+            if json {
+                print!("{}", json::pretty(&index)?);
+            } else {
+                print!("{}", text::anchors_index(&index));
+            }
+            Ok(ExitCode::SUCCESS)
+        }
+        AnchorsAction::Resolve {
+            repos,
+            repo_id,
+            commit,
+            text_file,
+            json,
+        } => {
+            if repos.len() > 1 && repo_id.is_some() {
+                return Err("--repo-id names one repository; pass one --repo with it".to_string());
+            }
+            if repos.len() > 1 && !commit.is_empty() {
+                return Err("--commit names one repository; pass one --repo with it".to_string());
+            }
+            let mut indexes = Vec::new();
+            for (i, repo) in repos.iter().enumerate() {
+                let id = if i == 0 {
+                    repo_id.clone().unwrap_or_else(|| repo_id_from_dir(repo))
+                } else {
+                    repo_id_from_dir(repo)
+                };
+                indexes.push(parse_repo(repo, &id, &commit, &IndexOptions::default())?);
+            }
+            let text = std::fs::read_to_string(&text_file)
+                .map_err(|e| format!("cannot read {}: {e}", text_file.display()))?;
+            let set = resolve_text(&text, &IndexSet::new(indexes));
+            if json {
+                print!("{}", json::pretty(&set)?);
+            } else {
+                print!("{}", text::anchors_resolve(&set));
+            }
+            Ok(ExitCode::SUCCESS)
+        }
+        AnchorsAction::Bench {
+            benchmark_root,
+            cache_root,
+            sources_root,
+            corpora,
+            allow_unverified_commit,
+            json,
+        } => {
+            let mut options = BenchOptions::new(benchmark_root, cache_root, sources_root);
+            options.allow_unverified_commit = allow_unverified_commit;
+            if !corpora.is_empty() {
+                options.corpora = corpora;
+            }
+            let report = bench(&options)?;
+            if json {
+                print!("{}", json::pretty(&report)?);
+            } else {
+                print!("{}", text::anchors_bench(&report));
+            }
+            Ok(ExitCode::SUCCESS)
+        }
+    }
+}
+
+fn repo_id_from_dir(repo: &Path) -> String {
+    repo.file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_else(|| "repository".to_string())
+}
+
+/// `priorart taxonomy classify <file>... [--json]`.
+///
+/// The extractor is pure; this handler is the only place that reads a file.
+/// A non-regular file, a non-UTF-8 file or a file over the cap is a usage
+/// error that names the reason, never a panic and never a partial result.
+fn run_taxonomy_classify(files: &[PathBuf], as_json: bool) -> Result<ExitCode, String> {
+    if files.is_empty() {
+        return Err("at least one text file is required".to_string());
+    }
+    let mut results = Vec::new();
+    for file in files {
+        let meta =
+            crate::dossier::import::require_regular_file_from(file, "text").map_err(|e| {
+                format!(
+                    "{}. Pass a UTF-8 text file with the finding.",
+                    e.trim_end_matches('.')
+                )
+            })?;
+        let refuse = |len: u64| -> Result<(), String> {
+            if len > taxonomy::MAX_TEXT_BYTES as u64 {
+                return Err(format!(
+                    "text {} is {}; priorart classifies text up to {} MiB. Quote the relevant section in a smaller file.",
+                    file.display(),
+                    crate::dossier::import::mib(len),
+                    taxonomy::MAX_TEXT_BYTES / (1024 * 1024)
+                ));
+            }
+            Ok(())
+        };
+        refuse(meta.len())?;
+        let bytes =
+            std::fs::read(file).map_err(|e| format!("cannot read text {}: {e}", file.display()))?;
+        refuse(bytes.len() as u64)?;
+        let text = String::from_utf8(bytes).map_err(|_| {
+            format!(
+                "{} is not UTF-8 text; priorart classifies UTF-8 text files only.",
+                file.display()
+            )
+        })?;
+        let mechanism = taxonomy::classify(&text);
+        results.push(taxonomy::FileClassification {
+            file: file.to_string_lossy().replace('\\', "/"),
+            text_sha256: crate::dossier::sha256::hex(text.as_bytes()),
+            text_bytes: text.len(),
+            mechanism,
+        });
+    }
+    let report = taxonomy::ClassifyReport::new(results);
+    if as_json {
+        print!("{}", json::pretty(&report)?);
+    } else {
+        print!("{}", taxonomy::render_text(&report));
+    }
+    Ok(ExitCode::SUCCESS)
+}
+
+/// `priorart candidates ...`.
+///
+/// Two modes share one command: with a finding, generate candidates against a
+/// corpus; with `--prepare FILE`, resolve and classify the corpus once and
+/// write the cache. The finding and its corpus are both required in the first
+/// mode; the second takes no finding. A bad combination is a usage error, not
+/// a guess.
+#[allow(clippy::too_many_arguments)]
+fn run_candidates(
+    finding: Option<&Path>,
+    corpus_path: Option<&Path>,
+    prepare_out: Option<&Path>,
+    repos: &[PathBuf],
+    indexes: &[PathBuf],
+    repo_id: Option<&str>,
+    commit: &str,
+    top_k: usize,
+    exclude: &[String],
+    ranker_path: Option<&Path>,
+    alarm_path: Option<&Path>,
+    prose_anchors: bool,
+    as_json: bool,
+) -> Result<ExitCode, String> {
+    if top_k == 0 || top_k > candidates::MAX_TOP_K {
+        return Err(format!(
+            "--top-k must be between 1 and {}, got {top_k}",
+            candidates::MAX_TOP_K
+        ));
+    }
+    let corpus_path = corpus_path.ok_or_else(|| {
+        "a corpus path is required. Pass --corpus <path>, e.g. --corpus eval/benchmark/build/dossier-a.dossier.".to_string()
+    })?;
+    let ranker = match ranker_path {
+        Some(path) => Some(candidates::Ranker::load(path)?),
+        None => None,
+    };
+    if alarm_path.is_some() && ranker.is_none() {
+        return Err(
+            "--alarm calibrates the ranker score of the top candidate; pass --ranker with it."
+                .to_string(),
+        );
+    }
+    let alarm = match alarm_path {
+        Some(path) => Some(candidates::Alarm::load(path)?),
+        None => None,
+    };
+    let index_set = build_candidate_index(repos, indexes, repo_id, commit)?;
+    let corpus = candidates::load_corpus(corpus_path)?;
+
+    if let Some(out) = prepare_out {
+        if finding.is_some() {
+            return Err(
+                "--prepare writes the corpus and takes no finding. Omit the finding, or run again without --prepare."
+                    .to_string(),
+            );
+        }
+        if !exclude.is_empty() {
+            return Err("--exclude applies to a finding run, not --prepare.".to_string());
+        }
+        if ranker.is_some() {
+            return Err("--ranker applies to a finding run, not --prepare.".to_string());
+        }
+        if alarm.is_some() {
+            return Err("--alarm applies to a finding run, not --prepare.".to_string());
+        }
+        let prepared = candidates::prepare_corpus_with(&corpus, index_set.as_ref(), prose_anchors);
+        let with_anchors = prepared
+            .items
+            .iter()
+            .filter(|item| item.anchors.as_ref().is_some_and(|a| !a.is_empty()))
+            .count();
+        let with_mechanism = prepared
+            .items
+            .iter()
+            .filter(|item| {
+                item.mechanism
+                    .as_ref()
+                    .is_some_and(|m| !m.root_causes.is_empty())
+            })
+            .count();
+        let body = json::pretty(&prepared)?;
+        std::fs::write(out, body.as_bytes())
+            .map_err(|e| format!("cannot write prepared corpus {}: {e}", out.display()))?;
+        let report = candidates::PrepareReport {
+            schema: candidates::CANDIDATES_PREPARE_SCHEMA.to_string(),
+            tool_version: env!("CARGO_PKG_VERSION").to_string(),
+            corpus: corpus.path.clone(),
+            corpus_kind: corpus.kind.as_str().to_string(),
+            items: prepared.items.len(),
+            anchors: with_anchors,
+            mechanisms: with_mechanism,
+            repositories: prepared.repositories.clone(),
+            out: out.to_string_lossy().replace('\\', "/"),
+        };
+        if as_json {
+            print!("{}", json::pretty(&report)?);
+        } else {
+            println!(
+                "prepared {} prior item(s) from {} ({}) -> {}",
+                report.items,
+                text::sanitize(&report.corpus),
+                report.corpus_kind,
+                text::sanitize(&report.out)
+            );
+            println!(
+                "  {} item(s) with anchors, {} with a mechanism, {} index pin(s)",
+                report.anchors,
+                report.mechanisms,
+                report.repositories.len()
+            );
+        }
+        return Ok(ExitCode::SUCCESS);
+    }
+
+    let finding = finding.ok_or_else(|| {
+        "a finding is required. Pass a markdown file as the first argument, or use --prepare <file> to cache a corpus."
+            .to_string()
+    })?;
+    // A prepared corpus records the repository pins its anchors came from. If
+    // none of those pins is in the supplied index, every anchor would compare
+    // against a different key and the run would silently return nothing; that
+    // is a configuration error, not an abstention.
+    if corpus.prepared && !corpus.repositories.is_empty() {
+        if let Some(index) = &index_set {
+            let mut supplied: Vec<String> = index
+                .repos
+                .iter()
+                .map(|r| format!("{}@{}", r.repo, r.commit))
+                .collect();
+            supplied.sort();
+            supplied.dedup();
+            if !corpus.repositories.iter().any(|r| supplied.contains(r)) {
+                return Err(format!(
+                    "the prepared corpus was built against {}, but the supplied index is {}. Pass the same --repo/--repo-id/--commit, or rebuild the corpus with --prepare.",
+                    corpus.repositories.join(", "),
+                    supplied.join(", ")
+                ));
+            }
+        }
+    }
+    let (finding_text, finding_sha) = check::read_finding(finding)?;
+    let mut options = candidates::GenerateOptions::new(index_set.as_ref(), finding_sha);
+    options.top_k = top_k;
+    options.exclude = exclude.iter().cloned().collect();
+    options.ranker = ranker.as_ref();
+    options.alarm = alarm.as_ref();
+    options.prose_anchors = prose_anchors;
+    let report = candidates::generate(&finding_text, finding, &corpus, &options);
+    if as_json {
+        print!("{}", json::pretty(&report)?);
+    } else {
+        print!("{}", candidates::render_text(&report));
+    }
+    Ok(ExitCode::SUCCESS)
+}
+
+/// Resolve `--repo` checkouts and `--index` files into one index set, with the
+/// same single-repository rules as `anchors resolve`.
+fn build_candidate_index(
+    repos: &[PathBuf],
+    indexes: &[PathBuf],
+    repo_id: Option<&str>,
+    commit: &str,
+) -> Result<Option<IndexSet>, String> {
+    if repos.len() > 1 && repo_id.is_some() {
+        return Err("--repo-id names one repository; pass one --repo with it".to_string());
+    }
+    if repos.len() > 1 && !commit.is_empty() {
+        return Err("--commit names one repository; pass one --repo with it".to_string());
+    }
+    if repos.is_empty() && repo_id.is_some() {
+        return Err("--repo-id names one repository; pass one --repo with it".to_string());
+    }
+    if repos.is_empty() && !commit.is_empty() {
+        return Err("--commit names one repository; pass one --repo with it".to_string());
+    }
+    let mut parsed = Vec::new();
+    for (i, repo) in repos.iter().enumerate() {
+        let id = if i == 0 {
+            repo_id
+                .map(str::to_string)
+                .unwrap_or_else(|| repo_id_from_dir(repo))
+        } else {
+            repo_id_from_dir(repo)
+        };
+        parsed.push(parse_repo(repo, &id, commit, &IndexOptions::default())?);
+    }
+    for file in indexes {
+        parsed.push(candidates::load_index(file)?);
+    }
+    if parsed.is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(IndexSet::new(parsed)))
     }
 }
 

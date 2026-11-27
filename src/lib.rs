@@ -10,15 +10,19 @@
 //! 3. Can it be paid?      - the claimed severity against the program's payout
 //!    tier shape and floor.
 //!
-//! Everything is read from files the user saved. The crate has no HTTP client
-//! and does not touch the network at runtime.
+//! `build`, `check` and every other command read files and do not open a
+//! socket. `priorart fetch` is the one networked command: explicit HTTPS GETs,
+//! compiled only with the `fetch` feature (on by default).
 
 #![forbid(unsafe_code)]
 
+pub mod anchors;
+pub mod candidates;
 pub mod check;
 pub mod cli;
 pub mod dossier;
 pub mod error;
+pub mod fetch;
 pub mod gates;
 pub mod init;
 pub mod ledger;
@@ -27,6 +31,7 @@ pub mod matching;
 pub mod model;
 pub mod rejections;
 pub mod render;
+pub mod taxonomy;
 pub mod vocab;
 
 /// The tool name every output and error prefix uses.
