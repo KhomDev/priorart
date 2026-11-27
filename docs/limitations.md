@@ -143,3 +143,16 @@ words (`<span>$2,000,000</span><span>Min</span>` becomes `$2,000,000 Min`).
 A word a page splits across two sibling elements (`<b>Lo</b><i>an</i>`) is
 therefore read as two words; text that follows a closing tag directly
 (`<b>Loan</b>Book`) is still joined.
+
+## P2R-2 release: what is not measured yet (2026-11-27)
+
+- **No held-out number.** The release on `main` states train and validation figures only, labelled
+  DEV-ONLY (`docs/benchmark.md`). The six V1 pairs and Dup-Bench FINAL come after main
+  (`eval/P2R2_PREREGISTRATION_POST_MAIN.md`).
+- **The alarm's precision is measured only on the data it was calibrated on** (validation, 149/162).
+  Whether it holds is the FINAL question.
+- **Pairs are not measured.** The four swapped-in pairs (paraspace, ethos, venus, arcade) and
+  revert-lend and loopfi have no collected judge labels yet. Ethos's prior audit exists only as a Discord
+  attachment, which is weak same-codebase evidence.
+- **Rule 5a was written after the swap screen's output was seen.** It only removed candidates and no
+  finding was read, but it is a post-hoc rule, and `pairs-swap/SELECTION.md` says so.

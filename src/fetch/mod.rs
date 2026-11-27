@@ -597,7 +597,10 @@ mod tests {
         assert_eq!(url::TIMEOUT_SECS, 30);
     }
 
-    fn script(pairs: Vec<(&str, u16, Vec<(&str, &str)>, &[u8])>) -> Script {
+    /// One scripted response: URL, status, headers, body.
+    type Scripted<'a> = (&'a str, u16, Vec<(&'a str, &'a str)>, &'a [u8]);
+
+    fn script(pairs: Vec<Scripted<'_>>) -> Script {
         let mut responses = BTreeMap::new();
         for (url, status, headers, body) in pairs {
             responses.insert(
