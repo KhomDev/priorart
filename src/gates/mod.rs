@@ -338,14 +338,22 @@ pub fn payout(dossier: &Dossier, claimed: Option<Severity>) -> PayoutEvidence {
         };
     };
     let floor = floor_of(p);
+    // Quote the reward row for the severity the finding claims, when the page
+    // has one. The payout block's own quote is the floor row; it is the
+    // fallback when no tier row names the claimed severity.
+    let claimed_row = claimed.and_then(|sev| claimed_tier_row(dossier, sev));
+    let (section, quote) = match claimed_row {
+        Some(item) => (item.section.clone(), Some(item.quote.clone())),
+        None => (p.section.clone(), p.quote.clone()),
+    };
     let base = PayoutEvidence {
         tier_shape: Some(p.tier_shape.clone()),
         floor: floor.clone(),
         claimed_severity: claimed_label.clone(),
         payable: None,
         citation: p.source_url.clone(),
-        section: p.section.clone(),
-        quote: p.quote.clone(),
+        section,
+        quote,
         detail: None,
     };
     if p.tier_shape == "unknown" {
@@ -403,6 +411,21 @@ pub fn payout(dossier: &Dossier, claimed: Option<Severity>) -> PayoutEvidence {
         detail,
         ..base
     }
+}
+
+/// The first `payout-tier` item whose text names `sev` as a whole word.
+fn claimed_tier_row(dossier: &Dossier, sev: Severity) -> Option<&crate::model::Item> {
+    let want = sev.label().to_lowercase();
+    dossier
+        .items
+        .iter()
+        .filter(|i| i.kind == "payout-tier")
+        .find(|i| {
+            i.text
+                .to_lowercase()
+                .split(|c: char| !c.is_alphanumeric())
+                .any(|w| w == want)
+        })
 }
 
 fn floor_of(p: &crate::model::Payout) -> Option<String> {
@@ -620,6 +643,47 @@ mod tests {
         assert_eq!(payout(&d, Some(Severity::High)).payable, Some(true));
         assert_eq!(payout(&d, Some(Severity::Medium)).payable, Some(false));
         assert_eq!(payout(&d, None).payable, None);
+    }
+
+    fn tier_item(text: &str) -> Item {
+        Item {
+            kind: "payout-tier".into(),
+            section: Some("Rewards by threat level".into()),
+            ..clause_item(text, None)
+        }
+    }
+
+    #[test]
+    fn payout_quotes_the_claimed_severity_row_not_the_floor_row() {
+        let mut p = terms("high_and_above", Some("high"));
+        p.quote = Some("High: up to $10,000".into());
+        let d = dossier_with(
+            vec![
+                tier_item("Critical: up to $2,000,000 Minimum reward $150,000"),
+                tier_item("High: up to $10,000"),
+                tier_item("Highest-impact bonus applies"),
+            ],
+            Some(p),
+        );
+        let crit = payout(&d, Some(Severity::Critical));
+        assert_eq!(crit.payable, Some(true));
+        assert_eq!(
+            crit.quote.as_deref(),
+            Some("Critical: up to $2,000,000 Minimum reward $150,000")
+        );
+        assert_eq!(crit.section.as_deref(), Some("Rewards by threat level"));
+        let high = payout(&d, Some(Severity::High));
+        assert_eq!(high.quote.as_deref(), Some("High: up to $10,000"));
+        // No row names Medium: the floor row is quoted, and it is not payable.
+        let medium = payout(&d, Some(Severity::Medium));
+        assert_eq!(medium.payable, Some(false));
+        assert_eq!(medium.quote.as_deref(), Some("High: up to $10,000"));
+        assert_eq!(medium.section.as_deref(), Some("Rewards"));
+        // No claim: the floor row.
+        assert_eq!(
+            payout(&d, None).quote.as_deref(),
+            Some("High: up to $10,000")
+        );
     }
 
     #[test]

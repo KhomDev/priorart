@@ -496,7 +496,7 @@ pub fn rules() -> String {
         vocab::clause_classes().len()
     ));
     out.push_str(
-        "\nWhat priorart does NOT do: it does not fetch a platform page (everything is a file you\n  saved), it does not decide duplicates, and it does not check whether the PoC proves the\n  claim - that is realism-gate.\n\nExit codes: 0 analysis produced; 2 usage, IO or parse error; 1 only with\n  --fail-on-excluded or --fail-on-unpayable.\n",
+        "\nWhat priorart does NOT do: it does not crawl, cache or refresh a page (`priorart fetch`\n  is the only command that opens a socket, and only for the HTTPS URLs you pass),\n  it does not decide duplicates, and it does not check whether the PoC proves the\n  claim - that is realism-gate.\n\nExit codes: 0 analysis produced; 2 usage, IO or parse error; 1 only with\n  --fail-on-excluded or --fail-on-unpayable.\n",
     );
     sanitize(&out)
 }

@@ -24,12 +24,12 @@ report it the same way as a disclosure.
 
 ### 3. Something in the tool reaches the network
 
-The offline property is a hard guarantee, not a preference: everything priorart
-reads is a file you saved, and a dossier must not leave the machine. It is
-enforced by `tests/cli.rs::the_crate_has_no_http_client` (no HTTP client crate
-in `Cargo.toml` or `Cargo.lock`, no `std::net` or socket call in `src/`) and
-explained in [docs/no-network.md](docs/no-network.md). A way to make the tool
-open a socket, or a dependency that brings one in, is a security issue.
+No command except `priorart fetch` opens a socket, and `fetch` only requests
+the HTTPS URLs you pass. It is explained in
+[docs/no-network.md](docs/no-network.md) and enforced by
+`tests/cli.rs::the_http_client_is_only_the_fetch_feature` (the HTTP client is
+optional, named only in the fetch module, and no source file calls
+`std::net`). A way to make `build` or `check` open a socket is a security issue.
 
 The attackers, trust boundaries and the test behind each guarantee are in
 [docs/threat-model.md](docs/threat-model.md). Its open items are the places

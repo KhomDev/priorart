@@ -92,8 +92,9 @@ cargo install priorart        # or: cargo binstall priorart
 priorart --version
 ```
 
-No API key, no network, no data directory: the vocabularies and the rejection
-dataset are compiled into the binary. Rust 1.95 or newer.
+No API key and no data directory: the vocabularies and the rejection dataset
+are compiled into the binary. `priorart fetch` is the only command that opens
+a socket. Rust 1.95 or newer.
 
 ## Quickstart
 
@@ -184,7 +185,7 @@ IS IT EXCLUDED?       1 clause class match your preconditions (attacker: role: o
   -> a match is a prompt to read the clause, not a reject.
 
 CAN IT BE PAID?       tier shape: medium_and_above (pays critical/high/medium, floor medium); High is payable (cited: https://example.invalid/html/rewards, section Rewards)
-  "Medium: 2,000 USD"
+  "High: 10,000 USD"
   High is at or above the floor (Medium)
 
 NOTES
@@ -301,8 +302,9 @@ one place to be wrong.
   transcribed.
 - It is not a proof checker. Whether the PoC proves the claim is
   [realism-gate](https://github.com/KhomDev/realism-gate)'s question.
-- It is not a fetcher. Program pages are files you saved; priorart never requests
-  a URL at runtime ([docs/no-network.md](docs/no-network.md)).
+- It is not a crawler. `priorart fetch` is the one command that opens a socket:
+  the HTTPS URLs you name, one GET each, no cache and no refresh. Every other
+  command reads files ([docs/no-network.md](docs/no-network.md)).
 
 ## Migrating from viability-gate
 

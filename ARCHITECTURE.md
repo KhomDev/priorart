@@ -43,7 +43,7 @@ reads that dossier and a finding and assembles the evidence.
 
 | Component | Files | Why it exists | Must never |
 |---|---|---|---|
-| Import | `dossier/import.rs`, `dossier/html.rs` | Reads the program folder in a fixed order (program page, known issues, audits by file name) and splits it into items with page numbers and verbatim quotes. A saved `scope.html`/`scope.htm` is converted to Markdown-shaped text first. A PDF is scraped for text literals, then read with `pdftotext` unless `--no-pdftotext` is set. Symlinks and special files are refused or named-skipped, never followed | fetch a URL, invent text, or follow a symlink |
+| Import | `dossier/import.rs`, `dossier/html.rs` | Reads the program folder in a fixed order (the classic scope file, then `pages/`, known issues, audits by file name) and splits it into items with page numbers and verbatim quotes. HTML is converted first (headings, bullets, tables, hrefs). A PDF is scraped for text literals, then read with `pdftotext` unless `--no-pdftotext` is set. Symlinks and special files are refused or named-skipped, never followed | fetch a URL, invent text, or follow a symlink |
 | Fingerprints | `dossier/sha256.rs` | SHA-256 of each source, in-tree, so the crate has no hashing dependency | be used as a security boundary (it's an identifier) |
 | Build | `dossier/build.rs` | Sorts sources and items, assigns ids from those orders, and writes no wall-clock field. Two builds of one folder are byte-identical (tested in `tests/cli.rs`). It refuses to write a serialized dossier over the `check` limit | depend on file-system order or time, or write a dossier `check` would refuse |
 | Load | `dossier/load.rs` | Reads and validates a dossier against `priorart.dossier/v1` before anything uses it | accept a dossier with an unknown schema |
@@ -104,7 +104,7 @@ reports a pass.
 | priorart → pdftotext | an untrusted PDF, read by **native third-party code (poppler), run as the same user without a sandbox** | only when the built-in scrape finds no text, and never with `--no-pdftotext`; absolute `PATH` entries only; the PDF is passed as an absolute path and must be a regular file; killed after 60 s or 16 MiB of output; a missing or refused `pdftotext` is a warning and the build still succeeds |
 | Finding → matcher and gates | the user's draft | a regular file of at most 16 MiB; regexes and keyword tables only; nothing is evaluated |
 | Dossier file → check | JSON that may have been edited | a regular file of at most 64 MiB; validated against the schema on load; page ranges checked against the recorded sources |
-| Network | — | none: no HTTP client in the manifest or lockfile, checked by a CI job ([docs/no-network.md](docs/no-network.md)) |
+| Network | `fetch` only | `ureq` behind the `fetch` feature; every other command is offline ([docs/no-network.md](docs/no-network.md)) |
 
 ## Failure modes
 

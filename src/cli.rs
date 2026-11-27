@@ -30,7 +30,9 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
                      the 14 clause classes, against your preconditions.\n\
                   3. Can it be paid?      your claimed severity against the program's payout\n\
                      tier shape and floor.\n\n\
-                  Everything is read from files you saved. The tool never touches the network.\n\
+                  build, check and the other commands read files you saved and do not open a\n\
+                  socket. priorart fetch is the one networked command: the HTTPS URLs you name,\n\
+                  one GET each, nothing else.\n\
                   Build a dossier once per program (priorart build), then run every finding\n\
                   against it (priorart check)."
 )]
@@ -41,6 +43,18 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Fetch HTTPS program pages into a program folder. The only networked command.
+    Fetch {
+        /// Page URL. Repeat for several pages; one GET each, no crawling.
+        #[arg(required = true, value_name = "URL")]
+        urls: Vec<String>,
+        /// Program folder to write into (default: the current directory)
+        #[arg(long, value_name = "DIR")]
+        dir: Option<PathBuf>,
+        /// Overwrite a page this command already saved. Never overwrites scope.md.
+        #[arg(long)]
+        force: bool,
+    },
     /// Build one deterministic dossier from a folder of saved, offline inputs
     Build {
         /// Folder holding scope.md, known-issues.*, audits/* and optional program.yaml
@@ -302,6 +316,7 @@ pub fn main_entry() -> ExitCode {
 
 fn run(cli: Cli) -> Result<ExitCode, String> {
     match cli.command {
+        Command::Fetch { urls, dir, force } => run_fetch(&urls, dir.as_deref(), force),
         Command::Build {
             program_dir,
             out,
@@ -469,6 +484,25 @@ fn run(cli: Cli) -> Result<ExitCode, String> {
             print!("{}", text::rules());
             Ok(ExitCode::SUCCESS)
         }
+    }
+}
+
+fn run_fetch(urls: &[String], dir: Option<&Path>, force: bool) -> Result<ExitCode, String> {
+    let dir = dir.unwrap_or_else(|| Path::new("."));
+    #[cfg(feature = "fetch")]
+    {
+        let transport = crate::fetch::ureq_transport()?;
+        let report = crate::fetch::run(dir, urls, force, &transport)?;
+        print!("{}", report.render());
+        Ok(ExitCode::SUCCESS)
+    }
+    #[cfg(not(feature = "fetch"))]
+    {
+        let _ = (dir, urls, force);
+        Err(
+            "this binary was built without the fetch feature (--no-default-features) and has no HTTP client. Rebuild without --no-default-features to use priorart fetch."
+                .into(),
+        )
     }
 }
 

@@ -33,7 +33,7 @@ this release withdraws.
 | `ledger validate` on the golden files prints 6 entries, 0 errors | `priorart ledger validate examples/ledger.example.yaml examples/tier-shapes.example.yaml` | 2026-11-13 | validated |
 | The five tier shapes and fourteen clause classes are the shipped vocabularies | `src/vocab/mod.rs` tests assert the counts, no `any` shape, no informational floor | 2026-11-13 | validated |
 | The rejection dataset keeps its row and column contract and its `summary.json` keys | `src/rejections/mod.rs` tests (113 rows, 10 columns, keys present) | 2026-11-13 | validated |
-| The crate is offline: no HTTP client, no socket | `tests/cli.rs::the_crate_has_no_http_client` (Cargo.toml, Cargo.lock, every `src/` file) | 2026-11-13 | validated |
+| No command except `fetch` opens a socket; `--no-default-features` has no HTTP client | `tests/cli.rs::the_http_client_is_only_the_fetch_feature`; CI job `no-network` | 2026-11-27 | validated |
 | `check` never panics on multi-byte text | `matching::tests::multi_byte_text_never_panics_in_the_negation_window` | 2026-11-13 | validated |
 | Quotes are whole sentences, not fixed-length cuts | `matching::tests::quotes_are_whole_sentences_and_never_cut_inside_an_identifier` and the README fixture | 2026-11-13 | validated |
 | Negations do not become preconditions or mechanism claims | `gates::tests::an_any_user_atomic_finding_trips_nothing`, `matching::tests::negation_awareness_is_local_to_the_clause` | 2026-11-13 | validated |

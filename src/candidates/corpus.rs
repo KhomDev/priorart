@@ -107,14 +107,20 @@ pub fn load_corpus(path: &Path) -> Result<Corpus, String> {
     }
 }
 
+/// Dossier item kinds that describe the bounty program (scope, payout rows,
+/// in-scope impacts), not a prior finding. `candidates` never ranks them.
+pub(crate) fn is_program_metadata(kind: &str) -> bool {
+    matches!(
+        kind,
+        "scope-clause" | "scope-path" | "payout-tier" | "impact"
+    )
+}
+
 fn load_dossier(path: &Path) -> Result<Corpus, String> {
     let dossier = dossier::load::load(path)?;
     let mut items = Vec::new();
     for item in dossier.items {
-        if matches!(
-            item.kind.as_str(),
-            "scope-clause" | "scope-path" | "payout-tier"
-        ) {
+        if is_program_metadata(&item.kind) {
             continue;
         }
         let text = if item.text.is_empty() {

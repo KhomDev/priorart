@@ -1098,3 +1098,13 @@ fn the_size_cap_accepts_exactly_the_limit_and_rejects_one_byte_more() {
     let error = super::alarm::check_size(MAX_JSON_BYTES + 1, path).expect_err("one byte more");
     assert!(error.contains("priorart reads up to"), "{error}");
 }
+
+#[test]
+fn program_metadata_kinds_are_not_prior_findings() {
+    for kind in ["scope-clause", "scope-path", "payout-tier", "impact"] {
+        assert!(super::corpus::is_program_metadata(kind), "{kind}");
+    }
+    for kind in ["finding", "page-section", "known-issue", "Impact", ""] {
+        assert!(!super::corpus::is_program_metadata(kind), "{kind}");
+    }
+}

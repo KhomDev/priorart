@@ -5,6 +5,7 @@ Every command, flag and exit code in `priorart 0.2.1`. `priorart --help` and
 truth for wording.
 
 ```text
+priorart fetch <URL>... [--dir DIR] [--force]
 priorart build <program-dir> [--out FILE] [--program ID] [--json]
 priorart check <finding.md> [--dossier FILE] [--top-k N] [--json]
                             [--fail-on-excluded] [--fail-on-unpayable]
@@ -52,6 +53,37 @@ CI job must pass one of the two flags to fail on a finding.
   so a pipe gets clean JSON.
 - `ledger validate` accepts several YAML files; with more than one, each message
   is prefixed with its file and the top-level `ledger` key is omitted.
+
+## fetch
+
+The only command that opens a socket. One HTTPS GET per URL, no crawling.
+Pages are written to `<dir>/pages/001.html`, `002.html`, … in the order given,
+plus `<dir>/fetch.json` (url, final URL, HTTP status, UTC time, byte count,
+sha256). `build` reads `pages/` after the classic `scope.*` file.
+[no-network.md](no-network.md) is the policy.
+
+| Flag | Meaning |
+|---|---|
+| `--dir DIR` | Program folder. Default: the current directory. |
+| `--force` | Overwrite a page this command already saved. `scope.md` is never overwritten. |
+
+Refused before a request: `http:`, `file:`, any scheme other than `https`, a
+URL with userinfo, an IP-literal host, `localhost`. At most 5 redirects, each
+of which must itself be HTTPS. 30 second timeout. 16 MiB body. No cookies, no
+`Authorization` header. `http_proxy`, `https_proxy`, `all_proxy` and the
+uppercase forms are ignored. `User-Agent` is `priorart/<version>`.
+
+Exit 2 on a rejected URL, a non-2xx response, too many redirects, or a body
+over the cap, and nothing is written. A binary built with
+`--no-default-features` has no HTTP client and exits 2 on `fetch`.
+
+```text
+$ priorart fetch https://example.invalid/program/information --dir my-program
+priorart 0.2.2 - fetched 1 page(s) into my-program
+  pages/001.html  200  12345 bytes  sha256 abcdef012345  https://example.invalid/program/information
+  wrote fetch.json
+Next: priorart build my-program
+```
 
 ## build
 
