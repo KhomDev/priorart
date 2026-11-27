@@ -138,6 +138,7 @@ fn run_capped(
         }
         url::validate_fetch_url(url)?;
         let rel = path_for_url(&file, url, &planned);
+        check_page_path(&rel)?;
         let dest = dir.join(&rel);
         refuse_scope_md(&dest)?;
         if dest.exists() && !force {
@@ -310,6 +311,26 @@ fn read_fetch_file(dir: &Path) -> Result<FetchFile, String> {
         ));
     }
     Ok(file)
+}
+
+/// A page path from `fetch.json` must stay inside `pages/`. A hand-edited or
+/// poisoned `fetch.json` could otherwise point a URL at `../x` or an absolute
+/// path, and `fetch` would write there.
+fn check_page_path(rel: &str) -> Result<(), String> {
+    let ok = rel.starts_with("pages/")
+        && rel.len() > "pages/".len()
+        && !rel.contains('\\')
+        && !rel.contains(':')
+        && rel
+            .split('/')
+            .all(|part| !part.is_empty() && part != "." && part != "..");
+    if ok {
+        Ok(())
+    } else {
+        Err(format!(
+            "fetch.json maps a URL to {rel:?}, which is not a file under pages/. priorart fetch writes nowhere else; fix or move fetch.json aside."
+        ))
+    }
 }
 
 fn refuse_scope_md(path: &Path) -> Result<(), String> {
@@ -574,5 +595,293 @@ mod tests {
         assert_eq!(MAX_BODY_BYTES, 16 * 1024 * 1024);
         assert_eq!(MAX_REDIRECTS, 5);
         assert_eq!(url::TIMEOUT_SECS, 30);
+    }
+
+    fn script(pairs: Vec<(&str, u16, Vec<(&str, &str)>, &[u8])>) -> Script {
+        let mut responses = BTreeMap::new();
+        for (url, status, headers, body) in pairs {
+            responses.insert(
+                url.to_string(),
+                HttpResponse {
+                    status,
+                    headers: headers
+                        .into_iter()
+                        .map(|(k, v)| (k.to_string(), v.to_string()))
+                        .collect(),
+                    body: body.to_vec(),
+                },
+            );
+        }
+        Script {
+            hits: Mutex::new(Vec::new()),
+            responses,
+        }
+    }
+
+    fn page(url: &str, final_url: &str, path: &str) -> PageRecord {
+        PageRecord {
+            url: url.into(),
+            final_url: final_url.into(),
+            status: 200,
+            retrieved: "1970-01-01T00:00:00Z".into(),
+            bytes: 3,
+            sha256: "0123456789abcdef0123".into(),
+            path: path.into(),
+        }
+    }
+
+    fn write_fetch_json(dir: &Path, pages: Vec<PageRecord>) {
+        let file = FetchFile {
+            schema: FETCH_SCHEMA.into(),
+            tool: crate::TOOL.into(),
+            version: "0".into(),
+            pages,
+        };
+        fs::write(dir.join("fetch.json"), serde_json::to_vec(&file).unwrap()).unwrap();
+    }
+
+    #[test]
+    fn render_lists_each_page_and_the_redirect_target_and_strips_control_bytes() {
+        let report = FetchReport {
+            dir: PathBuf::from("prog"),
+            pages: vec![
+                page(
+                    "https://a.example/x",
+                    "https://a.example/x",
+                    "pages/001.html",
+                ),
+                page(
+                    "https://a.example/y",
+                    "https://a.example/y/",
+                    "pages/002.html",
+                ),
+                PageRecord {
+                    sha256: "abc".into(),
+                    ..page(
+                        "https://a.example/\u{1b}[2J",
+                        "https://a.example/\u{1b}[2J",
+                        "pages/003.html",
+                    )
+                },
+            ],
+        };
+        let out = report.render();
+        assert!(out.contains("fetched 3 page(s) into prog"), "{out}");
+        assert!(
+            out.contains(
+                "pages/001.html  200  3 bytes  sha256 0123456789ab  https://a.example/x\n"
+            ),
+            "{out}"
+        );
+        assert!(
+            out.contains("https://a.example/y  https://a.example/y/\n"),
+            "{out}"
+        );
+        assert!(
+            out.contains("sha256 abc "),
+            "a short hash is printed whole: {out}"
+        );
+        assert!(
+            !out.contains('\u{1b}'),
+            "an escape byte reached the terminal: {out:?}"
+        );
+        assert!(out.ends_with("Next: priorart build prog\n"), "{out}");
+    }
+
+    #[test]
+    fn empty_duplicate_and_non_directory_inputs_are_refused_before_any_request() {
+        let dir = scratch("inputs");
+        let s = script(vec![]);
+        let err = run(&dir, &[], false, &s).unwrap_err();
+        assert!(err.contains("at least one HTTPS URL"), "{err}");
+        let u = "https://example.com/a".to_string();
+        let err = run(&dir, &[u.clone(), u.clone()], false, &s).unwrap_err();
+        assert!(err.contains("more than once"), "{err}");
+        let file = dir.join("not-a-dir");
+        fs::write(&file, "x").unwrap();
+        let err = run(&file, &[u], false, &s).unwrap_err();
+        assert!(err.contains("is not a directory"), "{err}");
+        assert!(s.hits.lock().unwrap().is_empty());
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_new_folder_is_created_and_a_relative_redirect_is_followed() {
+        let dir = scratch("create").join("new").join("prog");
+        let s = script(vec![
+            (
+                "https://example.com/a",
+                301,
+                vec![("location", "/b")],
+                &b""[..],
+            ),
+            ("https://example.com/b", 200, vec![], &b"ok"[..]),
+        ]);
+        let report = run(&dir, &["https://example.com/a".into()], false, &s).unwrap();
+        assert_eq!(report.pages[0].final_url, "https://example.com/b");
+        assert_eq!(fs::read(dir.join("pages/001.html")).unwrap(), &b"ok"[..]);
+        assert!(
+            !dir.join("pages/001.tmp").exists(),
+            "the temp file was left behind"
+        );
+        let _ = fs::remove_dir_all(dir.parent().unwrap().parent().unwrap());
+    }
+
+    #[test]
+    fn a_redirect_without_location_or_to_an_unfetchable_target_saves_nothing() {
+        let dir = scratch("badloc");
+        for (loc, want) in [
+            (None, "has no Location"),
+            (Some("https://127.0.0.1/x"), "will not request"),
+            (Some("file:///etc/passwd"), "priorart fetch"),
+        ] {
+            let headers = loc.map(|l| vec![("Location", l)]).unwrap_or_default();
+            let s = script(vec![("https://example.com/r", 307, headers, &b""[..])]);
+            let err = run(&dir, &["https://example.com/r".into()], false, &s).unwrap_err();
+            assert!(err.contains(want), "{loc:?}: {err}");
+            assert_eq!(
+                s.hits.lock().unwrap().len(),
+                1,
+                "{loc:?}: a second request was made"
+            );
+            assert!(!dir.join("fetch.json").exists());
+            assert!(!dir.join("pages").exists());
+        }
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn non_2xx_and_transport_errors_save_nothing() {
+        let dir = scratch("status");
+        for status in [100u16, 204 + 100, 404, 500] {
+            let s = script(vec![(
+                "https://example.com/s",
+                status,
+                vec![],
+                &b"body"[..],
+            )]);
+            let err = run(&dir, &["https://example.com/s".into()], false, &s).unwrap_err();
+            assert!(err.contains(&format!("HTTP {status}")), "{status}: {err}");
+        }
+        let s = script(vec![]);
+        let err = run(&dir, &["https://example.com/timeout".into()], false, &s).unwrap_err();
+        assert!(
+            err.starts_with("cannot fetch https://example.com/timeout"),
+            "{err}"
+        );
+        assert!(!dir.join("fetch.json").exists());
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_second_url_gets_the_next_free_page_and_the_first_keeps_its_path() {
+        let dir = scratch("next");
+        fs::create_dir_all(dir.join("pages")).unwrap();
+        write_fetch_json(
+            &dir,
+            vec![page(
+                "https://example.com/old",
+                "https://example.com/old",
+                "pages/001.html",
+            )],
+        );
+        let s = script(vec![("https://example.com/new", 200, vec![], &b"n"[..])]);
+        let report = run(&dir, &["https://example.com/new".into()], false, &s).unwrap();
+        assert_eq!(report.pages[0].path, "pages/002.html");
+        let meta: FetchFile =
+            serde_json::from_slice(&fs::read(dir.join("fetch.json")).unwrap()).unwrap();
+        let paths: Vec<_> = meta.pages.iter().map(|p| p.path.as_str()).collect();
+        assert_eq!(paths, ["pages/001.html", "pages/002.html"]);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_corrupt_or_foreign_fetch_json_is_never_overwritten() {
+        let dir = scratch("corrupt");
+        let s = script(vec![("https://example.com/a", 200, vec![], &b"a"[..])]);
+        for (body, want) in [
+            (&b"{not json"[..], "is not a priorart.fetch/v1 file"),
+            (
+                &br#"{"schema":"other/v9","tool":"x","version":"0","pages":[]}"#[..],
+                "has schema \"other/v9\"",
+            ),
+        ] {
+            fs::write(dir.join("fetch.json"), body).unwrap();
+            let err = run(&dir, &["https://example.com/a".into()], false, &s).unwrap_err();
+            assert!(err.contains(want), "{err}");
+            assert_eq!(fs::read(dir.join("fetch.json")).unwrap(), body);
+        }
+        assert!(s.hits.lock().unwrap().is_empty());
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_poisoned_fetch_json_cannot_send_a_page_outside_pages_or_onto_scope_md() {
+        let dir = scratch("poison");
+        let u = "https://example.com/p";
+        for bad in [
+            "../escape.html",
+            "/abs.html",
+            "C:/x.html",
+            "pages/../../x.html",
+            "pages\\..\\x.html",
+            "pages/",
+            "scope.md",
+        ] {
+            write_fetch_json(&dir, vec![page(u, u, bad)]);
+            let s = script(vec![(u, 200, vec![], &b"evil"[..])]);
+            let err = run(&dir, &[u.into()], true, &s).unwrap_err();
+            assert!(err.contains("not a file under pages/"), "{bad}: {err}");
+            assert!(s.hits.lock().unwrap().is_empty(), "{bad}: requested anyway");
+        }
+        assert!(!dir.parent().unwrap().join("escape.html").exists());
+        write_fetch_json(&dir, vec![page(u, u, "pages/scope.md")]);
+        let s = script(vec![(u, 200, vec![], &b"evil"[..])]);
+        let err = run(&dir, &[u.into()], true, &s).unwrap_err();
+        assert!(err.contains("never overwrites scope.md"), "{err}");
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn header_lookup_ignores_case_and_only_listed_codes_redirect() {
+        let h = vec![("LOCATION".to_string(), "x".to_string())];
+        assert_eq!(header(&h, "location"), Some("x"));
+        assert_eq!(header(&h, "content-type"), None);
+        for code in [301, 302, 303, 307, 308] {
+            assert!(is_redirect(code), "{code}");
+        }
+        for code in [200, 300, 304, 305, 306, 309, 399] {
+            assert!(!is_redirect(code), "{code}");
+        }
+    }
+
+    #[test]
+    fn utc_dates_cross_leap_days_and_centuries() {
+        assert_eq!(format_utc(951_782_400), "2000-02-29T00:00:00Z");
+        assert_eq!(format_utc(4_107_542_399), "2100-02-28T23:59:59Z");
+        assert_eq!(format_utc(1_709_164_800 + 3_661), "2024-02-29T01:01:01Z");
+        assert!(utc_now().ends_with('Z'));
+        assert_eq!(utc_now().len(), 20);
+    }
+
+    proptest::proptest! {
+        #[test]
+        fn civil_from_days_is_monotone_and_in_range(days in 0i64..200_000) {
+            let (y, m, d) = civil_from_days(days);
+            let (y2, m2, d2) = civil_from_days(days + 1);
+            proptest::prop_assert!((1..=12).contains(&m) && (1..=31).contains(&d));
+            proptest::prop_assert!((y2, m2, d2) > (y, m, d));
+        }
+
+        #[test]
+        fn check_page_path_accepts_only_plain_files_under_pages(s in "\\PC{0,40}") {
+            if check_page_path(&s).is_ok() {
+                proptest::prop_assert!(s.starts_with("pages/"));
+                proptest::prop_assert!(!s.split('/').any(|p| p == ".." || p == "." || p.is_empty()));
+                proptest::prop_assert!(!s.contains('\\') && !s.contains(':'));
+            }
+            let numbered = format!("pages/{:03}.html", s.len());
+            proptest::prop_assert!(check_page_path(&numbered).is_ok());
+        }
     }
 }
