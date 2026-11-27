@@ -331,7 +331,7 @@ claude mcp add priorart -- priorart-mcp
 Settings (`PRIORART_MCP_ROOT`, `PRIORART_MCP_TIMEOUT_SECS`, `PRIORART_BIN`),
 the tool table and the limits: [docs/mcp.md](docs/mcp.md).
 
-- MCP Registry name: `mcp-name: io.github.khomdev/priorart`
+- MCP Registry name: `mcp-name: io.github.KhomDev/priorart`
 
 ## Docs
 

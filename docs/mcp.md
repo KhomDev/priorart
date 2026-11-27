@@ -1,7 +1,7 @@
 # MCP server and Claude skill
 
 `priorart-mcp` is an MCP server for priorart. It is listed in the MCP Registry
-as `io.github.khomdev/priorart` once a release that ships it is on crates.io
+as `io.github.KhomDev/priorart` once a release that ships it is on crates.io
 (see [Status](#status)). It ships in the same crate as the CLI, so one install
 gives both binaries.
 

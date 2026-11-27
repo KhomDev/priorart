@@ -15,7 +15,7 @@ appears here only if it came from a command that can be re-run.
 
 ### Added
 
-- **MCP server `priorart-mcp`** (MCP Registry `io.github.khomdev/priorart`,
+- **MCP server `priorart-mcp`** (MCP Registry `io.github.KhomDev/priorart`,
   [docs/mcp.md](docs/mcp.md)). A second binary in the same crate: newline
   JSON-RPC over stdio (Content-Length framing also read), protocol revisions
   2025-06-18, 2025-03-26 and 2024-11-05. Eleven read-only tools, each one

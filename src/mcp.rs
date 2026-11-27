@@ -1,5 +1,5 @@
 //! The MCP server behind `priorart-mcp`, listed in the MCP Registry as
-//! `io.github.khomdev/priorart`.
+//! `io.github.KhomDev/priorart`.
 //!
 //! The server speaks MCP over stdio and shells out to `priorart`. It does not
 //! link the analysis, so every number and quote a tool returns is the CLI's
@@ -22,7 +22,7 @@ use std::time::{Duration, Instant};
 
 /// The server's name in the MCP Registry. The crate README carries the same
 /// string after `mcp-name:`, which is how the registry checks ownership.
-pub const REGISTRY_NAME: &str = "io.github.khomdev/priorart";
+pub const REGISTRY_NAME: &str = "io.github.KhomDev/priorart";
 
 /// Protocol revisions this server answers, newest first.
 pub const PROTOCOL_VERSIONS: &[&str] = &["2025-06-18", "2025-03-26", "2024-11-05"];

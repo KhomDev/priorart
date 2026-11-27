@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.khomdev/priorart",
+  "name": "io.github.KhomDev/priorart",
   "title": "priorart",
   "description": "Audit-finding triage: prior art, exclusions and payability, as quoted evidence. Offline.",
   "repository": {

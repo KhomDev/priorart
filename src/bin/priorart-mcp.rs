@@ -1,5 +1,5 @@
 #![forbid(unsafe_code)]
-//! MCP stdio server (`io.github.khomdev/priorart`). See `src/mcp.rs` for the
+//! MCP stdio server (`io.github.KhomDev/priorart`). See `src/mcp.rs` for the
 //! tools and the transport.
 //!
 //! priorart is `PRIORART_BIN` when set, else a sibling of this
@@ -14,7 +14,7 @@ use std::process::Command;
 use std::time::Duration;
 
 const HELP: &str =
-    "priorart-mcp: the priorart MCP server (MCP Registry: io.github.khomdev/priorart)
+    "priorart-mcp: the priorart MCP server (MCP Registry: io.github.KhomDev/priorart)
 
 Speaks MCP over stdio: one JSON-RPC message per line on stdin and stdout.
 Content-Length framed requests are also read and answered in kind.
