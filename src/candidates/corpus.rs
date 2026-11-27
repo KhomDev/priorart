@@ -389,3 +389,58 @@ impl CorpusKind {
         }
     }
 }
+
+#[cfg(test)]
+mod cap_tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    fn scratch(label: &str) -> PathBuf {
+        static N: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let n = N.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        let dir = std::env::temp_dir().join(format!(
+            "priorart-corpus-{label}-{}-{n}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn a_json_file_of_exactly_the_cap_is_read_and_one_byte_more_is_refused_up_front() {
+        let dir = scratch("json-cap");
+        let file = dir.join("a.json");
+        std::fs::write(&file, [b'x'; 10]).unwrap();
+        assert_eq!(read_capped(&file, 10, "corpus").unwrap().len(), 10);
+        std::fs::write(&file, [b'x'; 11]).unwrap();
+        let e = read_capped(&file, 10, "corpus").unwrap_err();
+        assert!(e.contains(" is ") && !e.contains("grew to"), "{e}");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn an_item_of_exactly_the_cap_is_read_and_one_byte_more_is_refused() {
+        let dir = scratch("item-cap");
+        let file = dir.join("a.md");
+        std::fs::write(&file, vec![b'a'; MAX_ITEM_BYTES as usize]).unwrap();
+        let (text, _) = read_item_text(&file).expect("exactly the cap");
+        assert_eq!(text.len() as u64, MAX_ITEM_BYTES);
+        std::fs::write(&file, vec![b'a'; MAX_ITEM_BYTES as usize + 1]).unwrap();
+        let e = read_item_text(&file).unwrap_err();
+        assert!(e.contains("reads an item up to 16 MiB"), "{e}");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn two_files_with_one_stem_get_their_file_names_as_ids() {
+        let dir = scratch("stems");
+        std::fs::write(dir.join("a.md"), "one").unwrap();
+        std::fs::write(dir.join("a.txt"), "two").unwrap();
+        std::fs::write(dir.join("b.md"), "three").unwrap();
+        let corpus = load_directory(&dir).unwrap();
+        let ids: Vec<&str> = corpus.items.iter().map(|i| i.id.as_str()).collect();
+        assert_eq!(ids, ["a.md", "a.txt", "b"]);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+}

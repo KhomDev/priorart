@@ -434,6 +434,45 @@ mod tests {
     }
 
     #[test]
+    fn a_body_of_exactly_the_cap_is_accepted_and_one_byte_more_is_not() {
+        let t = script(vec![(
+            "https://e.example/a",
+            200,
+            vec![],
+            b"0123456789abcdef",
+        )]);
+        let got = fetch_one("https://e.example/a", &t, 16).expect("exactly the cap");
+        assert_eq!(got.body.len(), 16);
+        let err = fetch_one("https://e.example/a", &t, 15)
+            .err()
+            .expect("one byte over");
+        assert!(err.contains("over the 15 byte cap"), "{err}");
+    }
+
+    #[test]
+    fn a_page_path_already_planned_in_this_run_is_not_reused() {
+        let file = FetchFile {
+            schema: FETCH_SCHEMA.to_string(),
+            tool: crate::TOOL.to_string(),
+            version: "0".to_string(),
+            pages: Vec::new(),
+        };
+        let planned = vec![(
+            "https://a.example/".to_string(),
+            PathBuf::from("x"),
+            "pages/001.html".to_string(),
+        )];
+        assert_eq!(
+            path_for_url(&file, "https://b.example/", &planned),
+            "pages/002.html"
+        );
+        assert_eq!(
+            path_for_url(&file, "https://b.example/", &[]),
+            "pages/001.html"
+        );
+    }
+
+    #[test]
     fn http_file_ip_and_localhost_never_call_the_transport() {
         let dir = scratch("policy");
         let script = Script {

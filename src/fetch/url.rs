@@ -451,6 +451,107 @@ mod tests {
     use super::*;
 
     #[test]
+    fn each_unfetchable_character_class_is_rejected_on_its_own() {
+        // Mutation survivors: `||` -> `&&` in the character check let a URL
+        // through that has only one of the three.
+        for url in [
+            "https://a.example/x y",
+            "https://a.example/x\u{7f}",
+            "https://a.example/x\\y",
+            "https://a.example/x\ty",
+        ] {
+            let e = validate_fetch_url(url).expect_err(url);
+            assert!(
+                e.contains("whitespace, controls and backslashes"),
+                "{url:?}: {e}"
+            );
+        }
+    }
+
+    #[test]
+    fn ip_literal_detection_is_exact_at_its_edges() {
+        assert!(!is_ip_literal("0x"), "0x alone is not an address");
+        assert!(is_ip_literal("0x7f"));
+        assert!(!is_ip_literal("cafe"), "hex digits without 0x are a name");
+        assert!(!is_ip_literal("deadbeef"));
+        assert!(!is_ip_literal("1.2"));
+        assert!(!is_ip_literal("10.0.0"));
+        assert!(!is_ip_literal("1.2.3.4.5"));
+        assert!(is_ip_literal("1.2.3.4"));
+        assert!(is_ip_literal("255.255.255.255"));
+        assert!(!is_ip_literal("1.2.3.256"));
+        assert!(!is_ip_literal("1.2.3.+5"), "a sign is not a digit");
+        assert!(!is_ip_literal("1.2.3.0001"), "four digits is not an octet");
+    }
+
+    #[test]
+    fn non_web_schemes_are_never_followed_whatever_their_case() {
+        for href in [
+            "mailto:a@b.example",
+            "MAILTO:a@b.example",
+            "blob:https://e.example/x",
+            "file:///etc/passwd",
+            "FILE:///etc/passwd",
+            "javascript:alert(1)",
+            "data:text/html,x",
+        ] {
+            assert_eq!(
+                resolve_link(Some("https://e.example/"), href),
+                None,
+                "{href}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_fragment_or_query_only_href_keeps_the_base_path() {
+        let base = "https://e.example/a/b.html?old=1#top";
+        assert_eq!(
+            resolve_link(Some(base), "#sec").as_deref(),
+            Some("https://e.example/a/b.html#sec")
+        );
+        assert_eq!(
+            resolve_link(Some(base), "?page=2").as_deref(),
+            Some("https://e.example/a/b.html?page=2")
+        );
+    }
+
+    #[test]
+    fn host_and_port_errors_name_their_own_cause() {
+        assert_eq!(host_of("[::1]:443").unwrap(), "[::1]");
+        assert!(host_of("[::1]x").unwrap_err().contains("is not a host"));
+        assert_eq!(host_of("example.com:8080").unwrap(), "example.com");
+        for bad in ["example.com:abc", "example.com:"] {
+            let e = host_of(bad).unwrap_err();
+            assert!(e.contains("not a host this build requests"), "{bad}: {e}");
+        }
+        assert!(host_of(":80").is_err(), "an empty host is refused");
+        assert!(check_port("").unwrap_err().contains("not a number"));
+        assert!(check_port("abc").unwrap_err().contains("not a number"));
+        assert!(check_port("0").is_ok());
+        assert!(check_port("65535").is_ok());
+        assert!(check_port("65536").unwrap_err().contains("outside 0-65535"));
+        assert!(check_port("70000").is_err());
+    }
+
+    #[test]
+    fn github_code_urls_need_a_github_host_with_or_without_www() {
+        assert!(is_github_code_url("https://github.com/org/repo"));
+        assert!(is_github_code_url("https://www.github.com/org/repo"));
+        assert!(!is_github_code_url("https://evil.example/org/repo"));
+    }
+
+    #[test]
+    fn a_scheme_with_nothing_after_it_is_not_a_url() {
+        assert!(http_urls("https://").is_empty());
+        assert!(http_urls("see https://").is_empty());
+        assert_eq!(
+            http_urls("see https://a.example."),
+            vec!["https://a.example"]
+        );
+    }
+
+    #[test]
     fn https_is_accepted_and_other_schemes_are_rejected() {
         assert!(validate_fetch_url("https://example.com/a").is_ok());
         assert!(validate_fetch_url("https://example.com:8443/a").is_ok());

@@ -1109,4 +1109,174 @@ var secret = 'not page text';</SCRIPT><style>.x{color:red}</style>\
         assert!(!is_html_path(Path::new("scope.md")));
         assert!(!is_html_path(Path::new("scope")));
     }
+
+    // ---- mutation follow-up (cargo-mutants run 45988528978 on 6cb50d3) ----
+    // These pin the byte-level helpers that the page-level tests only reach
+    // through whole documents.
+
+    #[test]
+    fn attr_value_reads_every_attribute_form() {
+        let href = |tag: &str| attr_value(tag, "href");
+        assert_eq!(href("<a href=\"x\">").as_deref(), Some("x"));
+        assert_eq!(href("<a href='x'>").as_deref(), Some("x"));
+        assert_eq!(href("<a href=x>").as_deref(), Some("x"));
+        assert_eq!(href("<a  href = \"x\" >").as_deref(), Some("x"));
+        assert_eq!(href("<a\nhref=\"x\">").as_deref(), Some("x"));
+        assert_eq!(href("<a href=\t\"x\">").as_deref(), Some("x"));
+        assert_eq!(href("<a title=\"t\" href=\"h\">").as_deref(), Some("h"));
+        assert_eq!(
+            href("<a data-href=\"no\" href=\"yes\">").as_deref(),
+            Some("yes")
+        );
+        assert_eq!(href("<A HREF=\"up\">").as_deref(), Some("up"));
+        assert_eq!(href("<a href=\"a&amp;b\">").as_deref(), Some("a&b"));
+        assert_eq!(href("<a href=\"\">").as_deref(), Some(""));
+        assert_eq!(href("<a href=x/y>").as_deref(), Some("x/y"));
+        assert_eq!(href("<a x=1 y=2 href=3>").as_deref(), Some("3"));
+        assert_eq!(href("<a title='say \"hi\"' href=h>").as_deref(), Some("h"));
+        assert_eq!(href("<a x-y:z_1=\"v\" href=h>").as_deref(), Some("h"));
+        assert_eq!(
+            attr_value("<a x-y:z_1=\"v\">", "x-y:z_1").as_deref(),
+            Some("v")
+        );
+        assert_eq!(href("<a!href=x>").as_deref(), Some("x"));
+        // The value of an unterminated tag runs to the end of the tag text.
+        assert_eq!(href("<a href=\"x").as_deref(), Some("x"));
+        assert_eq!(href("<a href=x").as_deref(), Some("x"));
+        // An unquoted value ends at whitespace.
+        assert_eq!(
+            attr_value("<a title=a href=b>", "title").as_deref(),
+            Some("a")
+        );
+        assert_eq!(href("<a title=a href=b>").as_deref(), Some("b"));
+    }
+
+    #[test]
+    fn attr_value_finds_nothing_when_there_is_no_such_attribute() {
+        let href = |tag: &str| attr_value(tag, "href");
+        assert_eq!(href("<a href>"), None);
+        assert_eq!(href("</a>"), None);
+        assert_eq!(href("<a>"), None);
+        assert_eq!(href("<a"), None);
+        assert_eq!(href("<"), None);
+        assert_eq!(href("<a title=\"t\">"), None);
+        assert_eq!(href("<a/href=\"x\">"), None);
+        assert_eq!(href("<a title=\"href=x\">"), None);
+        // the tag name is not an attribute name, whatever characters it holds
+        assert_eq!(href("<href=x>"), None);
+        assert_eq!(attr_value("<a-b=1>", "a-b"), None);
+        assert_eq!(attr_value("<a:b=1>", "a:b"), None);
+        assert_eq!(attr_value("<a_b=1>", "a_b"), None);
+    }
+
+    #[test]
+    fn tag_end_is_the_index_past_the_closing_gt() {
+        assert_eq!(tag_end(b"<a>", 0), Some(3));
+        assert_eq!(tag_end(b"<a href=\"x>y\">z", 0), Some(14));
+        assert_eq!(tag_end(b"<a href='x\"'>", 0), Some(13));
+        assert_eq!(tag_end(b"<a href = 'x>y'>", 0), Some(16));
+        // a stray quote that does not follow `=` is not an attribute quote
+        assert_eq!(tag_end(b"<a b'c>", 0), Some(7));
+        assert_eq!(tag_end(b"<a href=x 'y>y'>", 0), Some(13));
+        assert_eq!(tag_end(b"xx>yy>", 3), Some(6));
+        assert_eq!(tag_end(b"<a href=\"x>", 0), None);
+        assert_eq!(tag_end(b"abc", 3), None);
+        assert_eq!(tag_end(b"abc", 0), None);
+    }
+
+    #[test]
+    fn skip_raw_text_stops_after_the_matching_close_tag_only() {
+        assert_eq!(skip_raw_text(b"var a=1;</script>rest", 0, "script"), 17);
+        assert_eq!(skip_raw_text(b"x</SCRIPT >y", 0, "script"), 11);
+        assert_eq!(skip_raw_text(b"a</scripts>b</script>", 0, "script"), 21);
+        assert_eq!(skip_raw_text(b"</script/>", 0, "script"), 10);
+        assert_eq!(skip_raw_text(b"abc", 0, "script"), 3);
+        assert_eq!(skip_raw_text(b"a</style>b", 0, "script"), 10);
+        assert_eq!(skip_raw_text(b"<</script>", 0, "script"), 10);
+    }
+
+    #[test]
+    fn find_from_and_matches_ci_are_exact_at_their_edges() {
+        assert_eq!(find_from(b"abcabc", 0, b"bc"), Some(1));
+        assert_eq!(find_from(b"abcabc", 2, b"bc"), Some(4));
+        assert_eq!(find_from(b"abc", 2, b"c"), Some(2));
+        assert_eq!(find_from(b"abc", 3, b"c"), None);
+        assert_eq!(find_from(b"abc", 4, b"c"), None);
+        assert_eq!(find_from(b"abc", 0, b"x"), None);
+        assert!(matches_ci(b"ABC", 0, b"abc"));
+        assert!(matches_ci(b"xABC", 1, b"abc"));
+        assert!(matches_ci(b"xAB", 1, b"ab"));
+        assert!(!matches_ci(b"AB", 0, b"abc"));
+        assert!(!matches_ci(b"xAB", 1, b"abc"));
+        assert!(!matches_ci(b"ABD", 0, b"abc"));
+    }
+
+    #[test]
+    fn character_references_decode_exactly() {
+        assert_eq!(entity_at("&amp;x"), Some(('&', 5)));
+        assert_eq!(entity_at("&#65;"), Some(('A', 5)));
+        assert_eq!(entity_at("&#x41;"), Some(('A', 6)));
+        assert_eq!(entity_at("&#X41;"), Some(('A', 6)));
+        assert_eq!(entity_at("&#9;"), Some(('\t', 4)));
+        assert_eq!(entity_at("&#10;"), Some(('\n', 5)));
+        // control characters and invalid scalar values become a space
+        assert_eq!(entity_at("&#0;"), Some((' ', 4)));
+        assert_eq!(entity_at("&#27;"), Some((' ', 5)));
+        assert_eq!(entity_at("&#xD800;"), Some((' ', 8)));
+        assert_eq!(entity_at("&#x110000;"), Some((' ', 10)));
+        assert_eq!(entity_at("&#x;"), None);
+        assert_eq!(entity_at("&#12a;"), None);
+        assert_eq!(entity_at("&#99999999999;"), None);
+        assert_eq!(entity_at("&;"), None);
+        assert_eq!(entity_at("&nosuch;"), None);
+        assert_eq!(entity_at("&amp"), None);
+        // the longest body this build accepts is 32 bytes
+        let at_cap = format!("&#{}0;", "0".repeat(30));
+        assert_eq!(entity_at(&at_cap), Some((' ', 34)));
+        let over = format!("&#{}0;", "0".repeat(31));
+        assert_eq!(entity_at(&over), None);
+        // a multibyte character before the `;` does not break the scan
+        assert_eq!(entity_at("&\u{e9};"), None);
+    }
+
+    #[test]
+    fn small_text_helpers_do_exactly_one_thing() {
+        let mut out = String::from("ab  ");
+        trim_trailing_space(&mut out);
+        assert_eq!(out, "ab");
+        let mut out = String::from("  ");
+        trim_trailing_space(&mut out);
+        assert_eq!(out, "");
+        let mut out = String::from("a");
+        trim_trailing_space(&mut out);
+        assert_eq!(out, "a");
+
+        assert_eq!(floor_char_boundary("a\u{e9}", 2), 1);
+        assert_eq!(floor_char_boundary("a\u{e9}", 3), 3);
+        assert_eq!(floor_char_boundary("a\u{e9}", 99), 3);
+        assert_eq!(floor_char_boundary("abc", 1), 1);
+        assert_eq!(floor_char_boundary("\u{e9}", 1), 0);
+
+        let mut pending = true;
+        let mut out = String::new();
+        block_break(&mut out, &mut pending);
+        assert_eq!((out.as_str(), pending), ("", false));
+        let mut out = String::from("a");
+        block_break(&mut out, &mut pending);
+        assert_eq!(out, "a\n");
+        block_break(&mut out, &mut pending);
+        assert_eq!(out, "a\n");
+
+        let mut started = false;
+        let mut out = String::new();
+        push_heading_char(&mut out, ' ', &mut started);
+        assert_eq!((out.as_str(), started), ("", false));
+        push_heading_char(&mut out, 'a', &mut started);
+        assert_eq!((out.as_str(), started), ("a", true));
+        push_heading_char(&mut out, ' ', &mut started);
+        push_heading_char(&mut out, '\t', &mut started);
+        assert_eq!(out, "a ");
+        push_heading_char(&mut out, 'b', &mut started);
+        assert_eq!(out, "a b");
+    }
 }
