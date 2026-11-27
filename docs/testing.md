@@ -30,11 +30,11 @@ cargo +nightly fuzz run html_normalize -- -max_total_time=30
 
 | | `main` (0.2.2) | `p2/integration` + this branch |
 |---|---:|---:|
-| Unit (`src/`) | 94 | 232 |
-| Integration-level files (`tests/`) | 90 | 141 |
+| Unit (`src/`) | 94 | 235 |
+| Integration-level files (`tests/`) | 90 | 142 |
 | Property functions | 7 | 9 |
 | Fuzz targets in the CI matrix | 8 | 10 |
-| Executed, `--no-default-features` | n/a | 364 passed, 0 failed, 0 ignored |
+| Executed, `--no-default-features` | n/a | 370 passed, 0 failed, 0 ignored |
 
 Coverage (cargo llvm-cov, regions / functions / lines) was 86.65 / 86.27 / 85.88% at `f486d3a`, and
 86.42 / 86.03 / 85.84% after #40 added `fetch` (`7340dc4`). The figure for this branch, with the
