@@ -126,6 +126,13 @@ stream.
 to use priorart and how to read it: three questions, quoted evidence, no
 verdict, DEV-ONLY figures. It works with the MCP tools or with the CLI.
 
+The Anthropic Directory plugin at [`plugin-directory/`](../plugin-directory/)
+is a separate, tighter bundle of the same skill (worded so the agent does not
+run the CLI) and read-only commands. It has no hooks, no installer and no
+shell tools, which is what the Directory requires of an unverified publisher.
+`tests/plugin_directory.rs` pins those rules. The full plugin in `plugin/` is
+unchanged. Its privacy policy is [`plugin-directory/PRIVACY.md`](../plugin-directory/PRIVACY.md).
+
 ## Status
 
 - The server ships from 0.2.3. `cargo install priorart` 0.2.2 and earlier give

@@ -21,6 +21,16 @@ appears here only if it came from a command that can be re-run.
   only when a command asks; the SessionStart hook only reports. No MCP server is
   declared (see `plugin/README.md`). `tests/plugin.rs` keeps the versions and the
   skill copy in step and checks the directory's file rules.
+- Anthropic Directory plugin (`plugin-directory/`): the priorart skill, worded
+  so the agent does not run the CLI, and read-only commands (`allowed-tools` is
+  only Read, Grep, Glob and LS). No hooks, no `bin/` installer. A privacy
+  policy in `plugin-directory/PRIVACY.md` states that no data is collected,
+  stored or sent; `plugin.json` sets `privacyPolicyUrl`, `documentationUrl`
+  and `supportUrl` to GitHub URLs on `main`. The Directory README is plain
+  text and does not name image or font files (the required icon is present
+  but not referenced from other files in that tree). The full plugin in
+  `plugin/` is unchanged. `tests/plugin_directory.rs` pins the Directory
+  rules. The marketplace lists it as `priorart-lite`.
 
 ## [0.2.3] - 2026-11-27
 

@@ -1,0 +1,22 @@
+{
+  "name": "priorart",
+  "version": "0.2.3",
+  "description": "Check an audit or bug-bounty finding against saved prior audits, known issues and scope before submitting. This Directory build does not run the CLI: it shows the commands to run yourself.",
+  "author": {
+    "name": "KhomDev"
+  },
+  "homepage": "https://github.com/KhomDev/priorart",
+  "repository": "https://github.com/KhomDev/priorart",
+  "license": "MIT",
+  "documentationUrl": "https://github.com/KhomDev/priorart/blob/main/docs/cli.md",
+  "supportUrl": "https://github.com/KhomDev/priorart/issues",
+  "privacyPolicyUrl": "https://github.com/KhomDev/priorart/blob/main/plugin-directory/PRIVACY.md",
+  "keywords": [
+    "security",
+    "audit",
+    "bug-bounty",
+    "smart-contract",
+    "triage",
+    "prior-art"
+  ]
+}
