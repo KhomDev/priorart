@@ -82,6 +82,15 @@ collected judge labels. A pairs measurement on train/validation contests is
 in-sample for the ranker and alarm; FINAL contests are refused until the FINAL
 freeze. `pairs_run.py` enforces both.
 
+**Swap (Yura, 2026-11-27): not yet possible.** The four overlapping contests
+are to be replaced by judged contests outside Dup-Bench that no run has opened,
+picked from metadata only and sealed before any finding is read. The rule,
+both screens and their per-contest records are in
+[`pairs-swap/SELECTION.md`](pairs-swap/SELECTION.md). **No contest passes
+(0 of 140 strict, 0 of 91 relaxed), so nothing is sealed yet**, and relaxing a
+criterion is Yura's call (options A-C there). The pairs measurement does not
+run until labels exist.
+
 `pairs_run.py` runs `priorart candidates --top-k 5 --ranker weights/v1.json
 --alarm weights/alarm-v1.json --json` (prose anchors off) per judged duplicate
 and primary and reports recall@5 (abstentions count as misses), false-alarm rate
