@@ -186,6 +186,16 @@ jobs:
       - name: Relative links in markdown resolve
         run: python3 scripts/check_links.py
 
+  eval-python:
+    name: eval python (unit tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Eval scripts compile
+        run: python3 -m compileall -q eval scripts
+      - name: Judging-sheet unit tests
+        run: python3 -I -m unittest discover -v -s eval/dupbench/pairs-swap -p "test_*.py"
+
   # ----------------------------------------------------------------- action
   action:
     name: action (${{ matrix.os }})

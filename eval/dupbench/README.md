@@ -111,6 +111,10 @@ refuses FINAL contests, reports train/validation contests as in-sample groups,
 and needs `--pair-labels` for contests outside Dup-Bench. `--check FILE` requires
 byte-identical output.
 
+## Human duplicate judging (V1 pairs)
+
+The V1 pair results are judge-labelled. A human second opinion is collected with [`pairs-swap/judging_sheet.py`](pairs-swap/judging_sheet.py) under the approved rubric [`pairs-swap/JUDGING_RUBRIC.md`](pairs-swap/JUDGING_RUBRIC.md). The pool is the 48 alarm firings of `eval/rounds/round-1-pairs.json` plus 48 seeded quiet controls, split into four batches of 23 to 24 rows, two labellers per batch and 3 shared anchor rows (96 items, 8 sheets). The script re-runs the V1 queries with the same binary, ranker and alarm and refuses to write anything unless the alarm counts equal the committed ones. The sheets show two finding texts only, and the key (`items.json`, `rowkey.json`) is written outside the repository with the third-party issue text. The labels do not change the committed V1 numbers; they are reported next to them, never pooled. Its pure logic is covered by [`pairs-swap/test_judging_sheet.py`](pairs-swap/test_judging_sheet.py) (synthetic rows only), which CI runs.
+
 ## PA-B4 learned ranker (train and validation only)
 
 `build_ranker_data.py` builds the dataset: for each train/validation contest
@@ -151,6 +155,9 @@ never a silent zero. Without `--ranker`, output is unchanged.
 | `train_ranker.py` | PA-B4 trainer, selection and measurement; writes `weights/v1.json` |
 | `pairs_run.py` | sealed-pairs / DEV runner (FINAL refused; in-sample groups labelled) |
 | `weights/v1.json` | the committed, versioned ranker table read by `--ranker` |
+| `pairs-swap/JUDGING_RUBRIC.md` | approved rubric for the human duplicate-judging check of the V1 pairs |
+| `pairs-swap/judging_sheet.py` | builds the blinded human sheets and key for the V1 pairs (outputs outside the repo) |
+| `pairs-swap/test_judging_sheet.py` | unit tests for the sheet builder's pure logic (stdlib `unittest`) |
 
 ## Reproduce
 
