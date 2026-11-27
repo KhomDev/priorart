@@ -1,0 +1,784 @@
+[
+ {
+  "slug": "2023-11-panoptic",
+  "order_sha256": "004630aa416524d42bd5d99bbfb51853656720203beccf8fe23323b1eea38a54",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2022-11-looksrare",
+  "order_sha256": "0233432dd3fb06a446ce517578bea1e1ebfd14081769d5d026b806e299983243",
+  "findings_has_report_md": true,
+  "label_count": 148,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 41,
+  "issues": 280,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2023-08-dopex",
+  "order_sha256": "037b07797e28a59cd038b01cc2016a6e98854cd962df3958c543be5ef0fbe9c3",
+  "findings_has_report_md": true,
+  "label_count": 300,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 153,
+  "issues": 2154,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2024-04-dyad",
+  "order_sha256": "07b2f028bd62bde9035c157d58371c083a078c97e7ad7d6aee34d44b22dae2df",
+  "findings_has_report_md": true,
+  "label_count": 240,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 69,
+  "issues": 1324,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-10-party",
+  "order_sha256": "0a2218af9d79bf1ebfa93e8e4dd55beb3507fbe85bdcd37e3b8b00b95f8c8a69",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2022-08-rigor",
+  "order_sha256": "0d67e95d6fc76ed552005a04cb678904ebdef97a9a7792e8f29928705094ae20",
+  "findings_has_report_md": true,
+  "label_count": 21,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2023-04-rubicon",
+  "order_sha256": "15d2625a05236bfc6ddf4e40f9201aeb14690df74ef9154dd6eea5bebd720f6c",
+  "findings_has_report_md": true,
+  "label_count": 237,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 97,
+  "issues": 1384,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2024-10-superposition",
+  "order_sha256": "1d189bb28ad955f0da93bb2bbe3985f02d874c7d4022080f44a66c44e51302d2",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2022-11-canto",
+  "order_sha256": "1d1d15fc08ab3e67fb23d227f41997417e573195af7ec2e978c8c440b1e175bb",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2022-10-traderjoe",
+  "order_sha256": "1e81cf5cb767275897c5abd37fb330e18f1a8953eb995c87d8ff31fda9a85195",
+  "findings_has_report_md": true,
+  "label_count": 121,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 46,
+  "issues": 519,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-10-ethena",
+  "order_sha256": "2078ae8218754e63028c80fb6266746ed38f823eaf3491a1a81ff0823e485d82",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2022-09-quickswap",
+  "order_sha256": "246e9550c52469a1a257103f1d28f87a07bdb549c5c00ce4e16aa18528299093",
+  "findings_has_report_md": true,
+  "label_count": 33,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-12-escher",
+  "order_sha256": "274be4bb130185c621327d36b0fe0eef0c8a9e60d34c55901c616fb0abe90c45",
+  "findings_has_report_md": true,
+  "label_count": 169,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 66,
+  "issues": 553,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-09-party",
+  "order_sha256": "2b5fec488977afa5f19e469efd3dae96a293a333993c3ce30385332664f969d8",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2022-08-olympus",
+  "order_sha256": "2e89755f8bf15e3e8136590d4d20f48a1f0d0fc8d6522979042addbbf45e8f23",
+  "findings_has_report_md": true,
+  "label_count": 28,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2023-11-kelp",
+  "order_sha256": "316a6749e7f694c2fe5f46b6f4ecb27a930690058c12d8449f07e49da022b43e",
+  "findings_has_report_md": true,
+  "label_count": 286,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 73,
+  "issues": 893,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2024-11-nibiru",
+  "order_sha256": "31bae8044001be04f1b1d35e15f34b599fbb163aca3fd5129b32c07dd31e02d4",
+  "findings_has_report_md": true,
+  "label_count": 122,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 10,
+  "issues": 86,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2022-09-y2k-finance",
+  "order_sha256": "356cb8bfa4b186a34262d94f63788d03553d1c76c01ad78d5ec9545f3cd12999",
+  "findings_has_report_md": true,
+  "label_count": 35,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2024-08-chakra",
+  "order_sha256": "37976e2de86679f3efc259da5a5d3adcadf6107c53af7d5a58877e7b239bec88",
+  "findings_has_report_md": true,
+  "label_count": 288,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 74,
+  "issues": 629,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-09-canto",
+  "order_sha256": "3a4a6bb242f930a73d9e0081e5a95a99aa4ded1868fe3d3875a5fbea1c55109e",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2022-09-artgobblers",
+  "order_sha256": "3c7209d303b10f8e6a75d5bd531db7eb7a6e59810b3b1392b640c96a53062350",
+  "findings_has_report_md": true,
+  "label_count": 33,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-12-gogopool",
+  "order_sha256": "3d0963b905029dc12cd3e769ea2cc51a43654c8b9b52ec665b40dd8e059929d5",
+  "findings_has_report_md": true,
+  "label_count": 210,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 112,
+  "issues": 905,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-10-zksync",
+  "order_sha256": "3e3eb942169261b02ff4aa386d73293e167deb11e7a109f6d4c4a1cc772805ce",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2022-10-holograph",
+  "order_sha256": "4239c229b9c97c3e67cadeec0072d5dbaf253f08c2cf7bd4841cd5ddfa99b1c6",
+  "findings_has_report_md": true,
+  "label_count": 36,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-09-frax",
+  "order_sha256": "44ff6d0b24fa628fbbea3522d8dead849d5825494a2a60743dd91bff3ad735c7",
+  "findings_has_report_md": true,
+  "label_count": 50,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2023-09-centrifuge",
+  "order_sha256": "455dd6b490ed4106f593cf607a6bbd918f4cecf9ec99b9d8775e1d18bc3aa76d",
+  "findings_has_report_md": true,
+  "label_count": 208,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 96,
+  "issues": 802,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-01-rabbithole",
+  "order_sha256": "4782a801d1400b81c8fbb2e1c45eafe2fbf97c921bde72325cad7454590c5e9d",
+  "findings_has_report_md": true,
+  "label_count": 217,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 30,
+  "issues": 706,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-10-ens",
+  "order_sha256": "4b5af5403d78d1ed18fc25ca434d9f457b2063c344abbcbe26dddae75228fe64",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2022-11-stakehouse",
+  "order_sha256": "517c1a04c0fb9fe607ff922728ba7fcb2998e844a01fc6dc6332377a20751796",
+  "findings_has_report_md": true,
+  "label_count": 224,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 58,
+  "issues": 450,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2024-04-noya",
+  "order_sha256": "5291cc6725f38623b298d2da729d2c04c1c9f9321cc11c9d5db921597bf89a23",
+  "findings_has_report_md": true,
+  "label_count": 535,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 172,
+  "issues": 1643,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-07-axelar",
+  "order_sha256": "53894bfb78b2e36140128f0ad705c4265fa69b01bcbf5cc1f4bb208b514d6439",
+  "findings_has_report_md": true,
+  "label_count": 129,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 33,
+  "issues": 506,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-11-paraspace",
+  "order_sha256": "53bcbb35ab91ac75168529336d96ddfde4c81342adf0e3ca6b795f32bde1a4fb",
+  "findings_has_report_md": true,
+  "label_count": 215,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 59,
+  "issues": 516,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-09-ondo",
+  "order_sha256": "56c240b6a4646b611948790871f0b69c5f8a714782f0a0dc373f74f35b11a701",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2023-01-popcorn",
+  "order_sha256": "5cd3124a53d986dd50d8961bc8f664d5a7d5dfaf61eb81477730dc07f8a896f3",
+  "findings_has_report_md": true,
+  "label_count": 300,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 69,
+  "issues": 853,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2024-01-renft",
+  "order_sha256": "5df861c7d86985a4ef303316046abcce04d7ee2a958b8f934569bc44685cec87",
+  "findings_has_report_md": true,
+  "label_count": 186,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 62,
+  "issues": 650,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2024-02-ai-arena",
+  "order_sha256": "5f2090de7a8c177c72a17051d2158947f990093fe13fbf4bf35742605f91fe90",
+  "findings_has_report_md": true,
+  "label_count": 521,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 158,
+  "issues": 2097,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-12-backed",
+  "order_sha256": "68e46126eab8b9817622fdc4678b1e13c593aab2517bc006d31b444f3e76bdb4",
+  "findings_has_report_md": true,
+  "label_count": 138,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 39,
+  "issues": 304,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2022-08-mimo",
+  "order_sha256": "6aa168a746a8b66e6b66423e72a8d8d541c59ca96367b56f82c2f6f62d6c9800",
+  "findings_has_report_md": true,
+  "label_count": 20,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-10-thegraph",
+  "order_sha256": "704afd656e1abec3c42be726455126e928c5acc5e646f732cd3335f161a03f32",
+  "findings_has_report_md": true,
+  "label_count": 32,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2023-06-lybra",
+  "order_sha256": "70762e8f6c96616419a46bb27588f6ebb92a73f45ff7b768887dfd91fefde9a9",
+  "findings_has_report_md": true,
+  "label_count": 242,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 95,
+  "issues": 991,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2024-05-munchables",
+  "order_sha256": "7576d52bc6ed39a2c26c28234cc2f4093b9a643fcb8f9399fa509032bf7745c1",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2023-03-asymmetry",
+  "order_sha256": "779e8e3b5b1f386365ef7f8416af85fe168b4ef4882f4a376beaa7c716674aa7",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2023-04-caviar",
+  "order_sha256": "78ac854e3ce7782e5bc4deaf67d6b63fb5b92aa063644850756fafd2b1fa70cd",
+  "findings_has_report_md": true,
+  "label_count": 167,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 79,
+  "issues": 1008,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-01-reserve",
+  "order_sha256": "7a6866ff118c1633ca2930853768846d1348b7edaddedd57942ae2707d320c62",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2023-02-ethos",
+  "order_sha256": "7caf71c54f9fea4ad93f44818e8a83c240c104336b8a312504aed41b4b01e15e",
+  "findings_has_report_md": true,
+  "label_count": 260,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 38,
+  "issues": 860,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-12-tigris",
+  "order_sha256": "7cc54838cde28fceb2afbc4b3de70b878b3aedbe849ad6ab01fb5bd4ca0da2c3",
+  "findings_has_report_md": true,
+  "label_count": 196,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 106,
+  "issues": 676,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2024-04-renzo",
+  "order_sha256": "7dbc81d8c45678b6fd9e3e9319961e2044961fe26f2fb5abf023e07c36be4680",
+  "findings_has_report_md": true,
+  "label_count": 385,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 110,
+  "issues": 613,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-11-redactedcartel",
+  "order_sha256": "81f016ac37382407655df0d09086a03a8ac855ebc35e00799a883f6e0642fc5e",
+  "findings_has_report_md": true,
+  "label_count": 202,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 55,
+  "issues": 417,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2022-12-tessera",
+  "order_sha256": "846d530e1ece442389d06b3475bf705bea39460cb8b95e4785b33c0128116cd4",
+  "findings_has_report_md": true,
+  "label_count": 83,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 22,
+  "issues": 58,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2024-01-curves",
+  "order_sha256": "86451f38b6bdf69c99f235774ae83cb55133d1722bdc2ddf8c6e35f1e132d4ab",
+  "findings_has_report_md": true,
+  "label_count": 317,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 102,
+  "issues": 1561,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2024-01-decent",
+  "order_sha256": "88302bd5f8c6ae4094233259663d0313a35639dbe2072364e77091538088a4ce",
+  "findings_has_report_md": true,
+  "label_count": 164,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 73,
+  "issues": 750,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2024-02-althea-liquid-infrastructure",
+  "order_sha256": "892a02428f58b9580ce82adb5cddfb77fc9de31b1daa394d7fbfd7d0aa2796c5",
+  "findings_has_report_md": true,
+  "label_count": 144,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 67,
+  "issues": 765,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-11-zetachain",
+  "order_sha256": "8fd6d55fcfa716f39bc2ecebcf30bfb1fbec4a413dac883e279809fd59cb3192",
+  "findings_has_report_md": true,
+  "label_count": 189,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 74,
+  "issues": 584,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-03-wenwin",
+  "order_sha256": "93b07abd338cc7a702855e10970d31d378c28fb5ea53b54d2b61b09b33f80340",
+  "findings_has_report_md": true,
+  "label_count": 164,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 30,
+  "issues": 522,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-10-nextgen",
+  "order_sha256": "95a7a12f29749d46daea77505104b54f577bd2a68e2fe16f3807d4d034914baa",
+  "findings_has_report_md": true,
+  "label_count": 339,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 212,
+  "issues": 2051,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2024-08-axelar-network",
+  "order_sha256": "97267fbd75f7a9a0556a3809ce160294147e75a1665c4f99b58199c3bfb29240",
+  "findings_has_report_md": true,
+  "label_count": 161,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 21,
+  "issues": 149,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2023-08-goodentry",
+  "order_sha256": "9a2912c1b3dbc870df27a013d4bf13fcb0d37d5a290e9e762ce4d203028840c3",
+  "findings_has_report_md": true,
+  "label_count": 165,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 58,
+  "issues": 580,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-10-inverse",
+  "order_sha256": "9ade2bf1c302781c947f51a5687cb8c212d7b3c3d9a8e62deb0df8340869f32b",
+  "findings_has_report_md": true,
+  "label_count": 233,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 68,
+  "issues": 604,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-11-non-fungible",
+  "order_sha256": "9ea8986ab7a97345ec21487ee55f4304554f1bee8915045635fb78096066326e",
+  "findings_has_report_md": true,
+  "label_count": 111,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 20,
+  "issues": 270,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2023-12-revolutionprotocol",
+  "order_sha256": "a26d35a1524cc9816fa6bdee7c5ffd067fae45665eff92314cc664ec89f3c358",
+  "findings_has_report_md": true,
+  "label_count": 219,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 90,
+  "issues": 748,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-08-fiatdao",
+  "order_sha256": "a3d3b26e7ed2ca1f59212c58145c9cc6bf0ae36eb61f66aa8b95a3a3c708c455",
+  "findings_has_report_md": true,
+  "label_count": 28,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2023-11-canto",
+  "order_sha256": "a9fb91ff099104874d28387d2c40b454a252d765ab0fb2c12094bb8641d99eda",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2023-12-ethereumcreditguild",
+  "order_sha256": "aa6a32dbb8cc8d7203cca679796f2bebbc7fe00d7082e984ba43e0d9c7acab3e",
+  "findings_has_report_md": true,
+  "label_count": 207,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 97,
+  "issues": 1290,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-05-ajna",
+  "order_sha256": "b26aa8f467269559a6376dfcbb7e80546a278a4a087fb5715117763fb890e7da",
+  "findings_has_report_md": true,
+  "label_count": 194,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 46,
+  "issues": 508,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-09-tribe",
+  "order_sha256": "b4645caa8dc5276246e08efc732809ff1a9b3df3b6e654904d2ccd5bf780ee1d",
+  "findings_has_report_md": true,
+  "label_count": 28,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2023-09-maia",
+  "order_sha256": "b4e9b008ad57dd370753ca6a9a3829352e88a4a2e4d13a1b01add6ce1155ca47",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2024-04-panoptic",
+  "order_sha256": "b83012a857785db0ec3a49a8c5c17b4fa228cd40da05c65c4c26244c4218d92a",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2022-09-vtvl",
+  "order_sha256": "ba52adf325a2478192c33b15ce74e26bbdd6470ea000a229319874ac2cc1449a",
+  "findings_has_report_md": true,
+  "label_count": 28,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2024-12-unruggable",
+  "order_sha256": "c8c5af8c6a4d32903d10e1faa3afe61b54295b67a00b2a48b6a2ec1589959ba2",
+  "findings_has_report_md": false,
+  "reject": "no report.md"
+ },
+ {
+  "slug": "2022-10-juicebox",
+  "order_sha256": "cb7df90b8a6d30f302b530de77b75135921e23e241c16f7b5f052ec0db8927f0",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2023-07-tapioca",
+  "order_sha256": "cccedc801ce93bcb01b265ceea6cd7545ee29957152c832234b49334cac51eee",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2023-01-astaria",
+  "order_sha256": "ce61b53a678c306ee88986d6baefbbd02e95cadf268663ec8297ae044b512da5",
+  "findings_has_report_md": true,
+  "label_count": 263,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 81,
+  "issues": 636,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-10-wildcat",
+  "order_sha256": "cef4171dc893a6335736ee869a67c26eab5fdbc948880ce4fa466bd4d43566de",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2022-08-nounsdao",
+  "order_sha256": "cf5fa0323f1f374a282cb1e98db96c7c417a386702d3b1fc26668b7a582c6f25",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2023-09-venus",
+  "order_sha256": "d07f47929e255a7dff2b66cae0c533fb0326ad8c402cac4b2b1085e8601d8f6b",
+  "findings_has_report_md": true,
+  "label_count": 199,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 36,
+  "issues": 684,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-12-caviar",
+  "order_sha256": "d3caca167e75326b3dcf921c0034edb103ea3d1155017a1cf5ed522328dfd151",
+  "findings_has_report_md": true,
+  "label_count": 150,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 49,
+  "issues": 509,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-10-paladin",
+  "order_sha256": "d4701c9f20b380818cbba3caba4d27ea47d81c045717268347f54fbd61ff9bdd",
+  "findings_has_report_md": true,
+  "label_count": 191,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 30,
+  "issues": 285,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2023-10-zksync",
+  "order_sha256": "d4bcd18bfcaf51a64f7997f72dda420bed571276b3b2bf240987f238a181404f",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2022-08-frax",
+  "order_sha256": "da8890ef331709eae40248166ca55eba89418d14633003c345b1c09a90a6f216",
+  "findings_has_report_md": true,
+  "label_count": 34,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-10-blur",
+  "order_sha256": "dfa476fabcc32e1216ebb29ff66c59c955f3a1fafaab737bd10022d19a19fbc7",
+  "findings_has_report_md": true,
+  "label_count": 37,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2022-12-prepo",
+  "order_sha256": "e1c7cae99f0b2935f3f2bf8d02ff11d295aacba942b9e4b2373a6b7a81aa7dd3",
+  "findings_has_report_md": true,
+  "label_count": 144,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 42,
+  "issues": 340,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2024-07-loopfi",
+  "order_sha256": "e7933eacc8d5ee123a11c40602d0c65889d0fe454b67d7070e54cc580a1def1e",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2023-05-venus",
+  "order_sha256": "eaf621d37665f687544779e6b8429bad2673f42a419afb8a65e78b6d8507c595",
+  "findings_has_report_md": true,
+  "label_count": 160,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 29,
+  "issues": 573,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2023-01-biconomy",
+  "order_sha256": "eecaf62864df455b7b5435ec038496cd6cf096a53554a6570340b041cd2572b6",
+  "findings_has_report_md": true,
+  "label_count": 180,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 52,
+  "issues": 548,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-08-foundation",
+  "order_sha256": "eede4119fa2e2aa5efe39902c8643fde7b740311d7955025078e0b02504f50db",
+  "findings_has_report_md": true,
+  "label_count": 28,
+  "labels_selected_for_report": false,
+  "duplicate_N_labels": 0,
+  "reject": "no judge grouping labels"
+ },
+ {
+  "slug": "2024-07-traitforge",
+  "order_sha256": "ef8485428b623c0de5637f862cdd38834c7bf775050ea93d7d47f32cb23eb76a",
+  "findings_has_report_md": true,
+  "label_count": 272,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 41,
+  "issues": 1088,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-11-debtdao",
+  "order_sha256": "f1e147c5f561b047b75233c94c0e759391e8975c95e8dcac533a2aad03fb31c0",
+  "findings_has_report_md": true,
+  "label_count": 211,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 37,
+  "issues": 522,
+  "reject": "issue count missing or >500"
+ },
+ {
+  "slug": "2022-11-size",
+  "order_sha256": "f24ef152b0b7035141f475801c8c3e0db499b77b4882d111bf659c139ab65d3b",
+  "reject": "sponsor token in Dup-Bench or pairs"
+ },
+ {
+  "slug": "2023-05-maia",
+  "order_sha256": "f5fdf634c382e8bd42c545a4380f60ab7ef94c0072df689f1d299dbe597afe1c",
+  "reject": "sponsor used before"
+ },
+ {
+  "slug": "2022-12-forgeries",
+  "order_sha256": "f78af77111a8af22ec9cb42fcccbc40af1827848d394ed61b52d261e6d0c6d81",
+  "findings_has_report_md": true,
+  "label_count": 123,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 30,
+  "issues": 358,
+  "prior_audit_files": [],
+  "reject": "no prior audit file in contest repo"
+ },
+ {
+  "slug": "2023-07-arcade",
+  "order_sha256": "f7abce2edba83d694c396d497b5702c6f4f3b29f88485e018ad197298fe3ef27",
+  "findings_has_report_md": true,
+  "label_count": 158,
+  "labels_selected_for_report": true,
+  "duplicate_N_labels": 64,
+  "issues": 573,
+  "reject": "issue count missing or >500"
+ }
+]

@@ -74,6 +74,34 @@ contest codebase snapshot repo+commit. The prior report's commit is not stated
 in the READMEs, so same-codebase evidence is the sponsor's own "Previous
 audits" statement and the drift is stated per pair.
 
+**Overlap with Dup-Bench (stated, not hidden).** Four of the six pair contests are
+also Dup-Bench contests: `2023-07-basin` is in train, `2024-01-salty` in
+validation, and `2024-06-size` and `2024-11-ethena-labs` in FINAL. Only
+`2024-03-revert-lend` and `2024-10-loopfi` are outside Dup-Bench, and neither has
+collected judge labels. A pairs measurement on train/validation contests is
+in-sample for the ranker and alarm; FINAL contests are refused until the FINAL
+freeze. `pairs_run.py` enforces both.
+
+**Swap (Yura, 2026-11-27): not yet possible.** The four overlapping contests
+are to be replaced by judged contests outside Dup-Bench that no run has opened,
+picked from metadata only and sealed before any finding is read. The rule,
+both screens and their per-contest records are in
+[`pairs-swap/SELECTION.md`](pairs-swap/SELECTION.md). **No contest passes
+(0 of 140 strict, 0 of 91 relaxed), so nothing is sealed yet**, and relaxing a
+criterion is Yura's call (options A-C there). The pairs measurement does not
+run until labels exist.
+
+`pairs_run.py` runs `priorart candidates --top-k 5 --ranker weights/v1.json
+--alarm weights/alarm-v1.json --json` (prose anchors off) per judged duplicate
+and primary and reports recall@5 (abstentions count as misses), false-alarm rate
+at the shipped alarm, warning precision and abstention, each with a Wilson 95%
+interval, per group and never pooled across groups. `--mode dev` runs Dup-Bench
+train contests only. `--mode pairs` needs `--round`, `--version` and
+`--binary-sha256` equal to the sha256 of `--bin` (placeholders are refused),
+refuses FINAL contests, reports train/validation contests as in-sample groups,
+and needs `--pair-labels` for contests outside Dup-Bench. `--check FILE` requires
+byte-identical output.
+
 ## PA-B4 learned ranker (train and validation only)
 
 `build_ranker_data.py` builds the dataset: for each train/validation contest
@@ -112,6 +140,7 @@ never a silent zero. Without `--ranker`, output is unchanged.
 | `clone_codebases.py` | clones the pinned audited codebases per split |
 | `build_ranker_data.py` | PA-B4 dataset builder (train + validation; FINAL refused) |
 | `train_ranker.py` | PA-B4 trainer, selection and measurement; writes `weights/v1.json` |
+| `pairs_run.py` | sealed-pairs / DEV runner (FINAL refused; in-sample groups labelled) |
 | `weights/v1.json` | the committed, versioned ranker table read by `--ranker` |
 
 ## Reproduce
