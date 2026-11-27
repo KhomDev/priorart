@@ -4,16 +4,33 @@ Stated plainly, because a tool that hides its edges gets trusted past them.
 
 ## Retrieval, not duplication
 
-priorart ranks prior items to read. It never says two findings are the same. The
-current public benchmark file `eval/benchmark/results.json` (priorart 0.2.2)
-records a false-alarm rate on judged-paid unique findings of
-**15/60 = 25.0%** (Wilson 95% CI 15.8-37.2) and duplicate recall@5 of
-**35/64 = 54.7%** (42.6-66.3); known-prior recall is n=1 and is not a rate.
-The 0.1.0 measurement on the same corpus was 26/60 = 43.3% (31.6-55.9). The
-0.2.2 interval still reaches above the plan's 30% trigger, and later corpora
-sit above it, so the release stays retrieval-only: the prior-item section is a
-reading list and no duplicate warning is printed. The runs are in
-[benchmark.md](benchmark.md).
+priorart ranks prior items to read. It never says two findings are the same.
+All the numbers below are priorart 0.2.2 and **all are in-sample**: each corpus
+was read while the matcher was built or has since been opened. Source:
+[`eval/benchmark/BENCHMARK.md`](../eval/benchmark/BENCHMARK.md), table "after
+the harness fixes".
+
+| Corpus | False alarms on judged paid-unique | Duplicate recall@5 |
+|---|---|---|
+| Tapioca (`eval/benchmark/results.json`) | 15/60 = 25.0% [15.8-37.2] | 35/64 = 54.7% [42.6-66.3] |
+| Party + Wildcat (formerly sealed pairs, now opened) | 7/18 = 38.9% [20.3-61.4] | 63/178 = 35.4% [28.7-42.7] |
+
+The Tapioca row is the best corpus, not the typical one; the formerly sealed
+pairs are the closer guide. Known-prior recall is n=1 and is not a rate. The
+0.1.0 measurement on Tapioca was 26/60 = 43.3% (31.6-55.9). The pairs' false
+alarm rate is above the plan's 30% trigger, so the release stays
+retrieval-only: the prior-item section is a reading list and no duplicate
+warning is printed. No held-out number exists yet; the held-out plan is in the
+P2R-2 pre-registration. The runs are in [benchmark.md](benchmark.md).
+
+## The sealed multilingual corpus is a case study, not a metric
+
+`eval/sealed-multilang` (PR #39) is kept as a documented case study **outside
+every metric** (decision 2026-11-27). Its 629 units are almost all one cluster
+(real-incident reproductions, 614 tier X), and it has no duplicate or
+paid/unique ground truth, so none of priorart's measured quantities (false
+alarms on paid-unique, duplicate recall@5, warning precision) can be computed
+on it. No number in this repository is computed from it.
 
 ## Absence is not novelty
 
