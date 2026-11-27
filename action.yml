@@ -85,13 +85,13 @@ runs:
           curl -fsSL --retry 3 -o "$dir/SHA256SUMS" "$base/SHA256SUMS"
           expected=$(awk -v f="$name.$ext" '$2 == f || $2 == "*"f { print $1 }' "$dir/SHA256SUMS")
           if [ -z "$expected" ]; then echo "::error::$name.$ext is not in SHA256SUMS"; exit 2; fi
+          # Hash stdin: with a Windows path (backslashes) sha256sum escapes its output line.
           if command -v sha256sum >/dev/null 2>&1; then
             actual=$(sha256sum < "$dir/$name.$ext" | awk '{print $1}')
           else
             actual=$(shasum -a 256 < "$dir/$name.$ext" | awk '{print $1}')
           fi
-          # Hash stdin: with a Windows path (backslashes) sha256sum escapes its output line.
-  if [ "$expected" != "$actual" ]; then echo "::error::checksum mismatch for $name.$ext"; exit 2; fi
+          if [ "$expected" != "$actual" ]; then echo "::error::checksum mismatch for $name.$ext"; exit 2; fi
           if [ "$ext" = zip ]; then unzip -q -o "$dir/$name.$ext" -d "$dir"; else tar -xzf "$dir/$name.$ext" -C "$dir"; fi
           bin="$dir/$name/priorart"
           [ -f "$bin" ] || bin="$bin.exe"
@@ -116,12 +116,16 @@ runs:
         set +e -uo pipefail
         dir="$RUNNER_TEMP/priorart-action"
         mkdir -p "$dir"
+        # No stale report from an earlier use of the action in the same job.
+        rm -f "$dir/report.txt" "$dir/report.json"
         args=(check "$PA_FINDING" --top-k "$PA_TOP_K")
         dossier="$PA_DOSSIER"
         if [ -n "$PA_PROGRAM" ]; then
           if ! "$PA_BIN" build "$PA_PROGRAM" > "$dir/build.txt" 2>&1; then
             cat "$dir/build.txt"
+            cp "$dir/build.txt" "$dir/report.txt"
             echo "exit-code=2" >> "$GITHUB_OUTPUT"
+            echo "text=$dir/report.txt" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           cat "$dir/build.txt"
