@@ -31,6 +31,11 @@ appears here only if it came from a command that can be re-run.
   but not referenced from other files in that tree). The full plugin in
   `plugin/` is unchanged. `tests/plugin_directory.rs` pins the Directory
   rules. The marketplace lists it as `priorart-lite`.
+- Human duplicate-judging tooling for the V1 pairs (`eval/dupbench/pairs-swap/`): the approved rubric
+  `JUDGING_RUBRIC.md` and `judging_sheet.py`, which builds blinded sheets from the 48 V1 alarm firings and 48 seeded quiet
+  controls and refuses to run if the alarm counts differ from `round-1-pairs.json`. Its selection, batching and sheet
+  rendering are pure functions with 32 unit tests (`test_judging_sheet.py`), run by a new CI job `eval-python`. Eval
+  tooling only: no change to the binary, the ranker or any committed result.
 
 ## [0.2.3] - 2026-11-27
 
