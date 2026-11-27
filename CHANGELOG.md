@@ -27,6 +27,11 @@ which runs the CLI and does not touch ranking, plus a three-crate
 [docs/benchmark.md](docs/benchmark.md) still describes the `check` matcher.
 All P2 numbers are DEV-only; none is held-out.
 
+**Package.** The crate now leaves out the sealed multi-language set, the
+search logs, the pair files, the P2R amendments and `docs/assets/` (see
+`exclude` in Cargo.toml); they stay in the repository. `tests/release.rs`
+checks the list and that the action's default release matches the crate version.
+
 ### Added
 
 - **GitHub Action** (`action.yml`, [docs/action.md](docs/action.md)). A composite
