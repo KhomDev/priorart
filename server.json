@@ -1,0 +1,45 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.khomdev/priorart",
+  "title": "priorart",
+  "description": "Audit-finding triage: prior art, exclusions and payability, as quoted evidence. Offline.",
+  "repository": {
+    "url": "https://github.com/KhomDev/priorart",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/KhomDev/priorart/blob/main/docs/mcp.md",
+  "version": "0.2.3",
+  "packages": [
+    {
+      "registryType": "cargo",
+      "identifier": "priorart",
+      "version": "0.2.3",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "PRIORART_MCP_ROOT",
+          "description": "Refuse any path argument that resolves outside this directory.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "filepath"
+        },
+        {
+          "name": "PRIORART_MCP_TIMEOUT_SECS",
+          "description": "Kill a priorart run after this many seconds (1 to 3600, default 120).",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "number"
+        },
+        {
+          "name": "PRIORART_BIN",
+          "description": "The priorart CLI to run (default: next to priorart-mcp, then PATH).",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "filepath"
+        }
+      ]
+    }
+  ]
+}

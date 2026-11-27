@@ -174,4 +174,15 @@ jobs:
             "$bin" build examples/dossier-demo --out "$out"
             "$bin" check examples/finding-demo.md --dossier "$out" > /dev/null
             "$bin" ledger validate examples/ledger.example.yaml > /dev/null
+            # The MCP server is installed beside the CLI and answers initialize.
+            mcp="$(dirname "$bin")/priorart-mcp"
+            [ -x "$mcp" ] || mcp="$mcp.exe"
+            got=$("$mcp" --version)
+            test "$got" = "priorart-mcp $VERSION" || { echo "::error::$label priorart-mcp printed '$got'"; exit 1; }
+            init=$(printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}' \
+              | PRIORART_BIN="$bin" "$mcp")
+            case "$init" in
+              *'"protocolVersion":"2025-06-18"'*) ;;
+              *) echo "::error::$label priorart-mcp did not answer initialize: $init"; exit 1 ;;
+            esac
           done

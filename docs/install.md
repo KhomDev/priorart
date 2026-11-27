@@ -1,8 +1,10 @@
 # Install
 
-One binary, named `priorart` (`priorart.exe` on Windows). There is no second
-alias: the old `vg` and `viability-gate` binaries are gone, and the crate that
-carried them is frozen at 0.9.0.
+The CLI is `priorart` (`priorart.exe` on Windows). From the release after
+0.2.2 the crate also installs `priorart-mcp`, the MCP server
+([mcp.md](mcp.md)); release archives carry both. There is no alias: the old
+`vg` and `viability-gate` binaries are gone, and the crate that carried them is
+frozen at 0.9.0.
 
 ## From crates.io
 

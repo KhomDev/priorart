@@ -26,7 +26,8 @@ priorart --version
 ```
 
 The binary name is `priorart` on every platform (`priorart.exe` on Windows).
-There is one binary: no `vg` alias and no second entry point.
+There is one CLI binary, with no `vg` alias. The MCP server `priorart-mcp`
+ships beside it and runs this CLI; its tools are in [mcp.md](mcp.md).
 
 ## Exit codes
 

@@ -15,6 +15,20 @@ appears here only if it came from a command that can be re-run.
 
 ### Added
 
+- **MCP server `priorart-mcp`** (MCP Registry `io.github.khomdev/priorart`,
+  [docs/mcp.md](docs/mcp.md)). A second binary in the same crate: newline
+  JSON-RPC over stdio (Content-Length framing also read), protocol revisions
+  2025-06-18, 2025-03-26 and 2024-11-05. Eleven read-only tools, each one
+  fixed `priorart` command line whose stdout is returned unedited; no tool
+  runs `fetch`, `build`, `init`, `anchors bench` or `candidates --prepare`.
+  Strict arguments (unknown keys and wrong types refused, no value that starts
+  with `-`, positional paths after `--`), `PRIORART_MCP_ROOT` to confine
+  paths, a per-run timeout (`PRIORART_MCP_TIMEOUT_SECS`, default 120 s), a
+  4 MiB output cap (refused, not cropped) and an 8 MiB frame cap. No new
+  dependency. `server.json` is the registry entry; `skills/priorart/SKILL.md`
+  is a Claude skill. Release archives now carry `priorart-mcp` beside
+  `priorart`, and `verify-release.yml` checks it answers `initialize`.
+  `default-run = "priorart"` keeps `cargo run` meaning the CLI.
 - **`priorart fetch`.** The only networked command. It GETs the HTTPS URLs you
   name (one each, no crawling) into `pages/001.html`, … and writes
   `fetch.json`. `build`, `check`, `candidates`, `anchors` and `taxonomy` stay

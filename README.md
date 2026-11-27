@@ -314,6 +314,25 @@ are deleted: they did not separate paid from unpaid findings (a hard kill was
 right 12 times in 25). Gates G1-G4, the importer, the matcher and `init` moved
 here as evidence. The row-for-row mapping is in [MIGRATION.md](MIGRATION.md).
 
+## MCP server and skill
+
+`priorart-mcp` ships in the same crate: an MCP server over stdio whose eleven
+read-only tools (`check`, `candidates`, `anchors_resolve`, `anchors_index`,
+`taxonomy_classify`, `ledger_validate`, `vocab_list`, `vocab_show`, `explain`,
+`rules`, `rejections_summary`) each run one fixed `priorart` command and return
+its output unedited. It computes no number of its own; ranker and alarm figures
+priorart prints stay DEV-ONLY. `fetch`, `build`, `init` and `anchors bench` are
+not offered. A Claude skill is in [`skills/priorart/`](skills/priorart/SKILL.md).
+
+```sh
+claude mcp add priorart -- priorart-mcp
+```
+
+Settings (`PRIORART_MCP_ROOT`, `PRIORART_MCP_TIMEOUT_SECS`, `PRIORART_BIN`),
+the tool table and the limits: [docs/mcp.md](docs/mcp.md).
+
+- MCP Registry name: `mcp-name: io.github.khomdev/priorart`
+
 ## Docs
 
 | Doc | What it covers |
@@ -330,6 +349,7 @@ here as evidence. The row-for-row mapping is in [MIGRATION.md](MIGRATION.md).
 | [docs/validation.md](docs/validation.md) | every public claim, its evidence, its status |
 | [docs/limitations.md](docs/limitations.md) | what this cannot do |
 | [docs/install.md](docs/install.md) | install and release artifacts |
+| [docs/mcp.md](docs/mcp.md) | the MCP server, its tools and limits, the Claude skill |
 | [docs/licensing.md](docs/licensing.md) | MIT code, CC BY 4.0 data |
 
 ## Licence
