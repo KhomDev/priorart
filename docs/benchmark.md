@@ -388,3 +388,37 @@ Validation, model-selection data and never a fresh result: recall@5
 sampling error (one near-inversion inside a large score tie). **No threshold is
 shipped**: the calibrated alarm is PA-B5's item. FINAL is sealed and no FINAL
 contest has been read; none of these numbers is a FINAL number.
+
+## DEV-ONLY release table (P2R-2, the release on `main`, 2026-11-27)
+
+> **DEV-ONLY. None of these is a held-out number.** Train is the ranker's fitting data. Validation is
+> model-selection data: the ranker's grid was chosen on it, and the alarm was calibrated on it. The held-out
+> rounds (the six V1 pairs, then Dup-Bench FINAL) come after main, under
+> `eval/P2R2_PREREGISTRATION_POST_MAIN.md`.
+
+Sources: `eval/dupbench/weights/v1.json` (`measurement`) and `eval/dupbench/weights/alarm-v1.json`.
+The intervals are Wilson 95% with z = 1.959964.
+
+| Cell | Train (in-sample, fitting) | Validation (model selection) |
+|---|---|---|
+| Duplicate recall@5, ranker | 631/1,163 = 54.3% [51.4, 57.1] | 990/1,392 = 71.1% [68.7, 73.4] |
+| Duplicate recall@5, default order | 627/1,163 = 53.9% [51.0, 56.8] | 977/1,392 = 70.2% [67.7, 72.5] |
+| Duplicate abstention | 476/1,163 = 40.9% [38.1, 43.8] | 309/1,392 = 22.2% [20.1, 24.5] |
+| FAR on paid-unique, ranker score ≥ 0.5 | 34/472 = 7.2% [5.2, 9.9] | 48/353 = 13.6% [10.4, 17.6] |
+| FAR on paid-unique, ranker score ≥ 0.8 | - | 11/353 = 3.1% [1.7, 5.5] |
+| FAR on paid-unique, ranker score ≥ 0.9 | 2/472 = 0.4% [0.1, 1.5] | 2/353 = 0.6% [0.2, 2.0] |
+| FAR on paid-unique, ranker score ≥ 0.95 | - | 0/353 = 0.0% [0.0, 1.1] |
+| Alarm warning precision at the shipped threshold (calibrated ≥ 0.9016) | - | 149/162 = 92.0% [86.8, 95.3] (the data it was calibrated on) |
+
+The 0.8 row's lower bound reads 1.8 in the PA-B4 paragraph above. Recomputed, it is 1.749, which is
+1.7 to one decimal. The interval is otherwise unchanged.
+
+**Pairs: not measured.** The pairs swap (option A) sealed `2022-11-paraspace`, `2023-02-ethos`,
+`2023-09-venus` and `2023-07-arcade`, and kept `2024-03-revert-lend` and `2024-10-loopfi`. None of them
+has judge labels collected yet, so there is no pairs number (`eval/dupbench/pairs-swap/SELECTION.md`).
+The earlier PoolTogether / Ondo / Numoen pairs-DEV output only proved that the runner works and is not a
+measurement.
+
+**History (in-sample, 0.2.2):** Tapioca FAR 15/60 = 25.0% [15.8, 37.2], recall 35/64 = 54.7%
+[42.6, 66.3]; Party + Wildcat (the former sealed pairs) FAR 7/18 = 38.9% [20.3, 61.4], recall 63/178 =
+35.4% [28.7, 42.7]. See `docs/limitations.md`.
