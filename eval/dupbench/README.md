@@ -82,7 +82,23 @@ collected judge labels. A pairs measurement on train/validation contests is
 in-sample for the ranker and alarm; FINAL contests are refused until the FINAL
 freeze. `pairs_run.py` enforces both.
 
-**Swap (Yura, 2026-11-27): option A, 4 contests sealed.** The four overlapping contests are replaced by judged contests outside Dup-Bench that no run has opened. They were picked from metadata only and sealed before any finding was read. Yura chose option A, which drops the 500-issue budget. A correction, rule 5a, drops audits of vendored libraries; it was added after the screen output was seen and only removes candidates. The sealed contests are `2022-11-paraspace`, `2023-02-ethos`, `2023-09-venus` and `2023-07-arcade`. Their commits and hashes are in [`pairs-swap/sealed_optA.json`](pairs-swap/sealed_optA.json) (sha256 `d2af4796618a1ba48411f72017e8713fec35067217268e256236878eb97940a7`). The rule, all three screens and the labelling still needed are in [`pairs-swap/SELECTION.md`](pairs-swap/SELECTION.md). **No judge labels have been collected for them yet, so the pairs measurement does not run.**
+**Swap (Yura, 2026-11-27): option A, 4 contests sealed.** The four overlapping contests are replaced by judged contests outside Dup-Bench that no run has opened. They were picked from metadata only and sealed before any finding was read. Yura chose option A, which drops the 500-issue budget. A correction, rule 5a, drops audits of vendored libraries; it was added after the screen output was seen and only removes candidates. The sealed contests are `2022-11-paraspace`, `2023-02-ethos`, `2023-09-venus` and `2023-07-arcade`. Their commits and hashes are in [`pairs-swap/sealed_optA.json`](pairs-swap/sealed_optA.json) (sha256 `d2af4796618a1ba48411f72017e8713fec35067217268e256236878eb97940a7`). The rule, all three screens and the labelling still needed are in [`pairs-swap/SELECTION.md`](pairs-swap/SELECTION.md). Judge labels have been collected and the pairs ran once (below).
+
+**V1 result (2026-11-27, judge-labelled, not human).** The judge grouping for the four swapped contests and for
+`2024-03-revert-lend` and `2024-10-loopfi` was collected with `pairs-swap/collect_pair_labels.py` (the Code4rena judges'
+GitHub labels; nothing here judged anything) and the six contests ran once with `pairs_run.py --mode pairs --pairs
+pairs-swap/pairs_v1_swapped.json` (`pairs.json` v1 is unchanged and still pinned by the pre-registration), release binary
+`54d23059b3ffc2d7a6f9602f3e03cd1d58b71cc333e487304301dad14df06478` (`priorart 0.2.2`, main `c57697d`), prose anchors off, pinned in
+`eval/rounds/round-1.json` of realism-gate before the run; `--check` reproduced the result byte-identically
+([`eval/rounds/round-1-pairs.json`](../rounds/round-1-pairs.json)). Pooled over the six contests (one binary): recall@5
+350/445 = 78.7% [74.6, 82.2] (abstentions count as misses: 61 of the 445 duplicate queries abstained, and 81/549 = 14.8%
+of all queries); false alarms at the shipped alarm 2/104 = 1.9% [0.5, 6.7] (both in `2022-11-paraspace`); warning
+precision 43/48 = 89.6% [77.8, 95.5]. Per contest recall@5: revert-lend 109/150, loopfi 5/6, paraspace 108/145, ethos
+29/34, venus 68/75, arcade 31/35. Caveats: the labels are the judges', not a human rater's; the pooled Wilson interval
+treats queries as independent although they cluster by contest; the runner queries each contest's judged primaries and does not
+read the prior audit report, so this measures the duplicate matcher inside a judged contest and says nothing about the
+prior-audit link itself (for `ethos` that link is weak: the only copy is a Discord attachment); `loopfi` has 37 issues
+and its cells are counts. V1 is in-sample from now on; Dup-Bench FINAL and its 17 contests stay sealed.
 
 `pairs_run.py` runs `priorart candidates --top-k 5 --ranker weights/v1.json
 --alarm weights/alarm-v1.json --json` (prose anchors off) per judged duplicate
