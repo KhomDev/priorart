@@ -48,4 +48,4 @@ runner fails with exit code 2 before anything runs.
 
 The `action` job in `.github/workflows/ci.yml` runs the action on Ubuntu, macOS and Windows against
 `examples/dossier-demo` and `examples/finding-demo.md`, checks the outputs and the JSON schema, and checks that
-a missing finding gives exit code 2.
+a missing finding fails the step.

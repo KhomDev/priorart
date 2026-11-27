@@ -229,12 +229,14 @@ jobs:
           version: v0.2.2
           dossier: examples/dossier-demo/dossier-demo.dossier
 
+      # A failed composite step does not pass its outputs on, so check the
+      # outcome and the report the action wrote.
       - name: Check the error
         shell: bash
         env:
-          CODE: ${{ steps.missing.outputs.exit-code }}
           OUTCOME: ${{ steps.missing.outcome }}
         run: |
           set -eu
           test "$OUTCOME" = failure
-          test "$CODE" -ge 2
+          test -s "$RUNNER_TEMP/priorart-action/report.txt"
+          ! grep -q 'priorart.check/v1' "$RUNNER_TEMP/priorart-action/report.json"
